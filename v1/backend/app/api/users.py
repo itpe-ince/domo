@@ -1,18 +1,101 @@
+import asyncio
+import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, Query
+from fastapi import APIRouter, Depends, Header, Query, Response
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
 from app.core.errors import ApiError
+from app.core.rate_limit import rate_limit
 from app.core.security import decode_token
 from app.db.session import get_db
 from app.models.post import Follow
+from app.models.search_log import SearchLog
 from app.models.sponsorship import Sponsorship
 from app.models.user import ArtistProfile, User
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+_log = logging.getLogger(__name__)
+
+
+async def _optional_user_id(authorization: str | None) -> UUID | None:
+    if not authorization or not authorization.lower().startswith("bearer "):
+        return None
+    try:
+        payload = decode_token(authorization.split(" ", 1)[1])
+    except ValueError:
+        return None
+    sub = payload.get("sub")
+    return UUID(sub) if sub and payload.get("type") == "access" else None
+
+
+@router.get("/search")
+async def search_users(
+    q: str = Query(..., min_length=2, max_length=100),
+    role: str | None = Query(None, pattern="^(user|artist)$"),
+    limit: int = Query(20, ge=1, le=50),
+    authorization: str | None = Header(default=None),
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("search"),
+):
+    user_id = await _optional_user_id(authorization)
+
+    follower_sub = (
+        select(func.count())
+        .select_from(Follow)
+        .where(Follow.followee_id == User.id)
+        .correlate(User)
+        .scalar_subquery()
+    )
+
+    query = (
+        select(User, follower_sub.label("follower_count"))
+        .where(
+            User.status == "active",
+            User.deleted_at.is_(None),
+            (
+                User.display_name.ilike(f"%{q}%")
+                | User.bio.ilike(f"%{q}%")
+            ),
+        )
+        .order_by(follower_sub.desc(), User.created_at.desc())
+        .limit(limit)
+    )
+    if role:
+        query = query.where(User.role == role)
+
+    result = await db.execute(query)
+    rows = result.all()
+
+    data = [
+        {
+            "id": str(u.id),
+            "display_name": u.display_name,
+            "avatar_url": u.avatar_url,
+            "bio": u.bio,
+            "role": u.role,
+            "follower_count": fc or 0,
+        }
+        for u, fc in rows
+    ]
+
+    # Async search log (non-blocking)
+    try:
+        db.add(SearchLog(
+            user_id=user_id,
+            query=q,
+            tab="artists",
+            result_count=len(data),
+            filters={"role": role},
+        ))
+        await db.commit()
+    except Exception:
+        _log.warning("Failed to save search log", exc_info=True)
+
+    return {"data": data, "pagination": {"next_cursor": None, "has_more": False}}
 
 
 @router.get("/{user_id}")

@@ -1,0 +1,132 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Domo: Frontend Dev Server (port 3700)",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/v1/frontend && npm install --prefer-offline 2>/dev/null; NEXT_PUBLIC_API_URL=http://localhost:3710/v1 npx next dev --port 3700 --hostname 0.0.0.0",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "domo-dev",
+        "clear": true
+      },
+      "problemMatcher": {
+        "owner": "next",
+        "pattern": {
+          "regexp": "^(.*)$",
+          "file": 1,
+          "location": 1,
+          "message": 1
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*(Starting|Compiling).*",
+          "endsPattern": ".*(Ready in|compiled successfully).*"
+        }
+      }
+    },
+    {
+      "label": "Domo: Backend Dev Server (port 3710)",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/v1/backend && if [ ! -d .venv ]; then python3 -m venv .venv; fi && source .venv/bin/activate && pip install -q -r requirements.txt 2>/dev/null || pip install -q 'fastapi[standard]>=0.115' 'uvicorn[standard]>=0.32' 'sqlalchemy[asyncio]>=2.0' 'asyncpg>=0.30' 'alembic>=1.14' 'pydantic>=2.10' 'pydantic-settings>=2.7' 'python-jose[cryptography]>=3.3' 'passlib[bcrypt]>=1.7' 'python-multipart>=0.0.20' 'httpx>=0.28' 'redis>=5.2' 'Pillow>=11.0' 'stripe>=11.3' 'google-auth>=2.36' 'requests>=2.32' 'aioboto3>=13.2' && alembic upgrade head 2>/dev/null; uvicorn app.main:app --host 0.0.0.0 --port 3710 --reload",
+      "options": {
+        "env": {
+          "PYTHONUNBUFFERED": "1",
+          "DATABASE_URL": "postgresql+asyncpg://domo:domo_dev_pw@localhost:5432/domo",
+          "REDIS_URL": "redis://localhost:6379/0",
+          "JWT_SECRET": "local_dev_secret_change_me_in_production",
+          "FRONTEND_URL": "http://localhost:3700",
+          "UPLOAD_DIR": "${workspaceFolder}/v1/backend/uploads",
+          "ENVIRONMENT": "development",
+          "PAYMENT_PROVIDER": "mock_stripe",
+          "STORAGE_PROVIDER": "local",
+          "EMAIL_PROVIDER": "mock",
+          "RATE_LIMIT_MODE": "enforce"
+        }
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "domo-dev",
+        "clear": true
+      },
+      "problemMatcher": {
+        "owner": "uvicorn",
+        "pattern": {
+          "regexp": "^\\s*File \"(.+)\", line (\\d+)",
+          "file": 1,
+          "line": 2,
+          "message": 0
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*(Will watch for changes|Started reloader).*",
+          "endsPattern": ".*(Application startup complete|Uvicorn running).*"
+        }
+      }
+    },
+    {
+      "label": "Domo: Dev All (backend + frontend)",
+      "dependsOn": [
+        "Domo: Backend Dev Server (port 3710)",
+        "Domo: Frontend Dev Server (port 3700)"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Domo: Migrate DB",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/v1/backend && source .venv/bin/activate && alembic upgrade head",
+      "options": {
+        "env": {
+          "DATABASE_URL": "postgresql+asyncpg://domo:domo_dev_pw@localhost:5432/domo"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Domo: Seed DB",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/v1 && ./scripts/dev-seed.sh all",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Domo: Reinstall Frontend Deps",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/v1/frontend && rm -rf node_modules .next && npm install",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Domo: Reinstall Backend Deps",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/v1/backend && rm -rf .venv && python3 -m venv .venv && source .venv/bin/activate && pip install 'fastapi[standard]>=0.115' 'uvicorn[standard]>=0.32' 'sqlalchemy[asyncio]>=2.0' 'asyncpg>=0.30' 'alembic>=1.14' 'pydantic>=2.10' 'pydantic-settings>=2.7' 'python-jose[cryptography]>=3.3' 'passlib[bcrypt]>=1.7' 'python-multipart>=0.0.20' 'httpx>=0.28' 'redis>=5.2' 'Pillow>=11.0' 'stripe>=11.3' 'google-auth>=2.36' 'requests>=2.32' 'aioboto3>=13.2'",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

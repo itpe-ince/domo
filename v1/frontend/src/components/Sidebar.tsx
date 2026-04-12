@@ -8,6 +8,7 @@ import { useMe } from "@/lib/useMe";
 import { useUnreadCount } from "@/lib/useUnreadCount";
 import { CreateMenu } from "./CreateMenu";
 import { LoginModal } from "./LoginModal";
+import { SearchBar } from "./SearchBar";
 import {
   BellIcon,
   BluebirdIcon,
@@ -126,7 +127,7 @@ export function Sidebar() {
       <Link
         key={item.href + item.label}
         href={item.href}
-        className={`group flex items-center gap-4 rounded-full px-3 py-3 transition-colors ${
+        className={`group flex items-center justify-center xl:justify-start gap-4 rounded-full px-3 py-3 transition-colors ${
           active
             ? "text-primary"
             : "text-text-primary hover:bg-surface-hover"
@@ -154,15 +155,25 @@ export function Sidebar() {
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-2 px-3 py-3 mb-2 hover:bg-surface-hover rounded-full transition-colors"
+            className="flex items-center justify-center xl:justify-start gap-2 px-3 py-3 mb-2 hover:bg-surface-hover rounded-full transition-colors"
           >
-            <span className="text-primary text-3xl font-bold leading-none">
-              D
+            <span className="text-primary text-2xl font-logo xl:hidden">
+              DL
             </span>
-            <span className="hidden xl:inline text-2xl font-bold text-primary">
-              Domo
+            <span className="text-primary text-2xl font-logo hidden xl:inline">
+              Domo Lounge
             </span>
           </Link>
+
+          {/* Search */}
+          <div className="mb-1">
+            <div className="hidden xl:block">
+              <SearchBar />
+            </div>
+            <div className="xl:hidden flex justify-center">
+              <SearchBar compact />
+            </div>
+          </div>
 
           {/* Primary nav */}
           <nav className="flex flex-col gap-0.5">
@@ -215,15 +226,22 @@ export function Sidebar() {
             </div>
           )}
 
-          {/* Sign in button */}
+          {/* Sign in — icon only (collapsed), button (expanded) */}
           {!me && (
-            <button
-              onClick={() => setLoginOpen(true)}
-              className="mt-3 bg-primary text-background hover:bg-primary-hover rounded-full font-bold transition-colors py-3 xl:px-6"
-            >
-              <span className="xl:hidden">↵</span>
-              <span className="hidden xl:inline">로그인</span>
-            </button>
+            <>
+              <button
+                onClick={() => setLoginOpen(true)}
+                className="mt-3 xl:hidden text-text-secondary hover:text-primary rounded-full transition-colors py-3 flex items-center justify-center"
+              >
+                <UserIcon size={24} />
+              </button>
+              <button
+                onClick={() => setLoginOpen(true)}
+                className="mt-3 hidden xl:block bg-primary text-background hover:bg-primary-hover rounded-full font-bold transition-colors py-3 px-6"
+              >
+                로그인
+              </button>
+            </>
           )}
         </div>
 

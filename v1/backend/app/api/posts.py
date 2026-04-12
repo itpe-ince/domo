@@ -6,12 +6,19 @@ from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+import logging
+
 from app.core.deps import get_current_user
 from app.core.errors import ApiError
+from app.core.rate_limit import rate_limit
 from app.core.security import decode_token
 from app.db.session import get_db
+from app.models.auction import Auction
 from app.models.post import Comment, Follow, Like, MediaAsset, Post, ProductPost
+from app.models.search_log import SearchLog
 from app.models.user import User
+
+_log = logging.getLogger(__name__)
 from app.schemas.post import (
     CommentIn,
     CommentOut,
@@ -278,6 +285,106 @@ async def explore_posts(
         "data": [_serialize_post(p) for p in posts],
         "pagination": {"next_cursor": None, "has_more": False},
     }
+
+
+@router.get("/search")
+async def search_posts(
+    q: str = Query(..., min_length=2, max_length=100),
+    type: str | None = Query(None, pattern="^(general|product)$"),
+    genre: str | None = Query(None),
+    sort: str = Query("latest", pattern="^(latest|popular|ending_soon)$"),
+    limit: int = Query(20, ge=1, le=50),
+    cursor: str | None = Query(None),
+    authorization: str | None = Header(default=None),
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("search"),
+):
+    if sort == "ending_soon":
+        type = "product"
+
+    # Build text match condition (title, content, exact tag, partial tag)
+    text_match = (
+        Post.title.ilike(f"%{q}%")
+        | Post.content.ilike(f"%{q}%")
+        | Post.tags.any(q)                    # exact tag match
+        | Post.tags.any(func.concat("%", q, "%"))  # partial tag match via LIKE pattern
+    )
+
+    query = (
+        select(Post)
+        .where(Post.status == "published", text_match)
+        .options(selectinload(Post.media), selectinload(Post.product))
+        .limit(limit + 1)  # fetch one extra to determine has_more
+    )
+    if type:
+        query = query.where(Post.type == type)
+    if genre:
+        query = query.where(Post.genre == genre)
+
+    # Cursor-based pagination
+    if cursor:
+        try:
+            cursor_id = UUID(cursor)
+            query = query.where(Post.id < cursor_id)
+        except ValueError:
+            pass
+
+    if sort == "ending_soon":
+        query = (
+            query
+            .join(ProductPost, ProductPost.post_id == Post.id)
+            .join(
+                Auction,
+                and_(
+                    Auction.product_post_id == ProductPost.post_id,
+                    Auction.status == "active",
+                ),
+            )
+            .order_by(Auction.end_at.asc(), Post.created_at.desc())
+        )
+    elif sort == "popular":
+        query = query.order_by(
+            _trending_score_expr().desc(), Post.created_at.desc()
+        )
+    else:
+        query = query.order_by(Post.created_at.desc())
+
+    result = await db.execute(query)
+    posts = list(result.scalars().all())
+
+    has_more = len(posts) > limit
+    if has_more:
+        posts = posts[:limit]
+
+    author_ids = list({p.author_id for p in posts})
+    if author_ids:
+        authors_result = await db.execute(
+            select(User).where(User.id.in_(author_ids))
+        )
+        author_map = {u.id: u for u in authors_result.scalars().all()}
+    else:
+        author_map = {}
+    for p in posts:
+        p.author = author_map.get(p.author_id)  # type: ignore[attr-defined]
+
+    data = [_serialize_post(p) for p in posts]
+    next_cursor = str(posts[-1].id) if has_more and posts else None
+
+    # Search log (non-blocking)
+    viewer_id, _ = await _optional_viewer_id(authorization)
+    try:
+        db.add(SearchLog(
+            user_id=viewer_id,
+            query=q,
+            tab="artworks" if type == "product" else "posts",
+            result_count=len(data),
+            filters={"type": type, "genre": genre, "sort": sort},
+        ))
+        await db.commit()
+    except Exception:
+        _log.warning("Failed to save search log", exc_info=True)
+
+    return {"data": data, "pagination": {"next_cursor": next_cursor, "has_more": has_more}}
 
 
 async def _optional_viewer_id(authorization: str | None) -> tuple[UUID | None, str | None]:

@@ -307,6 +307,44 @@ export async function fetchFollowingFeed(limit = 20): Promise<PostView[]> {
   );
 }
 
+// ─── Search ─────────────────────────────────────────────────────
+
+export type UserSearchResult = {
+  id: string;
+  display_name: string;
+  avatar_url: string | null;
+  bio: string | null;
+  role: string;
+  follower_count: number;
+};
+
+export async function searchUsers(
+  q: string,
+  opts?: { role?: string; limit?: number }
+): Promise<UserSearchResult[]> {
+  const qs = new URLSearchParams({ q });
+  if (opts?.role) qs.set("role", opts.role);
+  qs.set("limit", String(opts?.limit ?? 20));
+  return apiFetch<UserSearchResult[]>(`/users/search?${qs}`, { auth: false });
+}
+
+export async function searchPosts(
+  q: string,
+  opts?: {
+    type?: string;
+    genre?: string;
+    sort?: "latest" | "popular" | "ending_soon";
+    limit?: number;
+  }
+): Promise<PostView[]> {
+  const qs = new URLSearchParams({ q });
+  if (opts?.type) qs.set("type", opts.type);
+  if (opts?.genre) qs.set("genre", opts.genre);
+  if (opts?.sort) qs.set("sort", opts.sort);
+  qs.set("limit", String(opts?.limit ?? 20));
+  return apiFetch<PostView[]>(`/posts/search?${qs}`, { auth: false });
+}
+
 export async function fetchPost(id: string): Promise<PostView> {
   return apiFetch<PostView>(`/posts/${id}`, { auth: false });
 }

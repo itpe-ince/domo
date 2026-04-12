@@ -8,8 +8,8 @@ class Settings(BaseSettings):
 
     environment: str = "development"
 
-    database_url: str = "postgresql+asyncpg://domo:domo_dev_pw@postgres:5432/domo"
-    redis_url: str = "redis://redis:6379/0"
+    database_url: str = "postgresql+asyncpg://domo:domo_dev_pw@localhost:5432/domo"
+    redis_url: str = "redis://localhost:6379/0"
 
     jwt_secret: str = "change_me"
     jwt_algorithm: str = "HS256"
@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     resend_api_key: str = ""
     email_from: str = "noreply@domo.tuzigroup.com"
 
-    frontend_url: str = "http://localhost:3000"
+    frontend_url: str = "http://localhost:3700"
 
 
 @lru_cache

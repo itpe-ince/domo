@@ -70,8 +70,8 @@ if [ ! -f "$REQ_MARKER" ] || [ "${FORCE_INSTALL:-0}" = "1" ]; then
 fi
 
 # ─── Environment for host-side execution ───────────────────────────────
-export DATABASE_URL="${DATABASE_URL:-postgresql+asyncpg://domo:domo_dev_pw@localhost:55432/domo}"
-export REDIS_URL="${REDIS_URL:-redis://localhost:56379/0}"
+export DATABASE_URL="${DATABASE_URL:-postgresql+asyncpg://domo:domo_dev_pw@localhost:5432/domo}"
+export REDIS_URL="${REDIS_URL:-redis://localhost:6379/0}"
 export JWT_SECRET="${JWT_SECRET:-local_dev_secret_change_me_in_production}"
 export FRONTEND_URL="${FRONTEND_URL:-http://localhost:3700}"
 export UPLOAD_DIR="${UPLOAD_DIR:-$UPLOAD_DIR_HOST}"
@@ -84,14 +84,12 @@ export RATE_LIMIT_MODE="${RATE_LIMIT_MODE:-enforce}"
 mkdir -p "$UPLOAD_DIR"
 
 # Pre-flight infra check
-if ! (echo > /dev/tcp/127.0.0.1/55432) >/dev/null 2>&1; then
-    echo "❌ Postgres not reachable on localhost:55432. Run:" >&2
-    echo "     scripts/dev-infra.sh" >&2
+if ! (echo > /dev/tcp/127.0.0.1/5432) >/dev/null 2>&1; then
+    echo "❌ Postgres not reachable on localhost:5432." >&2
     exit 1
 fi
-if ! (echo > /dev/tcp/127.0.0.1/56379) >/dev/null 2>&1; then
-    echo "❌ Redis not reachable on localhost:56379. Run:" >&2
-    echo "     scripts/dev-infra.sh" >&2
+if ! (echo > /dev/tcp/127.0.0.1/6379) >/dev/null 2>&1; then
+    echo "❌ Redis not reachable on localhost:6379." >&2
     exit 1
 fi
 

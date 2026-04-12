@@ -37,6 +37,7 @@ DEFAULT_LIMITS: dict[str, dict] = {
     "media_upload": {"limit": 20, "window_sec": 60, "by": "user"},
     "feed_read": {"limit": 120, "window_sec": 60, "by": "user"},
     "explore_read": {"limit": 60, "window_sec": 60, "by": "ip"},
+    "search": {"limit": 30, "window_sec": 60, "by": "ip"},
     "default_read": {"limit": 120, "window_sec": 60, "by": "user"},
 }
 

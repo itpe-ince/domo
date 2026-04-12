@@ -57,11 +57,11 @@ export function MobileTabBar() {
         )}
 
         <Link
-          href="/explore"
+          href="/search"
           className={`flex-1 flex items-center justify-center py-2 ${iconCls(
-            isActive("/explore")
+            isActive("/search")
           )}`}
-          aria-label="탐색"
+          aria-label="검색"
         >
           <ExploreIcon />
         </Link>
