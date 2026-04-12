@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s 'http://localhost:3710/v1/auctions?status=active&limit=10')",
+      "Bash(python3 -c ':*)",
+      "Bash(curl -s 'http://localhost:3710/v1/auctions?status=active&limit=1')",
+      "Bash(curl -s 'http://localhost:3710/v1/posts/explore?limit=1')",
+      "Bash(curl -s -o /dev/null -w \"GET /                       %{http_code}\\\\n\" http://localhost:3700/)",
+      "Bash(curl -s -o /dev/null -w \"GET /admin/dashboard         %{http_code}\\\\n\" http://localhost:3700/admin/dashboard)",
+      "Bash(curl -s -o /dev/null -w \"GET /admin/settings          %{http_code}\\\\n\" http://localhost:3700/admin/settings)",
+      "Bash(curl -s -o /dev/null -w \"GET /admin/moderation        %{http_code}\\\\n\" http://localhost:3700/admin/moderation)",
+      "Bash(curl -s -o /dev/null -w \"GET /warnings                %{http_code}\\\\n\" http://localhost:3700/warnings)",
+      "Bash(curl -s -o /dev/null -w \"GET /posts/new                 %{http_code}\\\\n\" http://localhost:3700/posts/new)"
+    ]
+  }
+}
