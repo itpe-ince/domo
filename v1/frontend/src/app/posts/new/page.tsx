@@ -184,7 +184,7 @@ export default function CreatePostPage() {
   }
 
   return (
-    <main className="flex-1 min-w-0 xl:max-w-[680px] border-r border-border">
+    <main className="flex-1 min-w-0 max-w-3xl mx-auto">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
         <h1 className="text-xl font-bold">등록</h1>

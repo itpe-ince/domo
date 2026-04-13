@@ -10,6 +10,7 @@ import {
   BellIcon,
   ExploreIcon,
   HomeIcon,
+  LayersIcon,
   PlusIcon,
   UserIcon,
   UsersIcon,
@@ -42,6 +43,16 @@ export function MobileTabBar() {
           aria-label="홈"
         >
           <HomeIcon />
+        </Link>
+
+        <Link
+          href="/feed"
+          className={`flex-1 flex items-center justify-center py-2 ${iconCls(
+            isActive("/feed")
+          )}`}
+          aria-label="피드"
+        >
+          <LayersIcon />
         </Link>
 
         {me && (

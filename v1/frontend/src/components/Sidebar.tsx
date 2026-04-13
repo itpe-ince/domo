@@ -16,6 +16,7 @@ import {
   ExploreIcon,
   FlagIcon,
   HomeIcon,
+  LayersIcon,
   LogoutIcon,
   MoreHorizontalIcon,
   PlusIcon,
@@ -48,6 +49,7 @@ export function Sidebar() {
 
   const primary: NavItem[] = [
     { href: "/", label: "홈", Icon: HomeIcon },
+    { href: "/feed", label: "피드", Icon: LayersIcon },
     {
       href: "/following",
       label: "팔로잉",
