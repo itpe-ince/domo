@@ -30,7 +30,7 @@ class ProductPostIn(BaseModel):
     is_auction: bool = False
     is_buy_now: bool = False
     buy_now_price: Decimal | None = None
-    currency: str = "KRW"
+    currency: str = "USD"
     dimensions: str | None = None
     medium: str | None = None
     year: int | None = None

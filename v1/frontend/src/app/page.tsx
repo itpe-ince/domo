@@ -3,31 +3,40 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PostCard } from "@/components/PostCard";
+import { GalleryView } from "@/components/GalleryView";
 import { fetchExplore, fetchHomeFeed, PostView } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
+
+type ViewMode = "list" | "gallery";
 
 export default function HomePage() {
   const { me, loading: meLoading } = useMe();
   const [posts, setPosts] = useState<PostView[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window === "undefined") return "gallery";
+    return (localStorage.getItem("domo-view-mode") as ViewMode) || "gallery";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("domo-view-mode", viewMode);
+  }, [viewMode]);
 
   useEffect(() => {
     if (meLoading) return;
-    void loadFeed();
+    if (viewMode === "list") void loadFeed();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [me?.id, meLoading]);
+  }, [me?.id, meLoading, viewMode]);
 
   async function loadFeed() {
     setLoading(true);
     setError(null);
     try {
       if (me) {
-        // 로그인: 팔로우 70% + 트렌딩 30% 혼합 (설계 §6.7)
         const feed = await fetchHomeFeed(20);
         setPosts(feed);
       } else {
-        // 비로그인: 공개 피드 (인기순, 트렌딩 스코어 반영)
         const rec = await fetchExplore({ limit: 20, sort: "popular" });
         setPosts(rec);
       }
@@ -40,43 +49,78 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-screen">
-      <main className="flex-1 min-w-0 border-r border-border xl:max-w-[680px]">
-        <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3">
-          <h1 className="text-xl font-bold">추천</h1>
-          <p className="text-xs text-text-muted mt-0.5">
-            {me
-              ? "팔로우한 작가와 인기 작품을 섞어 보여드려요."
-              : "지금 인기 있는 신진 작가들의 작품이에요."}
-          </p>
+      <main className={`flex-1 min-w-0 border-r border-border ${viewMode === "list" ? "xl:max-w-[680px]" : ""}`}>
+        {/* Header with view mode toggle */}
+        <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold">
+              {viewMode === "gallery" ? "Domo Lounge" : "추천"}
+            </h1>
+            <p className="text-xs text-text-muted mt-0.5">
+              {me
+                ? viewMode === "gallery"
+                  ? "큐레이션 갤러리"
+                  : "팔로우한 작가와 인기 작품"
+                : "지금 인기 있는 신진 작가들의 작품"}
+            </p>
+          </div>
+          <div className="flex bg-surface rounded-full p-0.5 border border-border">
+            <button
+              onClick={() => setViewMode("gallery")}
+              className={`px-3 py-1 rounded-full text-xs transition-colors ${
+                viewMode === "gallery"
+                  ? "bg-primary text-background"
+                  : "text-text-secondary hover:text-text-primary"
+              }`}
+            >
+              갤러리
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`px-3 py-1 rounded-full text-xs transition-colors ${
+                viewMode === "list"
+                  ? "bg-primary text-background"
+                  : "text-text-secondary hover:text-text-primary"
+              }`}
+            >
+              리스트
+            </button>
+          </div>
         </div>
 
-        <div className="p-4">
-          {error && (
-            <div className="card border-danger p-4 mb-4 text-danger text-sm">
-              <div className="font-semibold mb-1">
-                피드를 불러오지 못했습니다
+        {/* Gallery view (Netflix style) */}
+        {viewMode === "gallery" && <GalleryView />}
+
+        {/* List view (existing feed) */}
+        {viewMode === "list" && (
+          <div className="p-4">
+            {error && (
+              <div className="card border-danger p-4 mb-4 text-danger text-sm">
+                <div className="font-semibold mb-1">
+                  피드를 불러오지 못했습니다
+                </div>
+                <div>{error}</div>
               </div>
-              <div>{error}</div>
-            </div>
-          )}
+            )}
 
-          {loading ? (
-            <FeedSkeleton />
-          ) : posts.length === 0 ? (
-            <div className="card p-12 text-center text-text-muted">
-              표시할 포스트가 없습니다.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {posts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
-          )}
-        </div>
+            {loading ? (
+              <FeedSkeleton />
+            ) : posts.length === 0 ? (
+              <div className="card p-12 text-center text-text-muted">
+                표시할 포스트가 없습니다.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {posts.map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
-      <RightRail />
+      {viewMode === "list" && <RightRail />}
     </div>
   );
 }
@@ -192,30 +236,15 @@ function RightRail() {
 
         <div className="card p-4 mb-4">
           <h3 className="text-lg font-bold mb-3">추천 작가</h3>
-          {loading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3 animate-pulse">
-                  <div className="w-10 h-10 bg-surface-hover rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-3 bg-surface-hover rounded w-1/2" />
-                    <div className="h-3 bg-surface-hover rounded w-1/3" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : artists.length === 0 ? (
+          {artists.length === 0 ? (
             <p className="text-text-muted text-sm">추천 작가 없음</p>
           ) : (
             <ul className="space-y-3">
               {artists.map((a) => (
-                <li
-                  key={a.id}
-                  className="flex items-center justify-between gap-3"
-                >
+                <li key={a.id}>
                   <Link
                     href={`/users/${a.id}`}
-                    className="flex items-center gap-3 flex-1 min-w-0"
+                    className="flex items-center gap-3"
                   >
                     <div className="w-10 h-10 rounded-full bg-surface-hover flex items-center justify-center text-primary font-bold flex-shrink-0">
                       {a.avatar_url ? (
@@ -253,7 +282,7 @@ function RightRail() {
               쿠키
             </Link>
           </div>
-          <div>© 2026 Domo</div>
+          <div>© 2026 Domo Lounge</div>
         </div>
       </div>
     </aside>

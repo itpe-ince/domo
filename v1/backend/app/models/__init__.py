@@ -1,4 +1,5 @@
 from app.models.auction import Auction, Bid, Order
+from app.models.collection import PostCollection, PostCollectionItem
 from app.models.auth_token import RefreshToken
 from app.models.guardian import GuardianConsent
 from app.models.moderation import Report, Warning
@@ -32,4 +33,6 @@ __all__ = [
     "WebhookEvent",
     "GuardianConsent",
     "SearchLog",
+    "PostCollection",
+    "PostCollectionItem",
 ]

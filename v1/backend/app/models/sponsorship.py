@@ -37,7 +37,7 @@ class Sponsorship(Base):
     )
     bluebird_count: Mapped[int] = mapped_column(Integer, nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    currency: Mapped[str] = mapped_column(String(3), default="KRW")
+    currency: Mapped[str] = mapped_column(String(3), default="USD")
     is_anonymous: Mapped[bool] = mapped_column(Boolean, default=False)
     visibility: Mapped[str] = mapped_column(String(20), default="public")
     # 'public' | 'artist_only' | 'private'
@@ -66,7 +66,7 @@ class Subscription(Base):
     )
     monthly_bluebird: Mapped[int] = mapped_column(Integer, nullable=False)
     monthly_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    currency: Mapped[str] = mapped_column(String(3), default="KRW")
+    currency: Mapped[str] = mapped_column(String(3), default="USD")
     provider_subscription_id: Mapped[str | None] = mapped_column(
         String(100), nullable=True
     )

@@ -166,7 +166,7 @@ export default function CreatePostPage() {
                   isBuyNow && typeof buyNowPrice === "number"
                     ? buyNowPrice
                     : undefined,
-                currency: "KRW",
+                currency: "USD",
                 dimensions: dimensions || undefined,
                 medium: medium || undefined,
                 year: typeof year === "number" ? year : undefined,
@@ -435,7 +435,7 @@ export default function CreatePostPage() {
                 {isBuyNow && (
                   <div>
                     <label className="block text-xs text-text-secondary mb-1">
-                      즉시구매가 (KRW)
+                      즉시구매가 (USD)
                     </label>
                     <input
                       type="number"

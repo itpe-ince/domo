@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-13T01:34:37.319Z",
+  "lastUpdated": "2026-04-13T12:17:19.791Z",
   "activeFeatures": [
     "backend",
     "core",
@@ -57,7 +57,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:31:57.421Z",
-        "lastUpdated": "2026-04-13T01:21:22.814Z"
+        "lastUpdated": "2026-04-13T12:11:14.171Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/main.py"
     },
@@ -96,9 +96,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:23.836Z",
-        "lastUpdated": "2026-04-13T01:19:34.033Z"
+        "lastUpdated": "2026-04-13T12:10:37.640Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/media.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/rankings.py"
     },
     "schemas": {
       "phase": "do",
@@ -109,7 +109,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:30.319Z",
-        "lastUpdated": "2026-04-13T01:16:33.218Z"
+        "lastUpdated": "2026-04-13T12:02:09.831Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/post.py"
     },
@@ -161,9 +161,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:35:13.871Z",
-        "lastUpdated": "2026-04-13T01:15:50.104Z"
+        "lastUpdated": "2026-04-13T12:09:49.673Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0011_post_editor_fields.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0012_collections.py"
     },
     "frontend": {
       "phase": "do",
@@ -174,9 +174,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-04-13T01:23:26.083Z"
+        "lastUpdated": "2026-04-13T12:17:19.791Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/api.ts"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/page.tsx"
     },
     "applications": {
       "phase": "do",
@@ -252,7 +252,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T10:32:02.420Z",
-        "lastUpdated": "2026-04-11T10:32:02.420Z"
+        "lastUpdated": "2026-04-13T12:00:27.905Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/settings.py"
     },
@@ -369,7 +369,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:41:45.679Z",
-        "lastUpdated": "2026-04-13T01:34:37.319Z"
+        "lastUpdated": "2026-04-13T12:01:55.077Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/new/page.tsx"
     },
@@ -616,7 +616,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-13T01:34:37.319Z"
+    "lastActivity": "2026-04-13T12:17:19.791Z"
   },
   "history": [
     {
@@ -2992,6 +2992,120 @@
     {
       "timestamp": "2026-04-13T01:34:37.319Z",
       "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:00:27.905Z",
+      "feature": "settings.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:00:41.975Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:00:50.749Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:01:10.452Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:01:33.230Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:01:41.582Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:01:48.243Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:01:55.077Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:02:09.831Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:03:15.747Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:04:01.168Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:09:22.191Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:09:29.919Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:09:37.348Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:09:49.673Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:10:37.640Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:10:52.051Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:11:14.171Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T12:17:19.791Z",
+      "feature": "frontend",
       "phase": "do",
       "action": "updated"
     }

@@ -40,7 +40,7 @@ class Auction(Base):
     current_winner: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
     )
-    currency: Mapped[str] = mapped_column(String(3), default="KRW")
+    currency: Mapped[str] = mapped_column(String(3), default="USD")
     start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     end_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     status: Mapped[str] = mapped_column(String(20), default="scheduled")
@@ -101,7 +101,7 @@ class Order(Base):
         UUID(as_uuid=True), ForeignKey("auctions.id"), nullable=True
     )
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    currency: Mapped[str] = mapped_column(String(3), default="KRW")
+    currency: Mapped[str] = mapped_column(String(3), default="USD")
     platform_fee: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), default=Decimal("0")
     )

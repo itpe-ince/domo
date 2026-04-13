@@ -17,6 +17,7 @@ from app.api import moderation as moderation_router
 from app.api import notifications as notifications_router
 from app.api import orders as orders_router
 from app.api import posts as posts_router
+from app.api import rankings as rankings_router
 from app.api import sponsorships as sponsorships_router
 from app.api import users as users_router
 from app.api import webhooks as webhooks_router
@@ -92,6 +93,7 @@ api_v1.include_router(guardian_router.router)
 api_v1.include_router(users_router.router)
 api_v1.include_router(artists_router.router)
 api_v1.include_router(posts_router.router)
+api_v1.include_router(rankings_router.router)
 api_v1.include_router(media_router.router)
 api_v1.include_router(sponsorships_router.sponsorship_router)
 api_v1.include_router(sponsorships_router.subscription_router)

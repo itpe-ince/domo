@@ -8,7 +8,7 @@ import {
   createSubscription,
 } from "@/lib/api";
 
-const UNIT_PRICE_KRW = 1000;
+const UNIT_PRICE_USD = 1; // $1 per bluebird
 
 type Mode = "one_time" | "recurring";
 
@@ -35,7 +35,7 @@ export function BluebirdModal({
   const [step, setStep] = useState<"input" | "paying" | "done">("input");
   const [error, setError] = useState<string | null>(null);
 
-  const total = count * UNIT_PRICE_KRW;
+  const total = count * UNIT_PRICE_USD;
 
   async function handleSubmit() {
     setError(null);

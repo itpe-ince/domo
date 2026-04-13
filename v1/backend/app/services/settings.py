@@ -11,10 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.sponsorship import SystemSetting
 
 DEFAULTS: dict[str, Any] = {
-    "bluebird_unit_price": {"amount": 1000, "currency": "KRW"},
-    "platform_fee_sponsorship": {"percent": 5},
+    "bluebird_unit_price": {"amount": 1, "currency": "USD"},
+    "platform_fee_sponsorship": {"percent": 10},
     "platform_fee_auction": {"percent": 10},
-    "platform_fee_buy_now": {"percent": 8},
+    "platform_fee_buy_now": {"percent": 10},
     "auction_payment_deadline_days": {"days": 3},
     "warning_threshold": {"count": 3},
 }
