@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ApiClientError, loginWithMockEmail } from "@/lib/api";
 
@@ -12,10 +13,13 @@ const QUICK_ACCOUNTS = [
 export function LoginModal({
   open,
   onClose,
+  redirectTo,
 }: {
   open: boolean;
   onClose: () => void;
+  redirectTo?: string;
 }) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +42,9 @@ export function LoginModal({
     try {
       await loginWithMockEmail(value);
       onClose();
+      if (redirectTo) {
+        router.push(redirectTo);
+      }
     } catch (e) {
       setError(
         e instanceof ApiClientError

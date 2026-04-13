@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useMe } from "@/lib/useMe";
 import { useUnreadCount } from "@/lib/useUnreadCount";
-import { CreateMenu } from "./CreateMenu";
 import { LoginModal } from "./LoginModal";
 import {
   BellIcon,
@@ -20,6 +19,7 @@ export function MobileTabBar() {
   const { me } = useMe();
   const pathname = usePathname();
   const [loginOpen, setLoginOpen] = useState(false);
+  const [loginRedirect, setLoginRedirect] = useState<string | undefined>();
   const unread = useUnreadCount();
 
   const isActive = (href: string) => {
@@ -107,27 +107,31 @@ export function MobileTabBar() {
         )}
       </nav>
 
-      {/* Floating create menu — 작성 (logged-in only) */}
-      {me && (
-        <div className="md:hidden fixed right-4 bottom-20 z-30">
-          <CreateMenu
-            align="top"
-            side="right"
-            trigger={({ toggle, triggerProps }) => (
-              <button
-                onClick={toggle}
-                className="bg-primary text-background rounded-full p-4 shadow-lg hover:bg-primary-hover transition-colors"
-                aria-label="작성"
-                {...triggerProps}
-              >
-                <PlusIcon />
-              </button>
-            )}
-          />
-        </div>
-      )}
+      {/* Floating create button — always visible */}
+      <div className="md:hidden fixed right-4 bottom-20 z-30">
+        {me ? (
+          <Link
+            href="/posts/new"
+            className="bg-primary text-background rounded-full p-4 shadow-lg hover:bg-primary-hover transition-colors flex items-center justify-center"
+            aria-label="등록"
+          >
+            <PlusIcon />
+          </Link>
+        ) : (
+          <button
+            onClick={() => {
+              setLoginRedirect("/posts/new");
+              setLoginOpen(true);
+            }}
+            className="bg-primary text-background rounded-full p-4 shadow-lg hover:bg-primary-hover transition-colors"
+            aria-label="등록"
+          >
+            <PlusIcon />
+          </button>
+        )}
+      </div>
 
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} redirectTo={loginRedirect} />
     </>
   );
 }

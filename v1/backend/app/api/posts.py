@@ -50,6 +50,10 @@ def _serialize_post(post: Post) -> dict:
         bluebird_count=post.bluebird_count,
         status=post.status,
         digital_art_check=post.digital_art_check,
+        scheduled_at=post.scheduled_at,
+        location_name=post.location_name,
+        location_lat=post.location_lat,
+        location_lng=post.location_lng,
         created_at=post.created_at,
         media=[MediaAssetOut.model_validate(m) for m in (post.media or [])],
         product=ProductPostOut.model_validate(post.product) if post.product else None,
@@ -92,6 +96,26 @@ def _trending_score_expr():
     )
 
 
+# ─── Tag suggestions ─────────────────────────────────────────────────────
+
+
+@router.get("/tags/suggest")
+async def suggest_tags(
+    q: str = Query(..., min_length=1, max_length=50),
+    limit: int = Query(10, ge=1, le=30),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(func.unnest(Post.tags).label("tag"))
+        .where(Post.status == "published", Post.tags.isnot(None))
+        .distinct()
+    )
+    all_tags = [row[0] for row in result.all()]
+    prefix = q.lower()
+    matched = [t for t in all_tags if t.lower().startswith(prefix)][:limit]
+    return {"data": sorted(matched)}
+
+
 # ─── Create ──────────────────────────────────────────────────────────────
 
 
@@ -111,7 +135,11 @@ async def create_post(
     has_visual_media = any(
         m.type in ("image", "video") for m in body.media
     )
-    if has_visual_media:
+    if body.scheduled_at:
+        # 예약 게시: scheduled 상태로 저장, 크론잡이 시간 도달 시 전환
+        digital_art_check = "pending" if has_visual_media else "not_required"
+        status = "scheduled"
+    elif has_visual_media:
         digital_art_check = "pending"
         status = "pending_review"
     else:
@@ -128,6 +156,10 @@ async def create_post(
         language=body.language,
         status=status,
         digital_art_check=digital_art_check,
+        scheduled_at=body.scheduled_at,
+        location_name=body.location_name,
+        location_lat=body.location_lat,
+        location_lng=body.location_lng,
     )
     db.add(post)
     await db.flush()  # post.id 확보

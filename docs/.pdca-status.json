@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-12T11:32:45.659Z",
+  "lastUpdated": "2026-04-13T01:34:37.319Z",
   "activeFeatures": [
     "backend",
     "core",
@@ -42,7 +42,9 @@
     "explore",
     "notifications",
     "following",
-    "search"
+    "search",
+    "schedule_jobs.py",
+    "post-editor"
   ],
   "primaryFeature": "backend",
   "features": {
@@ -55,9 +57,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:31:57.421Z",
-        "lastUpdated": "2026-04-12T08:40:44.481Z"
+        "lastUpdated": "2026-04-13T01:21:22.814Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/models/search_log.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/main.py"
     },
     "core": {
       "phase": "do",
@@ -94,9 +96,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:23.836Z",
-        "lastUpdated": "2026-04-12T10:19:13.251Z"
+        "lastUpdated": "2026-04-13T01:19:34.033Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/users.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/media.py"
     },
     "schemas": {
       "phase": "do",
@@ -107,9 +109,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:30.319Z",
-        "lastUpdated": "2026-04-11T11:15:34.147Z"
+        "lastUpdated": "2026-04-13T01:16:33.218Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/moderation.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/post.py"
     },
     "google_auth.py": {
       "phase": "do",
@@ -159,9 +161,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:35:13.871Z",
-        "lastUpdated": "2026-04-12T08:41:10.006Z"
+        "lastUpdated": "2026-04-13T01:15:50.104Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0010_search_logs.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0011_post_editor_fields.py"
     },
     "frontend": {
       "phase": "do",
@@ -172,9 +174,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-04-12T11:32:45.659Z"
+        "lastUpdated": "2026-04-13T01:23:26.083Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/Sidebar.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/api.ts"
     },
     "applications": {
       "phase": "do",
@@ -367,7 +369,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:41:45.679Z",
-        "lastUpdated": "2026-04-12T03:19:27.307Z"
+        "lastUpdated": "2026-04-13T01:34:37.319Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/new/page.tsx"
     },
@@ -578,6 +580,32 @@
         "lastUpdated": "2026-04-12T08:43:41.183Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/search/page.tsx"
+    },
+    "schedule_jobs.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-13T01:21:00.370Z",
+        "lastUpdated": "2026-04-13T01:21:00.370Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/schedule_jobs.py"
+    },
+    "post-editor": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-13T01:31:08.565Z",
+        "lastUpdated": "2026-04-13T01:33:09.560Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/MediaToolbar.tsx"
     }
   },
   "pipeline": {
@@ -588,7 +616,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-12T11:32:45.659Z"
+    "lastActivity": "2026-04-13T01:34:37.319Z"
   },
   "history": [
     {
@@ -2736,6 +2764,234 @@
     {
       "timestamp": "2026-04-12T11:32:45.659Z",
       "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T22:58:17.149Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T22:59:47.806Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T22:59:56.935Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T23:00:09.644Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T23:00:31.718Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T23:00:49.700Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T23:01:32.042Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T23:01:44.770Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T23:19:28.802Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T23:19:50.808Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T23:20:07.243Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T23:20:25.887Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T23:20:34.567Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T23:35:01.351Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:15:50.104Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:16:01.004Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:16:10.747Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:16:22.293Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:16:33.218Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:17:13.543Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:17:28.891Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:17:49.113Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:18:22.352Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:19:11.797Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:19:34.033Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:21:00.370Z",
+      "feature": "schedule_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:21:12.652Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:21:22.814Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:22:13.025Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:23:26.083Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:31:08.565Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:31:30.280Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:31:46.804Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:32:03.472Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:32:27.360Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:32:47.442Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:33:09.560Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-13T01:34:37.319Z",
+      "feature": "new",
       "phase": "do",
       "action": "updated"
     }

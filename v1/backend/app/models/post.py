@@ -5,6 +5,7 @@ from decimal import Decimal
 from sqlalchemy import (
     Boolean,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
     Numeric,
@@ -43,6 +44,13 @@ class Post(Base):
     # 'draft' | 'pending_review' | 'published' | 'hidden' | 'deleted'
     digital_art_check: Mapped[str] = mapped_column(String(20), default="pending")
     # 'pending' | 'approved' | 'rejected' | 'not_required'
+
+    scheduled_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    location_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    location_lat: Mapped[float | None] = mapped_column(Float, nullable=True)
+    location_lng: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

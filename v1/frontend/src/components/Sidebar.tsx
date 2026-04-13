@@ -6,7 +6,6 @@ import { useState } from "react";
 import { logout } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import { useUnreadCount } from "@/lib/useUnreadCount";
-import { CreateMenu } from "./CreateMenu";
 import { LoginModal } from "./LoginModal";
 import { SearchBar } from "./SearchBar";
 import {
@@ -40,6 +39,7 @@ export function Sidebar() {
   const { me } = useMe();
   const pathname = usePathname();
   const [loginOpen, setLoginOpen] = useState(false);
+  const [loginRedirect, setLoginRedirect] = useState<string | undefined>();
   const unread = useUnreadCount();
 
   async function handleLogout() {
@@ -61,12 +61,6 @@ export function Sidebar() {
       Icon: BellIcon,
       needsAuth: true,
       badge: unread,
-    },
-    {
-      href: me ? `/users/${me.id}` : "/",
-      label: "프로필",
-      Icon: UserIcon,
-      needsAuth: true,
     },
   ];
 
@@ -203,45 +197,53 @@ export function Sidebar() {
             </>
           )}
 
-          {/* Create menu button */}
-          {me && (
-            <div className="mt-3">
-              <CreateMenu
-                align="top"
-                side="left"
-                trigger={({ toggle, triggerProps }) => (
-                  <button
-                    onClick={toggle}
-                    className="w-full bg-primary text-background hover:bg-primary-hover rounded-full font-bold transition-colors flex items-center justify-center py-3"
-                    aria-label="작성"
-                    {...triggerProps}
-                  >
-                    <span className="xl:hidden">
-                      <PlusIcon />
-                    </span>
-                    <span className="hidden xl:inline">+ 작성</span>
-                  </button>
-                )}
-              />
-            </div>
+          {/* 등록 버튼 */}
+          {me ? (
+            <Link
+              href="/posts/new"
+              className={`group flex items-center justify-center xl:justify-start gap-4 rounded-full px-3 py-3 transition-colors ${
+                pathname.startsWith("/posts/new")
+                  ? "text-primary"
+                  : "text-text-primary hover:bg-surface-hover"
+              }`}
+            >
+              <PlusIcon />
+              <span className="hidden xl:inline text-lg font-medium">등록</span>
+            </Link>
+          ) : (
+            <button
+              onClick={() => {
+                setLoginRedirect("/posts/new");
+                setLoginOpen(true);
+              }}
+              className="group flex items-center justify-center xl:justify-start gap-4 rounded-full px-3 py-3 transition-colors text-text-primary hover:bg-surface-hover w-full"
+            >
+              <PlusIcon />
+              <span className="hidden xl:inline text-lg font-medium">등록</span>
+            </button>
           )}
 
-          {/* Sign in — icon only (collapsed), button (expanded) */}
-          {!me && (
-            <>
-              <button
-                onClick={() => setLoginOpen(true)}
-                className="mt-3 xl:hidden text-text-secondary hover:text-primary rounded-full transition-colors py-3 flex items-center justify-center"
-              >
-                <UserIcon size={24} />
-              </button>
-              <button
-                onClick={() => setLoginOpen(true)}
-                className="mt-3 hidden xl:block bg-primary text-background hover:bg-primary-hover rounded-full font-bold transition-colors py-3 px-6"
-              >
-                로그인
-              </button>
-            </>
+          {/* 프로필 / 로그인 */}
+          {me ? (
+            <Link
+              href={`/users/${me.id}`}
+              className={`group flex items-center justify-center xl:justify-start gap-4 rounded-full px-3 py-3 transition-colors ${
+                pathname.startsWith("/users/")
+                  ? "text-primary"
+                  : "text-text-primary hover:bg-surface-hover"
+              }`}
+            >
+              <UserIcon />
+              <span className="hidden xl:inline text-lg font-medium">프로필</span>
+            </Link>
+          ) : (
+            <button
+              onClick={() => { setLoginRedirect(undefined); setLoginOpen(true); }}
+              className="group flex items-center justify-center xl:justify-start gap-4 rounded-full px-3 py-3 transition-colors text-text-primary hover:bg-surface-hover w-full"
+            >
+              <UserIcon />
+              <span className="hidden xl:inline text-lg font-medium">프로필</span>
+            </button>
           )}
         </div>
 
@@ -289,7 +291,7 @@ export function Sidebar() {
         )}
       </aside>
 
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} redirectTo={loginRedirect} />
     </>
   );
 }

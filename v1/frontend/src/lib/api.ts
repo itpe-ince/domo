@@ -991,6 +991,35 @@ export type CreatePostMedia = {
   is_making_video?: boolean;
 };
 
+// ─── oEmbed + Tags ──────────────────────────────────────────────────────
+
+export type OEmbedData = {
+  provider: string;
+  title: string;
+  thumbnail_url: string | null;
+  author_name: string | null;
+  url: string;
+};
+
+export async function fetchOEmbed(url: string): Promise<OEmbedData> {
+  return apiFetch<OEmbedData>(
+    `/media/oembed?url=${encodeURIComponent(url)}`,
+    { auth: false }
+  );
+}
+
+export async function fetchTagSuggestions(
+  prefix: string,
+  limit = 10
+): Promise<string[]> {
+  return apiFetch<string[]>(
+    `/posts/tags/suggest?q=${encodeURIComponent(prefix)}&limit=${limit}`,
+    { auth: false }
+  );
+}
+
+// ─── Post create ─────────────────────────────────────────────────────────
+
 export type CreatePostInput = {
   type: "general" | "product";
   title?: string;
@@ -998,6 +1027,10 @@ export type CreatePostInput = {
   genre?: string;
   tags?: string[];
   language?: string;
+  scheduled_at?: string;
+  location_name?: string;
+  location_lat?: number;
+  location_lng?: number;
   media: CreatePostMedia[];
   product?: {
     is_auction?: boolean;

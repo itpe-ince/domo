@@ -52,6 +52,10 @@ class PostCreate(BaseModel):
     language: str = "ko"
     media: list[MediaAssetIn] = []
     product: ProductPostIn | None = None
+    scheduled_at: datetime | None = None
+    location_name: str | None = None
+    location_lat: float | None = None
+    location_lng: float | None = None
 
 
 class PostAuthor(BaseModel):
@@ -79,6 +83,10 @@ class PostOut(BaseModel):
     bluebird_count: int
     status: str
     digital_art_check: str
+    scheduled_at: datetime | None = None
+    location_name: str | None = None
+    location_lat: float | None = None
+    location_lng: float | None = None
     created_at: datetime
     media: list[MediaAssetOut] = []
     product: ProductPostOut | None = None

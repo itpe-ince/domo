@@ -17,7 +17,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+import httpx
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -215,6 +216,105 @@ async def register_external(
             "is_making_video": body.is_making_video,
         }
     }
+
+
+# ─── oEmbed ──────────────────────────────────────────────────────────────
+
+_OEMBED_PROVIDERS = {
+    "youtube": {
+        "patterns": [r"youtube\.com/watch", r"youtu\.be/"],
+        "endpoint": "https://www.youtube.com/oembed?url={url}&format=json",
+    },
+    "tiktok": {
+        "patterns": [r"tiktok\.com/@.+/video/"],
+        "endpoint": "https://www.tiktok.com/oembed?url={url}",
+    },
+    "x": {
+        "patterns": [r"(x|twitter)\.com/.+/status/"],
+        "endpoint": "https://publish.twitter.com/oembed?url={url}",
+    },
+    "instagram": {
+        "patterns": [r"instagram\.com/(p|reel)/"],
+        "endpoint": None,  # Requires Graph API token; fallback to meta tags
+    },
+}
+
+
+@router.get("/oembed")
+async def get_oembed(
+    url: str = Query(..., min_length=5),
+):
+    """Fetch oEmbed metadata for supported platforms."""
+    provider_name = None
+    for name, cfg in _OEMBED_PROVIDERS.items():
+        for pattern in cfg["patterns"]:
+            if re.search(pattern, url):
+                provider_name = name
+                break
+        if provider_name:
+            break
+
+    if not provider_name:
+        raise ApiError(
+            "UNSUPPORTED_URL",
+            "Supported: YouTube, TikTok, X(Twitter), Instagram",
+            http_status=422,
+        )
+
+    provider = _OEMBED_PROVIDERS[provider_name]
+
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            if provider["endpoint"]:
+                resp = await client.get(provider["endpoint"].format(url=url))
+                resp.raise_for_status()
+                data = resp.json()
+                return {
+                    "data": {
+                        "provider": provider_name,
+                        "title": data.get("title", ""),
+                        "thumbnail_url": data.get("thumbnail_url"),
+                        "author_name": data.get("author_name"),
+                        "url": url,
+                    }
+                }
+            else:
+                # Fallback: parse og: meta tags
+                resp = await client.get(url, follow_redirects=True)
+                html = resp.text[:10000]
+                og_title = _extract_meta(html, "og:title") or url
+                og_image = _extract_meta(html, "og:image")
+                og_author = _extract_meta(html, "og:site_name")
+                return {
+                    "data": {
+                        "provider": provider_name,
+                        "title": og_title,
+                        "thumbnail_url": og_image,
+                        "author_name": og_author,
+                        "url": url,
+                    }
+                }
+    except (httpx.HTTPError, Exception):
+        # Fallback link card
+        return {
+            "data": {
+                "provider": provider_name,
+                "title": url,
+                "thumbnail_url": None,
+                "author_name": None,
+                "url": url,
+            }
+        }
+
+
+def _extract_meta(html: str, property_name: str) -> str | None:
+    pattern = rf'<meta[^>]+property="{property_name}"[^>]+content="([^"]*)"'
+    match = re.search(pattern, html, re.IGNORECASE)
+    if match:
+        return match.group(1)
+    pattern2 = rf'<meta[^>]+content="([^"]*)"[^>]+property="{property_name}"'
+    match2 = re.search(pattern2, html, re.IGNORECASE)
+    return match2.group(1) if match2 else None
 
 
 @router.get("/files/{key:path}")
