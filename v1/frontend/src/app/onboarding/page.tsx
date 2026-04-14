@@ -118,7 +118,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="min-h-screen px-6 py-12 max-w-xl mx-auto">
+    <main className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-12">
       <header className="mb-8">
         <span className="badge-primary">Welcome</span>
         <h1 className="text-3xl font-bold mt-3">온보딩</h1>

@@ -176,9 +176,17 @@ export async function logout(): Promise<void> {
 export type ArtistApplication = {
   id: string;
   user_id: string;
-  portfolio_urls: string[] | null;
   school: string | null;
+  department: string | null;
+  graduation_year: number | null;
+  is_enrolled: boolean;
+  genre_tags: string[] | null;
+  portfolio_urls: string[] | null;
   intro_video_url: string | null;
+  enrollment_proof_url: string | null;
+  representative_works: RepresentativeWork[] | null;
+  exhibitions: HistoryEntry[] | null;
+  awards: HistoryEntry[] | null;
   statement: string | null;
   status: string;
   review_note: string | null;
@@ -207,11 +215,34 @@ export async function rejectApplication(id: string, note?: string) {
 }
 
 // ─── Artist apply ────────────────────────────────────────────────────────
+export type RepresentativeWork = {
+  title: string;
+  description?: string;
+  image_url: string;
+  dimensions?: string;
+  medium?: string;
+  year?: number;
+};
+
+export type HistoryEntry = {
+  title: string;
+  year?: number;
+  description?: string;
+};
+
 export type ApplyArtistInput = {
-  school?: string;
-  intro_video_url?: string;
+  school: string;
+  department: string;
+  graduation_year: number;
+  is_enrolled: boolean;
+  genre_tags: string[];
+  statement: string;
+  enrollment_proof_url: string;
+  representative_works: RepresentativeWork[];
   portfolio_urls?: string[];
-  statement?: string;
+  intro_video_url?: string;
+  exhibitions?: HistoryEntry[];
+  awards?: HistoryEntry[];
 };
 
 export async function applyArtist(input: ApplyArtistInput) {
@@ -223,6 +254,37 @@ export async function applyArtist(input: ApplyArtistInput) {
 
 export async function fetchMyApplications() {
   return apiFetch<ArtistApplication[]>("/artists/apply/me");
+}
+
+// ─── School search + edu email verification ─────────────────────────────
+
+export type SchoolSearchResult = {
+  id: string;
+  name_ko: string;
+  name_en: string;
+  email_domain: string;
+  country_code: string;
+};
+
+export async function searchSchools(q: string): Promise<SchoolSearchResult[]> {
+  return apiFetch<SchoolSearchResult[]>(
+    `/artists/schools/search?q=${encodeURIComponent(q)}`,
+    { auth: false }
+  );
+}
+
+export async function sendEduVerification(edu_email: string) {
+  return apiFetch<{ message: string; school_name: string }>(
+    "/artists/verify-edu/send",
+    { method: "POST", body: JSON.stringify({ edu_email }) }
+  );
+}
+
+export async function confirmEduVerification(edu_email: string, code: string) {
+  return apiFetch<{ verified: boolean; edu_email: string }>(
+    "/artists/verify-edu/confirm",
+    { method: "POST", body: JSON.stringify({ edu_email, code }) }
+  );
 }
 
 // ─── Posts / Feed / Comments ─────────────────────────────────────────────

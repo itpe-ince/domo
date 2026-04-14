@@ -115,12 +115,21 @@ async def get_user_profile(
         )
         prof = prof_result.scalar_one_or_none()
         if prof:
+            from app.schemas.artist import BADGE_LABELS
             artist_profile = {
                 "school": prof.school,
+                "department": prof.department,
+                "graduation_year": prof.graduation_year,
+                "is_enrolled": prof.is_enrolled,
+                "genre_tags": prof.genre_tags,
                 "intro_video_url": prof.intro_video_url,
                 "portfolio_urls": prof.portfolio_urls,
+                "representative_works": prof.representative_works,
+                "exhibitions": prof.exhibitions,
+                "awards": prof.awards,
                 "statement": prof.statement,
                 "badge_level": prof.badge_level,
+                "badge_label": BADGE_LABELS.get(prof.badge_level, prof.badge_level),
                 "verified_at": prof.verified_at.isoformat()
                 if prof.verified_at
                 else None,

@@ -10,9 +10,11 @@ from sqlalchemy.orm import selectinload
 from app.core.admin_deps import require_admin
 from app.core.errors import ApiError
 from app.db.session import get_db
+from app.models.auction import Auction, Order
 from app.models.moderation import Report, Warning
 from app.models.notification import Notification
-from app.models.post import Post
+from app.models.post import Follow, Post
+from app.models.school import School
 from app.models.user import ArtistApplication, ArtistProfile, User
 from app.schemas.artist import ApplicationReviewRequest, ArtistApplicationOut
 from app.schemas.moderation import (
@@ -85,10 +87,17 @@ async def approve_application(
                 application_id=app_obj.id,
                 verified_by=admin.id,
                 school=app_obj.school,
+                department=app_obj.department,
+                graduation_year=app_obj.graduation_year,
+                is_enrolled=getattr(app_obj, "is_enrolled", True),
+                genre_tags=app_obj.genre_tags,
                 intro_video_url=app_obj.intro_video_url,
                 portfolio_urls=app_obj.portfolio_urls,
+                representative_works=app_obj.representative_works,
+                exhibitions=app_obj.exhibitions,
+                awards=app_obj.awards,
                 statement=app_obj.statement,
-                badge_level="emerging",
+                badge_level="student" if getattr(app_obj, "is_enrolled", True) else "emerging",
             )
         )
 
@@ -419,3 +428,337 @@ async def reject_appeal(
     await db.commit()
     await db.refresh(warning)
     return {"data": WarningOut.model_validate(warning).model_dump(mode="json")}
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# P1 Admin Panel — User / School / Content / Transaction Management
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class UserUpdateRequest(BaseModel):
+    status: str | None = None
+    role: str | None = None
+    badge_level: str | None = None
+
+
+@router.get("/users")
+async def list_users(
+    q: str | None = Query(None),
+    role: str | None = Query(None),
+    status: str | None = Query(None),
+    country: str | None = Query(None),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    from sqlalchemy import func as sqlfunc
+
+    query = select(User)
+    if q:
+        query = query.where(User.display_name.ilike(f"%{q}%") | User.email.ilike(f"%{q}%"))
+    if role:
+        query = query.where(User.role == role)
+    if status:
+        query = query.where(User.status == status)
+    if country:
+        query = query.where(User.country_code == country)
+
+    total = await db.scalar(select(sqlfunc.count()).select_from(query.subquery()))
+    result = await db.execute(query.order_by(User.created_at.desc()).offset(offset).limit(limit))
+    users = result.scalars().all()
+
+    return {
+        "data": [
+            {
+                "id": str(u.id), "email": u.email, "display_name": u.display_name,
+                "avatar_url": u.avatar_url, "role": u.role, "status": u.status,
+                "country_code": u.country_code, "warning_count": u.warning_count,
+                "created_at": u.created_at.isoformat() if u.created_at else None,
+            }
+            for u in users
+        ],
+        "pagination": {"total": total or 0, "offset": offset, "limit": limit},
+    }
+
+
+@router.patch("/users/{user_id}")
+async def update_user(
+    user_id: UUID,
+    body: UserUpdateRequest,
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise ApiError("NOT_FOUND", "User not found", http_status=404)
+
+    if body.status and body.status in ("active", "suspended"):
+        user.status = body.status
+        db.add(Notification(
+            user_id=user.id, type="account_status_changed", title="계정 상태 변경",
+            body=f"계정이 {'활성화' if body.status == 'active' else '정지'}되었습니다.",
+        ))
+    if body.role and body.role in ("user", "artist", "admin"):
+        user.role = body.role
+        await revoke_user_tokens(db, user.id, reason="admin_role_change")
+    if body.badge_level:
+        prof_result = await db.execute(select(ArtistProfile).where(ArtistProfile.user_id == user_id))
+        prof = prof_result.scalar_one_or_none()
+        if prof:
+            prof.badge_level = body.badge_level
+
+    await db.commit()
+    return {"data": {"id": str(user.id), "status": user.status, "role": user.role}}
+
+
+# ─── School Management ──────────────────────────────────────────────────
+
+
+class SchoolCreateRequest(BaseModel):
+    name_ko: str
+    name_en: str
+    country_code: str
+    email_domain: str
+    school_type: str = "university"
+    logo_url: str | None = None
+
+
+class SchoolUpdateRequest(BaseModel):
+    name_ko: str | None = None
+    name_en: str | None = None
+    email_domain: str | None = None
+    status: str | None = None
+
+
+@router.get("/schools")
+async def list_schools(
+    q: str | None = Query(None),
+    country: str | None = Query(None),
+    status: str | None = Query(None),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    from sqlalchemy import func as sqlfunc
+
+    query = select(School)
+    if q:
+        query = query.where(School.name_ko.ilike(f"%{q}%") | School.name_en.ilike(f"%{q}%"))
+    if country:
+        query = query.where(School.country_code == country)
+    if status:
+        query = query.where(School.status == status)
+
+    total = await db.scalar(select(sqlfunc.count()).select_from(query.subquery()))
+    result = await db.execute(query.order_by(School.name_en.asc()).offset(offset).limit(limit))
+    schools = result.scalars().all()
+
+    return {
+        "data": [
+            {
+                "id": str(s.id), "name_ko": s.name_ko, "name_en": s.name_en,
+                "country_code": s.country_code, "email_domain": s.email_domain,
+                "school_type": s.school_type, "status": s.status,
+            }
+            for s in schools
+        ],
+        "pagination": {"total": total or 0, "offset": offset, "limit": limit},
+    }
+
+
+@router.post("/schools")
+async def create_school(
+    body: SchoolCreateRequest,
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    existing = await db.execute(select(School).where(School.email_domain == body.email_domain))
+    if existing.scalar_one_or_none():
+        raise ApiError("CONFLICT", "Email domain already registered", http_status=409)
+    school = School(**body.model_dump())
+    db.add(school)
+    await db.commit()
+    await db.refresh(school)
+    return {"data": {"id": str(school.id), "name_en": school.name_en, "email_domain": school.email_domain}}
+
+
+@router.patch("/schools/{school_id}")
+async def update_school(
+    school_id: UUID,
+    body: SchoolUpdateRequest,
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(School).where(School.id == school_id))
+    school = result.scalar_one_or_none()
+    if not school:
+        raise ApiError("NOT_FOUND", "School not found", http_status=404)
+    for k, v in body.model_dump(exclude_none=True).items():
+        setattr(school, k, v)
+    await db.commit()
+    return {"data": {"id": str(school.id), "status": school.status}}
+
+
+# ─── Content Management ─────────────────────────────────────────────────
+
+
+class PostStatusUpdate(BaseModel):
+    status: str
+    reason: str | None = None
+
+
+@router.get("/posts/list")
+async def list_posts_admin(
+    q: str | None = Query(None),
+    type: str | None = Query(None),
+    status: str | None = Query(None),
+    genre: str | None = Query(None),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    from sqlalchemy import func as sqlfunc
+
+    query = select(Post).options(selectinload(Post.media))
+    if q:
+        query = query.where(Post.title.ilike(f"%{q}%") | Post.content.ilike(f"%{q}%"))
+    if type:
+        query = query.where(Post.type == type)
+    if status:
+        query = query.where(Post.status == status)
+    if genre:
+        query = query.where(Post.genre == genre)
+
+    total = await db.scalar(select(sqlfunc.count()).select_from(query.subquery()))
+    result = await db.execute(query.order_by(Post.created_at.desc()).offset(offset).limit(limit))
+    posts = result.scalars().all()
+
+    author_ids = list({p.author_id for p in posts})
+    author_map = {}
+    if author_ids:
+        authors = await db.execute(select(User).where(User.id.in_(author_ids)))
+        author_map = {u.id: u for u in authors.scalars()}
+
+    return {
+        "data": [
+            {
+                "id": str(p.id), "title": p.title, "type": p.type,
+                "genre": p.genre, "status": p.status,
+                "like_count": p.like_count, "view_count": p.view_count,
+                "author_name": author_map[p.author_id].display_name if p.author_id in author_map else "unknown",
+                "thumbnail_url": (p.media[0].thumbnail_url or p.media[0].url) if p.media else None,
+                "created_at": p.created_at.isoformat() if p.created_at else None,
+            }
+            for p in posts
+        ],
+        "pagination": {"total": total or 0, "offset": offset, "limit": limit},
+    }
+
+
+@router.patch("/posts/{post_id}/status")
+async def update_post_status(
+    post_id: UUID,
+    body: PostStatusUpdate,
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Post).where(Post.id == post_id))
+    post = result.scalar_one_or_none()
+    if not post:
+        raise ApiError("NOT_FOUND", "Post not found", http_status=404)
+    post.status = body.status
+    db.add(Notification(
+        user_id=post.author_id, type="post_status_changed", title="게시물 상태 변경",
+        body=f"'{post.title or '무제'}'이(가) {body.status}로 변경되었습니다." + (f" 사유: {body.reason}" if body.reason else ""),
+        link=f"/posts/{post.id}",
+    ))
+    await db.commit()
+    return {"data": {"id": str(post.id), "status": post.status}}
+
+
+# ─── Transaction Management ─────────────────────────────────────────────
+
+
+@router.get("/auctions/list")
+async def list_auctions_admin(
+    status: str | None = Query(None),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    from sqlalchemy import func as sqlfunc
+
+    query = select(Auction)
+    if status:
+        query = query.where(Auction.status == status)
+    total = await db.scalar(select(sqlfunc.count()).select_from(query.subquery()))
+    result = await db.execute(query.order_by(Auction.created_at.desc()).offset(offset).limit(limit))
+    auctions = result.scalars().all()
+
+    seller_ids = list({a.seller_id for a in auctions})
+    seller_map = {}
+    if seller_ids:
+        sellers = await db.execute(select(User).where(User.id.in_(seller_ids)))
+        seller_map = {u.id: u for u in sellers.scalars()}
+
+    return {
+        "data": [
+            {
+                "id": str(a.id),
+                "seller_name": seller_map[a.seller_id].display_name if a.seller_id in seller_map else "unknown",
+                "start_price": float(a.start_price), "current_price": float(a.current_price),
+                "currency": a.currency, "bid_count": a.bid_count, "status": a.status,
+                "end_at": a.end_at.isoformat(),
+            }
+            for a in auctions
+        ],
+        "pagination": {"total": total or 0, "offset": offset, "limit": limit},
+    }
+
+
+@router.get("/orders/list")
+async def list_orders_admin(
+    status: str | None = Query(None),
+    source: str | None = Query(None),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    from sqlalchemy import func as sqlfunc
+
+    query = select(Order)
+    if status:
+        query = query.where(Order.status == status)
+    if source:
+        query = query.where(Order.source == source)
+    total = await db.scalar(select(sqlfunc.count()).select_from(query.subquery()))
+    result = await db.execute(query.order_by(Order.created_at.desc()).offset(offset).limit(limit))
+    orders = result.scalars().all()
+
+    user_ids = list({o.buyer_id for o in orders} | {o.seller_id for o in orders})
+    user_map = {}
+    if user_ids:
+        users = await db.execute(select(User).where(User.id.in_(user_ids)))
+        user_map = {u.id: u for u in users.scalars()}
+
+    return {
+        "data": [
+            {
+                "id": str(o.id),
+                "buyer_name": user_map[o.buyer_id].display_name if o.buyer_id in user_map else "unknown",
+                "seller_name": user_map[o.seller_id].display_name if o.seller_id in user_map else "unknown",
+                "amount": float(o.amount), "currency": o.currency,
+                "platform_fee": float(o.platform_fee),
+                "source": o.source, "status": o.status,
+                "created_at": o.created_at.isoformat(),
+            }
+            for o in orders
+        ],
+        "pagination": {"total": total or 0, "offset": offset, "limit": limit},
+    }

@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function CookiesPage() {
   return (
-    <main className="min-h-screen px-6 py-12 max-w-3xl mx-auto">
+    <main className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-12">
       <Link href="/" className="text-text-secondary text-sm hover:text-primary">
         ← 홈
       </Link>

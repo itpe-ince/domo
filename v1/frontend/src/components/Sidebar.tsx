@@ -11,10 +11,8 @@ import { SearchBar } from "./SearchBar";
 import {
   BellIcon,
   BluebirdIcon,
-  CheckCircleIcon,
   DashboardIcon,
   ExploreIcon,
-  FlagIcon,
   HomeIcon,
   LayersIcon,
   LogoutIcon,
@@ -83,32 +81,7 @@ export function Sidebar() {
     { href: "/me/account", label: "설정", Icon: SettingsIcon, needsAuth: true },
   ];
 
-  const admin: NavItem[] = [
-    {
-      href: "/admin/dashboard",
-      label: "대시보드",
-      Icon: DashboardIcon,
-      adminOnly: true,
-    },
-    {
-      href: "/admin/applications",
-      label: "작가 승인",
-      Icon: CheckCircleIcon,
-      adminOnly: true,
-    },
-    {
-      href: "/admin/moderation",
-      label: "모더레이션",
-      Icon: FlagIcon,
-      adminOnly: true,
-    },
-    {
-      href: "/admin/settings",
-      label: "시스템 설정",
-      Icon: SettingsIcon,
-      adminOnly: true,
-    },
-  ];
+  // Admin은 별도 앱 (포트 3800)
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -186,16 +159,19 @@ export function Sidebar() {
             </>
           )}
 
-          {/* Admin */}
+          {/* Admin — 별도 앱 링크 */}
           {me?.role === "admin" && (
             <>
               <div className="border-t border-border my-2" />
-              <div className="hidden xl:block px-3 py-1 text-xs uppercase tracking-wide text-text-muted">
-                Admin
-              </div>
-              <nav className="flex flex-col gap-0.5">
-                {admin.map(renderItem)}
-              </nav>
+              <a
+                href="http://localhost:3800"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center justify-center xl:justify-start gap-4 rounded-full px-3 py-3 transition-colors text-text-primary hover:bg-surface-hover"
+              >
+                <DashboardIcon />
+                <span className="hidden xl:inline text-lg font-medium">관리자</span>
+              </a>
             </>
           )}
 

@@ -25,6 +25,7 @@ from app.core.config import get_settings
 from app.core.errors import register_error_handlers
 from app.services.auction_jobs import auction_cron_loop
 from app.services.gdpr_jobs import gdpr_cron_loop
+from app.services.badge_jobs import badge_cron_loop
 from app.services.schedule_jobs import schedule_cron_loop
 
 settings = get_settings()
@@ -36,12 +37,13 @@ async def lifespan(app: FastAPI):
     auction_task = asyncio.create_task(auction_cron_loop(interval_seconds=300))
     gdpr_task = asyncio.create_task(gdpr_cron_loop(interval_seconds=3600))
     schedule_task = asyncio.create_task(schedule_cron_loop(interval_seconds=60))
+    badge_task = asyncio.create_task(badge_cron_loop(interval_seconds=86400))
     try:
         yield
     finally:
-        for task in (auction_task, gdpr_task, schedule_task):
+        for task in (auction_task, gdpr_task, schedule_task, badge_task):
             task.cancel()
-        for task in (auction_task, gdpr_task, schedule_task):
+        for task in (auction_task, gdpr_task, schedule_task, badge_task):
             try:
                 await task
             except asyncio.CancelledError:

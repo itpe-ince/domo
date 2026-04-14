@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime
 
 from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, Text, func
-from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -80,9 +80,21 @@ class ArtistApplication(Base):
     )
     portfolio_urls: Mapped[list[str] | None] = mapped_column(ARRAY(Text), nullable=True)
     school: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    department: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    graduation_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    is_enrolled: Mapped[bool] = mapped_column(Boolean, default=True)
+    genre_tags: Mapped[list[str] | None] = mapped_column(ARRAY(Text), nullable=True)
     intro_video_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     sample_images: Mapped[list[str] | None] = mapped_column(ARRAY(Text), nullable=True)
+    enrollment_proof_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    representative_works: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    exhibitions: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    awards: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     statement: Mapped[str | None] = mapped_column(Text, nullable=True)
+    edu_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    edu_email_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     status: Mapped[str] = mapped_column(String(20), default="pending", nullable=False)
     # 'pending' | 'approved' | 'rejected'
@@ -115,11 +127,22 @@ class ArtistProfile(Base):
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
     )
     school: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    department: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    graduation_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    is_enrolled: Mapped[bool] = mapped_column(Boolean, default=True)
+    genre_tags: Mapped[list[str] | None] = mapped_column(ARRAY(Text), nullable=True)
     intro_video_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     portfolio_urls: Mapped[list[str] | None] = mapped_column(ARRAY(Text), nullable=True)
+    representative_works: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    exhibitions: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    awards: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     statement: Mapped[str | None] = mapped_column(Text, nullable=True)
-    badge_level: Mapped[str] = mapped_column(String(20), default="emerging")
-    # 'emerging' | 'featured' | 'popular' | 'master'
+    edu_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    edu_email_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    badge_level: Mapped[str] = mapped_column(String(20), default="student")
+    # 'student' | 'emerging' | 'recommended' | 'popular'
     payout_country: Mapped[str | None] = mapped_column(String(2), nullable=True)
     guardian_consent: Mapped[bool] = mapped_column(Boolean, default=False)
 

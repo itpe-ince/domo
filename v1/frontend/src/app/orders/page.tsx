@@ -83,7 +83,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <main className="min-h-screen px-6 py-8 max-w-4xl mx-auto">
+    <main className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8">
       <header className="flex items-center justify-between mb-8">
         <div>
           <span className="badge-primary">Orders</span>

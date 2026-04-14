@@ -15,10 +15,11 @@
       "problemMatcher": {
         "owner": "next",
         "pattern": {
-          "regexp": "^(.*)$",
+          "regexp": "^\\s*at .+ \\((.+):(\\d+):(\\d+)\\)",
           "file": 1,
-          "location": 1,
-          "message": 1
+          "line": 2,
+          "column": 3,
+          "message": 0
         },
         "background": {
           "activeOnStart": true,
@@ -69,10 +70,38 @@
       }
     },
     {
-      "label": "Domo: Dev All (backend + frontend)",
+      "label": "Domo: Admin Dev Server (port 3800)",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/v1/admin && npm install --prefer-offline 2>/dev/null; NEXT_PUBLIC_API_URL=http://localhost:3710/v1 npx next dev --port 3800 --hostname 0.0.0.0",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "domo-dev",
+        "clear": true
+      },
+      "problemMatcher": {
+        "owner": "next-admin",
+        "pattern": {
+          "regexp": "^\\s*at .+ \\((.+):(\\d+):(\\d+)\\)",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 0
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*(Starting|Compiling).*",
+          "endsPattern": ".*(Ready in|compiled successfully).*"
+        }
+      }
+    },
+    {
+      "label": "Domo: Dev All (backend + frontend + admin)",
       "dependsOn": [
         "Domo: Backend Dev Server (port 3710)",
-        "Domo: Frontend Dev Server (port 3700)"
+        "Domo: Frontend Dev Server (port 3700)",
+        "Domo: Admin Dev Server (port 3800)"
       ],
       "dependsOrder": "parallel",
       "problemMatcher": [],
@@ -112,6 +141,16 @@
       "label": "Domo: Reinstall Frontend Deps",
       "type": "shell",
       "command": "cd ${workspaceFolder}/v1/frontend && rm -rf node_modules .next && npm install",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Domo: Reinstall Admin Deps",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/v1/admin && rm -rf node_modules .next && npm install",
       "presentation": {
         "reveal": "always",
         "panel": "shared"

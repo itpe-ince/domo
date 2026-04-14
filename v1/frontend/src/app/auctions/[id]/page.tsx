@@ -184,7 +184,7 @@ export default function AuctionDetailPage({
     Number(auction.current_price) + Number(auction.min_increment);
 
   return (
-    <main className="min-h-screen px-6 py-8 max-w-6xl mx-auto">
+    <main className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8">
       <Link
         href={`/posts/${auction.product_post_id}`}
         className="text-text-secondary text-sm mb-6 inline-block hover:text-primary"

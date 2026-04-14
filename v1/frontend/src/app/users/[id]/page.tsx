@@ -93,7 +93,7 @@ export default function UserProfilePage({
   );
 
   return (
-    <main className="min-h-screen px-6 py-8 max-w-5xl mx-auto">
+    <main className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8">
       <Link
         href="/"
         className="text-text-secondary text-sm mb-6 inline-block hover:text-primary"
