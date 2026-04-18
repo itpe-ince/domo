@@ -1,0 +1,148 @@
+{
+  "common": {
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "register": "投稿",
+    "profile": "プロフィール",
+    "settings": "設定",
+    "search": "検索",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "back": "戻る",
+    "next": "次へ",
+    "prev": "前へ",
+    "loading": "読み込み中...",
+    "noData": "データがありません。",
+    "error": "エラーが発生しました。",
+    "follow": "フォロー",
+    "following": "フォロー中",
+    "followers": "フォロワー",
+    "likes": "いいね",
+    "comments": "コメント"
+  },
+  "nav": {
+    "home": "ホーム",
+    "feed": "フィード",
+    "following": "フォロー中",
+    "explore": "探索",
+    "notifications": "通知",
+    "profile": "プロフィール",
+    "register": "投稿",
+    "subscription": "定期支援",
+    "orders": "注文",
+    "warnings": "警告",
+    "settings": "設定",
+    "admin": "管理者"
+  },
+  "home": {
+    "title": "Domo Lounge",
+    "subtitle": "キュレーションギャラリー",
+    "trending": "今注目の作品",
+    "topArtists": "TOP 10 アーティスト",
+    "makingVideos": "制作過程",
+    "mostPopular": "最も人気",
+    "noTrending": "まだトレンドはありません。"
+  },
+  "feed": {
+    "title": "フィード",
+    "subtitleAuth": "フォロー中のアーティストと人気作品をミックス。",
+    "subtitleGuest": "今人気の新進アーティストの作品。",
+    "noPosts": "表示する投稿がありません。",
+    "loadError": "フィードの読み込みに失敗しました"
+  },
+  "followingPage": {
+    "title": "フォロー中",
+    "subtitle": "フォロー中のアーティストの最新作品。",
+    "loginRequired": "ログインが必要です。",
+    "loginHint": "サイドバーのログインボタンを押してください。",
+    "emptyTitle": "まだフォローしているアーティストがいません",
+    "emptyHint": "探索でお気に入りのアーティストを見つけてフォローしましょう。",
+    "exploreCta": "アーティストを探す"
+  },
+  "explore": {
+    "title": "探索",
+    "all": "すべて",
+    "allPosts": "すべての投稿",
+    "products": "販売/オークション作品",
+    "general": "一般投稿"
+  },
+  "search": {
+    "placeholder": "検索...",
+    "recentSearches": "最近の検索",
+    "clearAll": "すべて削除",
+    "noResults": "の検索結果はありません。",
+    "similarKeywords": "類似キーワード：",
+    "recommendedArtists": "おすすめアーティスト",
+    "goExplore": "探索へ移動",
+    "tabArtists": "アーティスト",
+    "tabArtworks": "作品",
+    "tabPosts": "投稿",
+    "artistOnly": "アーティストのみ",
+    "sortLatest": "最新順",
+    "sortPopular": "人気順",
+    "sortEnding": "終了間近",
+    "searchHint": "アーティスト、作品、投稿を検索。"
+  },
+  "notifications": {
+    "title": "通知",
+    "markAllRead": "すべて既読",
+    "loginRequired": "通知を確認するにはログインが必要です。",
+    "loginHint": "サイドバーのログインボタンを押してください。",
+    "empty": "通知はありません。"
+  },
+  "post": {
+    "untitled": "無題",
+    "artwork": "作品",
+    "generalPost": "一般投稿",
+    "productPost": "商品投稿",
+    "createTitle": "投稿",
+    "submit": "投稿する",
+    "submitScheduled": "予約投稿",
+    "submitting": "投稿中...",
+    "postType": "投稿タイプ",
+    "title": "タイトル",
+    "contentPlaceholder": "作品について語ってください...",
+    "tags": "タグ",
+    "makingVideoLabel": "次のアップロードをメイキング動画として表示",
+    "artCheckNote": "※ 画像/動画を含む投稿は審査キューに入ります。",
+    "productInfo": "商品情報",
+    "genre": "ジャンル",
+    "dimensions": "サイズ",
+    "medium": "素材",
+    "year": "制作年",
+    "auctionSell": "オークションで販売",
+    "buyNow": "即購入可能",
+    "buyNowPrice": "即購入価格 (USD)"
+  },
+  "bluebird": {
+    "unitLabel": "ブルーバード",
+    "perUnit": "$1 / 1 ブルーバード"
+  },
+  "recommendation": {
+    "following": "フォロー中",
+    "trending": "🔥 トレンド",
+    "similar": "類似作品",
+    "genre": "関連ジャンル"
+  },
+  "badge": {
+    "student": "🎓 学生アーティスト",
+    "emerging": "✨ 新進アーティスト",
+    "recommended": "🕊 おすすめアーティスト",
+    "popular": "🔥 人気アーティスト"
+  },
+  "footer": {
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約",
+    "cookies": "クッキー",
+    "copyright": "© 2026 Domo Lounge"
+  },
+  "time": {
+    "secondsAgo": "秒前",
+    "minutesAgo": "分前",
+    "hoursAgo": "時間前",
+    "daysAgo": "日前"
+  }
+}

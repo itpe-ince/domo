@@ -105,13 +105,27 @@ class Order(Base):
     platform_fee: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), default=Decimal("0")
     )
+    buyer_fee: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), default=Decimal("0")
+    )
+    # buyer_fee = amount * 10% (콜렉터 추가 수수료)
     status: Mapped[str] = mapped_column(String(30), default="pending_payment")
-    # 'pending_payment' | 'paid' | 'cancelled' | 'expired' | 'refunded'
+    # 'pending_payment' | 'paid' | 'shipped' | 'inspection' | 'settled' | 'cancelled' | 'expired' | 'refunded'
+    shipping_status: Mapped[str] = mapped_column(String(20), default="pending")
+    # 'pending' | 'shipped' | 'delivered'
+    inspection_status: Mapped[str] = mapped_column(String(20), default="pending")
+    # 'pending' | 'approved' | 'disputed'
     payment_intent_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     payment_due_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
     paid_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    inspection_completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    settled_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(

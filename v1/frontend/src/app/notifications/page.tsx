@@ -9,6 +9,7 @@ import {
   NotificationView,
   tokenStore,
 } from "@/lib/api";
+import { useI18n } from "@/i18n";
 import { useMe } from "@/lib/useMe";
 
 function timeAgo(iso: string | null): string {
@@ -25,6 +26,7 @@ function timeAgo(iso: string | null): string {
 
 export default function NotificationsPage() {
   const { me, loading: meLoading } = useMe();
+  const { t } = useI18n();
   const [items, setItems] = useState<NotificationView[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,23 +79,21 @@ export default function NotificationsPage() {
   return (
     <main className="flex-1 min-w-0 max-w-3xl mx-auto">
       <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
-        <h1 className="text-xl font-bold">알림</h1>
+        <h1 className="text-xl font-bold">{t("notifications.title")}</h1>
         {me && items.length > 0 && (
           <button
             onClick={handleReadAll}
             className="text-xs text-text-muted hover:text-primary"
           >
-            모두 읽음
+            {t("notifications.markAllRead")}
           </button>
         )}
       </div>
 
       {!me && !meLoading ? (
         <div className="card p-12 m-4 text-center text-text-muted">
-          <p>로그인 후 알림을 확인할 수 있습니다.</p>
-          <p className="text-xs mt-2">
-            좌측 사이드바의 로그인 버튼을 눌러주세요.
-          </p>
+          <p>{t("notifications.loginRequired")}</p>
+          <p className="text-xs mt-2">{t("notifications.loginHint")}</p>
         </div>
       ) : loading ? (
         <div className="p-4 space-y-2">
@@ -113,7 +113,7 @@ export default function NotificationsPage() {
         </div>
       ) : items.length === 0 ? (
         <div className="card p-12 m-4 text-center text-text-muted">
-          알림이 없습니다.
+          {t("notifications.empty")}
         </div>
       ) : (
         <ul>

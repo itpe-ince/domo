@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
+import { useI18n } from "@/i18n";
 import { useRecentSearches } from "@/lib/useRecentSearches";
 import { SearchIcon } from "./icons";
 
@@ -11,6 +12,7 @@ interface SearchBarProps {
 }
 
 export function SearchBar({ compact = false, className = "" }: SearchBarProps) {
+  const { t } = useI18n();
   const router = useRouter();
   const { items: recent, add, remove, clear } = useRecentSearches();
   const [value, setValue] = useState("");
@@ -75,7 +77,7 @@ export function SearchBar({ compact = false, className = "" }: SearchBarProps) {
       <button
         onClick={() => router.push("/search")}
         className={`flex items-center justify-center p-3 rounded-full hover:bg-surface-hover transition-colors text-text-secondary ${className}`}
-        aria-label="검색"
+        aria-label={t("common.search")}
       >
         <SearchIcon />
       </button>
@@ -92,13 +94,13 @@ export function SearchBar({ compact = false, className = "" }: SearchBarProps) {
           ref={inputRef}
           type="text"
           role="searchbox"
-          aria-label="검색"
+          aria-label={t("common.search")}
           aria-expanded={open && recent.length > 0}
           aria-controls={listId}
           aria-activedescendant={
             focusIdx >= 0 ? `${listId}-${focusIdx}` : undefined
           }
-          placeholder="검색"
+          placeholder={t("common.search")}
           value={value}
           onChange={(e) => {
             setValue(e.target.value);
@@ -115,7 +117,7 @@ export function SearchBar({ compact = false, className = "" }: SearchBarProps) {
               inputRef.current?.focus();
             }}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary text-xs"
-            aria-label="지우기"
+            aria-label={t("common.delete")}
           >
             ✕
           </button>
@@ -126,7 +128,7 @@ export function SearchBar({ compact = false, className = "" }: SearchBarProps) {
         <div
           id={listId}
           role="listbox"
-          aria-label="최근 검색"
+          aria-label={t("search.recentSearches")}
           className="absolute top-full mt-1 left-0 right-0 card p-2 z-40 shadow-xl"
         >
           <div className="flex items-center justify-between px-2 py-1 mb-1">

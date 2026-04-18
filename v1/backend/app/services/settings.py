@@ -17,6 +17,13 @@ DEFAULTS: dict[str, Any] = {
     "platform_fee_buy_now": {"percent": 10},
     "auction_payment_deadline_days": {"days": 3},
     "warning_threshold": {"count": 3},
+    "settlement_cycle": {"cycle": "weekly"},
+    "translation": {
+        "provider": "ollama",
+        "ollama_url": "http://100.75.139.86:11434",
+        "ollama_model": "gemma4:latest",
+        "google_api_key": "",
+    },
 }
 
 

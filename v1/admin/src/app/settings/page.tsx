@@ -19,7 +19,15 @@ const KEY_LABELS: Record<string, string> = {
   platform_fee_buy_now: "즉시구매 수수료율",
   auction_payment_deadline_days: "경매 결제 기한",
   warning_threshold: "경고 누적 임계값",
+  translation: "🌐 번역 설정",
 };
+
+const TRANSLATION_HELP = `{
+  "provider": "ollama | google | mock",
+  "ollama_url": "http://100.75.139.86:11434",
+  "ollama_model": "gemma4:latest | gemma4:31b",
+  "google_api_key": ""
+}`;
 
 export default function SystemSettingsPage() {
   const [me, setMe] = useState<ApiUser | null>(null);

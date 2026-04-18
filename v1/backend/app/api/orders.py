@@ -41,10 +41,17 @@ def _serialize_order(o: Order) -> dict:
         "amount": str(o.amount),
         "currency": o.currency,
         "platform_fee": str(o.platform_fee),
+        "buyer_fee": str(o.buyer_fee),
+        "total_buyer_pays": str(o.amount + o.buyer_fee),
+        "seller_receives": str(o.amount - o.platform_fee),
         "status": o.status,
+        "shipping_status": o.shipping_status,
+        "inspection_status": o.inspection_status,
         "payment_intent_id": o.payment_intent_id,
         "payment_due_at": o.payment_due_at.isoformat() if o.payment_due_at else None,
         "paid_at": o.paid_at.isoformat() if o.paid_at else None,
+        "inspection_completed_at": o.inspection_completed_at.isoformat() if o.inspection_completed_at else None,
+        "settled_at": o.settled_at.isoformat() if o.settled_at else None,
         "created_at": o.created_at.isoformat(),
     }
 
@@ -117,6 +124,7 @@ async def buy_now(
         },
     )
 
+    buyer_fee = pp.buy_now_price * Decimal("0.10")  # 구매자 수수료 10%
     order = Order(
         buyer_id=user.id,
         seller_id=post.author_id,
@@ -124,8 +132,9 @@ async def buy_now(
         source="buy_now",
         auction_id=None,
         amount=pp.buy_now_price,
-        currency=pp.currency or "KRW",
+        currency=pp.currency or "USD",
         platform_fee=fee,
+        buyer_fee=buyer_fee,
         status="pending_payment",
         payment_intent_id=intent.id,
         payment_due_at=_now() + timedelta(days=deadline_days),
@@ -329,4 +338,108 @@ async def get_order(
         raise ApiError("NOT_FOUND", "Order not found", http_status=404)
     if order.buyer_id != user.id and order.seller_id != user.id:
         raise ApiError("FORBIDDEN", "Not your order", http_status=403)
+    return {"data": _serialize_order(order)}
+
+
+# ─── Escrow Flow ─────────────────────────────────────────────────────────
+# 결제 → 배송 → 검수 → 정산
+
+
+@orders_router.post("/{order_id}/ship")
+async def mark_shipped(
+    order_id: UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Seller marks order as shipped."""
+    result = await db.execute(select(Order).where(Order.id == order_id))
+    order = result.scalar_one_or_none()
+    if not order:
+        raise ApiError("NOT_FOUND", "Order not found", http_status=404)
+    if order.seller_id != user.id:
+        raise ApiError("FORBIDDEN", "Only seller can mark as shipped", http_status=403)
+    if order.status != "paid":
+        raise ApiError("CONFLICT", "Order must be paid first", http_status=409)
+
+    order.shipping_status = "shipped"
+    order.status = "shipped"
+    db.add(Notification(
+        user_id=order.buyer_id, type="order_shipped",
+        title="작품 발송 완료",
+        body="판매자가 작품을 발송했습니다. 수령 후 검수를 진행해주세요.",
+    ))
+    await db.commit()
+    return {"data": _serialize_order(order)}
+
+
+@orders_router.post("/{order_id}/inspect")
+async def complete_inspection(
+    order_id: UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Buyer confirms inspection — triggers settlement to seller."""
+    result = await db.execute(select(Order).where(Order.id == order_id))
+    order = result.scalar_one_or_none()
+    if not order:
+        raise ApiError("NOT_FOUND", "Order not found", http_status=404)
+    if order.buyer_id != user.id:
+        raise ApiError("FORBIDDEN", "Only buyer can inspect", http_status=403)
+    if order.status != "shipped":
+        raise ApiError("CONFLICT", "Order must be shipped first", http_status=409)
+
+    now = datetime.now(timezone.utc)
+    order.inspection_status = "approved"
+    order.inspection_completed_at = now
+    order.status = "settled"
+    order.settled_at = now
+    order.shipping_status = "delivered"
+
+    # 정산 금액 = 판매금액 - 플랫폼 수수료
+    settlement_amount = order.amount - order.platform_fee
+
+    db.add(Notification(
+        user_id=order.seller_id, type="order_settled",
+        title="정산 완료",
+        body=f"검수가 완료되어 ${float(settlement_amount):.2f}가 정산됩니다.",
+    ))
+    db.add(Notification(
+        user_id=order.buyer_id, type="inspection_complete",
+        title="검수 완료",
+        body="검수가 완료되었습니다. 감사합니다!",
+    ))
+    await db.commit()
+    return {"data": _serialize_order(order)}
+
+
+@orders_router.post("/{order_id}/dispute")
+async def dispute_order(
+    order_id: UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Buyer disputes the order — admin intervention needed."""
+    result = await db.execute(select(Order).where(Order.id == order_id))
+    order = result.scalar_one_or_none()
+    if not order:
+        raise ApiError("NOT_FOUND", "Order not found", http_status=404)
+    if order.buyer_id != user.id:
+        raise ApiError("FORBIDDEN", "Only buyer can dispute", http_status=403)
+    if order.status != "shipped":
+        raise ApiError("CONFLICT", "Can only dispute shipped orders", http_status=409)
+
+    order.inspection_status = "disputed"
+    order.status = "inspection"
+
+    # 관리자에게 알림
+    admin_result = await db.execute(select(User).where(User.role == "admin"))
+    for admin in admin_result.scalars():
+        db.add(Notification(
+            user_id=admin.id, type="order_disputed",
+            title="주문 분쟁 발생",
+            body=f"주문 {str(order.id)[:8]}에 검수 분쟁이 발생했습니다.",
+            link=f"/admin/transactions",
+        ))
+
+    await db.commit()
     return {"data": _serialize_order(order)}

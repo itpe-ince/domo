@@ -4,6 +4,9 @@
 |---|---|---|---|---|
 | [domo-home-ia](./domo-home-ia/) | 2026-04-12 | 100.0% | 8 rounds | 홈/팔로잉/탐색 IA 재정의, CreateMenu, 트렌딩 스코어, 반응형 일관성 |
 | [domo-artist-onboarding](./domo-artist-onboarding/) | 2026-04-14 | 97% | 2 rounds | 작가 가입 Phase 1: 프로필 필드 확장, 4단계 위저드, 등급 체계 변경 |
+| [domo-search](./domo-search/) | 2026-04-18 | 96.5% | 1 round | 통합 검색: 3탭(작가/작품/포스트), SearchBar, 최근 검색, oEmbed |
+| [domo-post-editor](./domo-post-editor/) | 2026-04-18 | 94% | 0 rounds | 미디어 리치 에디터: 7개 툴바, 이모지, oEmbed, 스케줄, 태그 자동완성 |
+| [domo-admin-panel](./domo-admin-panel/) | 2026-04-18 | - | 0 rounds | 관리자 패널 P1: 유저/학교/콘텐츠/거래 관리 4페이지 + admin 앱 분리 |
 
 ## domo-home-ia
 

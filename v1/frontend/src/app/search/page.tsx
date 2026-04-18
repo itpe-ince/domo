@@ -11,16 +11,11 @@ import {
   searchUsers,
   UserSearchResult,
 } from "@/lib/api";
+import { useI18n } from "@/i18n";
 import { useRecentSearches } from "@/lib/useRecentSearches";
 
 type Tab = "artists" | "artworks" | "posts";
 type SortOption = "latest" | "popular" | "ending_soon";
-
-const TABS: { key: Tab; label: string }[] = [
-  { key: "artists", label: "작가" },
-  { key: "artworks", label: "작품" },
-  { key: "posts", label: "포스트" },
-];
 
 const GENRES = [
   null,
@@ -32,8 +27,15 @@ const GENRES = [
 ];
 
 export default function SearchPage() {
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const TABS: { key: Tab; label: string }[] = [
+    { key: "artists", label: t("search.tabArtists") },
+    { key: "artworks", label: t("search.tabArtworks") },
+    { key: "posts", label: t("search.tabPosts") },
+  ];
   const q = searchParams.get("q") ?? "";
   const tabParam = searchParams.get("tab") as Tab | null;
   const tab: Tab =
@@ -134,7 +136,7 @@ export default function SearchPage() {
               type="text"
               role="searchbox"
               aria-label="검색"
-              placeholder="검색어를 입력하세요"
+              placeholder={t("search.placeholder")}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               className="w-full bg-surface rounded-full pl-10 pr-10 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
@@ -187,8 +189,8 @@ export default function SearchPage() {
             {tab === "artists" && (
               <div className="flex gap-2">
                 {[
-                  { value: null, label: "전체" },
-                  { value: "artist", label: "작가만" },
+                  { value: null, label: t("explore.all") },
+                  { value: "artist", label: t("search.artistOnly") },
                 ].map((opt) => (
                   <button
                     key={opt.value ?? "all"}
@@ -219,16 +221,16 @@ export default function SearchPage() {
                           : "bg-surface text-text-secondary hover:bg-surface-hover"
                       }`}
                     >
-                      {g ?? "전체"}
+                      {g ?? t("explore.all")}
                     </button>
                   ))}
                 </div>
                 <div className="flex gap-2">
                   {(
                     [
-                      { value: "latest", label: "최신순" },
-                      { value: "popular", label: "인기순" },
-                      { value: "ending_soon", label: "마감임박" },
+                      { value: "latest", label: t("search.sortLatest") },
+                      { value: "popular", label: t("search.sortPopular") },
+                      { value: "ending_soon", label: t("search.sortEnding") },
                     ] as { value: SortOption; label: string }[]
                   ).map((opt) => (
                     <button
@@ -252,8 +254,8 @@ export default function SearchPage() {
               <div className="flex gap-2">
                 {(
                   [
-                    { value: "latest", label: "최신순" },
-                    { value: "popular", label: "인기순" },
+                    { value: "latest", label: t("search.sortLatest") },
+                    { value: "popular", label: t("search.sortPopular") },
                   ] as { value: SortOption; label: string }[]
                 ).map((opt) => (
                   <button
@@ -281,7 +283,7 @@ export default function SearchPage() {
             {recent.length > 0 && (
               <div className="mb-6">
                 <h2 className="text-sm font-semibold text-text-muted mb-3">
-                  최근 검색
+                  {t("search.recentSearches")}
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   {recent.map((r) => (
@@ -311,7 +313,7 @@ export default function SearchPage() {
               </div>
             )}
             <div className="text-center text-text-muted py-12">
-              검색어를 입력해 작가, 작품, 포스트를 찾아보세요.
+              {t("search.searchHint")}
             </div>
           </div>
         )}
@@ -374,7 +376,7 @@ export default function SearchPage() {
                       {u.role === "artist" && (
                         <span className="text-primary mr-2">✓ Artist</span>
                       )}
-                      팔로워 {u.follower_count}
+                      {t("common.followers")} {u.follower_count}
                     </div>
                   </div>
                 </Link>
@@ -403,6 +405,7 @@ export default function SearchPage() {
 }
 
 function EmptyState({ q }: { q: string }) {
+  const { t } = useI18n();
   const [artists, setArtists] = useState<
     Array<{
       id: string;
@@ -462,7 +465,7 @@ function EmptyState({ q }: { q: string }) {
       </h2>
 
       <div className="mb-6">
-        <p className="text-sm text-text-muted mb-2">비슷한 키워드:</p>
+        <p className="text-sm text-text-muted mb-2">{t("search.similarKeywords")}</p>
         <div className="flex justify-center gap-2">
           {suggestedTags.map((tag) => (
             <Link
@@ -479,7 +482,7 @@ function EmptyState({ q }: { q: string }) {
       {artists.length > 0 && (
         <div className="card p-4 text-left max-w-sm mx-auto">
           <h3 className="text-sm font-semibold text-text-muted mb-3">
-            추천 작가
+            {t("search.recommendedArtists")}
           </h3>
           <ul className="space-y-3">
             {artists.map((a) => (
@@ -513,7 +516,7 @@ function EmptyState({ q }: { q: string }) {
         href="/explore"
         className="inline-block mt-6 bg-primary text-background hover:bg-primary-hover rounded-full font-bold px-6 py-2.5 transition-colors"
       >
-        탐색으로 이동
+        {t("search.goExplore")}
       </Link>
     </div>
   );

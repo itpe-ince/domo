@@ -91,6 +91,7 @@ async def _create_order_for_winner(db: AsyncSession, auction: Auction) -> None:
     fee_pct = Decimal(str(fee_setting["percent"])) if fee_setting else Decimal("10")
     fee = (auction.current_price * fee_pct / Decimal("100")).quantize(Decimal("0.01"))
 
+    buyer_fee = (auction.current_price * Decimal("10") / Decimal("100")).quantize(Decimal("0.01"))
     order = Order(
         buyer_id=auction.current_winner,
         seller_id=auction.seller_id,
@@ -100,6 +101,7 @@ async def _create_order_for_winner(db: AsyncSession, auction: Auction) -> None:
         amount=auction.current_price,
         currency=auction.currency,
         platform_fee=fee,
+        buyer_fee=buyer_fee,
         status="pending_payment",
         payment_due_at=_now() + timedelta(days=days),
     )
@@ -167,7 +169,7 @@ async def create_auction(
         )
 
     start_at = body.start_at or _now()
-    end_at = start_at + timedelta(hours=body.duration_hours)
+    end_at = start_at + timedelta(days=body.duration_days)
     initial_status = "active" if start_at <= _now() else "scheduled"
 
     auction = Auction(

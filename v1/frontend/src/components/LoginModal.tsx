@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useI18n } from "@/i18n";
 import { ApiClientError, loginWithMockEmail } from "@/lib/api";
 
 const QUICK_ACCOUNTS = [
@@ -20,6 +21,7 @@ export function LoginModal({
   redirectTo?: string;
 }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +74,7 @@ export function LoginModal({
         <header className="flex items-center justify-between">
           <div>
             <span className="badge-primary">Dev Mode</span>
-            <h2 className="text-xl font-bold mt-2">Domo 로그인</h2>
+            <h2 className="text-xl font-bold mt-2">Domo {t("common.login")}</h2>
           </div>
           <button
             onClick={onClose}
@@ -116,7 +118,7 @@ export function LoginModal({
           disabled={busy}
           className="btn-primary w-full disabled:opacity-50"
         >
-          {busy ? "로그인 중..." : "로그인"}
+          {busy ? t("common.loading") : t("common.login")}
         </button>
 
         <div>

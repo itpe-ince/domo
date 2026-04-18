@@ -96,6 +96,84 @@ def _trending_score_expr():
     )
 
 
+# ─── Translation ─────────────────────────────────────────────────────────
+
+
+@router.get("/{post_id}/translate")
+async def translate_post(
+    post_id: UUID,
+    lang: str = Query(..., min_length=2, max_length=5),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get translated title/content for a post. Caches in post_translations."""
+    from app.models.translation import PostTranslation
+    from app.services.translation import get_translation_provider_from_db
+
+    # Check cache
+    cached = await db.execute(
+        select(PostTranslation).where(
+            PostTranslation.post_id == post_id,
+            PostTranslation.language == lang,
+        )
+    )
+    existing = cached.scalar_one_or_none()
+    if existing:
+        return {
+            "data": {
+                "post_id": str(post_id),
+                "language": lang,
+                "title": existing.title_translated,
+                "content": existing.content_translated,
+                "cached": True,
+            }
+        }
+
+    # Load original post
+    post = await _load_post_full(db, post_id)
+    if not post:
+        raise ApiError("NOT_FOUND", "Post not found", http_status=404)
+
+    # Skip if already in target language
+    if post.language == lang:
+        return {
+            "data": {
+                "post_id": str(post_id),
+                "language": lang,
+                "title": post.title,
+                "content": post.content,
+                "cached": False,
+            }
+        }
+
+    # Translate
+    provider = await get_translation_provider_from_db(db)
+    title_translated = await provider.translate(post.title or "", lang, post.language) if post.title else None
+    content_translated = await provider.translate(post.content or "", lang, post.language) if post.content else None
+
+    # Cache
+    translation = PostTranslation(
+        post_id=post_id,
+        language=lang,
+        title_translated=title_translated,
+        content_translated=content_translated,
+    )
+    db.add(translation)
+    try:
+        await db.commit()
+    except Exception:
+        await db.rollback()  # unique constraint conflict → already cached
+
+    return {
+        "data": {
+            "post_id": str(post_id),
+            "language": lang,
+            "title": title_translated,
+            "content": content_translated,
+            "cached": False,
+        }
+    }
+
+
 # ─── Tag suggestions ─────────────────────────────────────────────────────
 
 
@@ -264,6 +342,9 @@ async def home_feed(
         result = await db.execute(trending_query)
         trending_posts = list(result.scalars().all())
 
+    # Tag recommendation reasons
+    follow_ids = {p.id for p in follow_posts}
+    trending_ids = {p.id for p in trending_posts}
     all_posts = follow_posts + trending_posts
 
     # author 정보 일괄 로드
@@ -273,8 +354,19 @@ async def home_feed(
     for p in all_posts:
         p.author = author_map.get(p.author_id)  # type: ignore[attr-defined]
 
+    data = []
+    for p in all_posts:
+        item = _serialize_post(p)
+        if p.id in follow_ids:
+            item["recommendation_reason"] = "following"
+        elif p.id in trending_ids:
+            item["recommendation_reason"] = "trending"
+        else:
+            item["recommendation_reason"] = None
+        data.append(item)
+
     return {
-        "data": [_serialize_post(p) for p in all_posts],
+        "data": data,
         "pagination": {"next_cursor": None, "has_more": False},
     }
 
@@ -500,6 +592,69 @@ async def unlike_post(
         post.like_count -= 1
     await db.commit()
     return {"data": {"ok": True, "like_count": post.like_count if post else 0}}
+
+
+# ─── Bookmarks ──────────────────────────────────────────────────────────
+
+
+@router.post("/{post_id}/bookmark")
+async def bookmark_post(
+    post_id: UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.models.bookmark import Bookmark
+    existing = await db.execute(
+        select(Bookmark).where(Bookmark.user_id == user.id, Bookmark.post_id == post_id)
+    )
+    if existing.scalar_one_or_none():
+        return {"data": {"ok": True, "bookmarked": True}}
+    db.add(Bookmark(user_id=user.id, post_id=post_id))
+    await db.commit()
+    return {"data": {"ok": True, "bookmarked": True}}
+
+
+@router.delete("/{post_id}/bookmark")
+async def unbookmark_post(
+    post_id: UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.models.bookmark import Bookmark
+    result = await db.execute(
+        select(Bookmark).where(Bookmark.user_id == user.id, Bookmark.post_id == post_id)
+    )
+    bm = result.scalar_one_or_none()
+    if bm:
+        await db.delete(bm)
+        await db.commit()
+    return {"data": {"ok": True, "bookmarked": False}}
+
+
+@router.get("/bookmarks/mine")
+async def my_bookmarks(
+    limit: int = Query(20, ge=1, le=100),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.models.bookmark import Bookmark
+    result = await db.execute(
+        select(Post)
+        .join(Bookmark, Bookmark.post_id == Post.id)
+        .where(Bookmark.user_id == user.id)
+        .options(selectinload(Post.media), selectinload(Post.product))
+        .order_by(Bookmark.created_at.desc())
+        .limit(limit)
+    )
+    posts = list(result.scalars().all())
+    author_ids = list({p.author_id for p in posts})
+    author_map = {}
+    if author_ids:
+        authors = await db.execute(select(User).where(User.id.in_(author_ids)))
+        author_map = {u.id: u for u in authors.scalars()}
+    for p in posts:
+        p.author = author_map.get(p.author_id)
+    return {"data": [_serialize_post(p) for p in posts]}
 
 
 # ─── Comments ───────────────────────────────────────────────────────────

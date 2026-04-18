@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useI18n } from "@/i18n";
 import { fetchExplore, PostView } from "@/lib/api";
 
 type Section = {
@@ -20,6 +21,7 @@ const GENRE_SECTIONS = [
 ];
 
 export function GalleryView() {
+  const { t } = useI18n();
   const [trending, setTrending] = useState<PostView[]>([]);
   const [genreSections, setGenreSections] = useState<
     Record<string, PostView[]>
@@ -112,7 +114,7 @@ export function GalleryView() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-4 right-4">
               <div className="text-xs text-primary font-semibold mb-1">
-                지금 가장 인기
+                {t("home.mostPopular")}
               </div>
               <h2 className="text-xl font-bold text-white">
                 {trending[0].title ?? "무제"}
@@ -128,14 +130,14 @@ export function GalleryView() {
 
       {/* Trending */}
       <CardRow
-        title="🔥 지금 뜨는 작품"
+        title={`🔥 ${t("home.trending")}`}
         posts={trending}
       />
 
       {/* TOP 10 Artists */}
       {topArtists.length > 0 && (
         <div className="px-4">
-          <h3 className="text-lg font-bold mb-3">🏆 TOP 10 작가</h3>
+          <h3 className="text-lg font-bold mb-3">🏆 {t("home.topArtists")}</h3>
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
             {topArtists.map((artist, idx) => (
               <Link
@@ -171,7 +173,7 @@ export function GalleryView() {
       {/* Making videos section */}
       {makingVideos.length > 0 && (
         <CardRow
-          title="🎬 작업 과정 공개"
+          title={`🎬 ${t("home.makingVideos")}`}
           posts={makingVideos}
         />
       )}

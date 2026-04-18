@@ -11,6 +11,7 @@ import {
   registerExternalMedia,
   uploadMediaFile,
 } from "@/lib/api";
+import { useI18n } from "@/i18n";
 import { useMe } from "@/lib/useMe";
 import { LoginModal } from "@/components/LoginModal";
 import { MediaToolbar } from "@/components/post-editor/MediaToolbar";
@@ -31,6 +32,7 @@ export default function CreatePostPage() {
   const initialType =
     searchParams.get("type") === "general" ? "general" : "product";
   const { me, loading: meLoading } = useMe();
+  const { t } = useI18n();
   const [loginOpen, setLoginOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const tagRef = useRef<HTMLDivElement>(null);
@@ -187,17 +189,17 @@ export default function CreatePostPage() {
     <main className="flex-1 min-w-0 max-w-3xl mx-auto">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
-        <h1 className="text-xl font-bold">등록</h1>
+        <h1 className="text-xl font-bold">{t("post.createTitle")}</h1>
         <button
           onClick={handleSubmit}
           disabled={submitting || !me}
           className="btn-primary text-sm disabled:opacity-50"
         >
           {submitting
-            ? "등록 중..."
+            ? t("post.submitting")
             : scheduledAt
-              ? "예약 등록"
-              : "등록"}
+              ? t("post.submitScheduled")
+              : t("post.submit")}
         </button>
       </div>
 
@@ -263,7 +265,7 @@ export default function CreatePostPage() {
             ref={textareaRef}
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="작품에 대한 이야기를 들려주세요..."
+            placeholder={t("post.contentPlaceholder")}
             rows={6}
             className="w-full bg-transparent text-text-primary placeholder:text-text-muted outline-none border-none resize-none text-sm leading-relaxed"
           />

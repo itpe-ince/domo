@@ -2,16 +2,25 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+
+ALLOWED_DURATION_DAYS = [3, 7, 14]
 
 
 class AuctionCreate(BaseModel):
     product_post_id: UUID
     start_price: Decimal = Field(..., gt=0)
-    min_increment: Decimal = Field(Decimal("1000"), gt=0)
-    duration_hours: int = Field(..., ge=1, le=720)
-    # Phase 2: 작가가 시작 시점도 선택할 수 있게
+    min_increment: Decimal = Field(Decimal("1"), gt=0)
+    duration_days: int = Field(7)  # 3, 7, 14일 중 선택 (기본 7일 추천)
     start_at: datetime | None = None
+
+    @field_validator("duration_days")
+    @classmethod
+    def validate_duration(cls, v: int) -> int:
+        if v not in ALLOWED_DURATION_DAYS:
+            raise ValueError(f"경매 기간은 {ALLOWED_DURATION_DAYS}일 중 선택해야 합니다.")
+        return v
 
 
 class AuctionOut(BaseModel):

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { PostCard } from "@/components/PostCard";
+import { useI18n } from "@/i18n";
 import { fetchExplore, PostView } from "@/lib/api";
 
 const GENRES = [
@@ -14,6 +15,7 @@ const GENRES = [
 ];
 
 export default function ExplorePage() {
+  const { t } = useI18n();
   const [posts, setPosts] = useState<PostView[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +47,7 @@ export default function ExplorePage() {
   return (
     <main className="flex-1 min-w-0 xl:max-w-[900px] mx-auto">
       <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3">
-        <h1 className="text-xl font-bold mb-3">탐색</h1>
+        <h1 className="text-xl font-bold mb-3">{t("explore.title")}</h1>
         <div className="space-y-2">
           <div className="flex gap-2 overflow-x-auto pb-1">
             {GENRES.map((g) => (
@@ -58,7 +60,7 @@ export default function ExplorePage() {
                     : "bg-surface text-text-secondary hover:bg-surface-hover"
                 }`}
               >
-                {g ?? "전체"}
+                {g ?? t("explore.all")}
               </button>
             ))}
           </div>
@@ -71,7 +73,7 @@ export default function ExplorePage() {
                   : "bg-surface text-text-secondary"
               }`}
             >
-              모든 포스트
+              {t("explore.allPosts")}
             </button>
             <button
               onClick={() => setType("product")}
@@ -81,7 +83,7 @@ export default function ExplorePage() {
                   : "bg-surface text-text-secondary"
               }`}
             >
-              판매/경매 작품
+              {t("explore.products")}
             </button>
             <button
               onClick={() => setType("general")}
@@ -91,7 +93,7 @@ export default function ExplorePage() {
                   : "bg-surface text-text-secondary"
               }`}
             >
-              일반 게시물
+              {t("explore.general")}
             </button>
           </div>
         </div>

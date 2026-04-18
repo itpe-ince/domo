@@ -37,6 +37,17 @@ class Settings(BaseSettings):
     resend_api_key: str = ""
     email_from: str = "noreply@domo.tuzigroup.com"
 
+    # KYC — 'mock' | 'toss' | 'stripe'
+    kyc_provider: str = "mock"
+    toss_client_id: str = ""
+    toss_client_secret: str = ""
+
+    # Translation — 'auto' | 'ollama' | 'google' | 'mock'
+    translation_provider: str = "auto"
+    google_translate_api_key: str = ""
+    ollama_url: str = "http://100.75.139.86:11434"
+    ollama_translation_model: str = "gemma4:latest"
+
     frontend_url: str = "http://localhost:3700"
 
 

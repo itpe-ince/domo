@@ -1,0 +1,148 @@
+{
+  "common": {
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión",
+    "register": "Crear",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "search": "Buscar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "prev": "Anterior",
+    "loading": "Cargando...",
+    "noData": "No hay datos.",
+    "error": "Se produjo un error.",
+    "follow": "Seguir",
+    "following": "Siguiendo",
+    "followers": "Seguidores",
+    "likes": "Me gusta",
+    "comments": "Comentarios"
+  },
+  "nav": {
+    "home": "Inicio",
+    "feed": "Feed",
+    "following": "Siguiendo",
+    "explore": "Explorar",
+    "notifications": "Notificaciones",
+    "profile": "Perfil",
+    "register": "Crear",
+    "subscription": "Suscripciones",
+    "orders": "Pedidos",
+    "warnings": "Advertencias",
+    "settings": "Configuración",
+    "admin": "Admin"
+  },
+  "home": {
+    "title": "Domo Lounge",
+    "subtitle": "Galería curada",
+    "trending": "Tendencias ahora",
+    "topArtists": "TOP 10 Artistas",
+    "makingVideos": "Proceso creativo",
+    "mostPopular": "Más popular",
+    "noTrending": "Aún no hay tendencias."
+  },
+  "feed": {
+    "title": "Feed",
+    "subtitleAuth": "Mezcla de artistas seguidos y obras populares.",
+    "subtitleGuest": "Obras populares de artistas emergentes.",
+    "noPosts": "No hay publicaciones.",
+    "loadError": "Error al cargar el feed"
+  },
+  "followingPage": {
+    "title": "Siguiendo",
+    "subtitle": "Últimas obras de los artistas que sigues.",
+    "loginRequired": "Inicia sesión para continuar.",
+    "loginHint": "Usa el botón de inicio de sesión en la barra lateral.",
+    "emptyTitle": "Aún no sigues a ningún artista",
+    "emptyHint": "Descubre artistas en Explorar.",
+    "exploreCta": "Explorar artistas"
+  },
+  "explore": {
+    "title": "Explorar",
+    "all": "Todo",
+    "allPosts": "Todas las publicaciones",
+    "products": "Obras en venta",
+    "general": "Publicaciones generales"
+  },
+  "search": {
+    "placeholder": "Buscar...",
+    "recentSearches": "Búsquedas recientes",
+    "clearAll": "Borrar todo",
+    "noResults": " — sin resultados.",
+    "similarKeywords": "Palabras clave similares:",
+    "recommendedArtists": "Artistas recomendados",
+    "goExplore": "Ir a Explorar",
+    "tabArtists": "Artistas",
+    "tabArtworks": "Obras",
+    "tabPosts": "Publicaciones",
+    "artistOnly": "Solo artistas",
+    "sortLatest": "Recientes",
+    "sortPopular": "Populares",
+    "sortEnding": "Por terminar",
+    "searchHint": "Busca artistas, obras y publicaciones."
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "markAllRead": "Marcar todo como leído",
+    "loginRequired": "Inicia sesión para ver notificaciones.",
+    "loginHint": "Usa el botón de inicio de sesión en la barra lateral.",
+    "empty": "No hay notificaciones."
+  },
+  "post": {
+    "untitled": "Sin título",
+    "artwork": "Obra",
+    "generalPost": "Publicación general",
+    "productPost": "Publicación de producto",
+    "createTitle": "Crear",
+    "submit": "Publicar",
+    "submitScheduled": "Programar",
+    "submitting": "Publicando...",
+    "postType": "Tipo de publicación",
+    "title": "Título",
+    "contentPlaceholder": "Cuenta la historia de tu obra...",
+    "tags": "Etiquetas",
+    "makingVideoLabel": "Marcar próxima subida como video de proceso",
+    "artCheckNote": "※ Publicaciones con imágenes/videos entrarán en cola de revisión.",
+    "productInfo": "Info del producto",
+    "genre": "Género",
+    "dimensions": "Dimensiones",
+    "medium": "Medio",
+    "year": "Año",
+    "auctionSell": "Vender en subasta",
+    "buyNow": "Compra inmediata",
+    "buyNowPrice": "Precio compra inmediata (USD)"
+  },
+  "bluebird": {
+    "unitLabel": "Bluebird",
+    "perUnit": "$1 / 1 Bluebird"
+  },
+  "recommendation": {
+    "following": "Siguiendo",
+    "trending": "🔥 Tendencia",
+    "similar": "Obras similares",
+    "genre": "Tu género"
+  },
+  "badge": {
+    "student": "🎓 Artista estudiante",
+    "emerging": "✨ Artista emergente",
+    "recommended": "🕊 Artista recomendado",
+    "popular": "🔥 Artista popular"
+  },
+  "footer": {
+    "privacy": "Política de privacidad",
+    "terms": "Términos de servicio",
+    "cookies": "Cookies",
+    "copyright": "© 2026 Domo Lounge"
+  },
+  "time": {
+    "secondsAgo": "s atrás",
+    "minutesAgo": "m atrás",
+    "hoursAgo": "h atrás",
+    "daysAgo": "d atrás"
+  }
+}

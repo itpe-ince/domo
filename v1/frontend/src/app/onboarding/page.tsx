@@ -31,9 +31,15 @@ export default function OnboardingPage() {
   const [me, setMe] = useState<ApiUser | null>(null);
   const [loginEmail, setLoginEmail] = useState("");
 
-  const [step, setStep] = useState<"basic" | "guardian" | "done">("basic");
+  const [step, setStep] = useState<"basic" | "genres" | "guardian" | "done">("basic");
   const [birthYear, setBirthYear] = useState<number | "">("");
   const [countryCode, setCountryCode] = useState("KR");
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+
+  const GENRE_OPTIONS = [
+    "painting", "drawing", "photography", "sculpture",
+    "mixed_media", "digital", "installation", "printmaking",
+  ];
   const [guardianEmail, setGuardianEmail] = useState("");
   const [guardianName, setGuardianName] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -65,12 +71,18 @@ export default function OnboardingPage() {
       setError("생년을 입력해주세요.");
       return;
     }
+    // 장르 선택 단계로 이동 (온보딩 API 호출은 장르 선택 후)
+    setStep("genres");
+  }
+
+  async function handleSubmitGenres() {
     setSubmitting(true);
     setError(null);
     try {
       const result = await completeOnboarding({
-        birth_year: birthYear,
+        birth_year: birthYear as number,
         country_code: countryCode,
+        preferred_genres: selectedGenres.length > 0 ? selectedGenres : undefined,
       });
       if (result.guardian_required) {
         setStep("guardian");
@@ -198,6 +210,47 @@ export default function OnboardingPage() {
           >
             {submitting ? "처리 중..." : "다음"}
           </button>
+        </div>
+      )}
+
+      {me && step === "genres" && (
+        <div className="card p-6 space-y-4">
+          <h2 className="text-lg font-semibold">관심 장르 선택</h2>
+          <p className="text-text-secondary text-sm">
+            관심 있는 장르를 선택하면 맞춤 추천을 받을 수 있습니다. (선택사항)
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {GENRE_OPTIONS.map((g) => (
+              <button
+                key={g}
+                onClick={() => {
+                  setSelectedGenres((prev) =>
+                    prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]
+                  );
+                }}
+                className={`px-4 py-2 rounded-full text-sm transition-colors ${
+                  selectedGenres.includes(g)
+                    ? "bg-primary text-background font-semibold"
+                    : "bg-surface text-text-secondary hover:bg-surface-hover"
+                }`}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+          {selectedGenres.length > 0 && (
+            <p className="text-xs text-text-muted">{selectedGenres.length}개 선택됨</p>
+          )}
+          <div className="flex gap-3">
+            <button onClick={() => setStep("basic")} className="text-sm text-text-muted">← 이전</button>
+            <button
+              onClick={handleSubmitGenres}
+              disabled={submitting}
+              className="btn-primary flex-1 disabled:opacity-50"
+            >
+              {submitting ? "처리 중..." : selectedGenres.length > 0 ? "완료" : "건너뛰기"}
+            </button>
+          </div>
         </div>
       )}
 

@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useI18n } from "@/i18n";
 import { fetchExplore, fetchHomeFeed, PostView } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
+import { usePostTranslation } from "@/lib/useTranslation";
 
 export default function FeedPage() {
   const { me, loading: meLoading } = useMe();
+  const { t } = useI18n();
   const [posts, setPosts] = useState<PostView[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,11 +39,9 @@ export default function FeedPage() {
   return (
     <main className="flex-1 min-w-0 max-w-3xl mx-auto">
       <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3">
-        <h1 className="text-xl font-bold">피드</h1>
+        <h1 className="text-xl font-bold">{t("feed.title")}</h1>
         <p className="text-xs text-text-muted mt-0.5">
-          {me
-            ? "팔로우한 작가와 인기 작품을 섞어 보여드려요."
-            : "지금 인기 있는 신진 작가들의 작품이에요."}
+          {me ? t("feed.subtitleAuth") : t("feed.subtitleGuest")}
         </p>
       </div>
 
@@ -68,7 +69,11 @@ export default function FeedPage() {
 }
 
 export function FeedItem({ post }: { post: PostView }) {
+  const { t } = useI18n();
   const heroMedia = post.media[0];
+  const { title: translatedTitle, content: translatedContent, isTranslated } = usePostTranslation(
+    post.id, post.language, post.title, post.content
+  );
 
   return (
     <article className="px-4 py-4 hover:bg-surface-hover/30 transition-colors">
@@ -99,26 +104,39 @@ export function FeedItem({ post }: { post: PostView }) {
             {timeAgo(post.created_at)}
           </div>
         </div>
-        {post.type === "product" && (
-          <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-semibold">
-            작품
-          </span>
-        )}
+        <div className="flex gap-1.5">
+          {(post as any).recommendation_reason === "following" && (
+            <span className="text-[10px] bg-surface text-text-muted px-2 py-0.5 rounded-full">
+              {t("recommendation.following")}
+            </span>
+          )}
+          {(post as any).recommendation_reason === "trending" && (
+            <span className="text-[10px] bg-surface text-text-muted px-2 py-0.5 rounded-full">
+              {t("recommendation.trending")}
+            </span>
+          )}
+          {post.type === "product" && (
+            <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-semibold">
+              {t("post.artwork")}
+            </span>
+          )}
+        </div>
       </Link>
 
       {/* Title */}
-      {post.title && (
+      {(translatedTitle || post.title) && (
         <Link href={`/posts/${post.id}`}>
           <h2 className="text-base font-bold mb-2 hover:text-primary transition-colors">
-            {post.title}
+            {translatedTitle || post.title}
+            {isTranslated && <span className="text-xs text-text-muted font-normal ml-1.5">🌐</span>}
           </h2>
         </Link>
       )}
 
       {/* Content preview */}
-      {post.content && (
+      {(translatedContent || post.content) && (
         <p className="text-sm text-text-secondary mb-3 line-clamp-3">
-          {post.content}
+          {translatedContent || post.content}
         </p>
       )}
 

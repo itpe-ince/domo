@@ -7,6 +7,8 @@ export type ApplicationFormData = {
   graduation_year: number;
   is_enrolled: boolean;
   genre_tags: string[];
+  edu_email: string;
+  edu_email_verified: boolean;
 
   // Step 2
   representative_works: RepresentativeWork[];

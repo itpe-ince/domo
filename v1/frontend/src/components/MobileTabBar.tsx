@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useI18n } from "@/i18n";
 import { useMe } from "@/lib/useMe";
 import { useUnreadCount } from "@/lib/useUnreadCount";
 import { LoginModal } from "./LoginModal";
@@ -18,6 +19,7 @@ import {
 
 export function MobileTabBar() {
   const { me } = useMe();
+  const { t } = useI18n();
   const pathname = usePathname();
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginRedirect, setLoginRedirect] = useState<string | undefined>();
@@ -40,7 +42,7 @@ export function MobileTabBar() {
           className={`flex-1 flex items-center justify-center py-2 ${iconCls(
             isActive("/")
           )}`}
-          aria-label="홈"
+          aria-label={t("nav.home")}
         >
           <HomeIcon />
         </Link>
@@ -50,7 +52,7 @@ export function MobileTabBar() {
           className={`flex-1 flex items-center justify-center py-2 ${iconCls(
             isActive("/feed")
           )}`}
-          aria-label="피드"
+          aria-label={t("nav.feed")}
         >
           <LayersIcon />
         </Link>
@@ -61,7 +63,7 @@ export function MobileTabBar() {
             className={`flex-1 flex items-center justify-center py-2 ${iconCls(
               isActive("/following")
             )}`}
-            aria-label="팔로잉"
+            aria-label={t("nav.following")}
           >
             <UsersIcon />
           </Link>
@@ -72,7 +74,7 @@ export function MobileTabBar() {
           className={`flex-1 flex items-center justify-center py-2 ${iconCls(
             isActive("/search")
           )}`}
-          aria-label="검색"
+          aria-label={t("common.search")}
         >
           <ExploreIcon />
         </Link>
@@ -85,7 +87,7 @@ export function MobileTabBar() {
                 isActive("/notifications")
               )}`}
               aria-label={
-                unread > 0 ? `알림 (읽지 않음 ${unread})` : "알림"
+                unread > 0 ? `${t("nav.notifications")} (${unread})` : t("nav.notifications")
               }
             >
               <span className="relative">
@@ -102,7 +104,7 @@ export function MobileTabBar() {
               className={`flex-1 flex items-center justify-center py-2 ${iconCls(
                 pathname.startsWith("/users/")
               )}`}
-              aria-label="프로필"
+              aria-label={t("nav.profile")}
             >
               <UserIcon />
             </Link>
@@ -111,7 +113,7 @@ export function MobileTabBar() {
           <button
             onClick={() => setLoginOpen(true)}
             className="flex-1 flex items-center justify-center py-2 text-text-secondary hover:text-primary"
-            aria-label="로그인"
+            aria-label={t("common.login")}
           >
             <UserIcon />
           </button>
@@ -124,7 +126,7 @@ export function MobileTabBar() {
           <Link
             href="/posts/new"
             className="bg-primary text-background rounded-full p-4 shadow-lg hover:bg-primary-hover transition-colors flex items-center justify-center"
-            aria-label="등록"
+            aria-label={t("nav.register")}
           >
             <PlusIcon />
           </Link>
@@ -135,7 +137,7 @@ export function MobileTabBar() {
               setLoginOpen(true);
             }}
             className="bg-primary text-background rounded-full p-4 shadow-lg hover:bg-primary-hover transition-colors"
-            aria-label="등록"
+            aria-label={t("nav.register")}
           >
             <PlusIcon />
           </button>

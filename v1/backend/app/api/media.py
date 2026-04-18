@@ -36,7 +36,7 @@ from app.services.storage.local import UPLOAD_ROOT
 router = APIRouter(prefix="/media", tags=["media"])
 
 IMAGE_MAX = 10 * 1024 * 1024  # 10 MB
-VIDEO_MAX = 50 * 1024 * 1024  # 50 MB
+VIDEO_MAX = 200 * 1024 * 1024  # 200 MB
 MAKING_VIDEO_MAX = 1024 * 1024 * 1024  # 1 GB
 
 ALLOWED_IMAGE_EXT = {".jpg", ".jpeg", ".png", ".webp", ".gif"}

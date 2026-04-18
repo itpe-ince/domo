@@ -18,6 +18,8 @@ const INITIAL_FORM: ApplicationFormData = {
   graduation_year: 2026,
   is_enrolled: true,
   genre_tags: [],
+  edu_email: "",
+  edu_email_verified: false,
   representative_works: [
     { title: "", image_url: "", description: "", dimensions: "", medium: "", year: 2026 },
     { title: "", image_url: "", description: "", dimensions: "", medium: "", year: 2026 },

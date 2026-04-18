@@ -4,20 +4,24 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api import activity as activity_router
 from app.api import admin as admin_router
 from app.api import admin_dashboard as admin_dashboard_router
 from app.api import artists as artists_router
 from app.api import auctions as auctions_router
 from app.api import auth as auth_router
 from app.api import guardian as guardian_router
+from app.api import kyc as kyc_router
 from app.api import legal as legal_router
 from app.api import me as me_router
 from app.api import media as media_router
 from app.api import moderation as moderation_router
 from app.api import notifications as notifications_router
 from app.api import orders as orders_router
+from app.api import collections as collections_router
 from app.api import posts as posts_router
 from app.api import rankings as rankings_router
+from app.api import settlements as settlements_router
 from app.api import sponsorships as sponsorships_router
 from app.api import users as users_router
 from app.api import webhooks as webhooks_router
@@ -27,6 +31,7 @@ from app.services.auction_jobs import auction_cron_loop
 from app.services.gdpr_jobs import gdpr_cron_loop
 from app.services.badge_jobs import badge_cron_loop
 from app.services.schedule_jobs import schedule_cron_loop
+from app.services.settlement_jobs import settlement_cron_loop
 
 settings = get_settings()
 
@@ -38,12 +43,13 @@ async def lifespan(app: FastAPI):
     gdpr_task = asyncio.create_task(gdpr_cron_loop(interval_seconds=3600))
     schedule_task = asyncio.create_task(schedule_cron_loop(interval_seconds=60))
     badge_task = asyncio.create_task(badge_cron_loop(interval_seconds=86400))
+    settle_task = asyncio.create_task(settlement_cron_loop(interval_seconds=86400))
     try:
         yield
     finally:
-        for task in (auction_task, gdpr_task, schedule_task, badge_task):
+        for task in (auction_task, gdpr_task, schedule_task, badge_task, settle_task):
             task.cancel()
-        for task in (auction_task, gdpr_task, schedule_task, badge_task):
+        for task in (auction_task, gdpr_task, schedule_task, badge_task, settle_task):
             try:
                 await task
             except asyncio.CancelledError:
@@ -94,8 +100,12 @@ api_v1.include_router(legal_router.router)
 api_v1.include_router(guardian_router.router)
 api_v1.include_router(users_router.router)
 api_v1.include_router(artists_router.router)
+api_v1.include_router(activity_router.router)
+api_v1.include_router(collections_router.router)
+api_v1.include_router(kyc_router.router)
 api_v1.include_router(posts_router.router)
 api_v1.include_router(rankings_router.router)
+api_v1.include_router(settlements_router.router)
 api_v1.include_router(media_router.router)
 api_v1.include_router(sponsorships_router.sponsorship_router)
 api_v1.include_router(sponsorships_router.subscription_router)

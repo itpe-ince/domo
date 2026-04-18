@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useI18n, LOCALE_LABELS, Locale } from "@/i18n";
 import { logout } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import { useUnreadCount } from "@/lib/useUnreadCount";
@@ -40,24 +41,25 @@ export function Sidebar() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginRedirect, setLoginRedirect] = useState<string | undefined>();
   const unread = useUnreadCount();
+  const { t, locale, setLocale } = useI18n();
 
   async function handleLogout() {
     await logout();
   }
 
   const primary: NavItem[] = [
-    { href: "/", label: "홈", Icon: HomeIcon },
-    { href: "/feed", label: "피드", Icon: LayersIcon },
+    { href: "/", label: t("nav.home"), Icon: HomeIcon },
+    { href: "/feed", label: t("nav.feed"), Icon: LayersIcon },
     {
       href: "/following",
-      label: "팔로잉",
+      label: t("nav.following"),
       Icon: UsersIcon,
       needsAuth: true,
     },
-    { href: "/explore", label: "탐색", Icon: ExploreIcon },
+    { href: "/explore", label: t("nav.explore"), Icon: ExploreIcon },
     {
       href: "/notifications",
-      label: "알림",
+      label: t("nav.notifications"),
       Icon: BellIcon,
       needsAuth: true,
       badge: unread,
@@ -67,18 +69,18 @@ export function Sidebar() {
   const secondary: NavItem[] = [
     {
       href: "/subscriptions",
-      label: "정기 후원",
+      label: t("nav.subscription"),
       Icon: BluebirdIcon,
       needsAuth: true,
     },
-    { href: "/orders", label: "주문", Icon: ReceiptIcon, needsAuth: true },
+    { href: "/orders", label: t("nav.orders"), Icon: ReceiptIcon, needsAuth: true },
     {
       href: "/warnings",
-      label: "내 경고",
+      label: t("nav.warnings"),
       Icon: ShieldAlertIcon,
       needsAuth: true,
     },
-    { href: "/me/account", label: "설정", Icon: SettingsIcon, needsAuth: true },
+    { href: "/me/account", label: t("nav.settings"), Icon: SettingsIcon, needsAuth: true },
   ];
 
   // Admin은 별도 앱 (포트 3800)
@@ -170,7 +172,7 @@ export function Sidebar() {
                 className="group flex items-center justify-center xl:justify-start gap-4 rounded-full px-3 py-3 transition-colors text-text-primary hover:bg-surface-hover"
               >
                 <DashboardIcon />
-                <span className="hidden xl:inline text-lg font-medium">관리자</span>
+                <span className="hidden xl:inline text-lg font-medium">{t("nav.admin")}</span>
               </a>
             </>
           )}
@@ -186,7 +188,7 @@ export function Sidebar() {
               }`}
             >
               <PlusIcon />
-              <span className="hidden xl:inline text-lg font-medium">등록</span>
+              <span className="hidden xl:inline text-lg font-medium">{t("nav.register")}</span>
             </Link>
           ) : (
             <button
@@ -197,7 +199,7 @@ export function Sidebar() {
               className="group flex items-center justify-center xl:justify-start gap-4 rounded-full px-3 py-3 transition-colors text-text-primary hover:bg-surface-hover w-full"
             >
               <PlusIcon />
-              <span className="hidden xl:inline text-lg font-medium">등록</span>
+              <span className="hidden xl:inline text-lg font-medium">{t("nav.register")}</span>
             </button>
           )}
 
@@ -212,7 +214,7 @@ export function Sidebar() {
               }`}
             >
               <UserIcon />
-              <span className="hidden xl:inline text-lg font-medium">프로필</span>
+              <span className="hidden xl:inline text-lg font-medium">{t("nav.profile")}</span>
             </Link>
           ) : (
             <button
@@ -220,7 +222,7 @@ export function Sidebar() {
               className="group flex items-center justify-center xl:justify-start gap-4 rounded-full px-3 py-3 transition-colors text-text-primary hover:bg-surface-hover w-full"
             >
               <UserIcon />
-              <span className="hidden xl:inline text-lg font-medium">프로필</span>
+              <span className="hidden xl:inline text-lg font-medium">{t("nav.profile")}</span>
             </button>
           )}
         </div>
@@ -261,12 +263,29 @@ export function Sidebar() {
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-hover text-sm text-text-primary"
                 >
                   <LogoutIcon size={18} />
-                  <span>로그아웃</span>
+                  <span>{t("common.logout")}</span>
                 </button>
               </div>
             </details>
           </div>
         )}
+
+        {/* Language switcher */}
+        <div className="mx-3 mb-2">
+          <select
+            value={locale}
+            onChange={(e) => setLocale(e.target.value as Locale)}
+            className="w-full bg-surface border border-border rounded-full px-3 py-1.5 text-xs text-text-muted focus:border-primary outline-none cursor-pointer"
+          >
+            {(Object.entries(LOCALE_LABELS) as [Locale, { flag: string; name: string }][]).map(
+              ([code, { flag, name }]) => (
+                <option key={code} value={code}>
+                  {flag} {name}
+                </option>
+              )
+            )}
+          </select>
+        </div>
       </aside>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} redirectTo={loginRedirect} />

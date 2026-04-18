@@ -139,6 +139,7 @@ export type ApiUser = {
   avatar_url: string | null;
   language: string;
   warning_count: number;
+  identity_verified_at: string | null;
 };
 
 export async function loginWithMockEmail(email: string): Promise<ApiUser> {
@@ -405,6 +406,54 @@ export async function searchPosts(
   if (opts?.sort) qs.set("sort", opts.sort);
   qs.set("limit", String(opts?.limit ?? 20));
   return apiFetch<PostView[]>(`/posts/search?${qs}`, { auth: false });
+}
+
+// ─── Activity Tracking ──────────────────────────────────────────────────
+
+export async function trackActivity(
+  event_type: string,
+  target_type: string,
+  target_id: string,
+  duration_sec?: number
+) {
+  try {
+    await apiFetch("/activity/track", {
+      method: "POST",
+      body: JSON.stringify({ event_type, target_type, target_id, duration_sec }),
+      auth: false,
+    });
+  } catch {
+    // Non-blocking, ignore errors
+  }
+}
+
+// ─── Currency ───────────────────────────────────────────────────────────
+
+export async function getExchangeRate(target: string): Promise<{ rate: number }> {
+  return apiFetch<{ rate: number }>(
+    `/activity/exchange-rate?target=${target}`,
+    { auth: false }
+  );
+}
+
+// ─── Translation ────────────────────────────────────────────────────────
+
+export type PostTranslation = {
+  post_id: string;
+  language: string;
+  title: string | null;
+  content: string | null;
+  cached: boolean;
+};
+
+export async function fetchPostTranslation(
+  postId: string,
+  lang: string
+): Promise<PostTranslation> {
+  return apiFetch<PostTranslation>(
+    `/posts/${postId}/translate?lang=${lang}`,
+    { auth: false }
+  );
 }
 
 export async function fetchPost(id: string): Promise<PostView> {
