@@ -35,7 +35,8 @@
     "orders": "주문",
     "warnings": "내 경고",
     "settings": "설정",
-    "admin": "관리자"
+    "admin": "관리자",
+    "communities": "커뮤니티"
   },
   "home": {
     "title": "Domo Lounge",

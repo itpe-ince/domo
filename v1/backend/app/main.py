@@ -19,8 +19,11 @@ from app.api import moderation as moderation_router
 from app.api import notifications as notifications_router
 from app.api import orders as orders_router
 from app.api import collections as collections_router
+from app.api import communities as communities_router
 from app.api import posts as posts_router
 from app.api import rankings as rankings_router
+from app.api import reports as reports_router
+from app.api import rewards as rewards_router
 from app.api import settlements as settlements_router
 from app.api import sponsorships as sponsorships_router
 from app.api import users as users_router
@@ -102,9 +105,12 @@ api_v1.include_router(users_router.router)
 api_v1.include_router(artists_router.router)
 api_v1.include_router(activity_router.router)
 api_v1.include_router(collections_router.router)
+api_v1.include_router(communities_router.router)
 api_v1.include_router(kyc_router.router)
 api_v1.include_router(posts_router.router)
 api_v1.include_router(rankings_router.router)
+api_v1.include_router(reports_router.router)
+api_v1.include_router(rewards_router.router)
 api_v1.include_router(settlements_router.router)
 api_v1.include_router(media_router.router)
 api_v1.include_router(sponsorships_router.sponsorship_router)

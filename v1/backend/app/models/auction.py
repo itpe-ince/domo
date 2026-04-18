@@ -111,6 +111,8 @@ class Order(Base):
     # buyer_fee = amount * 10% (콜렉터 추가 수수료)
     status: Mapped[str] = mapped_column(String(30), default="pending_payment")
     # 'pending_payment' | 'paid' | 'shipped' | 'inspection' | 'settled' | 'cancelled' | 'expired' | 'refunded'
+    tracking_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    shipping_carrier: Mapped[str | None] = mapped_column(String(50), nullable=True)
     shipping_status: Mapped[str] = mapped_column(String(20), default="pending")
     # 'pending' | 'shipped' | 'delivered'
     inspection_status: Mapped[str] = mapped_column(String(20), default="pending")

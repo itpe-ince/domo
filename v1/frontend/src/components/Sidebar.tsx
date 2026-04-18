@@ -67,6 +67,7 @@ export function Sidebar() {
   ];
 
   const secondary: NavItem[] = [
+    { href: "/communities", label: t("nav.communities"), Icon: UsersIcon },
     {
       href: "/subscriptions",
       label: t("nav.subscription"),

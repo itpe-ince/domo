@@ -35,7 +35,8 @@
     "orders": "Orders",
     "warnings": "My Warnings",
     "settings": "Settings",
-    "admin": "Admin"
+    "admin": "Admin",
+    "communities": "Communities"
   },
   "home": {
     "title": "Domo Lounge",

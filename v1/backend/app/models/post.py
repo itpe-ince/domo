@@ -51,6 +51,8 @@ class Post(Base):
     location_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
     location_lat: Mapped[float | None] = mapped_column(Float, nullable=True)
     location_lng: Mapped[float | None] = mapped_column(Float, nullable=True)
+    is_live: Mapped[bool] = mapped_column(Boolean, default=False)
+    live_url: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
