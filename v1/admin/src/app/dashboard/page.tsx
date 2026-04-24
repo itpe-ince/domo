@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   ApiUser,
@@ -9,7 +9,6 @@ import {
   fetchDashboardRevenue,
   fetchDashboardStats,
   fetchMe,
-  loginWithMockEmail,
   tokenStore,
 } from "@/lib/api";
 
@@ -32,30 +31,30 @@ function StatCard({
   accent?: boolean;
 }) {
   return (
-    <div className="card p-5">
-      <div className="text-text-muted text-xs uppercase tracking-wide">
+    <div className="admin-card p-5">
+      <div className="text-admin-muted text-[11px] uppercase tracking-wider font-medium">
         {label}
       </div>
       <div
-        className={`text-3xl font-bold mt-2 ${
-          accent ? "text-primary" : "text-text-primary"
+        className={`text-2xl font-semibold mt-2 tabular-nums ${
+          accent ? "text-admin-accent" : "text-admin-fg"
         }`}
       >
         {value}
       </div>
-      {hint && <div className="text-text-muted text-xs mt-1">{hint}</div>}
+      {hint && <div className="text-admin-muted text-xs mt-1">{hint}</div>}
     </div>
   );
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [me, setMe] = useState<ApiUser | null>(null);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [revenue, setRevenue] = useState<DashboardRevenue | null>(null);
   const [days, setDays] = useState(30);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [loginEmail, setLoginEmail] = useState("");
 
   useEffect(() => {
     void load();
@@ -67,12 +66,14 @@ export default function DashboardPage() {
     setError(null);
     try {
       if (!tokenStore.get()) {
-        setMe(null);
+        router.replace("/login");
         return;
       }
       const u = await fetchMe();
       setMe(u);
-      if (u.role !== "admin") return;
+      if (u.role !== "admin") {
+        return;
+      }
       const [s, r] = await Promise.all([
         fetchDashboardStats(days),
         fetchDashboardRevenue(days),
@@ -86,65 +87,33 @@ export default function DashboardPage() {
     }
   }
 
-  async function handleLogin() {
-    try {
-      const u = await loginWithMockEmail(loginEmail.trim());
-      setMe(u);
-      void load();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Login failed");
-    }
-  }
-
   return (
-    <main className="min-h-screen px-6 py-8 max-w-6xl mx-auto">
+    <main className="px-8 py-8">
       <header className="flex items-center justify-between mb-8">
         <div>
-          <span className="badge-primary">Admin</span>
-          <h1 className="text-3xl font-bold mt-3">대시보드</h1>
-          <p className="text-text-secondary text-sm mt-1">
+          <span className="admin-badge">Admin</span>
+          <h1 className="text-2xl font-semibold mt-3 text-admin-fg tracking-tight">
+            대시보드
+          </h1>
+          <p className="text-admin-muted text-sm mt-1">
             매출 / 지표 / 통계
           </p>
         </div>
-        <nav className="flex gap-2">
-          <Link href="/admin/applications" className="btn-ghost text-sm">
-            승인
-          </Link>
-          <Link href="/admin/moderation" className="btn-ghost text-sm">
-            모더레이션
-          </Link>
-          <Link href="/admin/settings" className="btn-ghost text-sm">
-            설정
-          </Link>
-        </nav>
       </header>
 
-      {!me && (
-        <div className="card p-6 max-w-md">
-          <h2 className="text-lg font-semibold mb-3">로그인 (개발 모드)</h2>
-          <input
-            type="email"
-            placeholder="admin@domo.example.com"
-            value={loginEmail}
-            onChange={(e) => setLoginEmail(e.target.value)}
-            className="w-full bg-background border border-border rounded-lg px-4 py-2 mb-4 focus:border-primary outline-none"
-          />
-          <button onClick={handleLogin} className="btn-primary w-full">
-            로그인
-          </button>
-        </div>
-      )}
-
       {me && me.role !== "admin" && (
-        <div className="card p-6">
-          <p className="text-text-secondary">
-            관리자 권한이 필요합니다. 현재 역할: <code>{me.role}</code>
+        <div className="admin-card p-6">
+          <p className="text-admin-fg-soft">
+            관리자 권한이 필요합니다. 현재 역할:{" "}
+            <code className="px-1.5 py-0.5 rounded bg-admin-surface-2 text-admin-accent text-xs">
+              {me.role}
+            </code>
           </p>
         </div>
       )}
 
       {error && (
-        <div className="card border-danger p-4 mb-6 text-danger text-sm">
+        <div className="rounded-md border border-admin-danger/30 bg-admin-danger/10 px-4 py-3 mb-6 text-admin-danger text-sm">
           {error}
         </div>
       )}
@@ -152,15 +121,17 @@ export default function DashboardPage() {
       {me && me.role === "admin" && (
         <>
           <div className="flex items-center gap-2 mb-6">
-            <span className="text-text-muted text-sm mr-2">기간</span>
+            <span className="text-admin-muted text-xs mr-2 uppercase tracking-wider">
+              기간
+            </span>
             {WINDOWS.map((d) => (
               <button
                 key={d}
                 onClick={() => setDays(d)}
-                className={`px-3 py-1 rounded-full text-xs transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                   days === d
-                    ? "bg-primary text-background"
-                    : "bg-surface text-text-secondary"
+                    ? "bg-admin-accent text-white"
+                    : "bg-admin-surface text-admin-fg-soft hover:bg-admin-surface-2 border border-admin-border"
                 }`}
               >
                 {d}일
@@ -169,13 +140,17 @@ export default function DashboardPage() {
           </div>
 
           {loading || !stats || !revenue ? (
-            <div className="text-text-muted text-center py-12">로딩 중...</div>
+            <div className="text-admin-muted text-center py-12 text-sm">
+              로딩 중...
+            </div>
           ) : (
             <>
               {/* Revenue */}
               <section className="mb-10">
-                <h2 className="text-lg font-semibold mb-4">매출 (GMV)</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <h2 className="text-sm font-semibold mb-4 text-admin-fg uppercase tracking-wider">
+                  매출 (GMV)
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
                   <StatCard
                     label="GMV 합계"
                     value={fmt(revenue.gmv_total)}
@@ -195,19 +170,19 @@ export default function DashboardPage() {
                     hint={`활성 ${revenue.by_source.subscription_monthly_run_rate.active_count}건`}
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <StatCard
-                    label="🕊 후원"
+                    label="후원"
                     value={fmt(revenue.by_source.sponsorship.amount)}
                     hint={`${revenue.by_source.sponsorship.count}건`}
                   />
                   <StatCard
-                    label="🔨 경매"
+                    label="경매"
                     value={fmt(revenue.by_source.auction.amount)}
                     hint={`수수료 ${fmt(revenue.by_source.auction.platform_fee)}`}
                   />
                   <StatCard
-                    label="💳 즉시구매"
+                    label="즉시구매"
                     value={fmt(revenue.by_source.buy_now.amount)}
                     hint={`수수료 ${fmt(revenue.by_source.buy_now.platform_fee)}`}
                   />
@@ -216,18 +191,17 @@ export default function DashboardPage() {
 
               {/* Users */}
               <section className="mb-10">
-                <h2 className="text-lg font-semibold mb-4">사용자</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <h2 className="text-sm font-semibold mb-4 text-admin-fg uppercase tracking-wider">
+                  사용자
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <StatCard
                     label="전체"
                     value={stats.users.total}
                     hint={`+${stats.users.new_in_window} ${days}일`}
                   />
                   <StatCard label="작가" value={stats.users.artists} accent />
-                  <StatCard
-                    label="정지 계정"
-                    value={stats.users.suspended}
-                  />
+                  <StatCard label="정지 계정" value={stats.users.suspended} />
                   <StatCard
                     label="활성 구독자"
                     value={stats.sponsorship.active_subscriptions}
@@ -237,8 +211,10 @@ export default function DashboardPage() {
 
               {/* Content */}
               <section className="mb-10">
-                <h2 className="text-lg font-semibold mb-4">콘텐츠</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <h2 className="text-sm font-semibold mb-4 text-admin-fg uppercase tracking-wider">
+                  콘텐츠
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <StatCard
                     label="전체 포스트"
                     value={stats.content.total_posts}
@@ -252,19 +228,20 @@ export default function DashboardPage() {
                     label="판독 대기"
                     value={stats.content.pending_review}
                   />
-                  <StatCard label="신고 대기" value={stats.moderation.pending_reports} />
+                  <StatCard
+                    label="신고 대기"
+                    value={stats.moderation.pending_reports}
+                  />
                 </div>
               </section>
 
               {/* Auctions */}
               <section>
-                <h2 className="text-lg font-semibold mb-4">경매</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <StatCard
-                    label="진행 중"
-                    value={stats.auctions.active}
-                    accent
-                  />
+                <h2 className="text-sm font-semibold mb-4 text-admin-fg uppercase tracking-wider">
+                  경매
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <StatCard label="진행 중" value={stats.auctions.active} accent />
                   <StatCard label="종료" value={stats.auctions.ended} />
                   <StatCard
                     label="후원 누적"

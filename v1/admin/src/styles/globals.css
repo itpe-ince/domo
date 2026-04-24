@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,6 +7,16 @@
     color-scheme: dark;
   }
 
+  body {
+    @apply bg-admin-bg text-admin-fg font-sans antialiased;
+    min-height: 100vh;
+    font-feature-settings: "cv11", "ss01", "ss03";
+  }
+
+  ::selection {
+    @apply bg-admin-accent text-white;
+  }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -16,44 +24,132 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-
-  body {
-    @apply bg-background text-text-primary font-sans antialiased;
-    min-height: 100vh;
-  }
-
-  ::selection {
-    @apply bg-primary text-background;
-  }
 }
 
 @layer components {
-  .font-logo {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
+  /* ─── Admin login background ─────────────────────────────────── */
+  .admin-login-bg {
+    background-color: #0B1220;
+    background-image:
+      radial-gradient(at 20% 20%, rgba(99, 102, 241, 0.08) 0, transparent 50%),
+      radial-gradient(at 80% 80%, rgba(99, 102, 241, 0.05) 0, transparent 50%);
   }
 
+  /* ─── Admin Buttons ──────────────────────────────────────────── */
+  .admin-btn-primary {
+    @apply bg-admin-accent text-white rounded-md px-4 py-2 text-sm font-medium
+           transition-colors hover:bg-admin-accent-hover
+           disabled:bg-admin-surface-2 disabled:text-admin-muted disabled:cursor-not-allowed;
+  }
+
+  .admin-btn-secondary {
+    @apply bg-admin-surface border border-admin-border text-admin-fg rounded-md
+           px-4 py-2 text-sm font-medium transition-colors
+           hover:bg-admin-surface-2 hover:border-admin-accent/50;
+  }
+
+  .admin-btn-ghost {
+    @apply text-admin-fg-soft rounded-md px-3 py-1.5 text-sm font-medium
+           transition-colors hover:bg-admin-surface-2 hover:text-admin-fg;
+  }
+
+  .admin-btn-danger {
+    @apply bg-admin-danger/10 border border-admin-danger/30 text-admin-danger rounded-md
+           px-4 py-2 text-sm font-medium transition-colors
+           hover:bg-admin-danger/20;
+  }
+
+  /* ─── Admin Card / Surface ───────────────────────────────────── */
+  .admin-card {
+    @apply bg-admin-surface border border-admin-border rounded-lg;
+  }
+
+  .admin-card-hover {
+    @apply admin-card transition-colors hover:bg-admin-surface-2;
+  }
+
+  /* ─── Admin Form Controls ────────────────────────────────────── */
+  .admin-input {
+    @apply bg-admin-bg border border-admin-border text-admin-fg
+           rounded-md px-3 py-2 text-sm
+           placeholder:text-admin-muted
+           focus:border-admin-accent focus:ring-1 focus:ring-admin-accent
+           outline-none transition-colors;
+  }
+
+  .admin-select {
+    @apply admin-input pr-8 appearance-none bg-no-repeat;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7A95' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-position: right 0.5rem center;
+    background-size: 12px;
+  }
+
+  /* ─── Admin Badges ──────────────────────────────────────────── */
+  .admin-badge {
+    @apply inline-flex items-center bg-admin-accent/15 text-admin-accent
+           text-[10px] font-semibold uppercase tracking-wider
+           px-2 py-0.5 rounded ring-1 ring-admin-accent/30;
+  }
+
+  .admin-badge-success {
+    @apply inline-flex items-center bg-admin-success/15 text-admin-success
+           text-[10px] font-semibold uppercase tracking-wider
+           px-2 py-0.5 rounded ring-1 ring-admin-success/30;
+  }
+
+  .admin-badge-warning {
+    @apply inline-flex items-center bg-admin-warning/15 text-admin-warning
+           text-[10px] font-semibold uppercase tracking-wider
+           px-2 py-0.5 rounded ring-1 ring-admin-warning/30;
+  }
+
+  .admin-badge-danger {
+    @apply inline-flex items-center bg-admin-danger/15 text-admin-danger
+           text-[10px] font-semibold uppercase tracking-wider
+           px-2 py-0.5 rounded ring-1 ring-admin-danger/30;
+  }
+
+  .admin-badge-muted {
+    @apply inline-flex items-center bg-admin-surface-2 text-admin-fg-soft
+           text-[10px] font-semibold uppercase tracking-wider
+           px-2 py-0.5 rounded ring-1 ring-admin-border;
+  }
+
+  /* ─── Admin Tables ──────────────────────────────────────────── */
+  .admin-table {
+    @apply w-full text-sm;
+  }
+  .admin-table thead th {
+    @apply text-left text-[10px] font-semibold uppercase tracking-wider
+           text-admin-muted px-3 py-2 border-b border-admin-border bg-admin-surface;
+  }
+  .admin-table tbody td {
+    @apply px-3 py-2.5 border-b border-admin-border text-admin-fg-soft;
+  }
+  .admin-table tbody tr:hover {
+    @apply bg-admin-surface-2;
+  }
+
+  /* ─── Legacy components (used by existing pages until migrated) ─── */
   .btn-primary {
-    @apply bg-primary text-background rounded-full px-5 py-2.5 font-medium
-           transition-colors hover:bg-primary-hover;
+    @apply admin-btn-primary;
   }
-
   .btn-secondary {
-    @apply bg-surface border border-primary text-text-primary rounded-full
-           px-5 py-2.5 font-medium transition-colors hover:bg-surface-hover;
+    @apply admin-btn-secondary;
   }
-
   .btn-ghost {
-    @apply text-text-primary rounded-full px-5 py-2.5 font-medium
-           transition-colors hover:bg-surface;
+    @apply admin-btn-ghost;
   }
-
   .card {
-    @apply bg-surface border border-border rounded-xl
-           transition-colors hover:bg-surface-hover;
+    @apply admin-card;
   }
-
   .badge-primary {
-    @apply bg-primary text-background text-xs px-2 py-0.5 rounded-full font-medium;
+    @apply admin-badge;
+  }
+  .font-logo {
+    font-family: "Inter", system-ui, sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
 }

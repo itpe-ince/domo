@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-18T13:34:31.095Z",
+  "lastUpdated": "2026-04-25T00:00:00.000Z",
   "activeFeatures": [
     "backend",
     "core",
@@ -60,22 +60,34 @@
     "settlement_jobs.py",
     "communities",
     "shipping.py",
-    "support"
+    "support",
+    "login"
   ],
   "primaryFeature": "backend",
   "features": {
     "backend": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
+      "phase": "check",
+      "phaseNumber": 4,
+      "matchRate": 92,
       "iterationCount": 0,
       "requirements": [],
-      "documents": {},
+      "documents": {
+        "analysis": "v1/docs/03-analysis/backend.analysis.md"
+      },
       "timestamps": {
         "started": "2026-04-11T06:31:57.421Z",
-        "lastUpdated": "2026-04-18T13:34:31.095Z"
+        "lastUpdated": "2026-04-25T00:00:00.000Z",
+        "checkCompletedAt": "2026-04-25T00:00:00.000Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/main.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/main.py",
+      "analysisSummary": {
+        "scope": "all phases (Phase 0~4 + P3)",
+        "totalItems": 73,
+        "criticalGaps": 3,
+        "majorGaps": 11,
+        "minorGaps": 9,
+        "topCritical": ["Admin refund API missing", "KYC gate not enforced server-side", "Email provider.send signature mismatch (TypeError)"]
+      }
     },
     "core": {
       "phase": "do",
@@ -346,9 +358,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:29:19.817Z",
-        "lastUpdated": "2026-04-11T11:29:19.817Z"
+        "lastUpdated": "2026-04-24T08:41:53.832Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/admin/dashboard/page.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/app/dashboard/page.tsx"
     },
     "settings": {
       "phase": "do",
@@ -697,9 +709,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T22:41:17.631Z",
-        "lastUpdated": "2026-04-13T22:41:41.754Z"
+        "lastUpdated": "2026-04-24T08:43:10.710Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/components/AdminShell.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/app/page.tsx"
     },
     "artist-apply": {
       "phase": "do",
@@ -830,6 +842,19 @@
         "lastUpdated": "2026-04-18T13:33:25.454Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/support/page.tsx"
+    },
+    "login": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-24T08:41:13.244Z",
+        "lastUpdated": "2026-04-24T08:41:13.244Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/app/login/page.tsx"
     }
   },
   "pipeline": {
@@ -840,7 +865,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-18T13:34:31.095Z"
+    "lastActivity": "2026-04-24T08:43:10.710Z"
   },
   "history": [
     {
@@ -4926,6 +4951,36 @@
     {
       "timestamp": "2026-04-18T13:34:31.095Z",
       "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-24T08:41:13.244Z",
+      "feature": "login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-24T08:41:53.832Z",
+      "feature": "dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-24T08:42:22.453Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-24T08:42:41.843Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-24T08:43:10.710Z",
+      "feature": "admin",
       "phase": "do",
       "action": "updated"
     }
