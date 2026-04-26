@@ -1,6 +1,6 @@
-# 관리자 인증 시스템 Production 배포 가이드
+# Domo 운영 배포 & 관리자 인증 가이드
 
-**대상**: 비밀번호 + TOTP 2FA + Recovery Codes + WebAuthn/Passkey가 통합된 admin 인증 시스템 ([v1/admin](../../admin), [v1/backend/app/api/admin_auth.py](../../backend/app/api/admin_auth.py), [v1/backend/app/api/admin_webauthn.py](../../backend/app/api/admin_webauthn.py))
+**범위**: Domo 서비스 (backend + frontend + admin) 의 production 배포부터 운영까지 전 과정. 관리자 인증 시스템(비밀번호 + TOTP 2FA + Recovery Codes + WebAuthn/Passkey)도 포함.
 **전제**: 마이그레이션 0034까지 적용된 dev 환경에서 정상 동작 확인 완료
 **최종 수정**: 2026-04-26
 
@@ -26,8 +26,8 @@
 | 2 | DNS A/CNAME 레코드 — `domo.tuzigroup.com` | 동일 |
 | 3 | DNS A/CNAME 레코드 — `domo-api.tuzigroup.com` | 동일 |
 | 4 | TLS 인증서 (Let's Encrypt 또는 상용) | 위 3개 도메인 모두에 유효 — wildcard `*.tuzigroup.com` 1장으로 처리하면 편함 |
-| 5 | PostgreSQL 인스턴스 (RDS / Cloud SQL 등) | 자동 백업 활성화 |
-| 6 | Redis 인스턴스 (ElastiCache / MemoryStore) | rate limit + 세션용 |
+| 5 | PostgreSQL — `tuzi-postgres` 컨테이너 (외부 `tuzi-network` 안) | 자동 백업 활성화 — [§14.6](#146-tuzi-network--외부-의존-컨테이너) 참조 |
+| 6 | Redis — `tuzi-redis` 컨테이너 (동일 네트워크) | rate limit + 세션용 |
 | 7 | 운영자 이메일 1개 이상 (수신 가능) | 로그인 알림 수신용 |
 | 8 | Email provider 계정 (Resend / SES) — `tuzigroup.com` 도메인 검증 완료 | new device alert 발송용 — DKIM/SPF 셋업 필수 |
 | 9 | TOTP 앱 설치된 폰 | 운영자 본인용 (Google Authenticator / Authy / 1Password 등) |
@@ -202,135 +202,101 @@ WEBAUTHN_RP_ORIGIN=http://localhost:3800
 
 ---
 
-## 3. HTTPS 셋업
+## 3. HTTPS 셋업 (Nginx)
 
 WebAuthn은 HTTPS 또는 `localhost`에서만 동작합니다. http로 접근하면 브라우저가 silent fail (콘솔 에러도 없는 경우 있음).
 
-### 3.1. Let's Encrypt + Nginx — admin 콘솔
+### 3.1. 단일 nginx config 파일 사용
 
-```nginx
-# /etc/nginx/sites-available/domo-admin
-server {
-    listen 80;
-    server_name domo-admin.tuzigroup.com;
-    return 301 https://$host$request_uri;
-}
+3개 도메인 (frontend / admin / API) 모두를 하나의 파일로 관리합니다:
 
-server {
-    listen 443 ssl http2;
-    server_name domo-admin.tuzigroup.com;
+📄 **[v1/infra/nginx/sites-available/domo.conf](../../infra/nginx/sites-available/domo.conf)** — 풀 본문 + 주석
 
-    ssl_certificate     /etc/letsencrypt/live/tuzigroup.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/tuzigroup.com/privkey.pem;
-    ssl_protocols       TLSv1.2 TLSv1.3;
-    ssl_ciphers         HIGH:!aNULL:!MD5;
+| 도메인 | upstream | 핵심 설정 |
+|---|---|---|
+| `domo.tuzigroup.com` | `127.0.0.1:3700` | Next.js SSR + `_next/static` 30일 캐시 |
+| `domo-admin.tuzigroup.com` | `127.0.0.1:3800` | + `X-Frame-Options DENY` + `Permissions-Policy: publickey-credentials-*` (Passkey) |
+| `domo-api.tuzigroup.com` | `127.0.0.1:3710` | `client_max_body_size 1100M` (1GB upload) + `/v1/media/upload`만 `proxy_request_buffering off` + Stripe webhook raw body 보존 |
 
-    # 보안 헤더
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    add_header X-Frame-Options "DENY" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Permissions-Policy "publickey-credentials-get=*, publickey-credentials-create=*";
-
-    # admin Next.js 앱 (3800)
-    location / {
-        proxy_pass http://localhost:3800;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-    }
-}
-```
-
-⚠️ **`Permissions-Policy` 필수**: 일부 브라우저는 이 헤더 없이 Passkey API를 차단합니다.
-
-### 3.2. Backend API 도메인
-
-```nginx
-# /etc/nginx/sites-available/domo-api
-server {
-    listen 80;
-    server_name domo-api.tuzigroup.com;
-    return 301 https://$host$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name domo-api.tuzigroup.com;
-
-    ssl_certificate     /etc/letsencrypt/live/tuzigroup.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/tuzigroup.com/privkey.pem;
-    ssl_protocols       TLSv1.2 TLSv1.3;
-
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    add_header X-Content-Type-Options "nosniff" always;
-
-    # FastAPI backend (3710)
-    location / {
-        proxy_pass http://localhost:3710;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-
-        # 미디어 업로드 등 큰 요청 허용
-        client_max_body_size 1G;
-
-        # SSE / 장시간 응답 대응
-        proxy_read_timeout 120s;
-    }
-}
-```
-
-### 3.3. 사용자 frontend 도메인
-
-```nginx
-# /etc/nginx/sites-available/domo
-server {
-    listen 80;
-    server_name domo.tuzigroup.com;
-    return 301 https://$host$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name domo.tuzigroup.com;
-
-    ssl_certificate     /etc/letsencrypt/live/tuzigroup.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/tuzigroup.com/privkey.pem;
-    ssl_protocols       TLSv1.2 TLSv1.3;
-
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-
-    # frontend Next.js 앱 (3700)
-    location / {
-        proxy_pass http://localhost:3700;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-    }
-}
-```
-
-### 3.4. 활성화
+### 3.2. 설치
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/domo-admin /etc/nginx/sites-enabled/
-sudo ln -s /etc/nginx/sites-available/domo-api /etc/nginx/sites-enabled/
-sudo ln -s /etc/nginx/sites-available/domo /etc/nginx/sites-enabled/
-sudo nginx -t        # 문법 검증
+# 1) repo에서 서버로 복사 (이미 rsync된 경우 생략)
+scp v1/infra/nginx/sites-available/domo.conf \
+    deploy@<DEPLOY_HOST>:/tmp/domo.conf
+
+# 2) 서버에서 설치
+ssh deploy@<DEPLOY_HOST>
+sudo mv /tmp/domo.conf /etc/nginx/sites-available/domo
+sudo ln -s /etc/nginx/sites-available/domo /etc/nginx/sites-enabled/domo
+sudo rm -f /etc/nginx/sites-enabled/default   # 기본 사이트 비활성 (선택)
+
+# 3) 문법 검증 + 리로드
+sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-### 3.5. 인증서 자동 갱신 검증
+### 3.3. TLS 인증서 (와일드카드)
+
+3개 도메인을 별도로 발급하지 말고 wildcard 1장으로:
+
+```bash
+# Cloudflare DNS-01 challenge 사용 시
+sudo apt install -y certbot python3-certbot-dnscloudflare
+
+# Cloudflare API token (Zone:DNS:Edit) 저장
+sudo tee /etc/letsencrypt/cloudflare.ini > /dev/null <<EOF
+dns_cloudflare_api_token = <your-cf-api-token>
+EOF
+sudo chmod 600 /etc/letsencrypt/cloudflare.ini
+
+sudo certbot certonly \
+  --dns-cloudflare \
+  --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini \
+  -d "*.tuzigroup.com" \
+  -d "tuzigroup.com"
+```
+
+다른 DNS provider도 plugin 존재: `python3-certbot-dns-route53`, `python3-certbot-dns-google` 등.
+
+발급 결과:
+```
+/etc/letsencrypt/live/tuzigroup.com/fullchain.pem
+/etc/letsencrypt/live/tuzigroup.com/privkey.pem
+```
+→ domo.conf의 `ssl_certificate` 경로와 일치.
+
+### 3.4. 인증서 자동 갱신 검증
 
 ```bash
 sudo certbot renew --dry-run
-# Cron 또는 systemd timer로 자동 등록 확인
 sudo systemctl list-timers | grep certbot
+# certbot.timer가 weekly 트리거되면 OK
 ```
+
+갱신 후 nginx 자동 reload:
+```bash
+sudo tee /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh > /dev/null <<'EOF'
+#!/bin/bash
+systemctl reload nginx
+EOF
+sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+```
+
+### 3.5. 핵심 결정 사항 — 왜 이 설정인가
+
+| 결정 | 이유 |
+|---|---|
+| **단일 파일에 3개 server 블록** | 도메인이 모두 같은 서비스 + 같은 인증서 → 분리하면 관리 부담만 ↑ |
+| `127.0.0.1`로만 upstream 바인드 | 외부에서 backend / frontend 컨테이너 직접 접근 차단 |
+| `client_max_body_size 1100M` | 1GB making_video + 헤더/multipart 오버헤드 여유 |
+| `proxy_request_buffering off` (업로드만) | nginx 디스크 버퍼링 → 메모리 효율 + 첫 응답 latency↓ |
+| `Permissions-Policy` (admin만) | WebAuthn API 활성화 — 일부 브라우저 정책 |
+| `X-Frame-Options DENY` (admin만) | clickjacking 방어. 사용자 frontend는 oEmbed 등에 iframe될 수 있어 제외 |
+| `Cache-Control immutable` (`_next/static`) | Next.js의 hash-named 파일 → 영구 캐시 안전 |
+| Stripe webhook `proxy_request_buffering off` | HMAC signature가 raw body 기준 → 변형 금지 |
+
+상세 주석은 [domo.conf](../../infra/nginx/sites-available/domo.conf) 인라인 참조.
 
 ---
 
@@ -376,8 +342,10 @@ NEXT_PUBLIC_API_URL=https://domo-api.tuzigroup.com/v1 npm run build
 ### 5.1. 백업 먼저
 
 ```bash
-# RDS / Cloud SQL의 자동 스냅샷 외에도 수동 백업 권장
-pg_dump -h <host> -U <user> -d domo -F c -f domo-pre-admin-auth.dump
+# tuzi-postgres 컨테이너에서 직접 dump (host에서 실행)
+docker exec tuzi-postgres pg_dump -U domo -F c domo > domo-pre-admin-auth.dump
+# 또는 외부 host에서 (도커 외부 접근 가능 시):
+# pg_dump -h <host> -U domo -d domo -F c -f domo-pre-admin-auth.dump
 ```
 
 ### 5.2. 마이그레이션 적용
@@ -878,19 +846,704 @@ docker compose logs backend --tail 50
 
 ---
 
+## 13. CI/CD 파이프라인 (GitHub Actions)
+
+### 13.1. 아키텍처
+
+```
+┌─────────────┐    ┌──────────────────────┐    ┌─────────────────────┐
+│  git push   │───▶│ GitHub Actions       │───▶│ Production Server   │
+│  to main    │    │  ① Build 3 images    │    │  (Tailscale + SSH)  │
+│  or v* tag  │    │  ② Push to GHCR      │    │  - .env (운영자 관리)│
+└─────────────┘    │  ③ Verify 6 secrets  │    │  - docker pull      │
+                   │  ④ Tailscale connect │    │  - alembic upgrade  │
+                   │  ⑤ SSH deploy        │    │  - compose up -d    │
+                   │  ⑥ Health check      │    │  - health verify    │
+                   └──────────────────────┘    └──────────┬──────────┘
+                                                          │
+                                                          ▼
+                                  ┌──────────────────────────────────────┐
+                                  │ Nginx (TLS terminate, 와일드카드 cert)│
+                                  │  ├ :3700 → domo_frontend             │
+                                  │  ├ :3710 → domo_backend              │
+                                  │  └ :3800 → domo_admin                │
+                                  └────────────────┬─────────────────────┘
+                                                   │  (host에서 127.0.0.1 바인드)
+                                                   ▼
+                                  ┌──────────────────────────────────────┐
+                                  │ docker network: tuzi-network         │
+                                  │  ├ domo_backend  (FastAPI)           │
+                                  │  ├ domo_frontend (Next.js)           │
+                                  │  ├ domo_admin    (Next.js)           │
+                                  │  ├ tuzi-postgres ◀ DATABASE_URL host │
+                                  │  └ tuzi-redis    ◀ REDIS_URL host    │
+                                  └──────────────────────────────────────┘
+```
+
+**핵심**: Postgres / Redis는 **Domo가 자체적으로 띄우지 않고**, 같은 host의 다른 서비스들과 공유하는 외부 컨테이너 (`tuzi-postgres`, `tuzi-redis`)를 [tuzi-network](../../docker-compose.prod.yml) 통해 사용합니다. 자세히는 [§14.6](#146-tuzi-network--외부-의존-컨테이너).
+
+**핵심 결정**:
+- **이미지 3개 분리 빌드** (backend/frontend/admin) — 변경 없는 컴포넌트는 캐시 hit
+- **GHCR 사용** — GitHub와 통합, 추가 무료 (퍼블릭/private 모두), Docker Hub rate limit 회피
+- **Tailscale VPN** — production 서버를 공인 IP로 노출하지 않음. SSH 포트도 닫음
+- **DB 마이그레이션은 새 컨테이너 기동 전** — 스키마-앱 호환성 유지
+- **`.env`는 서버 영구 보관 (패턴 B)** — workflow는 절대 안 건드림. 운영자가 SSH로 직접 관리. 자세히는 [§15](#15-secret-관리--패턴-b-서버-env--github은-배포-인프라만)
+
+### 13.2. Tailscale VPN 셋업
+
+**왜 Tailscale인가**:
+- Production 서버를 공인 IP에 SSH 노출 = brute force 공격 표적
+- VPN으로 격리하면 관리자/CI만 접근 가능
+- Tailscale은 WireGuard 기반 zero-config VPN — 서버 + GitHub Actions runner 양쪽에 설치만 하면 동작
+
+#### Step 1 — Tailscale 계정 + tailnet 생성
+1. https://login.tailscale.com 가입 (Google/MS/GitHub 계정)
+2. 무료 plan으로 시작 (개인은 100 device까지)
+3. Admin Console → Settings → General → tailnet 이름 확인 (예: `tuzigroup.ts.net`)
+
+#### Step 2 — Production 서버에 Tailscale 설치
+```bash
+# Ubuntu/Debian
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up --ssh --advertise-tags=tag:prod
+
+# 출력된 https://login.tailscale.com/a/... URL 클릭해서 인증
+```
+
+설치 후:
+```bash
+tailscale ip -4
+# 출력: 100.x.x.x (Tailscale 100.64.0.0/10 대역)
+```
+이 IP가 `DEPLOY_HOST` GitHub secret 값.
+
+#### Step 3 — GitHub Actions용 OAuth client 발급
+1. Tailscale Admin Console → Settings → OAuth clients → Generate OAuth client
+2. **Scopes**: `Devices > Read`, `Auth Keys > Write`
+3. **Tags**: `tag:ci` (반드시 ACL에 정의되어 있어야 함 — 다음 step)
+4. 생성된 `Client ID` + `Client Secret` 저장 → GitHub secrets `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET`
+
+#### Step 4 — Tailscale ACL 설정
+Admin Console → Access Controls → 다음 추가:
+```jsonc
+{
+  "tagOwners": {
+    "tag:prod": ["autogroup:admin"],
+    "tag:ci": ["autogroup:admin"]
+  },
+  "acls": [
+    // CI runners (tag:ci) → production server (tag:prod) SSH/HTTP만 허용
+    {
+      "action": "accept",
+      "src": ["tag:ci"],
+      "dst": ["tag:prod:22", "tag:prod:3710", "tag:prod:3700", "tag:prod:3800"]
+    },
+    // Admin (사용자) → production server 전체
+    {
+      "action": "accept",
+      "src": ["autogroup:admin"],
+      "dst": ["tag:prod:*"]
+    }
+  ],
+  "ssh": [
+    {
+      "action": "accept",
+      "src": ["autogroup:admin"],
+      "dst": ["tag:prod"],
+      "users": ["root", "deploy"]
+    }
+  ]
+}
+```
+
+#### Step 5 — 검증
+GitHub Actions runner에서 Tailscale 연결 후 production 서버 ping:
+```yaml
+- uses: tailscale/github-action@v2
+  with:
+    oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+    oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+    tags: tag:ci
+- run: ping -c 3 ${{ secrets.DEPLOY_HOST }}
+```
+
+### 13.3. 워크플로우 파일
+
+[.github/workflows/deploy.yml](../../../.github/workflows/deploy.yml) 가 production-ready 버전입니다. 주요 단계:
+
+| Job | 역할 | 트리거 |
+|---|---|---|
+| **build** | backend / frontend / admin 3개 이미지를 matrix 빌드 → GHCR push | 항상 |
+| **verify-secrets** | 11개 필수 secret 존재 여부 검증 (누락 시 cryptic 에러 방지) | build 후 |
+| **deploy** | Tailscale 연결 → SSH → compose pull → alembic → up → health check | verify-secrets 후 |
+
+전체 워크플로우 yaml 본문은 **부록 E** 참조.
+
+### 13.4. 배포 트리거 방식
+
+| 방식 | 동작 |
+|---|---|
+| `git push origin main` (with `v1/**` 변경) | 자동 빌드 + 배포, 이미지 태그 = `<commit-sha>` 첫 7자 |
+| `git tag v1.2.3 && git push --tags` | 자동 빌드 + 배포, 이미지 태그 = `v1.2.3` |
+| GitHub UI → Actions → Run workflow | 수동 트리거, `tag` input으로 특정 버전 강제 배포 가능 |
+| 수동 + `skip_migration=true` | 비상시 alembic 건너뛰고 코드만 배포 |
+
+### 13.5. Rollback
+
+세 가지 방법:
+
+**A. 이전 이미지 태그로 재배포 (가장 안전)**
+```
+GitHub Actions → Run workflow → tag = "v1.2.2" (직전 태그)
+```
+
+**B. SSH로 직접 docker compose 명령**
+```bash
+ssh deploy@<DEPLOY_HOST>
+cd <DEPLOY_PATH>     # GitHub secret DEPLOY_PATH 값
+IMAGE_TAG=v1.2.2 docker compose -f docker-compose.prod.yml pull
+IMAGE_TAG=v1.2.2 docker compose -f docker-compose.prod.yml up -d
+```
+
+**C. 코드 + DB 동시 롤백 (마이그레이션 포함)**
+```bash
+# 1) DB 먼저 downgrade
+docker compose -f docker-compose.prod.yml run --rm backend alembic downgrade -1
+
+# 2) 이전 이미지로 컨테이너 재기동
+IMAGE_TAG=v1.2.2 docker compose -f docker-compose.prod.yml up -d
+```
+⚠️ DB downgrade는 데이터 손실 가능성 있으므로 사전에 `pg_dump` 백업 필수.
+
+---
+
+## 14. 서버 사전 준비 (Bare metal / EC2)
+
+배포 전 production 서버에 한 번만 수행:
+
+### 14.1. OS + 사용자
+
+```bash
+# Ubuntu 22.04 LTS 가정. 다른 배포판은 적절히 변경.
+
+# 1) deploy 전용 사용자 생성 (root 직접 SSH 금지)
+sudo adduser --disabled-password --gecos "" deploy
+sudo usermod -aG sudo deploy
+
+# 2) SSH 키 등록 (GitHub Actions이 사용할 deploy_key)
+sudo -u deploy mkdir -p /home/deploy/.ssh
+sudo -u deploy chmod 700 /home/deploy/.ssh
+# GitHub Actions secret DEPLOY_SSH_KEY와 짝이 되는 공개키를 등록
+echo "ssh-ed25519 AAAA..." | sudo -u deploy tee /home/deploy/.ssh/authorized_keys
+sudo -u deploy chmod 600 /home/deploy/.ssh/authorized_keys
+
+# 3) SSH config 강화 (선택)
+sudo sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
+sudo sed -i 's/^#*PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+sudo systemctl restart ssh
+```
+
+### 14.2. Docker 설치
+
+```bash
+# Docker CE + compose v2 (공식 스크립트)
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker deploy
+# 새 그룹 적용을 위해 재로그인 필요
+```
+
+### 14.3. 디렉토리 구조
+
+```bash
+# 아래 경로는 예시. 본인이 GitHub secret `DEPLOY_PATH`로 등록한 값 사용.
+DEPLOY_PATH=/opt/domo/v1     # ← 예시값. 다른 경로 가능
+sudo mkdir -p "$DEPLOY_PATH"
+sudo chown -R deploy:deploy "$(dirname $DEPLOY_PATH)"
+```
+
+⚠️ 이 경로는 **GitHub secret `DEPLOY_PATH`로 등록한 값과 정확히 일치**해야 합니다. 가이드 본문에서는 일관성을 위해 `/opt/domo/v1` 예시를 사용하지만, 본인이 등록한 값으로 치환하세요.
+
+배포 후 디렉토리 (예시 `DEPLOY_PATH=/opt/domo/v1`):
+```
+$DEPLOY_PATH/
+├── docker-compose.prod.yml    ← workflow가 rsync
+├── alembic.ini                ← workflow가 rsync (migration 실행용)
+├── alembic/                   ← workflow가 rsync
+└── .env                       ← 운영자가 한 번 만들고 직접 관리 (§15.3)
+```
+
+### 14.4. 방화벽
+
+```bash
+sudo ufw allow OpenSSH        # 또는 Tailscale ACL에서 처리하면 닫아도 됨
+sudo ufw allow 80/tcp         # Nginx HTTP (Let's Encrypt challenge)
+sudo ufw allow 443/tcp        # Nginx HTTPS
+sudo ufw enable
+
+# 백엔드 포트 (3700/3710/3800)는 절대 공인 노출 금지
+# 위 docker-compose.prod.yml이 127.0.0.1:port로 바인드하므로 외부 접근 불가
+```
+
+### 14.5. PostgreSQL 클라이언트 (옵션 — 디버깅용)
+
+```bash
+sudo apt install -y postgresql-client
+# 이후 deploy 사용자에서:
+docker exec -it tuzi-postgres psql -U domo -d domo -c '\d users'
+```
+
+### 14.6. `tuzi-network` + 외부 의존 컨테이너
+
+Domo의 [docker-compose.prod.yml](../../docker-compose.prod.yml)은 **Postgres와 Redis를 자체적으로 띄우지 않습니다**. 같은 host의 다른 서비스들(LLM Gateway, vzen, sodapop 등)과 공유하는 외부 네트워크 `tuzi-network` 안의 `tuzi-postgres` / `tuzi-redis` 컨테이너를 사용합니다.
+
+#### 사전 확인
+
+```bash
+# 1) 네트워크 존재 확인
+docker network ls | grep tuzi-network
+# 없으면 생성:
+docker network create tuzi-network
+
+# 2) 의존 컨테이너가 떠있는지
+docker ps --filter "name=tuzi-postgres" --filter "name=tuzi-redis" \
+  --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+# 둘 다 Up 상태여야 함
+
+# 3) 같은 네트워크에 있는지
+docker network inspect tuzi-network | jq -r '.[].Containers[].Name'
+# tuzi-postgres, tuzi-redis 둘 다 보여야 함
+```
+
+#### 새로 셋업하는 경우 (참고)
+
+만약 host에 Postgres/Redis 컨테이너가 없다면 한 번 셋업:
+
+```bash
+# Postgres
+docker run -d --name tuzi-postgres \
+  --network tuzi-network \
+  --restart unless-stopped \
+  -e POSTGRES_PASSWORD=<강력한-비밀번호> \
+  -v tuzi_postgres_data:/var/lib/postgresql/data \
+  -p 127.0.0.1:5432:5432 \
+  postgres:16-alpine
+
+# Redis
+docker run -d --name tuzi-redis \
+  --network tuzi-network \
+  --restart unless-stopped \
+  -v tuzi_redis_data:/data \
+  -p 127.0.0.1:6379:6379 \
+  redis:7-alpine \
+  redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+
+# Domo용 DB / 사용자 생성
+docker exec -it tuzi-postgres psql -U postgres <<EOF
+CREATE USER domo WITH PASSWORD '<DB-비밀번호>';
+CREATE DATABASE domo OWNER domo;
+GRANT ALL PRIVILEGES ON DATABASE domo TO domo;
+EOF
+```
+
+#### .env 연결 문자열
+
+`tuzi-network` 내부에서는 컨테이너명이 DNS 이름으로 해석됩니다:
+
+```env
+DATABASE_URL=postgresql+asyncpg://domo:<pw>@tuzi-postgres:5432/domo
+REDIS_URL=redis://tuzi-redis:6379/0
+```
+
+→ `localhost`나 IP가 아니라 **컨테이너명**을 host로 사용. backend 컨테이너가 `tuzi-network`에 join되어 있어야 동작.
+
+#### 검증
+
+backend 배포 후:
+```bash
+# DB 연결 테스트
+docker exec domo_backend python -c "
+import asyncio
+from sqlalchemy import text
+from app.db.session import AsyncSessionLocal
+async def t():
+    async with AsyncSessionLocal() as db:
+        r = await db.execute(text('SELECT current_database(), current_user'))
+        print('DB:', r.first())
+asyncio.run(t())
+"
+
+# Redis 연결 테스트
+docker exec domo_backend python -c "
+import asyncio
+from app.core.redis_client import get_redis
+async def t():
+    r = await get_redis()
+    await r.set('domo:healthcheck', 'ok')
+    print('Redis:', await r.get('domo:healthcheck'))
+asyncio.run(t())
+"
+```
+
+### 14.7. systemd 자동 시작 (선택)
+
+서버 재부팅 시 docker compose가 자동 기동되도록:
+```bash
+sudo tee /etc/systemd/system/domo.service > /dev/null <<EOF
+[Unit]
+Description=Domo (docker compose)
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# WorkingDirectory는 절대경로 필요 — 본인의 DEPLOY_PATH 값으로 치환
+WorkingDirectory=/opt/domo/v1
+ExecStart=/usr/bin/docker compose -f docker-compose.prod.yml up -d
+ExecStop=/usr/bin/docker compose -f docker-compose.prod.yml down
+User=deploy
+Group=deploy
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable domo.service
+```
+
+⚠️ docker compose 자체의 `restart: unless-stopped`로도 충분한 경우가 많음. systemd unit은 host 재부팅 후 자동 기동만 보장.
+
+---
+
+## 15. Secret 관리 — 패턴 B (서버 .env + GitHub은 배포 인프라만)
+
+Domo는 **GitHub Secrets에 앱 환경변수를 두지 않고**, production 서버의 `$DEPLOY_PATH/.env` (= GitHub secret `DEPLOY_PATH`로 등록한 디렉토리 안의 .env)에 영구 저장하는 패턴을 사용합니다. GitHub은 Tailscale + SSH 같은 **배포 인프라 secret만** 가집니다.
+
+### 15.1. 왜 패턴 B인가
+
+| 비교 | 패턴 A (전체 GitHub) | **패턴 B (서버 .env)** ⭐ |
+|---|---|---|
+| GitHub secret 개수 | 18+ | **6개** |
+| 환경변수 변경 | GitHub UI → workflow 재실행 | SSH → `vi .env` → `compose up -d` |
+| 운영자 인지부담 | 높음 (무엇이 어디에) | 낮음 (.env 한 파일) |
+| Secret 유출 risk | GitHub 침해 시 | 서버 침해 시 (chmod 600 + Tailscale 격리) |
+| 외부 서비스 회전 | secret 업데이트 → 재배포 | SSH로 .env edit → `up -d` |
+| 적합 규모 | 다중 환경 + 자동 회전 | **소규모 단일 서버** |
+
+→ Domo의 1인 운영 + tuzi 단일 서버 환경에는 패턴 B가 자연스럽습니다.
+
+### 15.2. GitHub Secrets — 6개만
+
+GitHub repo → **Settings → Secrets and variables → Actions → Secrets** 에 등록:
+
+| 이름 | 용도 | 발급 / 예시 |
+|---|---|---|
+| `TS_OAUTH_CLIENT_ID` | Tailscale GitHub Action 인증 | Tailscale Admin → OAuth clients |
+| `TS_OAUTH_SECRET` | 동일 | 동일 |
+| `DEPLOY_HOST` | Production 서버 Tailscale IP | `tailscale ip -4` 출력 (예: `100.64.10.20`) |
+| `DEPLOY_USER` | SSH 사용자 | `deploy` |
+| `DEPLOY_PATH` | 서버 내 배포 디렉토리 | `/opt/domo/v1` |
+| `DEPLOY_SSH_KEY` | deploy 사용자의 SSH private key | `ssh-keygen -t ed25519 -f /tmp/domo_deploy -N ""` 후 `cat /tmp/domo_deploy` |
+
+**그 외 Variables 등록 불필요** — 모든 앱 설정은 서버 .env에서 관리.
+
+### 15.3. 서버 `.env` — 첫 셋업 (한 번만)
+
+배포가 처음 동작하려면 서버에 `.env`가 있어야 합니다 (workflow가 `if [ ! -f .env ]`로 체크 → 없으면 실패).
+
+`<DEPLOY_PATH>`는 GitHub secret으로 등록한 경로 (예: `/opt/domo/v1`):
+
+```bash
+ssh deploy@<DEPLOY_HOST>
+
+# 본인이 등록한 DEPLOY_PATH 값으로 치환
+DEPLOY_PATH=/opt/domo/v1
+
+# 디렉토리가 없으면 먼저
+sudo mkdir -p "$DEPLOY_PATH"
+sudo chown deploy:deploy "$DEPLOY_PATH"
+cd "$DEPLOY_PATH"
+
+# .env 작성 — 아래는 템플릿. 실제 값으로 채우세요.
+cat > .env <<'EOF'
+ENVIRONMENT=production
+NODE_ENV=production
+
+# ── Database / Cache (외부 tuzi-network 컨테이너) ──
+DATABASE_URL=postgresql+asyncpg://domo:<강력한-비밀번호>@tuzi-postgres:5432/domo
+REDIS_URL=redis://tuzi-redis:6379/0
+
+# ── Auth secrets ──
+# 발급: openssl rand -hex 32
+JWT_SECRET=<발급값>
+# 발급: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+TOTP_ENCRYPTION_KEY=<발급값>
+
+# ── WebAuthn ──
+WEBAUTHN_RP_ID=domo-admin.tuzigroup.com
+WEBAUTHN_RP_NAME=Domo Admin
+WEBAUTHN_RP_ORIGIN=https://domo-admin.tuzigroup.com
+
+# ── URLs ──
+API_URL=https://domo-api.tuzigroup.com/v1
+FRONTEND_URL=https://domo.tuzigroup.com
+ADMIN_URL=https://domo-admin.tuzigroup.com
+EXTRA_CORS_ORIGINS=
+
+# ── Google OAuth (사용자 SNS — admin은 차단) ──
+GOOGLE_CLIENT_ID=<production용>
+GOOGLE_CLIENT_SECRET=<production용>
+
+# ── Stripe (Phase 2 이후) ──
+PAYMENT_PROVIDER=stripe
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PUBLIC_KEY=pk_live_...
+
+# ── Storage (S3) ──
+STORAGE_PROVIDER=s3
+S3_BUCKET=domo-prod-media
+S3_REGION=ap-northeast-2
+CDN_BASE_URL=https://cdn.tuzigroup.com
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=...
+
+# ── Email ──
+EMAIL_PROVIDER=resend
+RESEND_API_KEY=re_...
+EMAIL_FROM_ADDRESS=no-reply@tuzigroup.com
+EMAIL_FROM_NAME=Domo
+
+# ── Behavior ──
+RATE_LIMIT_MODE=enforce
+EOF
+
+# 권한 강화 — deploy 사용자만 읽기 가능
+chmod 600 .env
+ls -la .env       # -rw------- 1 deploy deploy ... 확인
+```
+
+⚠️ **이 파일은 workflow가 절대 덮어쓰지 않습니다** ([deploy.yml](../../../.github/workflows/deploy.yml)에 `.env` 생성 코드 없음). 운영자가 SSH로 직접 관리.
+
+### 15.4. 환경변수 변경 (운영 중)
+
+```bash
+ssh deploy@<DEPLOY_HOST>
+cd <DEPLOY_PATH>     # GitHub secret DEPLOY_PATH 값
+vi .env              # 값 수정
+
+# 변경 즉시 적용
+docker compose -f docker-compose.prod.yml up -d --force-recreate
+# 또는 특정 서비스만:
+docker compose -f docker-compose.prod.yml up -d --force-recreate backend
+```
+
+⚠️ `docker compose restart`만으로는 **새 .env가 적용 안 됩니다**. `up -d --force-recreate`가 컨테이너 재생성 + .env 재로드.
+
+### 15.5. Secret 회전 절차
+
+#### `JWT_SECRET` (6개월 권장)
+```bash
+NEW_SECRET=$(openssl rand -hex 32)
+ssh deploy@<DEPLOY_HOST>
+cd <DEPLOY_PATH>
+sed -i "s|^JWT_SECRET=.*|JWT_SECRET=${NEW_SECRET}|" .env
+docker compose -f docker-compose.prod.yml up -d --force-recreate backend
+# ⚠️ 모든 활성 admin/user 세션 무효화됨 — 사전 공지 필요
+```
+
+#### `TOTP_ENCRYPTION_KEY` (유출 시만)
+```bash
+# ⚠️ 회전하면 기존 admin의 TOTP secret을 복호화 못 함 → 모든 admin TOTP 재등록 필요
+# 사전에 admin들에게 안내 + 회전 직후 admin이 /settings/totp-setup에서 재등록
+```
+
+#### `STRIPE_SECRET_KEY`
+1. Stripe Dashboard → 새 secret 발급 (구 키 자동 비활성 안 됨)
+2. 서버 `.env` 업데이트 → `up -d --force-recreate backend`
+3. 1주일 모니터링 (구 키로 들어오는 요청 없는지 Stripe 로그)
+4. Stripe Dashboard에서 구 키 폐기
+
+#### `DEPLOY_SSH_KEY` (1년)
+```bash
+# 1) 새 키 생성
+ssh-keygen -t ed25519 -f /tmp/domo_deploy_new -N ""
+
+# 2) 새 공개키를 서버에 추가 (구 키 일단 유지 — rollback 대비)
+cat /tmp/domo_deploy_new.pub | ssh deploy@<DEPLOY_HOST> \
+  "cat >> ~/.ssh/authorized_keys"
+
+# 3) GitHub secret 업데이트
+gh secret set DEPLOY_SSH_KEY < /tmp/domo_deploy_new
+
+# 4) workflow_dispatch로 새 키 정상 동작 검증
+
+# 5) 구 공개키 제거
+ssh deploy@<DEPLOY_HOST> "vi ~/.ssh/authorized_keys"
+```
+
+### 15.6. 등록 자동화 (gh CLI) — 6개
+
+```bash
+# 한 줄씩 — secret은 git history / shell history에 안 남게 stdin 사용
+echo "tskey-client-..." | gh secret set TS_OAUTH_CLIENT_ID
+echo "tskey-..."        | gh secret set TS_OAUTH_SECRET
+echo "100.64.10.20"     | gh secret set DEPLOY_HOST
+echo "deploy"           | gh secret set DEPLOY_USER
+echo "/opt/domo/v1"     | gh secret set DEPLOY_PATH    # 본인이 사용할 경로로 치환
+gh secret set DEPLOY_SSH_KEY < /tmp/domo_deploy
+```
+
+### 15.7. Sensitive vs Non-sensitive 구분 (참고)
+
+서버 .env 안에서도 보안 등급은 다릅니다 — 백업/스냅샷에서 분리해 보관할 가치:
+
+| 등급 | 변수 | 처리 |
+|---|---|---|
+| 🔴 Critical | `JWT_SECRET`, `TOTP_ENCRYPTION_KEY`, `DATABASE_URL` (pw 포함), `STRIPE_SECRET_KEY` | 서버 .env + 1Password 별도 백업 |
+| 🟡 High | `GOOGLE_CLIENT_SECRET`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `AWS_*_KEY` | 서버 .env |
+| 🟢 Low | `GOOGLE_CLIENT_ID`, `STRIPE_PUBLIC_KEY`, URL, 도메인 | 평문 OK |
+
+---
+
+## 16. 운영 모니터링 — 배포 이후 일상
+
+### 16.1. 로그 확인
+
+```bash
+# 컨테이너 로그
+ssh deploy@<DEPLOY_HOST>
+cd <DEPLOY_PATH>     # GitHub secret DEPLOY_PATH 값
+docker compose -f docker-compose.prod.yml logs -f backend --tail 200
+docker compose -f docker-compose.prod.yml logs -f admin --tail 100
+
+# 특정 키워드만
+docker compose -f docker-compose.prod.yml logs backend | grep -E "ERROR|admin_login_alert|SECOND_FACTOR"
+
+# 모든 서비스
+docker compose -f docker-compose.prod.yml logs --tail 50 -f
+```
+
+### 16.2. 이미지 / 디스크 사용량
+
+```bash
+docker system df
+docker images
+# 오래된 이미지 정리 (배포 워크플로우의 prune이 처리하지만 수동도 가능)
+docker image prune -a --filter "until=72h"
+```
+
+### 16.3. 컨테이너 재시작 (수동)
+
+```bash
+# 단일 서비스만
+docker compose -f docker-compose.prod.yml restart backend
+
+# 새 .env 적용 + 전체 재시작 (WebAuthn RP_ID 등 변경 시)
+docker compose -f docker-compose.prod.yml up -d --force-recreate
+```
+
+### 16.4. 배포 실패 시 진단 순서
+
+| 단계 | 확인 |
+|---|---|
+| 1 | GitHub Actions 로그 — 어느 job/step에서 실패? |
+| 2 | Build 실패: Dockerfile 문법 / 의존성 / 타임아웃 |
+| 3 | Verify-secrets 실패: 6개 deploy-infra secret 중 누락 → 등록 |
+| 4 | Tailscale 실패: OAuth client 만료 / ACL `tag:ci` 누락 |
+| 5 | SSH 실패: `DEPLOY_SSH_KEY` 형식 / `authorized_keys` 등록 / SSH port 차단 |
+| 6 | **`.env not found`**: 서버 `$DEPLOY_PATH/.env`가 없음 → [§15.3](#153-서버-env--첫-셋업-한-번만) 따라 한 번 셋업 |
+| 7 | Compose pull 실패: GHCR 인증 (`GITHUB_TOKEN` packages: read 권한) |
+| 8 | Compose up 실패 — `network tuzi-network not found`: [§14.6](#146-tuzi-network--외부-의존-컨테이너)의 `docker network create tuzi-network` 누락 |
+| 9 | Migration 실패: alembic conflict / DB 권한 / 백업 후 수동 fix → DB host가 `tuzi-postgres`인지 ([§16.4.1](#1641-네트워크--외부-컨테이너-진단)) |
+| 10 | Health check 실패: backend 컨테이너 로그 직접 확인 |
+
+#### 16.4.1. 네트워크 / 외부 컨테이너 진단
+
+backend가 떴는데 `/v1/health`가 500이면 대부분 DB/Redis 연결 실패:
+
+```bash
+# 1) backend가 tuzi-network에 join되어 있나
+docker inspect domo_backend --format '{{json .NetworkSettings.Networks}}' | jq
+# "tuzi-network" 키 보여야 함
+
+# 2) 같은 네트워크에서 DB / Redis 컨테이너로 핑
+docker exec domo_backend getent hosts tuzi-postgres
+docker exec domo_backend getent hosts tuzi-redis
+# IP 주소 출력되면 DNS 해석 OK
+
+# 3) Postgres 포트 reachable
+docker exec domo_backend python -c "
+import socket
+s = socket.socket(); s.settimeout(3)
+s.connect(('tuzi-postgres', 5432))
+print('Postgres port reachable')
+"
+
+# 4) backend 컨테이너 로그
+docker logs domo_backend --tail 50 | grep -iE "error|connection|refused"
+```
+
+**자주 나오는 에러 → 원인 매핑**:
+
+| 에러 메시지 | 원인 | 해결 |
+|---|---|---|
+| `network tuzi-network not found` | 네트워크 미생성 | `docker network create tuzi-network` |
+| `could not translate host name "tuzi-postgres"` | backend가 tuzi-network에 미연결 | compose의 `networks: [tuzi-network]` 누락 |
+| `connection refused tuzi-postgres:5432` | tuzi-postgres 컨테이너 down | `docker start tuzi-postgres` |
+| `password authentication failed` | DATABASE_URL의 user/pw 틀림 | GitHub secret 재확인 |
+| `database "domo" does not exist` | DB 미생성 | [§14.6](#146-tuzi-network--외부-의존-컨테이너)의 `CREATE DATABASE` 단계 누락 |
+
+### 16.5. 자주 쓰는 운영 SQL
+
+```sql
+-- admin 계정 상태
+SELECT email, totp_enabled_at, failed_login_count, locked_until,
+  (SELECT count(*) FROM webauthn_credentials WHERE user_id = u.id) AS passkeys
+FROM users u WHERE role = 'admin';
+
+-- 최근 1시간 admin 로그인 시도
+SELECT u.email, rt.issued_at, rt.user_agent, rt.ip_address
+FROM refresh_tokens rt JOIN users u ON u.id = rt.user_id
+WHERE u.role = 'admin' AND rt.issued_at > NOW() - INTERVAL '1 hour'
+ORDER BY rt.issued_at DESC;
+
+-- 최근 1일 결제 실패
+SELECT id, buyer_id, amount, status, created_at
+FROM orders
+WHERE status IN ('payment_failed', 'cancelled') AND created_at > NOW() - INTERVAL '1 day';
+```
+
+### 16.6. 알림 채널 권장 (Slack/Discord webhook)
+
+GitHub Actions이 배포 결과를 알림으로 보내고 싶다면 마지막 step에 추가:
+```yaml
+- name: Notify Slack
+  if: always()
+  uses: slackapi/slack-github-action@v1
+  with:
+    payload: |
+      {"text": "Domo deploy ${{ job.status }}: ${{ needs.build.outputs.image_tag }}"}
+  env:
+    SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+```
+
+---
+
 ## 부록 A — 환경변수 종합 요약
 
-production `.env` 최종 형태:
+> 패턴 B에서는 이 `.env`가 **서버에 영구 보관**됩니다 ([§15.3](#153-서버-env--첫-셋업-한-번만)). GitHub에 등록 X, workflow가 덮어쓰지 않음.
+
+`$DEPLOY_PATH/.env` (예: `/opt/domo/v1/.env`) 최종 형태:
 
 ```env
 # ============================
-# Database
+# Database / Cache
 # ============================
-POSTGRES_USER=domo_prod
-POSTGRES_PASSWORD=<강력한-비밀번호>
-POSTGRES_DB=domo
-DATABASE_URL=postgresql+asyncpg://domo_prod:<pw>@<rds-host>:5432/domo
-REDIS_URL=redis://<elasticache-host>:6379/0
+# 외부 tuzi-network에 이미 떠있는 컨테이너를 host로 사용 (자세히는 §14.6)
+DATABASE_URL=postgresql+asyncpg://<user>:<pw>@tuzi-postgres:5432/<db>
+REDIS_URL=redis://tuzi-redis:6379/0
 
 # ============================
 # Auth secrets
@@ -1023,3 +1676,76 @@ _dmarc                      TXT    "v=DMARC1; p=none; rua=mailto:dmarc@tuzigroup
 | Passkeys page | [v1/admin/src/app/settings/passkeys/page.tsx](../../admin/src/app/settings/passkeys/page.tsx) |
 | API client | [v1/admin/src/lib/api.ts](../../admin/src/lib/api.ts) |
 | Admin Shell (사이드바) | [v1/admin/src/components/AdminShell.tsx](../../admin/src/components/AdminShell.tsx) |
+
+---
+
+## 부록 E — CI/CD 파일 위치
+
+배포 자동화 관련 파일:
+
+| 파일 | 역할 |
+|---|---|
+| [.github/workflows/deploy.yml](../../../.github/workflows/deploy.yml) | Build (matrix) → Verify secrets → Tailscale → SSH deploy → Health check |
+| [v1/docker-compose.prod.yml](../../docker-compose.prod.yml) | Production compose — GHCR 이미지 사용, .env는 workflow가 매번 재생성 |
+| [v1/backend/Dockerfile](../../backend/Dockerfile) | Backend 이미지 (FastAPI + alembic) |
+| [v1/frontend/Dockerfile](../../frontend/Dockerfile) | Frontend Next.js standalone 빌드 (없으면 추가 필요) |
+| [v1/admin/Dockerfile](../../admin/Dockerfile) | Admin Next.js standalone 빌드 (없으면 추가 필요) |
+
+⚠️ **주의**: frontend / admin 의 Dockerfile이 아직 없을 수 있습니다. Next.js standalone 빌드 표준 Dockerfile 템플릿:
+
+```dockerfile
+# v1/frontend/Dockerfile (또는 v1/admin/Dockerfile)
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
+RUN npm run build
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+EXPOSE 3000
+CMD ["node", "server.js"]
+```
+
+→ next.config.mjs에 `output: "standalone"` 설정 필수 (이미 둘 다 적용됨, [v1/frontend/next.config.mjs](../../frontend/next.config.mjs), [v1/admin/next.config.mjs](../../admin/next.config.mjs)).
+
+---
+
+## 부록 F — 첫 배포 체크리스트
+
+**처음 production 배포 시** 다음을 순서대로 한 번씩 수행:
+
+- [ ] DNS 레코드 3개 발급 ([§0.1](#01-dns-설정-예시))
+- [ ] 와일드카드 TLS 인증서 발급 ([§0.2](#02-tls-인증서--와일드카드-권장))
+- [ ] `tuzi-network` 도커 네트워크 생성 + `tuzi-postgres` / `tuzi-redis` 컨테이너 셋업 ([§14.6](#146-tuzi-network--외부-의존-컨테이너))
+- [ ] Domo용 DB 사용자 + database 생성 (Postgres 컨테이너 내부에서)
+- [ ] Tailscale 가입 + 서버에 설치 + tailnet ACL 설정 ([§13.2](#132-tailscale-vpn-셋업))
+- [ ] Production 서버 deploy 사용자 + Docker 설치 ([§14](#14-서버-사전-준비-bare-metal--ec2))
+- [ ] SSH 키페어 생성 → 서버 `authorized_keys` 등록 → private key는 `DEPLOY_SSH_KEY` secret으로
+- [ ] GitHub repo Settings에 **Secrets 6개 등록** (deploy-infra만 — [§15.2](#152-github-secrets--6개만)) ✅ 이미 완료됨
+- [ ] **서버 `$DEPLOY_PATH/.env` 첫 셋업** (DEPLOY_PATH는 GitHub secret 값 — [§15.3](#153-서버-env--첫-셋업-한-번만))
+- [ ] Frontend / Admin Dockerfile 추가 (없을 경우 — [부록 E](#부록-e--cicd-파일-위치))
+- [ ] Nginx 설정 3개 + 활성화 ([§3](#3-https-셋업))
+- [ ] DB 마이그레이션 (수동 1회 — workflow가 두 번째부터 자동) — `psql` 또는 `alembic upgrade head`
+- [ ] 첫 admin 계정 생성 ([§6.1](#61-cli로-admin-생성))
+- [ ] `git push origin main` 또는 GitHub Actions UI에서 workflow_dispatch
+- [ ] Build → Verify → Deploy → Health check 모두 ✅ 확인
+- [ ] 브라우저로 `https://domo-admin.tuzigroup.com/login` 접속 → 첫 admin 로그인
+- [ ] TOTP 등록 + 복구 코드 안전한 곳에 보관 ([§6.2](#62-첫-로그인-흐름))
+- [ ] (강력 권장) Passkey 등록
+- [ ] [§7 운영 시작 직후 체크리스트](#7-운영-시작-직후-체크리스트) 모두 ✓
+- [ ] KYC enforcement `enforce`로 전환 ([§7.3](#73-kyc-enforcement-활성화))
+- [ ] 다음 배포부터는 `git push` 만으로 자동 배포

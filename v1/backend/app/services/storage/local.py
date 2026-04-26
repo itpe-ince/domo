@@ -54,8 +54,19 @@ class LocalStorageProvider(StorageProvider):
             path.unlink()
 
     def public_url(self, key: str) -> str:
+        """Return absolute URL so the frontend (different origin) can fetch
+        the file directly, AND so the same `url` field works whether the
+        media is self-hosted or external (YouTube/Vimeo/oEmbed — always
+        absolute). Frontend can `<img src={media.url}>` without branching.
+
+        api_base_url already includes /v1 (it's just NEXT_PUBLIC_API_URL),
+        so we only append the route-relative path /media/files/{key}.
+        """
         safe_key = key.lstrip("/")
-        return f"/v1/media/files/{safe_key}"
+        base = (get_settings().api_base_url or "").rstrip("/")
+        if base:
+            return f"{base}/media/files/{safe_key}"
+        return f"/v1/media/files/{safe_key}"  # legacy fallback
 
     async def exists(self, key: str) -> bool:
         safe_key = key.lstrip("/")
@@ -75,8 +86,10 @@ class LocalStorageProvider(StorageProvider):
         S3StorageProvider which returns real presigned POST credentials.
         """
         safe_key = key.lstrip("/")
+        base = (get_settings().api_base_url or "").rstrip("/")
+        upload_url = f"{base}/v1/media/upload-local" if base else "/v1/media/upload-local"
         return PresignedPost(
-            url=f"/v1/media/upload-local",
+            url=upload_url,
             fields={"key": safe_key, "content_type": content_type},
             key=safe_key,
         )

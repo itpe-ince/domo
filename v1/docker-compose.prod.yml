@@ -1,0 +1,118 @@
+# Production docker-compose for Domo (server-side)
+#
+# This file is rsync'd to the deploy server by the GitHub Actions workflow
+# .github/workflows/deploy.yml and lives at $DEPLOY_PATH/docker-compose.prod.yml.
+#
+# It pulls pre-built images from GHCR (built by the same workflow) — server
+# never builds. .env is auto-generated on every deploy from GitHub secrets.
+#
+# Reference docs/guides/admin-auth-production-deployment.md for full ops guide.
+#
+# ─────────────────────────────────────────────────────────────────────────
+# 외부 네트워크 / 외부 컨테이너 의존
+# ─────────────────────────────────────────────────────────────────────────
+# - 네트워크: `tuzi-network` (외부에서 미리 생성, 다른 서비스들과 공유)
+# - PostgreSQL: 같은 네트워크의 `tuzi-postgres` 컨테이너 사용
+#   → .env의 DATABASE_URL=postgresql+asyncpg://<user>:<pw>@tuzi-postgres:5432/<db>
+# - Redis:      같은 네트워크의 `tuzi-redis` 컨테이너 사용
+#   → .env의 REDIS_URL=redis://tuzi-redis:6379/0
+#
+# 네트워크가 없으면 다음 명령으로 한 번 생성:
+#   docker network create tuzi-network
+# ─────────────────────────────────────────────────────────────────────────
+
+services:
+  # ───────────────────────────────────────────
+  # Backend API (FastAPI on port 3710)
+  # ───────────────────────────────────────────
+  backend:
+    image: ghcr.io/${GITHUB_REPOSITORY:-itpe-ince/domo}/backend:${IMAGE_TAG:-latest}
+    container_name: domo_backend
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:3710:8000"   # bind to localhost — Nginx proxies from outside
+    volumes:
+      - backend_uploads:/app/uploads
+    networks:
+      - tuzi-network
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # ───────────────────────────────────────────
+  # Frontend Next.js (port 3700)
+  # ───────────────────────────────────────────
+  frontend:
+    image: ghcr.io/${GITHUB_REPOSITORY:-itpe-ince/domo}/frontend:${IMAGE_TAG:-latest}
+    container_name: domo_frontend
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:3700:3000"
+    networks:
+      - tuzi-network
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # ───────────────────────────────────────────
+  # Admin Next.js (port 3800)
+  # ───────────────────────────────────────────
+  admin:
+    image: ghcr.io/${GITHUB_REPOSITORY:-itpe-ince/domo}/admin:${IMAGE_TAG:-latest}
+    container_name: domo_admin
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:3800:3000"
+    networks:
+      - tuzi-network
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+# ─────────────────────────────────────────────────────────────────────────
+# 네트워크 — 외부에서 미리 생성된 tuzi-network에 연결
+# ─────────────────────────────────────────────────────────────────────────
+# tuzi-postgres, tuzi-redis 등이 이미 이 네트워크에 있으므로 backend가
+# 컨테이너 이름으로 접근 가능 (tuzi-postgres:5432, tuzi-redis:6379).
+networks:
+  tuzi-network:
+    external: true
+
+# ─────────────────────────────────────────────────────────────────────────
+# 볼륨 — 미디어 업로드 (S3 cutover 전 임시)
+# ─────────────────────────────────────────────────────────────────────────
+# Production에서 STORAGE_PROVIDER=s3로 전환하면 이 볼륨도 불필요해짐.
+volumes:
+  backend_uploads:
+    name: domo_backend_uploads

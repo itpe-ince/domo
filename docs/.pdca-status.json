@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-26T04:06:39.423Z",
+  "lastUpdated": "2026-04-26T05:23:31.881Z",
   "activeFeatures": [
     "backend",
     "core",
@@ -109,9 +109,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:32:03.535Z",
-        "lastUpdated": "2026-04-26T01:20:20.248Z"
+        "lastUpdated": "2026-04-26T05:23:31.881Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/core/admin_deps.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/core/config.py"
     },
     "db": {
       "phase": "do",
@@ -499,7 +499,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T13:27:19.530Z",
-        "lastUpdated": "2026-04-25T00:55:56.229Z"
+        "lastUpdated": "2026-04-26T05:06:19.611Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/storage/local.py"
     },
@@ -941,7 +941,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-26T04:06:39.423Z"
+    "lastActivity": "2026-04-26T05:23:31.881Z"
   },
   "history": [
     {
@@ -6227,6 +6227,48 @@
     {
       "timestamp": "2026-04-26T04:06:39.423Z",
       "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T04:45:55.398Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T04:46:08.167Z",
+      "feature": "storage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T04:46:20.690Z",
+      "feature": "storage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T04:54:28.172Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T05:06:19.611Z",
+      "feature": "storage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T05:06:30.988Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T05:23:31.881Z",
+      "feature": "core",
       "phase": "do",
       "action": "updated"
     }

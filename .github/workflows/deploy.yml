@@ -1,0 +1,272 @@
+name: Build & Deploy Domo
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "v1/**"
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to deploy (leave empty for latest commit on default branch)"
+        required: false
+        type: string
+      skip_migration:
+        description: "Skip alembic upgrade head (emergency)"
+        required: false
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend
+  ADMIN_IMAGE: ghcr.io/${{ github.repository }}/admin
+
+defaults:
+  run:
+    working-directory: ./v1
+
+jobs:
+  # =============================================================
+  # Job 1: Build & Push 3 images (backend / frontend / admin)
+  # =============================================================
+  build:
+    name: Build & Push (${{ matrix.component }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # context paths are repo-root-relative (docker/build-push-action
+          # ignores `defaults.run.working-directory`).
+          - component: backend
+            context: ./v1/backend
+            image_var: BACKEND_IMAGE
+          - component: frontend
+            context: ./v1/frontend
+            image_var: FRONTEND_IMAGE
+          - component: admin
+            context: ./v1/admin
+            image_var: ADMIN_IMAGE
+    outputs:
+      image_tag: ${{ steps.tag.outputs.IMAGE_TAG }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve image tag
+        id: tag
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            IMAGE_TAG="${GITHUB_REF#refs/tags/}"
+          elif [ -n "${{ inputs.tag }}" ]; then
+            IMAGE_TAG="${{ inputs.tag }}"
+          else
+            IMAGE_TAG="$(echo ${{ github.sha }} | cut -c1-7)"
+          fi
+          echo "IMAGE_TAG=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "Resolved tag: $IMAGE_TAG"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & push ${{ matrix.component }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env[matrix.image_var] }}:${{ steps.tag.outputs.IMAGE_TAG }}
+            ${{ env[matrix.image_var] }}:latest
+          cache-from: type=gha,scope=${{ matrix.component }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.component }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ vars.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+
+  # =============================================================
+  # Job 2: Verify required GitHub Secrets
+  # =============================================================
+  verify-secrets:
+    name: Verify Secrets
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Check required secrets
+        run: |
+          # Pattern B: GitHub holds only deploy-infra secrets.
+          # All app env vars (DATABASE_URL, JWT_SECRET, etc.) live in
+          # $DEPLOY_PATH/.env on the server (managed by ops, not workflow).
+          missing=()
+          [ -z "${{ secrets.TS_OAUTH_CLIENT_ID }}" ] && missing+=("TS_OAUTH_CLIENT_ID")
+          [ -z "${{ secrets.TS_OAUTH_SECRET }}" ]   && missing+=("TS_OAUTH_SECRET")
+          [ -z "${{ secrets.DEPLOY_SSH_KEY }}" ]    && missing+=("DEPLOY_SSH_KEY")
+          [ -z "${{ secrets.DEPLOY_HOST }}" ]       && missing+=("DEPLOY_HOST")
+          [ -z "${{ secrets.DEPLOY_USER }}" ]       && missing+=("DEPLOY_USER")
+          [ -z "${{ secrets.DEPLOY_PATH }}" ]       && missing+=("DEPLOY_PATH")
+          if [ ${#missing[@]} -ne 0 ]; then
+            echo "::error::Missing required deploy-infra secrets:"
+            printf '::error::  - %s\n' "${missing[@]}"
+            echo "::error::See docs/guides/admin-auth-production-deployment.md §15 for setup"
+            exit 1
+          fi
+          echo "✓ All deploy-infra secrets present"
+
+  # =============================================================
+  # Job 3: Deploy to server via Tailscale + SSH
+  # =============================================================
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: [build, verify-secrets]
+    permissions:
+      contents: read
+      packages: read
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Sync compose + alembic to server
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          SSH_OPTS="-i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
+                    -o ServerAliveInterval=30 -o ServerAliveCountMax=120"
+          ssh $SSH_OPTS "${DEPLOY_USER}@${DEPLOY_HOST}" "mkdir -p '${DEPLOY_PATH}'"
+          # Paths are relative to working-directory (./v1) — see `defaults.run` at top.
+          rsync -avz -e "ssh $SSH_OPTS" --delete \
+            docker-compose.prod.yml \
+            backend/alembic.ini \
+            backend/alembic \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/"
+
+      - name: Deploy via SSH
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.image_tag }}
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -o StrictHostKeyChecking=no \
+              -o ConnectTimeout=30 \
+              -o ServerAliveInterval=30 \
+              -o ServerAliveCountMax=120 \
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+              IMAGE_TAG="${IMAGE_TAG}" \
+              SKIP_MIGRATION="${{ inputs.skip_migration }}" \
+              bash -s << 'DEPLOY_SCRIPT'
+          set -euo pipefail
+
+          echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+
+          cd '${{ secrets.DEPLOY_PATH }}'
+
+          # ── Pattern B: server-managed .env ──
+          # docker-compose.prod.yml의 `env_file: .env`가 같은 디렉토리의
+          # .env를 자동 로드. 이 파일은 운영자가 SSH로 직접 관리.
+          # workflow는 IMAGE_TAG만 inline으로 export해서 image 태그를 바꿈.
+          if [ ! -f .env ]; then
+            echo "::error::.env not found at ${PWD}/.env"
+            echo "::error::See docs/guides/admin-auth-production-deployment.md §15 for first-time setup"
+            exit 1
+          fi
+
+          export COMPOSE_PROJECT_NAME=domo
+          export IMAGE_TAG="${IMAGE_TAG}"
+
+          # ── Pull new images ──
+          docker compose -f docker-compose.prod.yml pull
+
+          # ── Migrate DB before starting new containers (zero-downtime safe) ──
+          if [ "${SKIP_MIGRATION}" != "true" ]; then
+            echo "→ Running alembic upgrade head"
+            docker compose -f docker-compose.prod.yml run --rm backend alembic upgrade head
+          else
+            echo "⚠ Skipping migration (manual override)"
+          fi
+
+          # ── Restart services ──
+          docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+          # ── Cleanup old images ──
+          docker image prune -f
+          DEPLOY_SCRIPT
+
+      - name: Health check (backend)
+        run: |
+          sleep 10
+          for i in {1..12}; do
+            if ssh -i ~/.ssh/deploy_key \
+                  -o StrictHostKeyChecking=no \
+                  -o ConnectTimeout=15 \
+                  "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+                  "curl -sf http://localhost:3710/v1/health"; then
+              echo "✓ Backend healthy"
+              exit 0
+            fi
+            echo "Waiting for backend... ($i/12)"
+            sleep 5
+          done
+          echo "::error::Backend health check failed after 60s"
+          exit 1
+
+      - name: Health check (frontend + admin)
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -o StrictHostKeyChecking=no \
+              -o ConnectTimeout=15 \
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+              "curl -sf -o /dev/null -w 'frontend: %{http_code}\n' http://localhost:3700 && \
+               curl -sf -o /dev/null -w 'admin:    %{http_code}\n' http://localhost:3800" \
+              || echo "::warning::Frontend or admin not responding (may still be warming up)"
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          {
+            echo "## 🚀 Domo Deploy"
+            echo "- **Image tag**: \`${{ needs.build.outputs.image_tag }}\`"
+            echo "- **Server**: \`${{ secrets.DEPLOY_HOST }}\`"
+            echo "- **Path**: \`${{ secrets.DEPLOY_PATH }}\`"
+            echo "- **Migration**: ${{ inputs.skip_migration && 'SKIPPED' || 'applied' }}"
+            echo "- **Result**: ${{ job.status }}"
+            echo "- **Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            echo ""
+            echo "### Endpoints"
+            echo "- Frontend: https://${{ vars.FRONTEND_DOMAIN || 'domo.tuzigroup.com' }}"
+            echo "- Admin:    https://${{ vars.ADMIN_DOMAIN || 'domo-admin.tuzigroup.com' }}"
+            echo "- API:      https://${{ vars.API_DOMAIN || 'domo-api.tuzigroup.com' }}/v1/health"
+          } >> "$GITHUB_STEP_SUMMARY"

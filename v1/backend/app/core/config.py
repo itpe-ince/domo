@@ -50,6 +50,17 @@ class Settings(BaseSettings):
 
     frontend_url: str = "http://localhost:3700"
     admin_url: str = "http://localhost:3800"
+    # Backend's own externally-reachable API URL (includes /v1).
+    # Storage providers append /media/files/{key} etc. to this.
+    # Frontend/admin use their own NEXT_PUBLIC_API_URL (Next.js convention) —
+    # values should match but are managed in their own .env.local files.
+    # Production: set API_URL=https://domo-api.tuzigroup.com/v1
+    api_url: str = "http://localhost:3710/v1"
+
+    @property
+    def api_base_url(self) -> str:
+        """Alias kept for clarity in storage providers. Same as api_url."""
+        return self.api_url.rstrip("/")
     # Optional comma-separated extra origins for staging/preview deployments
     extra_cors_origins: str = ""
 
