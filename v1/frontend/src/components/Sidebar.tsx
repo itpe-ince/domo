@@ -204,26 +204,14 @@ export function Sidebar() {
             </button>
           )}
 
-          {/* 프로필 / 로그인 */}
-          {me ? (
-            <Link
-              href={`/users/${me.id}`}
-              className={`group flex items-center justify-center xl:justify-start gap-4 rounded-full px-3 py-3 transition-colors ${
-                pathname.startsWith("/users/")
-                  ? "text-primary"
-                  : "text-text-primary hover:bg-surface-hover"
-              }`}
-            >
-              <UserIcon />
-              <span className="hidden xl:inline text-lg font-medium">{t("nav.profile")}</span>
-            </Link>
-          ) : (
+          {/* 로그인 (비로그인 상태에서만 노출) — 로그인 후엔 하단 사용자 메뉴에서 프로필 접근 */}
+          {!me && (
             <button
               onClick={() => { setLoginRedirect(undefined); setLoginOpen(true); }}
               className="group flex items-center justify-center xl:justify-start gap-4 rounded-full px-3 py-3 transition-colors text-text-primary hover:bg-surface-hover w-full"
             >
               <UserIcon />
-              <span className="hidden xl:inline text-lg font-medium">{t("nav.profile")}</span>
+              <span className="hidden xl:inline text-lg font-medium">{t("common.login")}</span>
             </button>
           )}
         </div>
@@ -258,7 +246,15 @@ export function Sidebar() {
                   <MoreHorizontalIcon size={20} />
                 </span>
               </summary>
-              <div className="absolute bottom-full mb-2 left-0 right-0 xl:left-2 xl:right-2 card p-2 z-40">
+              <div className="absolute bottom-full mb-2 left-0 right-0 xl:left-2 xl:right-2 card p-2 z-40 space-y-1">
+                <Link
+                  href={`/users/${me.id}`}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-hover text-sm text-text-primary"
+                >
+                  <UserIcon />
+                  <span>{t("nav.profile")}</span>
+                </Link>
+                <div className="border-t border-border my-1" />
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-hover text-sm text-text-primary"
