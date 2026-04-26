@@ -234,8 +234,9 @@ jobs:
 
       - name: Health check (backend)
         run: |
-          sleep 10
-          for i in {1..12}; do
+          sleep 15
+          # 24 attempts × 5s = 120s total — covers slow alembic + lifespan init
+          for i in {1..24}; do
             if ssh -i ~/.ssh/deploy_key \
                   -o StrictHostKeyChecking=no \
                   -o ConnectTimeout=15 \
@@ -244,10 +245,17 @@ jobs:
               echo "✓ Backend healthy"
               exit 0
             fi
-            echo "Waiting for backend... ($i/12)"
+            echo "Waiting for backend... ($i/24)"
             sleep 5
           done
-          echo "::error::Backend health check failed after 60s"
+          echo "::error::Backend health check failed after 135s"
+          # 실패 직전 진단을 자동으로 출력 — 다음 디버깅 시간 절약
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+              "cd '${{ secrets.DEPLOY_PATH }}' && \
+               docker compose -f docker-compose.prod.yml ps && \
+               echo '---logs---' && \
+               docker compose -f docker-compose.prod.yml logs backend --tail 50"
           exit 1
 
       - name: Health check (frontend + admin)
