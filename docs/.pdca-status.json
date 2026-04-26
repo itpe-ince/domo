@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-26T10:44:31.891Z",
+  "lastUpdated": "2026-04-26T11:11:48.736Z",
   "activeFeatures": [
     "backend",
     "core",
@@ -135,9 +135,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:23.836Z",
-        "lastUpdated": "2026-04-26T01:24:36.609Z"
+        "lastUpdated": "2026-04-26T11:09:24.065Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/auth.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/me.py"
     },
     "schemas": {
       "phase": "do",
@@ -213,7 +213,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-04-26T10:44:17.354Z"
+        "lastUpdated": "2026-04-26T11:11:48.735Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/api.ts"
     },
@@ -408,7 +408,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:41:45.679Z",
-        "lastUpdated": "2026-04-18T04:25:13.903Z"
+        "lastUpdated": "2026-04-26T11:10:09.059Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/new/page.tsx"
     },
@@ -616,7 +616,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-12T08:29:36.203Z",
-        "lastUpdated": "2026-04-18T04:24:21.549Z"
+        "lastUpdated": "2026-04-26T11:10:25.511Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/search/page.tsx"
     },
@@ -915,7 +915,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-26T00:14:45.440Z",
-        "lastUpdated": "2026-04-26T00:14:45.440Z"
+        "lastUpdated": "2026-04-26T11:09:40.980Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/app/settings/recovery-codes/page.tsx"
     },
@@ -941,7 +941,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-26T10:44:31.891Z"
+    "lastActivity": "2026-04-26T11:11:48.736Z"
   },
   "history": [
     {
@@ -6299,6 +6299,60 @@
     {
       "timestamp": "2026-04-26T10:44:31.891Z",
       "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T11:08:50.777Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T11:09:16.107Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T11:09:24.065Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T11:09:40.980Z",
+      "feature": "recovery-codes",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T11:10:09.059Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T11:10:25.511Z",
+      "feature": "search",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T11:11:21.419Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T11:11:33.915Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T11:11:48.735Z",
+      "feature": "frontend",
       "phase": "do",
       "action": "updated"
     }

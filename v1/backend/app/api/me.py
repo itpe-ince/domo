@@ -476,6 +476,7 @@ async def accept_policies(
 class OnboardingRequest(BaseModel):
     birth_year: int
     country_code: str
+    preferred_genres: list[str] | None = None
 
 
 @router.post("/onboarding")
@@ -498,6 +499,8 @@ async def complete_onboarding(
 
     user.birth_year = body.birth_year
     user.country_code = body.country_code.upper()
+    if body.preferred_genres is not None:
+        user.preferred_genres = body.preferred_genres or None
     user.onboarded_at = _now()
 
     minor = await calc_is_minor(db, user.birth_year, user.country_code)

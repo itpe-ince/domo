@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import {
   RecoveryCodeStatus,
   adminRecoveryCodesRegenerate,
@@ -10,7 +10,26 @@ import {
 } from "@/lib/api";
 import { useRouter, useSearchParams } from "next/navigation";
 
+// Disable prerender — page requires runtime auth + searchParams
+export const dynamic = "force-dynamic";
+
 export default function RecoveryCodesPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="px-8 py-8 max-w-3xl">
+          <div className="admin-card p-8 text-center text-admin-muted text-sm">
+            로딩 중...
+          </div>
+        </main>
+      }
+    >
+      <RecoveryCodesPageInner />
+    </Suspense>
+  );
+}
+
+function RecoveryCodesPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const lowSignal = searchParams.get("low") === "1";

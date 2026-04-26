@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { PostCard } from "@/components/PostCard";
 import {
   fetchExplore,
@@ -13,6 +13,9 @@ import {
 } from "@/lib/api";
 import { useI18n } from "@/i18n";
 import { useRecentSearches } from "@/lib/useRecentSearches";
+
+// Disable prerender — uses useSearchParams() which requires runtime
+export const dynamic = "force-dynamic";
 
 type Tab = "artists" | "artworks" | "posts";
 type SortOption = "latest" | "popular" | "ending_soon";
@@ -27,6 +30,14 @@ const GENRES = [
 ];
 
 export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-text-muted">로딩 중...</div>}>
+      <SearchPageInner />
+    </Suspense>
+  );
+}
+
+function SearchPageInner() {
   const { t } = useI18n();
   const searchParams = useSearchParams();
   const router = useRouter();

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import {
   ApiClientError,
   CreatePostMedia,
@@ -18,6 +18,9 @@ import { MediaToolbar } from "@/components/post-editor/MediaToolbar";
 import { MediaPreviewList } from "@/components/post-editor/MediaPreviewList";
 import { TagAutocomplete } from "@/components/post-editor/TagAutocomplete";
 
+// Disable prerender — uses useSearchParams() which requires runtime
+export const dynamic = "force-dynamic";
+
 const GENRES = [
   "painting",
   "drawing",
@@ -27,6 +30,14 @@ const GENRES = [
 ];
 
 export default function CreatePostPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-text-muted">로딩 중...</div>}>
+      <CreatePostPageInner />
+    </Suspense>
+  );
+}
+
+function CreatePostPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialType =

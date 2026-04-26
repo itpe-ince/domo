@@ -140,6 +140,10 @@ export type ApiUser = {
   language: string;
   warning_count: number;
   identity_verified_at: string | null;
+  is_minor?: boolean;
+  birth_year?: number | null;
+  country_code?: string | null;
+  onboarded_at?: string | null;
 };
 
 /**
@@ -318,6 +322,9 @@ export type MediaAssetView = {
   width: number | null;
   height: number | null;
   order_index: number;
+  is_making_video?: boolean;
+  external_source?: string | null;
+  external_id?: string | null;
 };
 
 export type ProductPostView = {
@@ -349,6 +356,11 @@ export type PostView = {
   created_at: string;
   media: MediaAssetView[];
   product: ProductPostView | null;
+  location_name?: string | null;
+  location_lat?: number | null;
+  location_lng?: number | null;
+  scheduled_at?: string | null;
+  recommendation_reason?: string | null;
 };
 
 export type CommentView = {
@@ -1000,6 +1012,7 @@ export type OnboardingResult = {
 export async function completeOnboarding(input: {
   birth_year: number;
   country_code: string;
+  preferred_genres?: string[];
 }) {
   return apiFetch<OnboardingResult>("/me/onboarding", {
     method: "POST",
