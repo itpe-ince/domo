@@ -77,6 +77,10 @@ if [ ! -f "$REQ_MARKER" ] || [ "${FORCE_INSTALL:-0}" = "1" ]; then
 fi
 
 # ─── Environment for host-side execution ───────────────────────────────
+# Note: backend/.env is a symlink to ../.env and is auto-loaded by
+# pydantic-settings (SettingsConfigDict env_file=".env"). The exports
+# below only set fallbacks that pydantic uses when the .env value is
+# missing. Caller-shell vars take highest precedence.
 export DATABASE_URL="${DATABASE_URL:-postgresql+asyncpg://domo:domo_dev_pw@localhost:5432/domo}"
 export REDIS_URL="${REDIS_URL:-redis://localhost:6379/0}"
 export JWT_SECRET="${JWT_SECRET:-local_dev_secret_change_me_in_production}"

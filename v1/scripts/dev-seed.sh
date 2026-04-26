@@ -16,6 +16,8 @@ fi
 # shellcheck source=/dev/null
 source "$VENV_DIR/bin/activate"
 
+# backend/.env (symlink to ../.env) is auto-loaded by pydantic-settings.
+# These exports are fallbacks for vars not in .env.
 export DATABASE_URL="${DATABASE_URL:-postgresql+asyncpg://domo:domo_dev_pw@localhost:5432/domo}"
 export UPLOAD_DIR="${UPLOAD_DIR:-$BACKEND_DIR/uploads}"
 

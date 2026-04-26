@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-26T01:26:05.965Z",
+  "lastUpdated": "2026-04-26T03:29:50.500Z",
   "activeFeatures": [
     "backend",
     "core",
@@ -252,9 +252,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T09:22:43.092Z",
-        "lastUpdated": "2026-04-26T00:19:06.264Z"
+        "lastUpdated": "2026-04-26T03:29:50.500Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/scripts/dev-backend.sh"
+      "lastFile": "/Users/sangincha/dev/domo/v1/scripts/dev-seed.sh"
     },
     "[id]": {
       "phase": "do",
@@ -941,7 +941,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-26T01:26:05.965Z"
+    "lastActivity": "2026-04-26T03:29:50.500Z"
   },
   "history": [
     {
@@ -6167,6 +6167,30 @@
     {
       "timestamp": "2026-04-26T01:26:05.965Z",
       "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T03:20:38.979Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T03:20:54.861Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T03:29:41.296Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T03:29:50.500Z",
+      "feature": "scripts",
       "phase": "do",
       "action": "updated"
     }
