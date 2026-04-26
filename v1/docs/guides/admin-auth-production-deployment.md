@@ -1722,6 +1722,12 @@ CMD ["node", "server.js"]
 
 → next.config.mjs에 `output: "standalone"` 설정 필수 (이미 둘 다 적용됨, [v1/frontend/next.config.mjs](../../frontend/next.config.mjs), [v1/admin/next.config.mjs](../../admin/next.config.mjs)).
 
+⚠️ **`public/` 디렉토리 존재 필수** — `COPY --from=builder /app/public ./public`이 폴더가 없으면 `not found` 에러로 빌드 실패. 빈 폴더라도 OK이므로 `.gitkeep` 하나 두세요:
+```bash
+mkdir -p v1/admin/public v1/frontend/public
+touch v1/admin/public/.gitkeep v1/frontend/public/.gitkeep
+```
+
 ---
 
 ## 부록 F — 첫 배포 체크리스트
