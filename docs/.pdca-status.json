@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-26T05:23:31.881Z",
+  "lastUpdated": "2026-04-26T10:44:31.891Z",
   "activeFeatures": [
     "backend",
     "core",
@@ -213,9 +213,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-04-26T04:06:39.423Z"
+        "lastUpdated": "2026-04-26T10:44:17.354Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/Sidebar.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/api.ts"
     },
     "applications": {
       "phase": "do",
@@ -603,7 +603,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-12T03:13:23.521Z",
-        "lastUpdated": "2026-04-18T04:18:53.572Z"
+        "lastUpdated": "2026-04-26T10:37:51.783Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/following/page.tsx"
     },
@@ -655,7 +655,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T12:26:23.967Z",
-        "lastUpdated": "2026-04-18T12:13:06.656Z"
+        "lastUpdated": "2026-04-26T10:37:28.257Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/feed/page.tsx"
     },
@@ -720,9 +720,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T22:41:17.631Z",
-        "lastUpdated": "2026-04-26T01:26:05.965Z"
+        "lastUpdated": "2026-04-26T10:44:31.891Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/components/AdminShell.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/lib/api.ts"
     },
     "artist-apply": {
       "phase": "do",
@@ -941,7 +941,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-26T05:23:31.881Z"
+    "lastActivity": "2026-04-26T10:44:31.891Z"
   },
   "history": [
     {
@@ -6269,6 +6269,36 @@
     {
       "timestamp": "2026-04-26T05:23:31.881Z",
       "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T10:37:11.673Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T10:37:28.257Z",
+      "feature": "feed",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T10:37:51.783Z",
+      "feature": "following",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T10:44:17.354Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T10:44:31.891Z",
+      "feature": "admin",
       "phase": "do",
       "action": "updated"
     }

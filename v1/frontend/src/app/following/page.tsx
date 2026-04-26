@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n";
 import { fetchFollowingFeed, PostView } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
-import { FeedItem, FeedSkeleton } from "../feed/page";
+import { FeedItem, FeedSkeleton } from "@/components/FeedItem";
 
 export default function FollowingPage() {
   const { me, loading: meLoading } = useMe();

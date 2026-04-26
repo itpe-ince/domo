@@ -84,7 +84,7 @@ export type ApiResponse<T> = ApiSuccess<T> | ApiError;
 
 async function _fetchOnce(
   path: string,
-  init?: RequestInit & { token?: string; auth?: boolean }
+  init?: RequestInit & { token?: string; auth?: boolean; _retry?: boolean; raw?: boolean }
 ): Promise<Response> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
