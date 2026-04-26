@@ -10,9 +10,14 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import logging
+
 from app.core.deps import get_current_user
 from app.core.errors import ApiError
+from app.core.rate_limit import rate_limit
 from app.db.session import get_db
+
+log = logging.getLogger(__name__)
 from app.models.auction import Auction, Bid, Order
 from app.models.auth_token import RefreshToken
 from app.models.moderation import Report, Warning
@@ -21,6 +26,8 @@ from app.models.post import Comment, Follow, Like, Post
 from app.models.sponsorship import Sponsorship, Subscription
 from app.models.user import ArtistApplication, ArtistProfile, User
 from app.services.auth_tokens import revoke_user_tokens
+from app.services.email import get_email_provider
+from app.services.email.templates import account_deleted as account_deleted_tpl
 from app.services.guardian import (
     is_minor as calc_is_minor,
     request_guardian_consent,
@@ -60,19 +67,13 @@ def _user_dict(u: User) -> dict:
 async def export_my_data(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("gdpr_export"),
 ):
     """GDPR Right to Data Portability — returns full user data as JSON.
 
-    Rate limit: 3 per 24h (enforced via gdpr_export_count + last_export_at).
+    Rate limit: 1 per 24h (enforced via Redis rate_limit decorator, scope gdpr_export).
+    gdpr_export_count is incremented for audit/total tracking only.
     """
-    # Simple rate limit: 3 exports per account total (prototype)
-    if user.gdpr_export_count >= 10:
-        raise ApiError(
-            "RATE_LIMITED",
-            "Export limit reached. Contact support for additional exports.",
-            http_status=429,
-        )
-
     # Artist application + profile
     app_result = await db.execute(
         select(ArtistApplication).where(ArtistApplication.user_id == user.id)
@@ -390,6 +391,18 @@ async def request_deletion(
     )
 
     await db.commit()
+
+    # Send account deletion confirmation email
+    try:
+        msg = account_deleted_tpl.render(
+            user_email=user.email,
+            user_name=user.display_name,
+            deletion_scheduled_for=user.deletion_scheduled_for.date().isoformat(),
+        )
+        await get_email_provider().send(msg)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("account_deleted email failed: %s", exc)
+
     return {
         "data": {
             "deleted_at": now.isoformat(),

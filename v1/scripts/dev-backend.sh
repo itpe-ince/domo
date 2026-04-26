@@ -44,7 +44,9 @@ fi
 source "$VENV_DIR/bin/activate"
 
 # Install / upgrade dependencies if not present or forced via FORCE_INSTALL=1
-REQ_MARKER="$VENV_DIR/.installed-v4"
+# Bump REQ_MARKER version (-vN) when adding a new dependency so existing
+# venvs auto-resync without needing FORCE_INSTALL=1.
+REQ_MARKER="$VENV_DIR/.installed-v6"
 if [ ! -f "$REQ_MARKER" ] || [ "${FORCE_INSTALL:-0}" = "1" ]; then
     echo "→ Installing Python dependencies..."
     pip install --upgrade pip >/dev/null
@@ -57,7 +59,7 @@ if [ ! -f "$REQ_MARKER" ] || [ "${FORCE_INSTALL:-0}" = "1" ]; then
         "pydantic>=2.10" \
         "pydantic-settings>=2.7" \
         "python-jose[cryptography]>=3.3" \
-        "passlib[bcrypt]>=1.7" \
+        "bcrypt>=4.2" \
         "python-multipart>=0.0.20" \
         "httpx>=0.28" \
         "redis>=5.2" \
@@ -65,7 +67,12 @@ if [ ! -f "$REQ_MARKER" ] || [ "${FORCE_INSTALL:-0}" = "1" ]; then
         "requests>=2.32" \
         "Pillow>=11.0" \
         "aioboto3>=13.2" \
-        "stripe>=11.3"
+        "stripe>=11.3" \
+        "reportlab>=4.2" \
+        "pyotp>=2.9" \
+        "webauthn>=2.5"
+    # Drop legacy passlib if present (we now use bcrypt directly)
+    pip uninstall -y passlib >/dev/null 2>&1 || true
     touch "$REQ_MARKER"
 fi
 

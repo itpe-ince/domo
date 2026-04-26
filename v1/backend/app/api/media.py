@@ -48,6 +48,18 @@ class ExternalEmbedRequest(BaseModel):
     is_making_video: bool = False
 
 
+class PresignRequest(BaseModel):
+    filename: str
+    content_type: str
+    is_making_video: bool = False
+
+
+class FinalizeRequest(BaseModel):
+    key: str
+    content_type: str
+    is_making_video: bool = False
+
+
 def _ext(filename: str) -> str:
     return Path(filename).suffix.lower()
 
@@ -186,6 +198,89 @@ async def upload_media(
             "storage_key": stored.key,
             "is_making_video": is_making_video,
             "uploaded_at": datetime.now(timezone.utc).isoformat(),
+        }
+    }
+
+
+@router.post("/presign")
+async def presign_upload(
+    body: PresignRequest,
+    user: User = Depends(get_current_user),
+    _rl=rate_limit("media_upload"),
+):
+    """Return presigned POST credentials for direct S3 upload (phase4.design §5.3).
+
+    Client POSTs the file directly to the returned ``url`` using the ``fields``
+    as form data, then calls POST /media/finalize with the ``key`` to register
+    the MediaAsset row.
+    """
+    if user.warning_count >= 3 or user.status == "suspended":
+        raise ApiError("ACCOUNT_SUSPENDED", "Account suspended", http_status=403)
+
+    ext = _ext(body.filename)
+    kind = _classify_kind(ext)
+    if kind == "unknown":
+        raise ApiError(
+            "VALIDATION_ERROR",
+            f"Unsupported file extension: {ext}",
+            http_status=422,
+        )
+
+    if kind == "image":
+        max_bytes = IMAGE_MAX
+    elif body.is_making_video:
+        max_bytes = MAKING_VIDEO_MAX
+    else:
+        max_bytes = VIDEO_MAX
+
+    key = _build_key(user.id, ext)
+    provider = get_storage_provider()
+    presigned = await provider.presign_post(
+        key=key,
+        content_type=body.content_type,
+        max_size_bytes=max_bytes,
+    )
+    return {
+        "data": {
+            "url": presigned.url,
+            "fields": presigned.fields,
+            "key": presigned.key,
+        }
+    }
+
+
+@router.post("/finalize")
+async def finalize_upload(
+    body: FinalizeRequest,
+    user: User = Depends(get_current_user),
+):
+    """Register a MediaAsset after a successful presigned POST upload.
+
+    Validates the file exists in storage (provider.exists), then returns
+    the public URL so the client can store it on the post/artwork record.
+    """
+    if user.warning_count >= 3 or user.status == "suspended":
+        raise ApiError("ACCOUNT_SUSPENDED", "Account suspended", http_status=403)
+
+    provider = get_storage_provider()
+    if not await provider.exists(body.key):
+        raise ApiError(
+            "NOT_FOUND",
+            "Upload not found in storage. Ensure the presigned POST completed successfully.",
+            http_status=404,
+        )
+
+    url = provider.public_url(body.key)
+    ext = Path(body.key).suffix.lower()
+    kind = _classify_kind(ext)
+
+    return {
+        "data": {
+            "key": body.key,
+            "url": url,
+            "type": kind,
+            "content_type": body.content_type,
+            "is_making_video": body.is_making_video,
         }
     }
 

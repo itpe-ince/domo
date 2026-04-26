@@ -21,7 +21,7 @@ from app.schemas.moderation import (
     WarningOut,
 )
 
-reports_router = APIRouter(prefix="/reports", tags=["reports"])
+reports_router = APIRouter(prefix="/abuse-reports", tags=["abuse-reports"])
 warnings_router = APIRouter(prefix="/warnings", tags=["warnings"])
 
 

@@ -4,13 +4,14 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.admin_deps import require_admin
+from app.core.admin_deps import require_admin_with_2fa
 from app.core.deps import get_current_user
 from app.core.errors import ApiError
 from app.db.session import get_db
+from app.models.auction import Order
 from app.models.notification import Notification
 from app.models.settlement import Settlement, SettlementItem
 from app.models.user import User
@@ -76,7 +77,7 @@ async def list_settlements_admin(
     status: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    _admin: User = Depends(require_admin),
+    _admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(Settlement)
@@ -111,7 +112,7 @@ class GenerateRequest(BaseModel):
 @router.post("/admin/generate")
 async def generate_batch(
     body: GenerateRequest,
-    _admin: User = Depends(require_admin),
+    _admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
 ):
     batches = await generate_settlement_batch(db, body.period_start, body.period_end)
@@ -121,7 +122,7 @@ async def generate_batch(
 @router.post("/admin/{settlement_id}/approve")
 async def approve_settlement(
     settlement_id: UUID,
-    admin: User = Depends(require_admin),
+    admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(Settlement).where(Settlement.id == settlement_id))
@@ -141,7 +142,7 @@ async def approve_settlement(
 @router.post("/admin/{settlement_id}/pay")
 async def pay_settlement(
     settlement_id: UUID,
-    _admin: User = Depends(require_admin),
+    _admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(Settlement).where(Settlement.id == settlement_id))
@@ -154,6 +155,18 @@ async def pay_settlement(
     s.status = "paid"
     s.paid_at = datetime.now(timezone.utc)
     s.payout_reference = f"MOCK_PAYOUT_{s.id.hex[:8]}"
+
+    # Advance all orders included in this settlement to `paid_out` (design.md §2)
+    item_rows = await db.execute(
+        select(SettlementItem.order_id).where(SettlementItem.settlement_id == s.id)
+    )
+    order_ids = [row[0] for row in item_rows.all()]
+    if order_ids:
+        await db.execute(
+            update(Order)
+            .where(Order.id.in_(order_ids), Order.status == "settled")
+            .values(status="paid_out")
+        )
 
     db.add(Notification(
         user_id=s.artist_id,

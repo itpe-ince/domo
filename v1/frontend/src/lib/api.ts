@@ -721,7 +721,7 @@ export async function createReport(input: {
   reason: string;
   description?: string;
 }) {
-  return apiFetch<ReportView>("/reports", {
+  return apiFetch<ReportView>("/abuse-reports", {
     method: "POST",
     body: JSON.stringify(input),
   });

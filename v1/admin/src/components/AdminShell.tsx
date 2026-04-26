@@ -28,27 +28,74 @@ const NAV_GROUPS: { label: string; items: { href: string; label: string }[] }[] 
     ],
   },
   {
+    label: "Security",
+    items: [
+      { href: "/settings/passkeys", label: "패스키" },
+      { href: "/settings/recovery-codes", label: "복구 코드" },
+    ],
+  },
+  {
     label: "System",
     items: [{ href: "/settings", label: "시스템 설정" }],
   },
 ];
+
+// Routes that render fullscreen without the admin sidebar.
+// Used for auth gates / forced-flow pages where the admin must complete
+// a step before accessing the rest of the console.
+const STANDALONE_ROUTES = new Set<string>([
+  "/login",
+  "/settings/totp-setup",
+]);
+
+// Routes admin without 2FA can still reach (TOTP/Passkey enrollment paths,
+// own-account routes). All other routes redirect to /settings/totp-setup.
+// This is a defense-in-depth — the BACKEND is the authority via
+// `require_admin_with_2fa`, which returns SECOND_FACTOR_REQUIRED 403.
+const ALLOW_WITHOUT_2FA = new Set<string>([
+  "/login",
+  "/settings/totp-setup",
+  "/settings/passkeys",
+  "/settings/recovery-codes",
+]);
+
+function isStandalonePath(pathname: string): boolean {
+  return STANDALONE_ROUTES.has(pathname);
+}
+
+function needsSecondFactor(me: ApiUser | null): boolean {
+  if (!me || me.role !== "admin") return false;
+  // If backend doesn't expose the field (older API), fall back to TOTP check
+  if (typeof me.second_factor_enrolled === "boolean") {
+    return !me.second_factor_enrolled;
+  }
+  return !me.totp_enabled_at && !(me.passkey_count && me.passkey_count > 0);
+}
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [me, setMe] = useState<ApiUser | null>(null);
 
-  // Login page renders fullscreen without sidebar
-  const isLoginRoute = pathname === "/login";
+  const isStandalone = isStandalonePath(pathname);
 
   useEffect(() => {
-    if (isLoginRoute) return;
+    if (isStandalone) return;
     void loadMe();
     const handler = () => void loadMe();
     window.addEventListener(AUTH_CHANGED_EVENT, handler);
     return () => window.removeEventListener(AUTH_CHANGED_EVENT, handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoginRoute]);
+  }, [isStandalone]);
+
+  // Force first-time admin (no TOTP and no Passkey) into setup flow no
+  // matter what URL they typed. Bypass attempt → instant redirect.
+  useEffect(() => {
+    if (!me) return;
+    if (needsSecondFactor(me) && !ALLOW_WITHOUT_2FA.has(pathname)) {
+      router.replace("/settings/totp-setup");
+    }
+  }, [me, pathname, router]);
 
   async function loadMe() {
     if (!tokenStore.get()) {
@@ -73,7 +120,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     return pathname === href || pathname.startsWith(href + "/");
   };
 
-  if (isLoginRoute) {
+  if (isStandalone) {
     return <>{children}</>;
   }
 

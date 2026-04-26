@@ -33,10 +33,10 @@ async def generate_settlement_batch(
     # and fall within the period
     result = await db.execute(
         select(Order).where(
-            Order.status == "settled",  # 검수 완료 상태
-            Order.settled_at.isnot(None),
-            func.date(Order.settled_at) >= period_start,
-            func.date(Order.settled_at) <= period_end,
+            Order.status == "inspection_complete",  # 검수 완료, 정산 대기
+            Order.inspection_completed_at.isnot(None),
+            func.date(Order.inspection_completed_at) >= period_start,
+            func.date(Order.inspection_completed_at) <= period_end,
         )
     )
     orders = list(result.scalars().all())
@@ -65,7 +65,7 @@ async def generate_settlement_batch(
             gross_amount=gross,
             platform_fee=fees,
             net_amount=net,
-            currency=artist_order_list[0].currency or "USD",
+            currency=artist_order_list[0].currency or "KRW",
             status="pending",
         )
         db.add(settlement)
@@ -73,7 +73,8 @@ async def generate_settlement_batch(
 
         for o in artist_order_list:
             db.add(SettlementItem(settlement_id=settlement.id, order_id=o.id))
-            o.status = "paid_out"  # Mark as included in settlement
+            o.status = "settled"  # included in settlement batch; transitions to paid_out on approval+pay
+            o.settled_at = datetime.now(timezone.utc)
 
         # Notify artist
         db.add(Notification(
@@ -100,7 +101,7 @@ async def settlement_cron_loop(interval_seconds: int = 86400) -> None:
         try:
             async with AsyncSessionLocal() as db:
                 cycle_setting = await get_setting(db, "settlement_cycle")
-                cycle = cycle_setting if isinstance(cycle_setting, str) else (cycle_setting or {}).get("cycle", "weekly")
+                cycle = (cycle_setting or {}).get("cycle", "weekly")
 
                 today = date.today()
                 should_run = False

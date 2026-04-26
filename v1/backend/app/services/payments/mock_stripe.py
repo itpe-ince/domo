@@ -100,3 +100,24 @@ class MockStripeProvider(PaymentProvider):
         if "type" not in event:
             raise ValueError("Webhook event missing 'type'")
         return event
+
+    async def refund(
+        self,
+        payment_intent_id: str,
+        amount: "Decimal | None" = None,
+        reason: str | None = None,
+    ) -> dict:
+        """Mock refund — marks the intent as refunded in memory."""
+        intent = _intents.get(payment_intent_id)
+        if not intent:
+            raise ValueError(f"Unknown payment intent: {payment_intent_id}")
+        refund_amount = amount if amount is not None else intent.amount
+        intent.status = "refunded"
+        _intents[payment_intent_id] = intent
+        return {
+            "id": _new_id("re"),
+            "payment_intent": payment_intent_id,
+            "amount": str(refund_amount),
+            "reason": reason,
+            "status": "succeeded",
+        }

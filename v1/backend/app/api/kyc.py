@@ -66,7 +66,7 @@ async def start_kyc(
 
 class MockVerifyRequest(BaseModel):
     name: str
-    birth_date: str  # YYYY-MM-DD
+    birth_year: int  # e.g. 1995
 
 
 @router.post("/mock-verify")
@@ -80,7 +80,7 @@ async def mock_verify(
     if not isinstance(provider, MockKYCProvider):
         raise ApiError("FORBIDDEN", "Mock verification only available in development", http_status=403)
 
-    result = await provider.mock_verify(body.name, body.birth_date)
+    result = await provider.verify_immediate(body.name, body.birth_year)
     if not result.verified:
         raise ApiError("VERIFICATION_FAILED", result.error or "Verification failed", http_status=422)
 
@@ -93,7 +93,7 @@ async def mock_verify(
         user_id=user.id,
         provider="mock",
         status="verified",
-        result_data={"name": body.name, "birth_date": body.birth_date},
+        result_data={"name": body.name, "birth_year": body.birth_year},
         completed_at=now,
     )
     db.add(session)

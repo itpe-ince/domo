@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-25T00:00:00.000Z",
+  "lastUpdated": "2026-04-26T01:26:05.965Z",
   "activeFeatures": [
     "backend",
     "core",
@@ -61,32 +61,43 @@
     "communities",
     "shipping.py",
     "support",
-    "login"
+    "login",
+    "community_jobs.py",
+    "webhook_cleanup_jobs.py",
+    "totp-setup",
+    "recovery-codes",
+    "passkeys"
   ],
-  "primaryFeature": "backend",
+  "primaryFeature": "real-auth",
   "features": {
-    "backend": {
-      "phase": "check",
-      "phaseNumber": 4,
-      "matchRate": 92,
+    "real-auth": {
+      "phase": "plan",
+      "phaseNumber": 1,
+      "matchRate": null,
       "iterationCount": 0,
-      "requirements": [],
+      "startedAt": "2026-04-26T01:30:00.000Z",
+      "scope": "Real Google OAuth + email/password auth + verification + password reset + student email verification (4 phases A-D)",
       "documents": {
-        "analysis": "v1/docs/03-analysis/backend.analysis.md"
+        "plan": "v1/docs/01-plan/features/real-auth.plan.md"
       },
       "timestamps": {
-        "started": "2026-04-11T06:31:57.421Z",
-        "lastUpdated": "2026-04-25T00:00:00.000Z",
-        "checkCompletedAt": "2026-04-25T00:00:00.000Z"
-      },
+        "started": "2026-04-26T01:30:00.000Z",
+        "lastUpdated": "2026-04-26T01:30:00.000Z"
+      }
+    },
+    "backend": {
+      "phase": "do",
+      "matchRate": 99,
+      "iterationCount": 3,
+      "startedAt": "2026-04-11T06:31:57.421Z",
+      "archivedAt": "2026-04-25T04:30:00.000Z",
+      "archivedTo": "v1/docs/archive/2026-04/backend/",
+      "gapsResolved": 23,
+      "scope": "all phases (Phase 0~4 + P3)",
+      "phaseNumber": 3,
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/main.py",
-      "analysisSummary": {
-        "scope": "all phases (Phase 0~4 + P3)",
-        "totalItems": 73,
-        "criticalGaps": 3,
-        "majorGaps": 11,
-        "minorGaps": 9,
-        "topCritical": ["Admin refund API missing", "KYC gate not enforced server-side", "Email provider.send signature mismatch (TypeError)"]
+      "timestamps": {
+        "lastUpdated": "2026-04-26T00:21:33.898Z"
       }
     },
     "core": {
@@ -98,9 +109,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:32:03.535Z",
-        "lastUpdated": "2026-04-18T12:37:59.996Z"
+        "lastUpdated": "2026-04-26T01:20:20.248Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/core/config.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/core/admin_deps.py"
     },
     "db": {
       "phase": "do",
@@ -124,9 +135,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:23.836Z",
-        "lastUpdated": "2026-04-18T13:32:34.586Z"
+        "lastUpdated": "2026-04-26T01:24:36.609Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/reports.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/auth.py"
     },
     "schemas": {
       "phase": "do",
@@ -137,9 +148,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:30.319Z",
-        "lastUpdated": "2026-04-18T12:00:03.030Z"
+        "lastUpdated": "2026-04-26T01:24:04.393Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/auction.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/auth.py"
     },
     "google_auth.py": {
       "phase": "do",
@@ -189,9 +200,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:35:13.871Z",
-        "lastUpdated": "2026-04-18T13:33:40.660Z"
+        "lastUpdated": "2026-04-26T00:19:56.043Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0026_live_flag.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0034_webauthn_credentials.py"
     },
     "frontend": {
       "phase": "do",
@@ -202,9 +213,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-04-18T13:18:57.017Z"
+        "lastUpdated": "2026-04-25T01:07:04.789Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/Sidebar.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/api.ts"
     },
     "applications": {
       "phase": "do",
@@ -241,9 +252,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T09:22:43.092Z",
-        "lastUpdated": "2026-04-12T11:02:34.822Z"
+        "lastUpdated": "2026-04-26T00:19:06.264Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/scripts/dev-migrate.sh"
+      "lastFile": "/Users/sangincha/dev/domo/v1/scripts/dev-backend.sh"
     },
     "[id]": {
       "phase": "do",
@@ -267,9 +278,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T10:31:16.590Z",
-        "lastUpdated": "2026-04-11T14:14:56.834Z"
+        "lastUpdated": "2026-04-25T01:01:43.986Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/payments/factory.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/payments/stripe_real.py"
     },
     "settings.py": {
       "phase": "do",
@@ -280,7 +291,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T10:32:02.420Z",
-        "lastUpdated": "2026-04-18T12:50:21.450Z"
+        "lastUpdated": "2026-04-25T01:19:16.932Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/settings.py"
     },
@@ -319,7 +330,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:14:59.973Z",
-        "lastUpdated": "2026-04-11T11:14:59.973Z"
+        "lastUpdated": "2026-04-25T00:58:15.900Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/moderation.py"
     },
@@ -423,7 +434,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T13:06:02.167Z",
-        "lastUpdated": "2026-04-11T13:06:02.167Z"
+        "lastUpdated": "2026-04-25T01:05:36.608Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/gdpr_jobs.py"
     },
@@ -488,7 +499,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T13:27:19.530Z",
-        "lastUpdated": "2026-04-12T02:04:19.813Z"
+        "lastUpdated": "2026-04-25T00:55:56.229Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/storage/local.py"
     },
@@ -514,9 +525,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T13:58:54.171Z",
-        "lastUpdated": "2026-04-11T13:59:32.347Z"
+        "lastUpdated": "2026-04-26T00:17:08.651Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/email/factory.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/email/templates/admin_login_alert.py"
     },
     "guardian.py": {
       "phase": "do",
@@ -527,7 +538,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T14:01:58.704Z",
-        "lastUpdated": "2026-04-11T14:01:58.704Z"
+        "lastUpdated": "2026-04-25T00:56:34.293Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/guardian.py"
     },
@@ -709,9 +720,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T22:41:17.631Z",
-        "lastUpdated": "2026-04-24T08:43:10.710Z"
+        "lastUpdated": "2026-04-26T01:26:05.965Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/app/page.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/components/AdminShell.tsx"
     },
     "artist-apply": {
       "phase": "do",
@@ -787,7 +798,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-18T12:37:42.002Z",
-        "lastUpdated": "2026-04-18T12:37:42.002Z"
+        "lastUpdated": "2026-04-25T01:07:45.440Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/kyc.py"
     },
@@ -800,7 +811,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-18T12:49:00.952Z",
-        "lastUpdated": "2026-04-18T12:49:00.952Z"
+        "lastUpdated": "2026-04-25T01:08:04.836Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/settlement_jobs.py"
     },
@@ -852,9 +863,74 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-24T08:41:13.244Z",
-        "lastUpdated": "2026-04-24T08:41:13.244Z"
+        "lastUpdated": "2026-04-26T00:28:17.567Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/app/login/page.tsx"
+    },
+    "community_jobs.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-25T00:55:00.302Z",
+        "lastUpdated": "2026-04-25T00:55:00.302Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/community_jobs.py"
+    },
+    "webhook_cleanup_jobs.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-25T01:06:44.701Z",
+        "lastUpdated": "2026-04-25T01:06:44.701Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/webhook_cleanup_jobs.py"
+    },
+    "totp-setup": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-25T07:47:45.687Z",
+        "lastUpdated": "2026-04-26T00:12:30.353Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/app/settings/totp-setup/page.tsx"
+    },
+    "recovery-codes": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-26T00:14:45.440Z",
+        "lastUpdated": "2026-04-26T00:14:45.440Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/app/settings/recovery-codes/page.tsx"
+    },
+    "passkeys": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-26T00:27:29.907Z",
+        "lastUpdated": "2026-04-26T00:27:29.907Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/app/settings/passkeys/page.tsx"
     }
   },
   "pipeline": {
@@ -865,7 +941,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-24T08:43:10.710Z"
+    "lastActivity": "2026-04-26T01:26:05.965Z"
   },
   "history": [
     {
@@ -4980,6 +5056,1116 @@
     },
     {
       "timestamp": "2026-04-24T08:43:10.710Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:46:40.895Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:46:50.245Z",
+      "feature": "settings.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:47:20.709Z",
+      "feature": "kyc.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:47:25.133Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:47:30.355Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:47:34.139Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:47:39.026Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:47:44.249Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:47:49.301Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:47:58.715Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:48:06.854Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:48:14.859Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:48:21.656Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:48:33.914Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:48:40.361Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:48:53.226Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:49:11.455Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:49:48.169Z",
+      "feature": "kyc.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:52:56.267Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:53:06.177Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:53:12.394Z",
+      "feature": "settlement_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:53:17.795Z",
+      "feature": "settlement_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:53:30.184Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:53:35.756Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:53:40.475Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:53:48.438Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:54:01.786Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:54:06.130Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:54:10.049Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:54:17.596Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:54:21.962Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:54:26.434Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:54:45.995Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:55:00.302Z",
+      "feature": "community_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:55:05.744Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:55:11.598Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:55:17.170Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:55:31.467Z",
+      "feature": "storage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:55:35.555Z",
+      "feature": "storage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:55:43.674Z",
+      "feature": "storage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:55:49.368Z",
+      "feature": "storage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:55:56.229Z",
+      "feature": "storage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:56:01.557Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:56:15.315Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:56:22.540Z",
+      "feature": "guardian.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:56:34.293Z",
+      "feature": "guardian.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:56:43.114Z",
+      "feature": "email",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:56:55.542Z",
+      "feature": "email",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:57:09.028Z",
+      "feature": "email",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:57:18.441Z",
+      "feature": "email",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:57:27.901Z",
+      "feature": "email",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:57:35.072Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:57:43.083Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:57:49.691Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:57:54.824Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:58:01.598Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:58:09.889Z",
+      "feature": "moderation.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:58:15.900Z",
+      "feature": "moderation.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:58:57.646Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:59:05.655Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:59:21.149Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T00:59:30.254Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:00:12.666Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:00:35.570Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:00:42.421Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:00:52.796Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:01:00.512Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:01:11.495Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:01:17.804Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:01:43.986Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:01:58.909Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:05:27.080Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:05:31.648Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:05:36.608Z",
+      "feature": "gdpr_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:05:42.468Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:05:49.497Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:06:05.524Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:06:09.120Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:06:12.552Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:06:17.074Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:06:20.819Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:06:24.455Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:06:27.593Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:06:31.676Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:06:35.095Z",
+      "feature": "settlement_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:06:44.701Z",
+      "feature": "webhook_cleanup_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:06:48.270Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:06:55.527Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:07:00.253Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:07:04.789Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:07:08.356Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:07:21.984Z",
+      "feature": "kyc.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:07:33.613Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:07:45.440Z",
+      "feature": "kyc.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:07:59.971Z",
+      "feature": "settings.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:08:04.836Z",
+      "feature": "settlement_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:08:45.739Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:08:58.365Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:09:42.616Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:10:10.778Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:10:18.000Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:18:21.934Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:18:37.361Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:18:42.795Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:18:58.618Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:19:08.225Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T01:19:16.932Z",
+      "feature": "settings.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T07:37:00.389Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T07:37:13.922Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T07:37:39.301Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T07:37:53.733Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T07:39:17.580Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T07:40:03.951Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T07:40:25.319Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T07:40:33.242Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T07:41:00.858Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T07:41:10.297Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T07:41:26.232Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T07:46:04.779Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T07:46:57.717Z",
+      "feature": "login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T07:47:45.687Z",
+      "feature": "totp-setup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T08:04:46.421Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T08:05:01.608Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T08:05:09.213Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T08:54:15.225Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T08:54:28.309Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T08:59:23.179Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T08:59:33.479Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T09:03:49.437Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T23:58:16.425Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T23:58:22.222Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T23:58:39.849Z",
+      "feature": "totp-setup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-25T23:59:03.698Z",
+      "feature": "totp-setup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:01:25.805Z",
+      "feature": "totp-setup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:01:32.654Z",
+      "feature": "totp-setup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:01:39.789Z",
+      "feature": "totp-setup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:06:37.673Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:06:46.992Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:07:00.360Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:07:13.382Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:07:23.486Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:07:45.177Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:08:19.481Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:11:24.611Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:11:33.311Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:11:45.424Z",
+      "feature": "totp-setup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:12:00.260Z",
+      "feature": "totp-setup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:12:30.353Z",
+      "feature": "totp-setup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:12:58.834Z",
+      "feature": "login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:13:29.617Z",
+      "feature": "login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:14:01.751Z",
+      "feature": "login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:14:45.440Z",
+      "feature": "recovery-codes",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:15:08.004Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:15:15.158Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:15:34.261Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:15:43.347Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:16:03.301Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:17:08.651Z",
+      "feature": "email",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:17:25.299Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:17:53.071Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:18:05.601Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:18:14.116Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:19:00.902Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:19:06.264Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:19:42.405Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:19:56.043Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:20:17.509Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:21:20.244Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:21:27.531Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:21:33.898Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:27:03.231Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:27:29.907Z",
+      "feature": "passkeys",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:27:48.295Z",
+      "feature": "login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:27:59.677Z",
+      "feature": "login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:28:17.567Z",
+      "feature": "login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T00:28:29.639Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T01:11:05.549Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T01:11:15.118Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T01:20:20.248Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T01:23:45.772Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T01:24:04.393Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T01:24:26.831Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T01:24:36.609Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T01:25:43.080Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T01:26:05.965Z",
       "feature": "admin",
       "phase": "do",
       "action": "updated"

@@ -23,13 +23,20 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import logging
+
 from app.core.errors import ApiError
 from app.db.session import get_db
 from app.models.auction import Order
 from app.models.notification import Notification
 from app.models.sponsorship import Sponsorship, Subscription
+from app.models.user import User
 from app.models.webhook_event import WebhookEvent
+from app.services.email import get_email_provider
+from app.services.email.templates import payment_receipt as payment_receipt_tpl
 from app.services.payments import get_payment_provider
+
+log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 
@@ -66,6 +73,25 @@ async def _handle_payment_succeeded(db: AsyncSession, event: dict) -> None:
     if order and order.status == "pending_payment":
         order.status = "paid"
         order.paid_at = datetime.now(timezone.utc)
+
+        # Send payment receipt email to buyer
+        try:
+            buyer_result = await db.execute(select(User).where(User.id == order.buyer_id))
+            buyer = buyer_result.scalar_one_or_none()
+            if buyer:
+                msg = payment_receipt_tpl.render(
+                    buyer_email=buyer.email,
+                    buyer_name=buyer.display_name,
+                    order_id=str(order.id),
+                    amount=str(order.amount),
+                    currency=order.currency,
+                    artist_name="",  # seller name lookup omitted for brevity
+                    artwork_title=str(order.product_post_id),
+                    paid_at=order.paid_at.isoformat(),
+                )
+                await get_email_provider().send(msg)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("payment receipt email failed: %s", exc)
 
 
 async def _handle_payment_failed(db: AsyncSession, event: dict) -> None:

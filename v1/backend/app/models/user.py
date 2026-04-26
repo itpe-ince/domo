@@ -1,7 +1,7 @@
 import uuid
-from datetime import date, datetime
+from datetime import datetime
 
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -23,13 +23,27 @@ class User(Base):
     sns_provider: Mapped[str | None] = mapped_column(String(20), nullable=True)
     sns_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
+    # Admin-only credential auth (bcrypt + TOTP 2FA)
+    # Regular users authenticate via SNS only; admins MUST use these.
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    password_changed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    totp_secret: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    totp_enabled_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    failed_login_count: Mapped[int] = mapped_column(Integer, default=0)
+    locked_until: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
     display_name: Mapped[str] = mapped_column(String(100), nullable=False)
     avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     country_code: Mapped[str | None] = mapped_column(String(2), nullable=True)
     language: Mapped[str] = mapped_column(String(10), default="ko")
-    birth_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     birth_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
     is_minor: Mapped[bool] = mapped_column(Boolean, default=False)
     onboarded_at: Mapped[datetime | None] = mapped_column(
@@ -47,6 +61,11 @@ class User(Base):
     warning_count: Mapped[int] = mapped_column(Integer, default=0)
     gdpr_consent_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
+    )
+
+    # M10 Stripe Customer caching
+    stripe_customer_id: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, index=True
     )
 
     # M3 GDPR fields (Phase 4)

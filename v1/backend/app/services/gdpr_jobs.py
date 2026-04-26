@@ -42,7 +42,7 @@ async def hard_delete_pending_users(db: AsyncSession) -> int:
         user.display_name = "Anonymous"
         user.avatar_url = None
         user.bio = None
-        user.birth_date = None
+        user.birth_year = None
         user.country_code = None
         user.sns_provider = None
         user.sns_id = None

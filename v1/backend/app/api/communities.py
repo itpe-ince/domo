@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.deps import get_current_user
 from app.core.errors import ApiError
 from app.db.session import get_db
-from app.models.community import Community, CommunityMember, CommunityPost
+from app.models.community import Community, CommunityComment, CommunityMember, CommunityPost
 from app.models.user import User
 
 router = APIRouter(prefix="/communities", tags=["communities"])
@@ -245,3 +245,111 @@ async def list_posts(
             for p in posts
         ]
     }
+
+
+# ─── Comments ─────────────────────────────────────────────────────────────
+
+
+class CommunityCommentCreate(BaseModel):
+    content: str
+
+
+def _serialize_comment(c: CommunityComment, author: User | None) -> dict:
+    return {
+        "id": str(c.id),
+        "post_id": str(c.post_id),
+        "author": {
+            "id": str(author.id),
+            "display_name": author.display_name,
+            "avatar_url": author.avatar_url,
+        } if author else {"id": str(c.author_id), "display_name": "unknown"},
+        "content": c.content,
+        "status": c.status,
+        "created_at": c.created_at.isoformat(),
+    }
+
+
+@router.get("/posts/{post_id}/comments")
+async def list_comments(
+    post_id: UUID,
+    limit: int = Query(20, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+):
+    """List comments on a community post (public)."""
+    result = await db.execute(
+        select(CommunityComment)
+        .where(
+            CommunityComment.post_id == post_id,
+            CommunityComment.status == "active",
+        )
+        .order_by(CommunityComment.created_at.asc())
+        .limit(limit)
+    )
+    comments = list(result.scalars().all())
+
+    author_ids = list({c.author_id for c in comments})
+    author_map: dict = {}
+    if author_ids:
+        authors = await db.execute(select(User).where(User.id.in_(author_ids)))
+        author_map = {u.id: u for u in authors.scalars()}
+
+    return {"data": [_serialize_comment(c, author_map.get(c.author_id)) for c in comments]}
+
+
+@router.post("/posts/{post_id}/comments")
+async def create_comment(
+    post_id: UUID,
+    body: CommunityCommentCreate,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a comment on a community post (members only)."""
+    # Verify post exists and get its community_id
+    post_result = await db.execute(
+        select(CommunityPost).where(CommunityPost.id == post_id)
+    )
+    post = post_result.scalar_one_or_none()
+    if not post:
+        raise ApiError("NOT_FOUND", "Post not found", http_status=404)
+
+    # Check membership
+    member = await db.execute(
+        select(CommunityMember).where(
+            CommunityMember.community_id == post.community_id,
+            CommunityMember.user_id == user.id,
+        )
+    )
+    if not member.scalar_one_or_none():
+        raise ApiError("FORBIDDEN", "Join the community first", http_status=403)
+
+    comment = CommunityComment(
+        post_id=post_id,
+        author_id=user.id,
+        content=body.content,
+    )
+    db.add(comment)
+    await db.commit()
+    await db.refresh(comment)
+    return {"data": _serialize_comment(comment, user)}
+
+
+@router.delete("/comments/{comment_id}")
+async def delete_comment(
+    comment_id: UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Delete a comment (author or admin)."""
+    result = await db.execute(
+        select(CommunityComment).where(CommunityComment.id == comment_id)
+    )
+    comment = result.scalar_one_or_none()
+    if not comment:
+        raise ApiError("NOT_FOUND", "Comment not found", http_status=404)
+
+    if comment.author_id != user.id and user.role != "admin":
+        raise ApiError("FORBIDDEN", "Not authorized to delete this comment", http_status=403)
+
+    comment.status = "deleted"
+    await db.commit()
+    return {"data": {"deleted": True}}

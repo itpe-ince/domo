@@ -19,8 +19,10 @@ from app.models.notification import Notification
 from app.models.post import Post, ProductPost
 from app.models.user import User
 from app.schemas.auction import OrderOut
+from app.services.kyc import require_kyc_verified
 from app.services.payments import get_payment_provider
 from app.services.settings import get_setting
+from app.services.shipping import get_shipping_provider
 
 orders_router = APIRouter(prefix="/orders", tags=["orders"])
 products_router = APIRouter(prefix="/products", tags=["products"])
@@ -71,6 +73,9 @@ async def buy_now(
     Per design.md §11 / S-new-1: if the product also has an active auction,
     that auction is automatically cancelled and any winning bid notified.
     """
+    # KYC gate — configurable via system_settings.kyc_enforcement
+    await require_kyc_verified(user, db)
+
     # Lock the product row
     pp_result = await db.execute(
         select(ProductPost).where(ProductPost.post_id == post_id).with_for_update()
@@ -132,7 +137,7 @@ async def buy_now(
         source="buy_now",
         auction_id=None,
         amount=pp.buy_now_price,
-        currency=pp.currency or "USD",
+        currency=pp.currency or "KRW",
         platform_fee=fee,
         buyer_fee=buyer_fee,
         status="pending_payment",
@@ -341,6 +346,44 @@ async def get_order(
     return {"data": _serialize_order(order)}
 
 
+@orders_router.get("/{order_id}/tracking")
+async def get_order_tracking(
+    order_id: UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get shipping tracking status for an order (buyer or seller)."""
+    result = await db.execute(select(Order).where(Order.id == order_id))
+    order = result.scalar_one_or_none()
+    if not order:
+        raise ApiError("NOT_FOUND", "Order not found", http_status=404)
+    if order.buyer_id != user.id and order.seller_id != user.id:
+        raise ApiError("FORBIDDEN", "Not your order", http_status=403)
+    if not order.tracking_number:
+        raise ApiError(
+            "NOT_FOUND",
+            "No tracking number on this order yet",
+            http_status=404,
+        )
+
+    provider = get_shipping_provider()
+    status = await provider.track(
+        tracking_number=order.tracking_number,
+        carrier=order.shipping_carrier or "",
+    )
+    return {
+        "data": {
+            "order_id": str(order.id),
+            "tracking_number": status.tracking_number,
+            "carrier": status.carrier,
+            "status": status.status,
+            "last_update": status.last_update,
+            "location": status.location,
+            "estimated_delivery": status.estimated_delivery,
+        }
+    }
+
+
 # ─── Escrow Flow ─────────────────────────────────────────────────────────
 # 결제 → 배송 → 검수 → 정산
 
@@ -391,17 +434,16 @@ async def complete_inspection(
     now = datetime.now(timezone.utc)
     order.inspection_status = "approved"
     order.inspection_completed_at = now
-    order.status = "settled"
-    order.settled_at = now
+    order.status = "inspection_complete"  # settlement batch will advance to settled → paid_out
     order.shipping_status = "delivered"
 
     # 정산 금액 = 판매금액 - 플랫폼 수수료
     settlement_amount = order.amount - order.platform_fee
 
     db.add(Notification(
-        user_id=order.seller_id, type="order_settled",
-        title="정산 완료",
-        body=f"검수가 완료되어 ${float(settlement_amount):.2f}가 정산됩니다.",
+        user_id=order.seller_id, type="inspection_complete",
+        title="검수 완료 — 정산 대기",
+        body=f"검수가 완료되었습니다. 다음 정산 주기에 ${float(settlement_amount):.2f}가 정산됩니다.",
     ))
     db.add(Notification(
         user_id=order.buyer_id, type="inspection_complete",

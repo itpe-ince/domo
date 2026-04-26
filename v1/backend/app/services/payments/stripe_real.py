@@ -15,8 +15,12 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 from decimal import Decimal
 from typing import Any
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.services.payments.base import (
@@ -24,6 +28,8 @@ from app.services.payments.base import (
     PaymentProvider,
     SubscriptionResult,
 )
+
+log = logging.getLogger(__name__)
 
 
 class StripeProvider(PaymentProvider):
@@ -112,38 +118,80 @@ class StripeProvider(PaymentProvider):
         monthly_amount: Decimal,
         currency: str,
         metadata: dict | None = None,
+        db: AsyncSession | None = None,
     ) -> SubscriptionResult:
-        """Create a recurring subscription.
+        """Create a recurring subscription with Stripe Customer/Price caching.
 
-        Production implementation requires:
-        1. A Stripe Customer for the sponsor (create on first use + store)
-        2. A Price object for the monthly amount (dynamically created or cached)
-        3. Subscription attached to the customer + price
+        On first call for a (artist_id, amount, currency) tuple, creates a
+        Stripe Product + Price and persists to stripe_price_cache.
+        On subsequent calls, reuses the cached stripe_price_id.
 
-        This implementation assumes the artist ID is used as a product key
-        and creates Price objects on the fly. For real production you'd
-        want to cache Customer/Price to avoid duplicate creations.
+        Stripe Customer is cached on the User row (stripe_customer_id).
+        ``db`` is optional for backwards compatibility — without it the caching
+        is skipped and the old on-the-fly creation path is used.
         """
         stripe = self._stripe
+        import uuid as _uuid
 
-        def _create():
-            # 1. Find or create product for this artist
-            product = stripe.Product.create(
-                name=f"Domo Bluebird Subscription — Artist {artist_id}",
-                metadata={"artist_id": artist_id},
-            )
-            # 2. Create a recurring price
-            price = stripe.Price.create(
-                product=product.id,
-                unit_amount=int(monthly_amount),
-                currency=currency.lower(),
-                recurring={"interval": "month"},
-            )
-            # 3. Create a customer for this sponsor (in production: cache/dedupe)
-            customer = stripe.Customer.create(
-                metadata={"sponsor_id": sponsor_id},
-            )
-            # 4. Create subscription
+        # ── Load cached Customer and Price from DB ────────────────────────
+        cached_customer_id: str | None = None
+        cached_price_id: str | None = None
+
+        if db is not None:
+            from app.models.sponsorship import StripePriceCache
+            from app.models.user import User
+
+            try:
+                sponsor_uuid = _uuid.UUID(sponsor_id)
+                user_result = await db.execute(
+                    select(User).where(User.id == sponsor_uuid)
+                )
+                sponsor_user = user_result.scalar_one_or_none()
+                if sponsor_user and sponsor_user.stripe_customer_id:
+                    cached_customer_id = sponsor_user.stripe_customer_id
+            except Exception as exc:  # noqa: BLE001
+                log.warning("stripe customer cache lookup failed: %s", exc)
+
+            try:
+                artist_uuid = _uuid.UUID(artist_id)
+                price_result = await db.execute(
+                    select(StripePriceCache).where(
+                        StripePriceCache.artist_id == artist_uuid,
+                        StripePriceCache.amount == monthly_amount,
+                        StripePriceCache.currency == currency.upper(),
+                    )
+                )
+                price_cache = price_result.scalar_one_or_none()
+                if price_cache:
+                    cached_price_id = price_cache.stripe_price_id
+            except Exception as exc:  # noqa: BLE001
+                log.warning("stripe price cache lookup failed: %s", exc)
+
+        def _create(customer_id: str | None, price_id: str | None):
+            # 1. Customer — find or create
+            if customer_id:
+                customer = stripe.Customer.retrieve(customer_id)
+            else:
+                customer = stripe.Customer.create(
+                    metadata={"sponsor_id": sponsor_id},
+                )
+
+            # 2. Price — find or create
+            if price_id:
+                price = stripe.Price.retrieve(price_id)
+            else:
+                product = stripe.Product.create(
+                    name=f"Domo Bluebird Subscription — Artist {artist_id}",
+                    metadata={"artist_id": artist_id},
+                )
+                price = stripe.Price.create(
+                    product=product.id,
+                    unit_amount=int(monthly_amount),
+                    currency=currency.lower(),
+                    recurring={"interval": "month"},
+                )
+
+            # 3. Subscription
             sub = stripe.Subscription.create(
                 customer=customer.id,
                 items=[{"price": price.id}],
@@ -155,9 +203,41 @@ class StripeProvider(PaymentProvider):
                 payment_settings={"save_default_payment_method": "on_subscription"},
                 expand=["latest_invoice.payment_intent"],
             )
-            return sub
+            return sub, customer.id, price.id, getattr(price, "product", None)
 
-        sub = await asyncio.to_thread(_create)
+        sub, new_customer_id, new_price_id, product_id = await asyncio.to_thread(
+            _create, cached_customer_id, cached_price_id
+        )
+
+        # ── Persist new Customer/Price to DB cache ────────────────────────
+        if db is not None:
+            try:
+                from app.models.sponsorship import StripePriceCache
+                from app.models.user import User
+
+                if not cached_customer_id:
+                    sponsor_uuid = _uuid.UUID(sponsor_id)
+                    user_result = await db.execute(
+                        select(User).where(User.id == sponsor_uuid)
+                    )
+                    sponsor_user = user_result.scalar_one_or_none()
+                    if sponsor_user:
+                        sponsor_user.stripe_customer_id = new_customer_id
+
+                if not cached_price_id:
+                    artist_uuid = _uuid.UUID(artist_id)
+                    db.add(StripePriceCache(
+                        artist_id=artist_uuid,
+                        amount=monthly_amount,
+                        currency=currency.upper(),
+                        stripe_price_id=new_price_id,
+                        stripe_product_id=str(product_id) if product_id else "",
+                    ))
+
+                await db.flush()
+            except Exception as exc:  # noqa: BLE001
+                log.warning("stripe cache persist failed: %s", exc)
+
         return SubscriptionResult(
             id=sub.id,
             status=sub.status,
@@ -185,6 +265,39 @@ class StripeProvider(PaymentProvider):
             current_period_end_unix=sub.current_period_end,
             cancel_at_period_end=bool(sub.cancel_at_period_end),
         )
+
+    # ─── Refunds ────────────────────────────────────────────────────────
+
+    async def refund(
+        self,
+        payment_intent_id: str,
+        amount: Decimal | None = None,
+        reason: str | None = None,
+    ) -> dict:
+        """Issue a Stripe refund for the given PaymentIntent.
+
+        ``amount`` is in the smallest currency unit (e.g. cents / won).
+        When ``None``, Stripe will refund the full charge.
+        """
+        stripe = self._stripe
+
+        def _create():
+            kwargs: dict = {"payment_intent": payment_intent_id}
+            if amount is not None:
+                kwargs["amount"] = int(amount)
+            if reason is not None:
+                # Stripe accepts: duplicate | fraudulent | requested_by_customer
+                kwargs["reason"] = reason
+            return stripe.Refund.create(**kwargs)
+
+        refund_obj = await asyncio.to_thread(_create)
+        return {
+            "id": refund_obj.id,
+            "payment_intent": refund_obj.payment_intent,
+            "amount": str(refund_obj.amount),
+            "reason": refund_obj.reason,
+            "status": refund_obj.status,
+        }
 
     # ─── Webhooks ───────────────────────────────────────────────────────
 

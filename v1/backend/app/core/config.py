@@ -49,6 +49,22 @@ class Settings(BaseSettings):
     ollama_translation_model: str = "gemma4:latest"
 
     frontend_url: str = "http://localhost:3700"
+    admin_url: str = "http://localhost:3800"
+    # Optional comma-separated extra origins for staging/preview deployments
+    extra_cors_origins: str = ""
+
+    # Fernet key (URL-safe base64, 32 bytes) for encrypting admin TOTP secrets
+    # Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    # If empty, secrets are stored as plaintext (dev only — emits warning at boot).
+    totp_encryption_key: str = ""
+
+    # WebAuthn / Passkey Relying Party config.
+    # rp_id MUST match the domain the admin browser is loaded from (no scheme/port).
+    # For dev: "localhost". For production: e.g. "admin.domo.art".
+    # rp_origin includes scheme + port (browser checks this strictly).
+    webauthn_rp_id: str = "localhost"
+    webauthn_rp_name: str = "Domo Admin"
+    webauthn_rp_origin: str = "http://localhost:3800"
 
 
 @lru_cache

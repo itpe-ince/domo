@@ -10,7 +10,7 @@ from fastapi import APIRouter, Body, Depends, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.admin_deps import require_admin
+from app.core.admin_deps import require_admin_with_2fa
 from app.core.errors import ApiError
 from app.db.session import get_db
 from app.models.auction import Auction, Order
@@ -32,7 +32,7 @@ def _now() -> datetime:
 @router.get("/dashboard/stats")
 async def dashboard_stats(
     days: int = Query(30, ge=1, le=365),
-    admin: User = Depends(require_admin),
+    admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
 ):
     since = _now() - timedelta(days=days)
@@ -121,7 +121,7 @@ async def dashboard_stats(
 @router.get("/dashboard/revenue")
 async def dashboard_revenue(
     days: int = Query(30, ge=1, le=365),
-    admin: User = Depends(require_admin),
+    admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
 ):
     since = _now() - timedelta(days=days)
@@ -226,7 +226,7 @@ async def dashboard_revenue(
 
 @router.get("/settings")
 async def list_settings(
-    admin: User = Depends(require_admin),
+    admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(SystemSetting).order_by(SystemSetting.key))
@@ -247,7 +247,7 @@ async def list_settings(
 async def update_setting(
     key: str,
     payload: dict[str, Any] = Body(...),
-    admin: User = Depends(require_admin),
+    admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
 ):
     if "value" not in payload:

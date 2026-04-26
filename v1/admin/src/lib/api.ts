@@ -100,7 +100,7 @@ async function _fetchOnce(
 
 export async function apiFetch<T>(
   path: string,
-  init?: RequestInit & { token?: string; auth?: boolean; _retry?: boolean }
+  init?: RequestInit & { token?: string; auth?: boolean; raw?: boolean; _retry?: boolean }
 ): Promise<T> {
   let res = await _fetchOnce(path, init);
 
@@ -126,6 +126,8 @@ export async function apiFetch<T>(
       "error" in json ? json.error : { code: "UNKNOWN", message: res.statusText };
     throw new ApiClientError(err.code, err.message, err.details);
   }
+  // raw: return the full envelope (e.g. when the response includes both `data` and `pagination`)
+  if (init?.raw) return json as unknown as T;
   return (json as ApiSuccess<T>).data;
 }
 
@@ -139,6 +141,10 @@ export type ApiUser = {
   avatar_url: string | null;
   language: string;
   warning_count: number;
+  // Admin-only 2FA enrollment status (undefined for non-admin)
+  totp_enabled_at?: string | null;
+  passkey_count?: number;
+  second_factor_enrolled?: boolean;
 };
 
 export async function loginWithMockEmail(email: string): Promise<ApiUser> {
@@ -151,6 +157,195 @@ export async function loginWithMockEmail(email: string): Promise<ApiUser> {
   });
   tokenStore.set(data.tokens.access_token, data.tokens.refresh_token);
   return data.user;
+}
+
+// ─── Admin credential auth (password + TOTP 2FA) ─────────────────────────
+export type AdminLoginStep1Response =
+  | {
+      totp_required: true;
+      challenge_token: string;
+    }
+  | {
+      totp_required: false;
+      totp_setup_required: boolean;
+      tokens: { access_token: string; refresh_token: string };
+      user: ApiUser;
+    };
+
+export async function adminLoginStep1(
+  email: string,
+  password: string
+): Promise<AdminLoginStep1Response> {
+  const data = await apiFetch<AdminLoginStep1Response>("/auth/admin/login", {
+    method: "POST",
+    auth: false,
+    body: JSON.stringify({ email, password }),
+  });
+  // First-time admin (no TOTP yet) — tokens already issued
+  if (data.totp_required === false) {
+    tokenStore.set(data.tokens.access_token, data.tokens.refresh_token);
+  }
+  return data;
+}
+
+export type AdminVerifyResult = {
+  user: ApiUser;
+  auth_method: "totp" | "recovery_code";
+  recovery_codes_remaining: number;
+};
+
+export async function adminLoginVerifyTotp(
+  challenge_token: string,
+  totp_code: string
+): Promise<AdminVerifyResult> {
+  return _adminVerify({ challenge_token, totp_code });
+}
+
+export async function adminLoginVerifyRecoveryCode(
+  challenge_token: string,
+  recovery_code: string
+): Promise<AdminVerifyResult> {
+  return _adminVerify({ challenge_token, recovery_code });
+}
+
+async function _adminVerify(body: Record<string, string>): Promise<AdminVerifyResult> {
+  const data = await apiFetch<{
+    tokens: { access_token: string; refresh_token: string };
+    user: ApiUser;
+    auth_method: "totp" | "recovery_code";
+    recovery_codes_remaining: number;
+  }>("/auth/admin/login/verify", {
+    method: "POST",
+    auth: false,
+    body: JSON.stringify(body),
+  });
+  tokenStore.set(data.tokens.access_token, data.tokens.refresh_token);
+  return {
+    user: data.user,
+    auth_method: data.auth_method,
+    recovery_codes_remaining: data.recovery_codes_remaining,
+  };
+}
+
+export type AdminTotpSetup = {
+  secret: string;
+  otpauth_uri: string;
+  issuer: string;
+};
+
+export async function adminTotpSetup(): Promise<AdminTotpSetup> {
+  return apiFetch<AdminTotpSetup>("/auth/admin/totp/setup", { method: "GET" });
+}
+
+export type AdminTotpEnableResult = {
+  enabled: true;
+  enabled_at: string;
+  recovery_codes: string[];
+  recovery_codes_warning: string;
+};
+
+export async function adminTotpEnable(
+  totp_code: string
+): Promise<AdminTotpEnableResult> {
+  return apiFetch<AdminTotpEnableResult>("/auth/admin/totp/enable", {
+    method: "POST",
+    body: JSON.stringify({ totp_code }),
+  });
+}
+
+export type RecoveryCodeStatus = {
+  total: number;
+  used: number;
+  remaining: number;
+  warning_low: boolean;
+};
+
+export async function adminRecoveryCodesStatus(): Promise<RecoveryCodeStatus> {
+  return apiFetch("/auth/admin/recovery-codes/status");
+}
+
+export async function adminRecoveryCodesRegenerate(
+  password: string
+): Promise<{ recovery_codes: string[]; recovery_codes_warning: string }> {
+  return apiFetch("/auth/admin/recovery-codes/regenerate", {
+    method: "POST",
+    body: JSON.stringify({ password }),
+  });
+}
+
+// ─── Admin WebAuthn / Passkey ────────────────────────────────────────────
+export type WebauthnCredentialView = {
+  id: string;
+  credential_id: string;
+  nickname: string | null;
+  transports: string | null;
+  backed_up: boolean;
+  created_at: string;
+  last_used_at: string | null;
+};
+
+export async function webauthnListCredentials(): Promise<WebauthnCredentialView[]> {
+  return apiFetch<WebauthnCredentialView[]>("/auth/admin/webauthn/credentials");
+}
+
+export async function webauthnRevokeCredential(id: string): Promise<{ ok: true }> {
+  return apiFetch(`/auth/admin/webauthn/credentials/${id}`, { method: "DELETE" });
+}
+
+export async function webauthnRegisterBegin(
+  nickname?: string
+): Promise<{ challenge_token: string; options: string }> {
+  return apiFetch("/auth/admin/webauthn/register/begin", {
+    method: "POST",
+    body: JSON.stringify({ nickname }),
+  });
+}
+
+export async function webauthnRegisterFinish(
+  challenge_token: string,
+  credential: unknown,
+  nickname?: string
+): Promise<{ id: string; credential_id: string; nickname: string | null }> {
+  return apiFetch("/auth/admin/webauthn/register/finish", {
+    method: "POST",
+    body: JSON.stringify({ challenge_token, credential, nickname }),
+  });
+}
+
+export async function webauthnAuthenticateBegin(
+  email: string
+): Promise<{ challenge_token: string; options: string }> {
+  return apiFetch("/auth/admin/webauthn/authenticate/begin", {
+    method: "POST",
+    auth: false,
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function webauthnAuthenticateFinish(
+  challenge_token: string,
+  assertion: unknown
+): Promise<{ user: ApiUser; auth_method: "webauthn" }> {
+  const data = await apiFetch<{
+    tokens: { access_token: string; refresh_token: string };
+    user: ApiUser;
+    auth_method: "webauthn";
+  }>("/auth/admin/webauthn/authenticate/finish", {
+    method: "POST",
+    auth: false,
+    body: JSON.stringify({ challenge_token, assertion }),
+  });
+  tokenStore.set(data.tokens.access_token, data.tokens.refresh_token);
+  return { user: data.user, auth_method: data.auth_method };
+}
+
+export async function adminTotpDisable(
+  password: string
+): Promise<{ enabled: false }> {
+  return apiFetch("/auth/admin/totp/disable", {
+    method: "POST",
+    body: JSON.stringify({ password }),
+  });
 }
 
 export async function fetchMe(): Promise<ApiUser> {
@@ -610,7 +805,7 @@ export async function createReport(input: {
   reason: string;
   description?: string;
 }) {
-  return apiFetch<ReportView>("/reports", {
+  return apiFetch<ReportView>("/abuse-reports", {
     method: "POST",
     body: JSON.stringify(input),
   });

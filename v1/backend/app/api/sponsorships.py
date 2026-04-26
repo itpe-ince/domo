@@ -20,6 +20,7 @@ from app.schemas.sponsorship import (
     SubscriptionCreate,
     SubscriptionOut,
 )
+from app.services.kyc import require_kyc_verified
 from app.services.payments import get_payment_provider
 from app.services.settings import get_setting
 
@@ -63,6 +64,9 @@ async def create_sponsorship(
         raise ApiError(
             "VALIDATION_ERROR", "Cannot sponsor yourself", http_status=422
         )
+
+    # KYC gate — configurable via system_settings.kyc_enforcement
+    await require_kyc_verified(user, db)
 
     artist_result = await db.execute(select(User).where(User.id == body.artist_id))
     artist = artist_result.scalar_one_or_none()
@@ -211,6 +215,8 @@ async def create_subscription(
             "VALIDATION_ERROR", "Cannot subscribe to yourself", http_status=422
         )
 
+    await require_kyc_verified(user, db)
+
     artist_result = await db.execute(select(User).where(User.id == body.artist_id))
     artist = artist_result.scalar_one_or_none()
     if not artist or artist.role != "artist":
@@ -236,12 +242,17 @@ async def create_subscription(
     monthly_amount = Decimal(str(unit["amount"])) * body.monthly_bluebird
 
     provider = get_payment_provider()
-    result = await provider.create_subscription(
+    # Pass db so StripeProvider can cache Customer/Price (M10)
+    create_sub_kwargs: dict = dict(
         sponsor_id=str(user.id),
         artist_id=str(body.artist_id),
         monthly_amount=monthly_amount,
         currency=unit["currency"],
     )
+    import inspect as _inspect
+    if "db" in _inspect.signature(provider.create_subscription).parameters:
+        create_sub_kwargs["db"] = db
+    result = await provider.create_subscription(**create_sub_kwargs)
     period_end = (
         datetime.fromtimestamp(result.current_period_end_unix, tz=timezone.utc)
         if result.current_period_end_unix

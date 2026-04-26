@@ -39,6 +39,7 @@ DEFAULT_LIMITS: dict[str, dict] = {
     "explore_read": {"limit": 60, "window_sec": 60, "by": "ip"},
     "search": {"limit": 30, "window_sec": 60, "by": "ip"},
     "default_read": {"limit": 120, "window_sec": 60, "by": "user"},
+    "gdpr_export": {"limit": 1, "window_sec": 86400, "by": "user"},
 }
 
 

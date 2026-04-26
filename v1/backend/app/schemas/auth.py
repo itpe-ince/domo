@@ -31,6 +31,8 @@ class UserPublic(BaseModel):
     is_minor: bool
     warning_count: int
     created_at: datetime
+    # 2FA enrollment status (admin only — None for non-admin users)
+    totp_enabled_at: datetime | None = None
 
     class Config:
         from_attributes = True

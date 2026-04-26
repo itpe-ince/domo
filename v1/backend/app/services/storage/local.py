@@ -11,7 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from app.core.config import get_settings
-from app.services.storage.base import StoredObject, StorageProvider
+from app.services.storage.base import PresignedPost, StoredObject, StorageProvider
 
 # Resolved at import time from current settings.
 UPLOAD_ROOT = Path(get_settings().upload_dir)
@@ -60,3 +60,23 @@ class LocalStorageProvider(StorageProvider):
     async def exists(self, key: str) -> bool:
         safe_key = key.lstrip("/")
         return (self.root / safe_key).exists()
+
+    async def presign_post(
+        self,
+        key: str,
+        content_type: str,
+        max_size_bytes: int = 200 * 1024 * 1024,
+        expires_in: int = 3600,
+    ) -> PresignedPost:
+        """Local dev stub — returns a local upload URL instead of an S3 presigned POST.
+
+        The client should POST the file directly to /v1/media/upload-local/{key}
+        (handled by the finalize endpoint in dev mode). In production, swap to
+        S3StorageProvider which returns real presigned POST credentials.
+        """
+        safe_key = key.lstrip("/")
+        return PresignedPost(
+            url=f"/v1/media/upload-local",
+            fields={"key": safe_key, "content_type": content_type},
+            key=safe_key,
+        )

@@ -6,7 +6,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import activity as activity_router
 from app.api import admin as admin_router
+from app.api import admin_auth as admin_auth_router
 from app.api import admin_dashboard as admin_dashboard_router
+from app.api import admin_webauthn as admin_webauthn_router
 from app.api import artists as artists_router
 from app.api import auctions as auctions_router
 from app.api import auth as auth_router
@@ -30,29 +32,40 @@ from app.api import users as users_router
 from app.api import webhooks as webhooks_router
 from app.core.config import get_settings
 from app.core.errors import register_error_handlers
+from app.db.session import AsyncSessionLocal
 from app.services.auction_jobs import auction_cron_loop
+from app.services.community_jobs import seed_default_communities
 from app.services.gdpr_jobs import gdpr_cron_loop
 from app.services.badge_jobs import badge_cron_loop
 from app.services.schedule_jobs import schedule_cron_loop
 from app.services.settlement_jobs import settlement_cron_loop
+from app.services.webhook_cleanup_jobs import webhook_cleanup_cron_loop
 
 settings = get_settings()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: schedule background cron tasks
+    # Startup: run-once idempotent seed then schedule cron tasks
+    async with AsyncSessionLocal() as db:
+        try:
+            await seed_default_communities(db)
+        except Exception as exc:  # noqa: BLE001
+            import logging
+            logging.getLogger(__name__).warning("community seed failed: %s", exc)
+
     auction_task = asyncio.create_task(auction_cron_loop(interval_seconds=300))
     gdpr_task = asyncio.create_task(gdpr_cron_loop(interval_seconds=3600))
     schedule_task = asyncio.create_task(schedule_cron_loop(interval_seconds=60))
     badge_task = asyncio.create_task(badge_cron_loop(interval_seconds=86400))
     settle_task = asyncio.create_task(settlement_cron_loop(interval_seconds=86400))
+    webhook_cleanup_task = asyncio.create_task(webhook_cleanup_cron_loop(interval_seconds=86400))
     try:
         yield
     finally:
-        for task in (auction_task, gdpr_task, schedule_task, badge_task, settle_task):
+        for task in (auction_task, gdpr_task, schedule_task, badge_task, settle_task, webhook_cleanup_task):
             task.cancel()
-        for task in (auction_task, gdpr_task, schedule_task, badge_task, settle_task):
+        for task in (auction_task, gdpr_task, schedule_task, badge_task, settle_task, webhook_cleanup_task):
             try:
                 await task
             except asyncio.CancelledError:
@@ -66,16 +79,28 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS origins: allow both localhost and 127.0.0.1 on the configured port
+# CORS origins: allow both localhost and 127.0.0.1 on each configured port
 # (browsers treat these as different origins, so we need to list both)
+#   3000  Next.js default
+#   3700  user-facing frontend (v1/frontend)
+#   3800  admin console      (v1/admin)
 _cors_origins = [
     settings.frontend_url,
     settings.frontend_url.replace("localhost", "127.0.0.1"),
+    settings.admin_url,
+    settings.admin_url.replace("localhost", "127.0.0.1"),
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:3700",
     "http://127.0.0.1:3700",
+    "http://localhost:3800",
+    "http://127.0.0.1:3800",
 ]
+# Optional extra origins from env (comma-separated, e.g. staging URLs)
+if settings.extra_cors_origins:
+    _cors_origins.extend(
+        o.strip() for o in settings.extra_cors_origins.split(",") if o.strip()
+    )
 # Deduplicate while preserving order
 _cors_origins = list(dict.fromkeys(_cors_origins))
 
@@ -98,6 +123,8 @@ api_v1 = FastAPI(title="Domo API v1")
 api_v1.add_middleware(CORSMiddleware, **_cors_kwargs)
 register_error_handlers(api_v1)
 api_v1.include_router(auth_router.router)
+api_v1.include_router(admin_auth_router.router)
+api_v1.include_router(admin_webauthn_router.router)
 api_v1.include_router(me_router.router)
 api_v1.include_router(legal_router.router)
 api_v1.include_router(guardian_router.router)

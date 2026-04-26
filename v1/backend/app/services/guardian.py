@@ -8,12 +8,15 @@ import logging
 import secrets
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
+from app.models.auction import Auction, Order
 from app.models.guardian import GuardianConsent
 from app.models.notification import Notification
+from app.models.post import Post
+from app.models.sponsorship import Subscription
 from app.models.user import User
 from app.services.email import EmailMessage, get_email_provider
 from app.services.settings import get_setting
@@ -208,5 +211,55 @@ async def withdraw_consent(
                 body="보호자가 동의를 철회하여 계정이 비활성화되었습니다.",
             )
         )
+
+        # Cascade 1: hide all the minor's posts
+        await db.execute(
+            update(Post)
+            .where(Post.author_id == minor.id)
+            .values(status="hidden")
+        )
+
+        # Cascade 2: cancel active auctions where minor is seller
+        active_auctions_result = await db.execute(
+            select(Auction).where(
+                Auction.seller_id == minor.id,
+                Auction.status.in_(["scheduled", "active"]),
+            )
+        )
+        active_auctions = list(active_auctions_result.scalars().all())
+        for auction in active_auctions:
+            auction.status = "cancelled"
+            # Notify bidders
+            if auction.current_winner:
+                db.add(
+                    Notification(
+                        user_id=auction.current_winner,
+                        type="auction_cancelled",
+                        title="경매 취소",
+                        body="판매자 계정 제한으로 경매가 취소되었습니다.",
+                        link=f"/auctions/{auction.id}",
+                    )
+                )
+
+        # Cascade 3: cancel active subscriptions where minor is the artist recipient
+        active_subs_result = await db.execute(
+            select(Subscription).where(
+                Subscription.artist_id == minor.id,
+                Subscription.status == "active",
+            )
+        )
+        active_subs = list(active_subs_result.scalars().all())
+        now = _now()
+        for sub in active_subs:
+            sub.status = "cancelled"
+            sub.cancelled_at = now
+            db.add(
+                Notification(
+                    user_id=sub.sponsor_id,
+                    type="subscription_cancelled",
+                    title="정기 후원 취소",
+                    body="아티스트 계정 제한으로 정기 후원이 취소되었습니다.",
+                )
+            )
 
     return consent

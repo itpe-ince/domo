@@ -1,0 +1,1 @@
+- [Iteration 2 — Major wave (M1-M11)](project_iteration2.md) — 11 major gaps fixed in backend; 2 new migrations (0028, 0029); reportlab added to pyproject.toml

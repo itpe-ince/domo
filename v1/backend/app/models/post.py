@@ -121,7 +121,7 @@ class ProductPost(Base):
     buy_now_price: Mapped[Decimal | None] = mapped_column(
         Numeric(12, 2), nullable=True
     )
-    currency: Mapped[str] = mapped_column(String(3), default="USD")
+    currency: Mapped[str] = mapped_column(String(3), default="KRW")
     dimensions: Mapped[str | None] = mapped_column(String(100), nullable=True)
     medium: Mapped[str | None] = mapped_column(String(100), nullable=True)
     year: Mapped[int | None] = mapped_column(Integer, nullable=True)

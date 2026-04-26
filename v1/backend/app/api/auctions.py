@@ -2,6 +2,7 @@
 
 Reference: design.md §3.2, §6.2 (bid concurrency), §6.3 (finalize)
 """
+import logging
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from uuid import UUID
@@ -14,6 +15,7 @@ from app.core.deps import get_current_user
 from app.core.errors import ApiError
 from app.core.rate_limit import rate_limit
 from app.db.session import get_db
+from app.services.kyc import require_kyc_verified
 from app.models.auction import Auction, Bid, Order
 from app.models.notification import Notification
 from app.models.post import Post, ProductPost
@@ -25,7 +27,11 @@ from app.schemas.auction import (
     BidOut,
     OrderOut,
 )
+from app.services.email import get_email_provider
+from app.services.email.templates import auction_won as auction_won_tpl
 from app.services.settings import get_setting
+
+log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auctions", tags=["auctions"])
 
@@ -126,6 +132,27 @@ async def _create_order_for_winner(db: AsyncSession, auction: Auction) -> None:
             link=f"/auctions/{auction.id}",
         )
     )
+
+    # Send auction_won email to winner
+    try:
+        winner_result = await db.execute(
+            select(User).where(User.id == auction.current_winner)
+        )
+        winner = winner_result.scalar_one_or_none()
+        if winner:
+            msg = auction_won_tpl.render(
+                winner_email=winner.email,
+                winner_name=winner.display_name,
+                auction_id=str(auction.id),
+                artwork_title=str(auction.product_post_id),
+                artist_name="",
+                winning_amount=str(auction.current_price),
+                currency=auction.currency,
+                payment_deadline=order.payment_due_at.isoformat() if order.payment_due_at else "",
+            )
+            await get_email_provider().send(msg)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("auction_won email failed: %s", exc)
 
 
 # ─── Endpoints ──────────────────────────────────────────────────────────
@@ -260,6 +287,8 @@ async def place_bid(
     _rl=rate_limit("bid_create"),
 ):
     """Place a bid with FOR UPDATE row lock (design.md §6.2)."""
+    await require_kyc_verified(user, db)
+
     # Lock the auction row
     locked = await db.execute(
         select(Auction).where(Auction.id == auction_id).with_for_update()

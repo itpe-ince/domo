@@ -10,6 +10,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -37,7 +38,7 @@ class Sponsorship(Base):
     )
     bluebird_count: Mapped[int] = mapped_column(Integer, nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    currency: Mapped[str] = mapped_column(String(3), default="USD")
+    currency: Mapped[str] = mapped_column(String(3), default="KRW")
     is_anonymous: Mapped[bool] = mapped_column(Boolean, default=False)
     visibility: Mapped[str] = mapped_column(String(20), default="public")
     # 'public' | 'artist_only' | 'private'
@@ -66,7 +67,7 @@ class Subscription(Base):
     )
     monthly_bluebird: Mapped[int] = mapped_column(Integer, nullable=False)
     monthly_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    currency: Mapped[str] = mapped_column(String(3), default="USD")
+    currency: Mapped[str] = mapped_column(String(3), default="KRW")
     provider_subscription_id: Mapped[str | None] = mapped_column(
         String(100), nullable=True
     )
@@ -79,6 +80,32 @@ class Subscription(Base):
     cancelled_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class StripePriceCache(Base):
+    """Cache Stripe Price objects to avoid duplicate creation (M10).
+
+    Keyed by (artist_id, amount, currency) — unique constraint prevents duplicates.
+    """
+
+    __tablename__ = "stripe_price_cache"
+    __table_args__ = (
+        UniqueConstraint("artist_id", "amount", "currency", name="uq_stripe_price_cache"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    artist_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+    )
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
+    stripe_price_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    stripe_product_id: Mapped[str] = mapped_column(String(100), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

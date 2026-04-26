@@ -20,12 +20,21 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, text
 
+from app.core.security import hash_password
 from app.db.session import AsyncSessionLocal
 from app.models.notification import Notification
 from app.models.post import Comment, Follow, Like, MediaAsset, Post, ProductPost
 from app.models.user import ArtistApplication, ArtistProfile, User
+
+# Tables we never wipe in seed:
+# - users           : preserved manually below (only seed-emails removed)
+# - alembic_version : migration metadata
+# - system_settings : runtime config (rate_limits, kyc_enforcement, etc.)
+_PROTECTED_TABLES = frozenset(
+    {"users", "alembic_version", "system_settings"}
+)
 
 ARTISTS = [
     ("maria_lima", "maria@example.com", "PE", "Lima Art Academy", "Emerging painter from Peru, oils and landscapes."),
@@ -65,24 +74,38 @@ GENERAL_POSTS = [
 
 
 async def clear_phase1_content() -> None:
-    """Idempotent reset for re-running."""
+    """Idempotent reset for re-running.
+
+    Strategy: TRUNCATE every public table EXCEPT users / alembic_version /
+    system_settings, with CASCADE so FK ordering doesn't matter. Then
+    delete only the seed-account users (admin/artists/collectors) so any
+    real accounts you created manually for testing are preserved.
+    """
     async with AsyncSessionLocal() as db:
-        await db.execute(delete(Comment))
-        await db.execute(delete(Like))
-        await db.execute(delete(Follow))
-        await db.execute(delete(ProductPost))
-        await db.execute(delete(MediaAsset))
-        await db.execute(delete(Post))
-        await db.execute(delete(ArtistProfile))
-        await db.execute(delete(ArtistApplication))
-        await db.execute(delete(Notification))
-        # Keep users — but reset roles for known seed accounts
-        all_emails = (
+        # Discover all current tables (so future migrations are auto-handled)
+        result = await db.execute(
+            text(
+                "SELECT tablename FROM pg_tables "
+                "WHERE schemaname = 'public' "
+                "ORDER BY tablename"
+            )
+        )
+        tables = [
+            row[0] for row in result.all() if row[0] not in _PROTECTED_TABLES
+        ]
+        if tables:
+            quoted = ", ".join(f'"{t}"' for t in tables)
+            await db.execute(
+                text(f"TRUNCATE TABLE {quoted} RESTART IDENTITY CASCADE")
+            )
+
+        # Remove only seed-managed user rows; admin keeps password if exists
+        seed_emails = (
             [e for _, e, *_ in ARTISTS]
             + [e for _, e, *_ in COLLECTORS]
             + ["admin@domo.example.com"]
         )
-        await db.execute(delete(User).where(User.email.in_(all_emails)))
+        await db.execute(delete(User).where(User.email.in_(seed_emails)))
         await db.commit()
 
 
@@ -117,10 +140,21 @@ async def seed() -> None:
     await clear_phase1_content()
 
     async with AsyncSessionLocal() as db:
-        print("→ Creating admin...")
+        print("→ Creating admin (with credential auth: password + TOTP)...")
         admin = await upsert_user(
             db, "admin@domo.example.com", "domo_admin", role="admin"
         )
+        # Set a default dev password if none exists yet. Operator MUST change
+        # this on first login (and then enroll TOTP via /auth/admin/totp/setup).
+        if not admin.password_hash:
+            import os
+            default_pw = os.environ.get("ADMIN_SEED_PASSWORD", "DomoAdmin!2026")
+            admin.password_hash = hash_password(default_pw)
+            admin.password_changed_at = datetime.now(timezone.utc)
+            print(f"  ✓ admin password set (env ADMIN_SEED_PASSWORD or default 'DomoAdmin!2026')")
+        # Drop SNS identity on admin — admins must use credential flow only
+        admin.sns_provider = None
+        admin.sns_id = None
 
         print("→ Creating artists + ArtistProfile...")
         artist_users: list[User] = []
@@ -280,7 +314,8 @@ async def seed() -> None:
     print()
     print("=" * 50)
     print("Seed complete.")
-    print(f"  admin:      admin@domo.example.com")
+    print(f"  admin:      admin@domo.example.com  (password: 'DomoAdmin!2026' or $ADMIN_SEED_PASSWORD)")
+    print(f"              → POST /auth/admin/login, then enroll TOTP via /auth/admin/totp/setup")
     print(f"  artists:    {len(ARTISTS)} (mock:<email> to login)")
     print(f"  collectors: {len(COLLECTORS)}")
     print(f"  posts:      {20 + len(GENERAL_POSTS) * 2}")

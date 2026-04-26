@@ -65,3 +65,18 @@ class PaymentProvider(ABC):
         self, payload: bytes, signature: str | None
     ) -> dict:
         """Returns parsed event {type, data} or raises ValueError."""
+
+    @abstractmethod
+    async def refund(
+        self,
+        payment_intent_id: str,
+        amount: Decimal | None = None,
+        reason: str | None = None,
+    ) -> dict:
+        """Issue a refund for a payment intent.
+
+        Returns a provider-specific dict describing the refund result.
+        Partial refund is supported when ``amount`` is specified (in the
+        same currency unit as the original charge).
+        Raises ``ValueError`` on provider-side failure.
+        """

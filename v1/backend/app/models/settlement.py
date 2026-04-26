@@ -20,7 +20,7 @@ class Settlement(Base):
     gross_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     platform_fee: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     net_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    currency: Mapped[str] = mapped_column(String(3), default="USD")
+    currency: Mapped[str] = mapped_column(String(3), default="KRW")
     status: Mapped[str] = mapped_column(String(20), default="pending")
     # 'pending' | 'approved' | 'paid' | 'failed'
     approved_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)

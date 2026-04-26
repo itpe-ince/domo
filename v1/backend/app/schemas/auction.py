@@ -5,6 +5,15 @@ from uuid import UUID
 from pydantic import BaseModel, Field, field_validator
 
 
+class RefundRequest(BaseModel):
+    """Input schema for POST /admin/orders/{order_id}/refund."""
+
+    reason: str | None = None
+    # Optional partial refund amount in the order's currency.
+    # When omitted the full order.amount is refunded.
+    amount: Decimal | None = Field(default=None, gt=0)
+
+
 ALLOWED_DURATION_DAYS = [3, 7, 14]
 
 

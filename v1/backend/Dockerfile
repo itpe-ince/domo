@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir --upgrade pip \
         "pydantic>=2.10" \
         "pydantic-settings>=2.7" \
         "python-jose[cryptography]>=3.3" \
-        "passlib[bcrypt]>=1.7" \
+        "bcrypt>=4.2" \
         "python-multipart>=0.0.20" \
         "httpx>=0.28" \
         "redis>=5.2" \
@@ -29,7 +29,10 @@ RUN pip install --no-cache-dir --upgrade pip \
         "requests>=2.32" \
         "Pillow>=11.0" \
         "aioboto3>=13.2" \
-        "stripe>=11.3"
+        "stripe>=11.3" \
+        "reportlab>=4.2" \
+        "pyotp>=2.9" \
+        "webauthn>=2.5"
 
 COPY . /app
 

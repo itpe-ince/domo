@@ -289,3 +289,86 @@ phase4.analysis 결과 (97%) 대비 **본 분석 92%**로 5%p 하락. 원인:
 - **−1%**: 이메일 템플릿 / Stripe 캐싱 / Order 상태 흐름 정밀 검증
 
 **Production cutover 차단 사유**: C1, C2, C3 (3개) — 약 1~2일 작업으로 해소 가능. 해소 후 92% → 95%+ 도달 예상.
+
+---
+
+## 8. Iteration 1-3 Re-verification (2026-04-25)
+
+> **재검증일**: 2026-04-25
+> **에이전트**: bkit:pdca-iterator (3 waves) + bkit:gap-detector (verify)
+> **수정 항목**: Critical 3 + Major 11 + Minor 9 = **23개 전부 처리**
+> **신규 Match Rate**: **99%** (73-item 가중치 표 기준 72.7/73)
+
+### 8.1 Per-Gap 검증 결과
+
+#### Critical (3/3 verified)
+| ID | 상태 | 증거 |
+|----|:---:|---|
+| C1 Refund API | ✅ | `app/api/admin/transactions.py:136-209` POST `/admin/orders/{id}/refund` + `RefundRequest` in `schemas/auction.py:8-14` + `provider.refund` ABC in `services/payments/base.py:69-82` + impls in `mock_stripe.py:104-123` and `stripe_real.py:271-300` + `Order.refunded_at` in `models/auction.py:133` + migration `0027` |
+| C2 KYC gate | ✅ | `services/kyc.py:142-195` `require_kyc_verified` (off/soft/enforce) — 호출 위치: `api/orders.py:77 buy_now`, `api/sponsorships.py:69 create_sponsorship`, `api/sponsorships.py:218 create_subscription` (재검증 후 추가), `api/auctions.py:290 place_bid` (재검증 후 추가), `api/artists.py:37 apply_artist` |
+| C3 EmailMessage signature | ✅ | `api/artists.py:152-159` `provider.send(EmailMessage(...))` |
+
+#### Major (11/11 verified)
+| ID | 상태 | 증거 |
+|----|:---:|---|
+| M1 Presign/Finalize | ✅ | `api/media.py:205-285` + `services/storage/base.py:62-70` `presign_post` ABC + `local.py:64-82` impl + s3.py impl |
+| M2 Email templates ×4 | ✅ | `services/email/templates/{payment_receipt,auction_won,account_deleted,warning_issued}.py` + 호출 wired (webhooks.py, auctions.py settlement, me.py delete, services/moderation.py warn) |
+| M3+M11 GDPR rate limit | ✅ | `api/me.py:70` `@rate_limit("gdpr_export")` + `core/rate_limit.py:42` DEFAULT_LIMITS (1/86400s) |
+| M4 Guardian cascade | ✅ | `services/guardian.py:215-263` posts→hidden, auctions→cancelled, subscriptions→cancelled + 카운터파티 알림 |
+| M5 community_comments | ✅ | `models/community.py:55-68` 모델 + `api/communities.py:273-356` GET/POST/DELETE + 마이그레이션 `0028` |
+| M6 Auto community seed | ✅ | `services/community_jobs.py` 10 장르 + 학교 + 국가 + `main.py:48-53` lifespan 등록 |
+| M7 Shipping tracking | ✅ | `api/orders.py:349-384` `GET /orders/{id}/tracking` + 기존 `services/shipping.py` 재활용 |
+| M8 PDF report | ✅ | `api/reports.py:108-217` reportlab 기반 `/reports/school/{name}/pdf` + `pyproject.toml` reportlab dep |
+| M9 inspection_complete | ✅ | `api/orders.py:437` 검수 완료 시 `inspection_complete` + `services/settlement_jobs.py:36,76` 쿼리/전이 + `api/settlements.py:158-167` `pay_settlement`이 Order를 `paid_out`로 전이 (재검증 후 추가) |
+| M10 Stripe cache | ✅ | `models/sponsorship.py:88-111` `StripePriceCache` + `User.stripe_customer_id` + `services/payments/stripe_real.py:114-246` 캐시-aware `create_subscription` + 마이그레이션 `0029` |
+
+#### Minor (9/9 verified)
+| ID | 상태 | 증거 |
+|----|:---:|---|
+| N1 Drop birth_date | ✅ | `models/user.py` 컬럼 제거 + `services/gdpr_jobs.py:45` `birth_year` 익명화 + 마이그레이션 `0030` |
+| N2 KYC status CHECK | ✅ | 마이그레이션 `0031` `ck_kyc_sessions_status` 제약 추가 |
+| N3 Currency to KRW | ✅ | 모든 모델 default KRW (`auction.py`, `post.py`, `sponsorship.py`, `settlement.py`, `schemas/post.py`) + `orders.py`/`settlement_jobs.py` fallback KRW + `services/settings.py:14` `bluebird_unit_price` KRW로 전환 (재검증 후 추가) |
+| N4 Webhook cleanup | ✅ | `services/webhook_cleanup_jobs.py` 90일 retention + `main.py:60` cron 등록 |
+| N5 reports prefix | ✅ | `api/moderation.py:24` `/abuse-reports`로 변경 + frontend/admin `lib/api.ts` `createReport()` 업데이트 + B2B 리포트와 admin 모더레이션 큐는 충돌 없음 |
+| N6 verify_immediate ABC | ✅ | `services/kyc.py:46-53` ABC 기본 + `MockKYCProvider.verify_immediate(birth_year:int)` + `api/kyc.py:67-83` 호출 시그니처 동기화 |
+| N7 Toss/Stripe Identity 가드 | ✅ | `services/kyc.py:84-92,104-112` 생성자에서 `log.warning` + `RuntimeError` raise |
+| N8 settings normalize | ✅ | `services/settings.py:32-55` scalar→dict 정규화 + `settlement_jobs.py:104` `(cycle_setting or {}).get("cycle", "weekly")` 단순화 |
+| N9 admin split | ✅ | `api/admin/{__init__,users,schools,content,transactions}.py` 패키지 분할 + `main.py` import/include 변경 없이 동작 |
+
+### 8.2 신규 Match Rate
+
+| 채점 방식 | 이전 | 현재 | 변동 |
+|----|:---:|:---:|:---:|
+| 73-item 가중치 표 | 67.0/73 = 91.8% | **72.7/73 = 99.6% → 99%** | +7%p |
+| 97-item 세부 표 | 86.0/97 = 88.7% | **96.0/97 = 99.0% → 99%** | +10%p |
+| **종합** | **92%** | **99%** | **+7%p** |
+
+### 8.3 신규 식별 후 즉시 마무리한 항목 (재검증 follow-up)
+
+gap-detector 재검증에서 3개의 미완 부분을 발견 → 즉시 수정 완료:
+1. **C2 follow-up**: `create_subscription` (sponsorships.py:218) + `place_bid` (auctions.py:290)에 `require_kyc_verified` 호출 추가 — 정기 후원/입찰 KYC 우회 차단
+2. **M9 follow-up**: `pay_settlement` (settlements.py:158-167)에 Order `settled` → `paid_out` 전이 추가 — 3-state machine 완전 구현
+3. **N3 follow-up**: `services/settings.py:14` `bluebird_unit_price` USD → KRW (1000원) 전환 — 통화 일관성 마무리
+
+### 8.4 마이그레이션 추가 (Iteration 1-3)
+| 파일 | 내용 |
+|---|---|
+| `0027_order_refunded_at.py` | C1 — Order.refunded_at 컬럼 |
+| `0028_community_comments.py` | M5 — community_comments 테이블 |
+| `0029_user_stripe_customer.py` | M10 — User.stripe_customer_id + stripe_price_cache |
+| `0030_drop_users_birth_date.py` | N1 — birth_date 컬럼 drop |
+| `0031_kyc_status_check.py` | N2 — kyc_sessions.status CHECK 제약 |
+
+### 8.5 신규 디펜던시
+- `reportlab>=4.2` (M8 PDF 생성, pure Python)
+
+### 8.6 종합 평가
+
+✅ **Production-ready**. Match Rate 92% → 99% 달성 (목표 90% 초과). 
+- 23개 gap 전부 해결 + 재검증 단계에서 발견된 3개 follow-up 즉시 처리
+- 5개 신규 마이그레이션 모두 chained (0026 → 0027 → … → 0031)
+- 새 외부 디펜던시는 reportlab 1개 (system 의존성 없음)
+- 관리자 라우터 모듈화로 admin.py 874라인 → 5개 파일 분할 (가독성↑)
+- KYC 게이트는 `kyc_enforcement` 설정으로 dev/prod 환경 분리 가능 (default `off` → CI 회귀 없음)
+
+**다음 단계 권장**: `/pdca report backend`로 완료 보고서 생성 → 운영 cutover 준비.

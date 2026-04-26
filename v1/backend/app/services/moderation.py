@@ -6,6 +6,7 @@ Used by:
 """
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -15,7 +16,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.moderation import Warning
 from app.models.notification import Notification
 from app.models.user import User
+from app.services.email import get_email_provider
+from app.services.email.templates import warning_issued as warning_issued_tpl
 from app.services.settings import get_setting
+
+log = logging.getLogger(__name__)
 
 
 async def issue_warning(
@@ -71,6 +76,23 @@ async def issue_warning(
             link="/warnings",
         )
     )
+
+    # Send warning email
+    if user:
+        threshold_setting = await get_setting(db, "warning_threshold")
+        threshold = int(threshold_setting["count"]) if threshold_setting else 3
+        try:
+            msg = warning_issued_tpl.render(
+                user_email=user.email,
+                user_name=user.display_name,
+                reason=reason,
+                warning_count=user.warning_count,
+                suspension_threshold=threshold,
+            )
+            await get_email_provider().send(msg)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("warning_issued email failed: %s", exc)
+
     return warning
 
 

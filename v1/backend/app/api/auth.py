@@ -63,6 +63,14 @@ async def google_login(
         result = await db.execute(select(User).where(User.email == email))
         user = result.scalar_one_or_none()
         if user:
+            # Security: admin accounts MUST NOT authenticate via SNS.
+            # They use the dedicated /auth/admin/login flow with password + TOTP.
+            if user.role == "admin":
+                raise ApiError(
+                    "ADMIN_SNS_FORBIDDEN",
+                    "Administrator accounts must sign in via /auth/admin/login.",
+                    http_status=403,
+                )
             user.sns_provider = "google"
             user.sns_id = sns_id
             if not user.avatar_url and avatar:
@@ -120,8 +128,29 @@ async def refresh_token(
 
 
 @router.get("/me")
-async def get_me(user: User = Depends(get_current_user)):
-    return {"data": UserPublic.model_validate(user).model_dump(mode="json")}
+async def get_me(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    payload = UserPublic.model_validate(user).model_dump(mode="json")
+    # For admin users, include 2FA enrollment counters so the frontend
+    # can decide whether to force the user into the setup flow.
+    if user.role == "admin":
+        from sqlalchemy import func as _func
+
+        from app.models.webauthn import WebauthnCredential
+
+        result = await db.execute(
+            select(_func.count(WebauthnCredential.id)).where(
+                WebauthnCredential.user_id == user.id
+            )
+        )
+        passkey_count = int(result.scalar_one() or 0)
+        payload["passkey_count"] = passkey_count
+        payload["second_factor_enrolled"] = (
+            user.totp_enabled_at is not None or passkey_count > 0
+        )
+    return {"data": payload}
 
 
 @router.post("/logout")

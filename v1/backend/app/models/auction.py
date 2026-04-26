@@ -40,7 +40,7 @@ class Auction(Base):
     current_winner: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
     )
-    currency: Mapped[str] = mapped_column(String(3), default="USD")
+    currency: Mapped[str] = mapped_column(String(3), default="KRW")
     start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     end_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     status: Mapped[str] = mapped_column(String(20), default="scheduled")
@@ -101,7 +101,7 @@ class Order(Base):
         UUID(as_uuid=True), ForeignKey("auctions.id"), nullable=True
     )
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    currency: Mapped[str] = mapped_column(String(3), default="USD")
+    currency: Mapped[str] = mapped_column(String(3), default="KRW")
     platform_fee: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), default=Decimal("0")
     )
@@ -110,7 +110,7 @@ class Order(Base):
     )
     # buyer_fee = amount * 10% (콜렉터 추가 수수료)
     status: Mapped[str] = mapped_column(String(30), default="pending_payment")
-    # 'pending_payment' | 'paid' | 'shipped' | 'inspection' | 'settled' | 'cancelled' | 'expired' | 'refunded'
+    # 'pending_payment' | 'paid' | 'shipped' | 'inspection' | 'inspection_complete' | 'settled' | 'paid_out' | 'cancelled' | 'expired' | 'refunded'
     tracking_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
     shipping_carrier: Mapped[str | None] = mapped_column(String(50), nullable=True)
     shipping_status: Mapped[str] = mapped_column(String(20), default="pending")
@@ -128,6 +128,9 @@ class Order(Base):
         DateTime(timezone=True), nullable=True
     )
     settled_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    refunded_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(

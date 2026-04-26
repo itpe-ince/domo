@@ -14,6 +14,7 @@ from app.models.notification import Notification
 from app.models.school import School
 from app.models.user import ArtistApplication, User
 from app.schemas.artist import ArtistApplicationCreate, ArtistApplicationOut
+from app.services.kyc import require_kyc_verified
 
 # In-memory store for dev (Redis in production)
 _edu_verification_codes: dict[str, dict] = {}
@@ -31,6 +32,9 @@ async def apply_artist(
         raise ApiError(
             "CONFLICT", "You are already an artist", http_status=409
         )
+
+    # KYC gate — configurable via system_settings.kyc_enforcement
+    await require_kyc_verified(user, db)
 
     # 진행 중 신청 있는지 확인
     existing = await db.execute(
@@ -143,12 +147,15 @@ async def send_edu_verification(
     }
 
     # Send email (mock mode logs to console)
-    from app.services.email import get_email_provider
+    from app.services.email import EmailMessage, get_email_provider
     provider = get_email_provider()
     await provider.send(
-        to=email,
-        subject="[Domo Lounge] 학교 이메일 인증 코드",
-        body=f"인증 코드: {code}\n\n5분 이내에 입력해주세요.",
+        EmailMessage(
+            to=email,
+            subject="[Domo Lounge] 학교 이메일 인증 코드",
+            html=f"<p>인증 코드: <strong>{code}</strong></p><p>5분 이내에 입력해주세요.</p>",
+            text=f"인증 코드: {code}\n\n5분 이내에 입력해주세요.",
+        )
     )
 
     return {"data": {"message": f"인증 코드가 {email}로 발송되었습니다.", "school_name": school.name_ko}}

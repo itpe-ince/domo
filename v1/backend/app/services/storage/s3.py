@@ -9,7 +9,7 @@ When STORAGE_PROVIDER=s3, this provider is selected by the factory.
 from __future__ import annotations
 
 from app.core.config import get_settings
-from app.services.storage.base import StoredObject, StorageProvider
+from app.services.storage.base import PresignedPost, StoredObject, StorageProvider
 
 
 class S3StorageProvider(StorageProvider):
@@ -78,3 +78,47 @@ class S3StorageProvider(StorageProvider):
                 return True
             except Exception:
                 return False
+
+    async def presign_post(
+        self,
+        key: str,
+        content_type: str,
+        max_size_bytes: int = 200 * 1024 * 1024,
+        expires_in: int = 3600,
+    ) -> PresignedPost:
+        """Generate S3 presigned POST credentials for direct client upload."""
+        import aioboto3
+
+        session = aioboto3.Session(
+            aws_access_key_id=self.access_key,
+            aws_secret_access_key=self.secret_key,
+            region_name=self.region,
+        )
+        # aioboto3 generate_presigned_post is sync-wrapped — call via thread
+        import asyncio
+        import boto3
+
+        def _generate():
+            client = boto3.client(
+                "s3",
+                aws_access_key_id=self.access_key,
+                aws_secret_access_key=self.secret_key,
+                region_name=self.region,
+            )
+            return client.generate_presigned_post(
+                Bucket=self.bucket,
+                Key=key,
+                Fields={"Content-Type": content_type},
+                Conditions=[
+                    {"Content-Type": content_type},
+                    ["content-length-range", 1, max_size_bytes],
+                ],
+                ExpiresIn=expires_in,
+            )
+
+        result = await asyncio.to_thread(_generate)
+        return PresignedPost(
+            url=result["url"],
+            fields=result["fields"],
+            key=key,
+        )
