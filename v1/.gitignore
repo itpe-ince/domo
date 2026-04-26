@@ -3,6 +3,8 @@
 .env.local
 .env.*.local
 !.env.example
+# Public client-bundle config — must be tracked so Docker build inlines it
+!.env.production
 
 # Python
 __pycache__/

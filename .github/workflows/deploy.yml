@@ -97,9 +97,9 @@ jobs:
             ${{ env[matrix.image_var] }}:latest
           cache-from: type=gha,scope=${{ matrix.component }}
           cache-to: type=gha,mode=max,scope=${{ matrix.component }}
-          build-args: |
-            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
-            NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ vars.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+          # Note: NEXT_PUBLIC_* values come from each app's .env.production
+          # (committed to git, applied automatically by Next.js at build).
+          # No build-args needed — pattern B keeps GitHub vars off the path.
 
   # =============================================================
   # Job 2: Verify required GitHub Secrets
