@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { AppShell } from "@/components/AppShell";
 import { CookieConsent } from "@/components/CookieConsent";
 import { I18nProvider } from "@/i18n";
@@ -34,6 +35,8 @@ export default function RootLayout({
           <AppShell>{children}</AppShell>
           <CookieConsent />
         </I18nProvider>
+        {/* Google Identity Services — required by LoginModal */}
+        <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
       </body>
     </html>
   );

@@ -1,15 +1,45 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/i18n";
-import { ApiClientError, loginWithMockEmail } from "@/lib/api";
+import { ApiClientError, loginWithGoogleIdToken } from "@/lib/api";
 
-const QUICK_ACCOUNTS = [
-  { email: "admin@domo.example.com", label: "Admin" },
-  { email: "maria@example.com", label: "Maria (Artist)" },
-  { email: "alex@example.com", label: "Alex (Collector)" },
-];
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+
+// GIS global injected by https://accounts.google.com/gsi/client (loaded in layout.tsx)
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: {
+            client_id: string;
+            callback: (resp: { credential: string }) => void;
+            ux_mode?: "popup" | "redirect";
+            auto_select?: boolean;
+            cancel_on_tap_outside?: boolean;
+          }) => void;
+          renderButton: (
+            parent: HTMLElement,
+            opts: {
+              type?: "standard" | "icon";
+              theme?: "outline" | "filled_blue" | "filled_black";
+              size?: "small" | "medium" | "large";
+              text?: "signin_with" | "signup_with" | "continue_with" | "signin";
+              shape?: "rectangular" | "pill" | "circle" | "square";
+              logo_alignment?: "left" | "center";
+              width?: number;
+              locale?: string;
+            }
+          ) => void;
+          prompt: () => void;
+          disableAutoSelect: () => void;
+        };
+      };
+    };
+  }
+}
 
 export function LoginModal({
   open,
@@ -22,31 +52,74 @@ export function LoginModal({
 }) {
   const router = useRouter();
   const { t } = useI18n();
-  const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const buttonRef = useRef<HTMLDivElement>(null);
 
+  // Reset on close
   useEffect(() => {
-    if (!open) {
-      setEmail("");
-      setError(null);
-    }
+    if (!open) setError(null);
   }, [open]);
 
-  async function handleLogin(target: string) {
-    const value = target.trim();
-    if (!value) {
-      setError("이메일을 입력해주세요.");
+  // Mount Google Sign-In button when modal opens
+  useEffect(() => {
+    if (!open) return;
+    if (!GOOGLE_CLIENT_ID) {
+      setError("NEXT_PUBLIC_GOOGLE_CLIENT_ID 환경변수가 설정되지 않았습니다.");
       return;
     }
+
+    let cancelled = false;
+    const tryInit = (attempt = 0) => {
+      if (cancelled) return;
+      const gsi = window.google?.accounts?.id;
+      // GIS script loads async — retry up to ~5 sec
+      if (!gsi || !buttonRef.current) {
+        if (attempt > 50) {
+          setError(
+            "Google 로그인 스크립트 로드 실패. 새로고침 후 다시 시도하세요."
+          );
+          return;
+        }
+        setTimeout(() => tryInit(attempt + 1), 100);
+        return;
+      }
+
+      gsi.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleCredential,
+        ux_mode: "popup",
+        cancel_on_tap_outside: false,
+      });
+
+      // Clear any previous button (re-mounts on every open)
+      buttonRef.current.innerHTML = "";
+      gsi.renderButton(buttonRef.current, {
+        type: "standard",
+        theme: "filled_black",
+        size: "large",
+        text: "continue_with",
+        shape: "pill",
+        logo_alignment: "left",
+        width: 320,
+        locale: "ko",
+      });
+    };
+
+    tryInit();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  async function handleCredential(resp: { credential: string }) {
     setBusy(true);
     setError(null);
     try {
-      await loginWithMockEmail(value);
+      await loginWithGoogleIdToken(resp.credential);
       onClose();
-      if (redirectTo) {
-        router.push(redirectTo);
-      }
+      if (redirectTo) router.push(redirectTo);
     } catch (e) {
       setError(
         e instanceof ApiClientError
@@ -68,13 +141,15 @@ export function LoginModal({
       onClick={onClose}
     >
       <div
-        className="card w-full max-w-md p-6 space-y-4"
+        className="card w-full max-w-md p-6 space-y-5"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex items-center justify-between">
+        <header className="flex items-start justify-between">
           <div>
-            <span className="badge-primary">Dev Mode</span>
-            <h2 className="text-xl font-bold mt-2">Domo {t("common.login")}</h2>
+            <h2 className="text-xl font-bold">Domo {t("common.login")}</h2>
+            <p className="text-text-secondary text-sm mt-1">
+              Google 계정으로 안전하게 로그인합니다.
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -85,27 +160,12 @@ export function LoginModal({
           </button>
         </header>
 
-        <p className="text-text-secondary text-sm">
-          개발 모드에서는 이메일만 입력하면 즉시 로그인됩니다. 실제 Google OAuth는
-          `GOOGLE_CLIENT_ID` 환경변수 등록 후 활성화됩니다.
-        </p>
+        {/* Google-rendered button mount point */}
+        <div className="flex justify-center min-h-[44px]" ref={buttonRef} />
 
-        <div>
-          <label className="block text-sm text-text-secondary mb-1">
-            이메일
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleLogin(email);
-            }}
-            placeholder="email@example.com"
-            className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:border-primary outline-none"
-            autoFocus
-          />
-        </div>
+        {busy && (
+          <p className="text-text-muted text-xs text-center">{t("common.loading")}...</p>
+        )}
 
         {error && (
           <div className="card border-danger p-3 text-danger text-sm">
@@ -113,29 +173,10 @@ export function LoginModal({
           </div>
         )}
 
-        <button
-          onClick={() => handleLogin(email)}
-          disabled={busy}
-          className="btn-primary w-full disabled:opacity-50"
-        >
-          {busy ? t("common.loading") : t("common.login")}
-        </button>
-
-        <div>
-          <p className="text-text-muted text-xs mb-2">빠른 로그인:</p>
-          <div className="flex flex-wrap gap-2">
-            {QUICK_ACCOUNTS.map((a) => (
-              <button
-                key={a.email}
-                onClick={() => handleLogin(a.email)}
-                disabled={busy}
-                className="text-xs px-3 py-1.5 rounded-full bg-surface-hover text-text-secondary hover:text-primary disabled:opacity-50"
-              >
-                {a.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <p className="text-text-muted text-[11px] text-center pt-2 border-t border-border">
+          로그인 시 <a href="/legal/terms" className="underline">이용약관</a> 및{" "}
+          <a href="/legal/privacy" className="underline">개인정보처리방침</a>에 동의하게 됩니다.
+        </p>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-26T03:29:50.500Z",
+  "lastUpdated": "2026-04-26T04:06:39.423Z",
   "activeFeatures": [
     "backend",
     "core",
@@ -213,9 +213,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-04-25T01:07:04.789Z"
+        "lastUpdated": "2026-04-26T04:06:39.423Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/api.ts"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/Sidebar.tsx"
     },
     "applications": {
       "phase": "do",
@@ -941,7 +941,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-26T03:29:50.500Z"
+    "lastActivity": "2026-04-26T04:06:39.423Z"
   },
   "history": [
     {
@@ -6191,6 +6191,42 @@
     {
       "timestamp": "2026-04-26T03:29:50.500Z",
       "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T03:39:54.294Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T03:40:02.005Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T03:40:21.941Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T03:40:47.961Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T04:06:27.422Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-26T04:06:39.423Z",
+      "feature": "frontend",
       "phase": "do",
       "action": "updated"
     }

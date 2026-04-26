@@ -142,16 +142,30 @@ export type ApiUser = {
   identity_verified_at: string | null;
 };
 
-export async function loginWithMockEmail(email: string): Promise<ApiUser> {
+/**
+ * Exchange a real Google ID token (from GIS popup credential response)
+ * for Domo access/refresh tokens.
+ */
+export async function loginWithGoogleIdToken(id_token: string): Promise<ApiUser> {
   const data = await apiFetch<{
     tokens: { access_token: string; refresh_token: string };
     user: ApiUser;
   }>("/auth/sns/google", {
     method: "POST",
-    body: JSON.stringify({ id_token: `mock:${email}` }),
+    body: JSON.stringify({ id_token }),
   });
   tokenStore.set(data.tokens.access_token, data.tokens.refresh_token);
   return data.user;
+}
+
+/**
+ * @deprecated Dev-only fallback that forges a "mock:<email>" ID token.
+ * Backend rejects this when GOOGLE_CLIENT_ID is configured. Kept only
+ * for legacy callers (admin app uses the same pattern but is being
+ * migrated to credential auth). Do not use in new code.
+ */
+export async function loginWithMockEmail(email: string): Promise<ApiUser> {
+  return loginWithGoogleIdToken(`mock:${email}`);
 }
 
 export async function fetchMe(): Promise<ApiUser> {
