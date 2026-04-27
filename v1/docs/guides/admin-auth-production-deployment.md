@@ -1142,7 +1142,15 @@ docker exec -it tuzi-postgres psql -U postgres <<EOF
 CREATE USER domo WITH PASSWORD '<DB-비밀번호>';
 CREATE DATABASE domo OWNER domo;
 GRANT ALL PRIVILEGES ON DATABASE domo TO domo;
+\c domo
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+GRANT ALL ON SCHEMA public TO domo;
 EOF
+```
+
+⚠️ **DB owner는 반드시 `domo`** (위 `OWNER domo` 절). 만약 owner가 `postgres`이면 alembic 마이그레이션의 `CREATE EXTENSION` 단계에서 `permission denied` 에러로 backend 시작 실패. 기존 DB가 잘못된 owner면 이렇게 수정:
+```sql
+ALTER DATABASE domo OWNER TO domo;
 ```
 
 #### .env 연결 문자열

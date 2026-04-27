@@ -33,9 +33,19 @@ class Settings(BaseSettings):
     aws_secret_access_key: str = ""
 
     # Email (Phase 4 M5)
-    email_provider: str = "mock"  # 'mock' | 'resend' | 'ses'
+    email_provider: str = "mock"  # 'mock' | 'resend' | 'smtp'
     resend_api_key: str = ""
     email_from: str = "noreply@domo.tuzigroup.com"
+    email_from_address: str = ""   # falls back to smtp_user / email_from
+    email_from_name: str = "Domo"
+
+    # SMTP (Gmail / Google Workspace / generic SMTP relay)
+    smtp_host: str = ""              # e.g. smtp.gmail.com
+    smtp_port: int = 587              # 587 STARTTLS / 465 SSL
+    smtp_user: str = ""               # e.g. no-reply@tuzigroup.com
+    smtp_password: str = ""           # 16-char Gmail App Password
+    smtp_use_tls: bool = True         # STARTTLS on 587 (default)
+    smtp_use_ssl: bool = False        # implicit SSL on 465 (mutually exclusive with TLS)
 
     # KYC — 'mock' | 'toss' | 'stripe'
     kyc_provider: str = "mock"
