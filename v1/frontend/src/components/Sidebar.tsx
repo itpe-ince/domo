@@ -267,12 +267,17 @@ export function Sidebar() {
           </div>
         )}
 
-        {/* Language switcher */}
+        {/* Language switcher
+            - xl 이상 (사이드바 확장): 풀 select with flag + name
+            - xl 미만 (사이드바 축소): flag만 보이는 popover dropdown
+        */}
         <div className="mx-3 mb-2">
+          {/* Expanded sidebar — native select */}
           <select
             value={locale}
             onChange={(e) => setLocale(e.target.value as Locale)}
-            className="w-full bg-surface border border-border rounded-full px-3 py-1.5 text-xs text-text-muted focus:border-primary outline-none cursor-pointer"
+            className="hidden xl:block w-full bg-surface border border-border rounded-full px-3 py-1.5 text-xs text-text-muted focus:border-primary outline-none cursor-pointer"
+            aria-label="Language"
           >
             {(Object.entries(LOCALE_LABELS) as [Locale, { flag: string; name: string }][]).map(
               ([code, { flag, name }]) => (
@@ -282,6 +287,40 @@ export function Sidebar() {
               )
             )}
           </select>
+
+          {/* Collapsed sidebar — icon-only dropdown via <details> */}
+          <details className="xl:hidden relative group">
+            <summary
+              className="list-none cursor-pointer flex items-center justify-center w-10 h-10 rounded-full bg-surface border border-border hover:bg-surface-hover transition-colors"
+              aria-label="Language"
+              title={LOCALE_LABELS[locale].name}
+            >
+              <span className="text-base leading-none">{LOCALE_LABELS[locale].flag}</span>
+            </summary>
+            <div className="absolute bottom-full mb-2 left-0 w-32 card p-1 z-40">
+              {(Object.entries(LOCALE_LABELS) as [Locale, { flag: string; name: string }][]).map(
+                ([code, { flag, name }]) => (
+                  <button
+                    key={code}
+                    type="button"
+                    onClick={() => {
+                      setLocale(code);
+                      // close <details>
+                      (document.activeElement as HTMLElement)?.blur();
+                    }}
+                    className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
+                      code === locale
+                        ? "bg-primary/15 text-primary"
+                        : "text-text-secondary hover:bg-surface-hover"
+                    }`}
+                  >
+                    <span className="text-sm">{flag}</span>
+                    <span>{name}</span>
+                  </button>
+                )
+              )}
+            </div>
+          </details>
         </div>
       </aside>
 

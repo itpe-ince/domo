@@ -94,14 +94,20 @@ export function LoginModal({
 
       // Clear any previous button (re-mounts on every open)
       buttonRef.current.innerHTML = "";
+      // Width = buttonRef container width (모달 max-w-md - p-6 = ~360px)
+      // GIS personalized 모드에서는 일부 옵션 무시되지만 theme/width는 반영됨
+      const containerWidth = Math.min(
+        Math.floor(buttonRef.current.clientWidth || 360),
+        400 // GIS max width 제한
+      );
       gsi.renderButton(buttonRef.current, {
         type: "standard",
-        theme: "filled_black",
+        theme: "filled_black",   // dark 모달과 일치 (logged-in 모드는 자동 흰 배경 사용)
         size: "large",
         text: "continue_with",
-        shape: "pill",
+        shape: "rectangular",    // personalized 모드에서도 일관 (pill은 무시됨)
         logo_alignment: "left",
-        width: 320,
+        width: containerWidth,
         locale: "ko",
       });
     };
@@ -137,46 +143,80 @@ export function LoginModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
       onClick={onClose}
     >
       <div
-        className="card w-full max-w-md p-6 space-y-5"
+        className="w-full max-w-sm bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex items-start justify-between">
-          <div>
-            <h2 className="text-xl font-bold">Domo {t("common.login")}</h2>
-            <p className="text-text-secondary text-sm mt-1">
-              Google 계정으로 안전하게 로그인합니다.
-            </p>
-          </div>
+        {/* Header — centered brand + close */}
+        <header className="relative px-6 pt-6 pb-2 text-center">
           <button
             onClick={onClose}
-            className="text-text-muted hover:text-text-primary text-xl leading-none"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-hover transition-colors"
             aria-label="닫기"
           >
-            ×
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/15 ring-1 ring-primary/30 mb-3">
+            <span className="text-primary font-logo text-xl">D</span>
+          </div>
+          <h2 className="text-lg font-bold text-text-primary">
+            Domo {t("common.login")}
+          </h2>
+          <p className="text-text-muted text-xs mt-1">
+            Google 계정으로 안전하게 로그인합니다.
+          </p>
         </header>
 
-        {/* Google-rendered button mount point */}
-        <div className="flex justify-center min-h-[44px]" ref={buttonRef} />
+        {/* Google button area */}
+        <div className="px-6 py-5">
+          <div
+            className="flex justify-center min-h-[44px] [&>div]:!w-full"
+            ref={buttonRef}
+          />
 
-        {busy && (
-          <p className="text-text-muted text-xs text-center">{t("common.loading")}...</p>
-        )}
+          {busy && (
+            <p className="text-text-muted text-xs text-center mt-3">
+              {t("common.loading")}...
+            </p>
+          )}
 
-        {error && (
-          <div className="card border-danger p-3 text-danger text-sm">
-            {error}
-          </div>
-        )}
+          {error && (
+            <div className="mt-3 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-xs text-danger">
+              {error}
+            </div>
+          )}
+        </div>
 
-        <p className="text-text-muted text-[11px] text-center pt-2 border-t border-border">
-          로그인 시 <a href="/legal/terms" className="underline">이용약관</a> 및{" "}
-          <a href="/legal/privacy" className="underline">개인정보처리방침</a>에 동의하게 됩니다.
-        </p>
+        {/* Footer — 약관 동의 */}
+        <footer className="px-6 py-3 border-t border-border bg-surface-hover/30">
+          <p className="text-text-muted text-[11px] text-center leading-relaxed">
+            로그인 시{" "}
+            <a href="/legal/terms" className="text-text-secondary underline hover:text-primary">
+              이용약관
+            </a>{" "}
+            및{" "}
+            <a href="/legal/privacy" className="text-text-secondary underline hover:text-primary">
+              개인정보처리방침
+            </a>
+            에 동의하게 됩니다.
+          </p>
+        </footer>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-26T22:49:12.903Z",
+  "lastUpdated": "2026-04-27T07:04:14.467Z",
   "activeFeatures": [
     "backend",
     "core",
@@ -213,9 +213,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-04-26T11:11:48.735Z"
+        "lastUpdated": "2026-04-27T07:04:14.467Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/api.ts"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/LoginModal.tsx"
     },
     "applications": {
       "phase": "do",
@@ -941,7 +941,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-26T22:49:12.903Z"
+    "lastActivity": "2026-04-27T07:04:14.467Z"
   },
   "history": [
     {
@@ -6371,6 +6371,30 @@
     {
       "timestamp": "2026-04-26T22:49:12.903Z",
       "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-27T07:02:35.487Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-27T07:03:35.553Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-27T07:03:54.677Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-27T07:04:14.467Z",
+      "feature": "frontend",
       "phase": "do",
       "action": "updated"
     }
