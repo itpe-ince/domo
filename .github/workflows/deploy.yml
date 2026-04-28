@@ -197,6 +197,15 @@ jobs:
               bash -s << 'DEPLOY_SCRIPT'
           set -euo pipefail
 
+          # ── Isolated docker config ──
+          # CRITICAL: Don't write to ~/.docker/config.json — that would
+          # clobber the operator's persistent PAT login. The workflow's
+          # GITHUB_TOKEN expires after the run, so leaving it in the
+          # default config breaks subsequent manual `docker pull` for ops.
+          # See docs/guides/admin-auth-production-deployment.md §16.
+          export DOCKER_CONFIG="$(mktemp -d -t ghcr-deploy.XXXXXX)"
+          trap 'rm -rf "$DOCKER_CONFIG"' EXIT
+
           echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
 
           cd '${{ secrets.DEPLOY_PATH }}'
@@ -213,6 +222,7 @@ jobs:
 
           export COMPOSE_PROJECT_NAME=domo
           export IMAGE_TAG="${IMAGE_TAG}"
+          echo "→ Deploying IMAGE_TAG=${IMAGE_TAG}"
 
           # ── Pull new images ──
           docker compose -f docker-compose.prod.yml pull
@@ -226,7 +236,25 @@ jobs:
           fi
 
           # ── Restart services ──
-          docker compose -f docker-compose.prod.yml up -d --remove-orphans
+          # --force-recreate guarantees containers are rebuilt with the
+          # newly-pulled image. Without this, when IMAGE_TAG resolves to
+          # `:latest` (or any moving tag), compose may not detect a digest
+          # change and silently keep stale containers running.
+          docker compose -f docker-compose.prod.yml up -d \
+            --remove-orphans --force-recreate
+
+          # ── Verify what actually got deployed ──
+          echo "→ Running images:"
+          for svc in backend frontend admin; do
+            container="domo_${svc}"
+            if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
+              img=$(docker inspect "$container" --format '{{.Config.Image}}')
+              created=$(docker inspect "$container" --format '{{.Created}}')
+              echo "  ${container}: image=${img}  container_created=${created}"
+            else
+              echo "::warning::${container} is not running after up -d"
+            fi
+          done
 
           # ── Cleanup old images ──
           docker image prune -f

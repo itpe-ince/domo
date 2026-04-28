@@ -1,8 +1,7 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-28T00:15:03.058Z",
+  "lastUpdated": "2026-04-28T05:00:00.000Z",
   "activeFeatures": [
-    "backend",
     "core",
     "db",
     "api",
@@ -86,19 +85,12 @@
       }
     },
     "backend": {
-      "phase": "do",
+      "phase": "archived",
       "matchRate": 99,
       "iterationCount": 3,
       "startedAt": "2026-04-11T06:31:57.421Z",
       "archivedAt": "2026-04-25T04:30:00.000Z",
-      "archivedTo": "v1/docs/archive/2026-04/backend/",
-      "gapsResolved": 23,
-      "scope": "all phases (Phase 0~4 + P3)",
-      "phaseNumber": 3,
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/main.py",
-      "timestamps": {
-        "lastUpdated": "2026-04-26T00:21:33.898Z"
-      }
+      "archivedTo": "v1/docs/archive/2026-04/backend/"
     },
     "core": {
       "phase": "do",
@@ -213,9 +205,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-04-28T00:15:03.058Z"
+        "lastUpdated": "2026-04-28T04:09:33.434Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/LoginModal.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/Sidebar.tsx"
     },
     "applications": {
       "phase": "do",
@@ -941,7 +933,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-28T00:15:03.058Z"
+    "lastActivity": "2026-04-28T04:09:33.434Z"
   },
   "history": [
     {
@@ -6418,6 +6410,30 @@
     },
     {
       "timestamp": "2026-04-28T00:15:03.058Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-28T04:07:35.508Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-28T04:09:06.924Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-28T04:09:23.523Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-28T04:09:33.434Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"

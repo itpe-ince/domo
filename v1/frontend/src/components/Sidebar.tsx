@@ -36,7 +36,7 @@ type NavItem = {
 };
 
 export function Sidebar() {
-  const { me } = useMe();
+  const { me, loading: meLoading } = useMe();
   const pathname = usePathname();
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginRedirect, setLoginRedirect] = useState<string | undefined>();
@@ -204,8 +204,14 @@ export function Sidebar() {
             </button>
           )}
 
-          {/* 로그인 (비로그인 상태에서만 노출) — 로그인 후엔 하단 사용자 메뉴에서 프로필 접근 */}
-          {!me && (
+          {/* 로그인 버튼 — me가 확정된 비로그인 상태에서만 노출.
+              meLoading=true 동안엔 placeholder를 두어 비로그인↔로그인 깜빡임 방지. */}
+          {meLoading ? (
+            <div
+              className="h-12 mx-3 rounded-full bg-surface-hover/40 animate-pulse"
+              aria-hidden
+            />
+          ) : !me ? (
             <button
               onClick={() => { setLoginRedirect(undefined); setLoginOpen(true); }}
               className="group flex items-center justify-center xl:justify-start gap-4 rounded-full px-3 py-3 transition-colors text-text-primary hover:bg-surface-hover w-full"
@@ -213,11 +219,14 @@ export function Sidebar() {
               <UserIcon />
               <span className="hidden xl:inline text-lg font-medium">{t("common.login")}</span>
             </button>
-          )}
+          ) : null}
         </div>
 
-        {/* Profile card at bottom */}
-        {me && (
+        {/* Profile card at bottom — meLoading 동안 placeholder로 layout shift 방지 */}
+        {meLoading && (
+          <div className="mx-3 mb-2 h-14 rounded-full bg-surface-hover/40 animate-pulse" aria-hidden />
+        )}
+        {!meLoading && me && (
           <div className="relative">
             <details className="group">
               <summary className="list-none cursor-pointer flex items-center gap-3 rounded-full px-3 py-3 hover:bg-surface-hover transition-colors">
@@ -246,7 +255,15 @@ export function Sidebar() {
                   <MoreHorizontalIcon size={20} />
                 </span>
               </summary>
-              <div className="absolute bottom-full mb-2 left-0 right-0 xl:left-2 xl:right-2 card p-2 z-40 space-y-1">
+              {/* Dropdown
+                  - 축소 (xl 미만): 사이드바 폭이 좁아 안에 두면 글자가 세로로 쌓임
+                    → 사이드바 옆 (right side)으로 popover, 고정 너비 w-44 사용
+                  - 확장 (xl 이상): 사이드바 안에서 위로 펼침 (기존 패턴) */}
+              <div
+                className="absolute z-40 card p-2 space-y-1 w-44 whitespace-nowrap
+                           bottom-0 left-full ml-2
+                           xl:bottom-full xl:left-2 xl:right-2 xl:w-auto xl:ml-0 xl:mb-2"
+              >
                 <Link
                   href={`/users/${me.id}`}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-hover text-sm text-text-primary"
