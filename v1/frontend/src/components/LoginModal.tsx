@@ -183,8 +183,11 @@ export function LoginModal({
           </p>
         </header>
 
-        {/* Google button area */}
-        <div className="px-6 py-5">
+        {/* Google button area — 다크 모달과 통합
+            - Anonymous 모드: theme=filled_black 적용 → 검은 버튼이 다크 모달과 자연스러움
+            - Personalized 모드: GIS가 흰 박스 강제 → 다크 모달 위 살짝 떠 있는 형태이지만
+              "Google 인증 영역"임이 명확해 무리 없음 */}
+        <div className="px-5 py-4">
           <div
             className="flex justify-center min-h-[44px] [&>div]:!w-full"
             ref={buttonRef}
