@@ -251,3 +251,18 @@ export function MoreHorizontalIcon(p: IconProps) {
     </svg>
   );
 }
+
+// editor-draft-autosave PDCA — Drafts list menu
+export function DraftIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <path
+        d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+        strokeDasharray="4 2"
+      />
+      <polyline points="14 3 14 8 19 8" />
+      <line x1="8" y1="13" x2="16" y2="13" />
+      <line x1="8" y1="17" x2="12" y2="17" />
+    </svg>
+  );
+}

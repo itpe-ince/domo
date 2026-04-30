@@ -13,6 +13,7 @@ import {
   BellIcon,
   BluebirdIcon,
   DashboardIcon,
+  DraftIcon,
   ExploreIcon,
   HomeIcon,
   LayersIcon,
@@ -270,6 +271,14 @@ export function Sidebar() {
                 >
                   <UserIcon />
                   <span>{t("nav.profile")}</span>
+                </Link>
+                {/* editor-draft-autosave PDCA — Q-2: drafts list in user menu */}
+                <Link
+                  href="/posts/drafts"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-hover text-sm text-text-primary"
+                >
+                  <DraftIcon />
+                  <span>{t("nav.draftsList")}</span>
                 </Link>
                 <div className="border-t border-border my-1" />
                 <button

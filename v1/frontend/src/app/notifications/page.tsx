@@ -11,18 +11,7 @@ import {
 } from "@/lib/api";
 import { useI18n } from "@/i18n";
 import { useMe } from "@/lib/useMe";
-
-function timeAgo(iso: string | null): string {
-  if (!iso) return "";
-  const diff = Date.now() - new Date(iso).getTime();
-  const sec = Math.floor(diff / 1000);
-  if (sec < 60) return `${sec}초 전`;
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}분 전`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}시간 전`;
-  return `${Math.floor(hr / 24)}일 전`;
-}
+import { formatRelativeTime as timeAgo } from "@/lib/formatRelativeTime";
 
 export default function NotificationsPage() {
   const { me, loading: meLoading } = useMe();

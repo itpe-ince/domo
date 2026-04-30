@@ -22,6 +22,7 @@ from app.api import notifications as notifications_router
 from app.api import orders as orders_router
 from app.api import collections as collections_router
 from app.api import communities as communities_router
+from app.api import drafts as drafts_router
 from app.api import posts as posts_router
 from app.api import rankings as rankings_router
 from app.api import reports as reports_router
@@ -35,6 +36,7 @@ from app.core.errors import register_error_handlers
 from app.db.session import AsyncSessionLocal
 from app.services.auction_jobs import auction_cron_loop
 from app.services.community_jobs import seed_default_communities
+from app.services.draft_cleanup_jobs import draft_cleanup_cron_loop
 from app.services.gdpr_jobs import gdpr_cron_loop
 from app.services.badge_jobs import badge_cron_loop
 from app.services.schedule_jobs import schedule_cron_loop
@@ -60,12 +62,14 @@ async def lifespan(app: FastAPI):
     badge_task = asyncio.create_task(badge_cron_loop(interval_seconds=86400))
     settle_task = asyncio.create_task(settlement_cron_loop(interval_seconds=86400))
     webhook_cleanup_task = asyncio.create_task(webhook_cleanup_cron_loop(interval_seconds=86400))
+    draft_cleanup_task = asyncio.create_task(draft_cleanup_cron_loop(interval_seconds=86400))
     try:
         yield
     finally:
-        for task in (auction_task, gdpr_task, schedule_task, badge_task, settle_task, webhook_cleanup_task):
+        all_tasks = (auction_task, gdpr_task, schedule_task, badge_task, settle_task, webhook_cleanup_task, draft_cleanup_task)
+        for task in all_tasks:
             task.cancel()
-        for task in (auction_task, gdpr_task, schedule_task, badge_task, settle_task, webhook_cleanup_task):
+        for task in all_tasks:
             try:
                 await task
             except asyncio.CancelledError:
@@ -133,6 +137,7 @@ api_v1.include_router(artists_router.router)
 api_v1.include_router(activity_router.router)
 api_v1.include_router(collections_router.router)
 api_v1.include_router(communities_router.router)
+api_v1.include_router(drafts_router.router)
 api_v1.include_router(kyc_router.router)
 api_v1.include_router(posts_router.router)
 api_v1.include_router(rankings_router.router)

@@ -56,6 +56,7 @@ class PostCreate(BaseModel):
     location_name: str | None = None
     location_lat: float | None = None
     location_lng: float | None = None
+    from_draft_id: UUID | None = None
 
 
 class PostAuthor(BaseModel):

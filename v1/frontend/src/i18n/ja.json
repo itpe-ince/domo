@@ -36,7 +36,8 @@
     "warnings": "警告",
     "settings": "設定",
     "admin": "管理者",
-    "communities": "コミュニティ"
+    "communities": "コミュニティ",
+    "draftsList": "下書き"
   },
   "home": {
     "title": "Domo Lounge",
@@ -116,7 +117,47 @@
     "year": "制作年",
     "auctionSell": "オークションで販売",
     "buyNow": "即購入可能",
-    "buyNowPrice": "即購入価格 (USD)"
+    "buyNowPrice": "即購入価格 (USD)",
+    "type": {
+      "product": {
+        "disabledTitle": "アーティスト限定",
+        "disabledHint": "アーティスト登録後に作成可能です",
+        "disabledHintPending": "アーティスト審査中です (通常1〜3日)",
+        "disabledHintRejected": "アーティスト申請が却下されました。",
+        "applyLink": "アーティスト申請",
+        "applyAgainLink": "再申請",
+        "errorOnlyArtists": "商品投稿はアーティストのみ作成できます。"
+      }
+    },
+    "draft": {
+      "saveButton": "下書き保存",
+      "savedIndicator": "保存済み",
+      "savingIndicator": "保存中...",
+      "errorIndicator": "保存失敗",
+      "restoreDialog": {
+        "title": "下書きを復元",
+        "body": "以前作成中の内容があります。",
+        "continue": "再開する",
+        "continueRecommended": "再開する (推奨)",
+        "restorePrevious": "前のバージョンを復元",
+        "discard": "新規作成",
+        "discardAll": "両方削除"
+      },
+      "list": {
+        "title": "下書き一覧",
+        "empty": "下書きがありません",
+        "newPost": "新規投稿"
+      },
+      "deleted": "下書きを削除しました",
+      "card": {
+        "untitled": "(タイトルなし)",
+        "openInEditor": "再開する",
+        "delete": "削除",
+        "typeGeneral": "通常",
+        "typeProduct": "商品"
+      },
+      "multiTabWarning": "別のタブで編集中です。最新の保存が優先されます。"
+    }
   },
   "bluebird": {
     "unitLabel": "ブルーバード",

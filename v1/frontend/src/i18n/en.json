@@ -36,7 +36,8 @@
     "warnings": "My Warnings",
     "settings": "Settings",
     "admin": "Admin",
-    "communities": "Communities"
+    "communities": "Communities",
+    "draftsList": "Drafts"
   },
   "home": {
     "title": "Domo Lounge",
@@ -116,7 +117,47 @@
     "year": "Year",
     "auctionSell": "Sell via Auction",
     "buyNow": "Buy Now Available",
-    "buyNowPrice": "Buy Now Price (USD)"
+    "buyNowPrice": "Buy Now Price (USD)",
+    "type": {
+      "product": {
+        "disabledTitle": "Artists only",
+        "disabledHint": "Available after artist registration",
+        "disabledHintPending": "Your artist application is under review (usually 1-3 days)",
+        "disabledHintRejected": "Your artist application was rejected.",
+        "applyLink": "Apply as artist",
+        "applyAgainLink": "Re-apply",
+        "errorOnlyArtists": "Only artists can create product posts."
+      }
+    },
+    "draft": {
+      "saveButton": "Save Draft",
+      "savedIndicator": "Saved",
+      "savingIndicator": "Saving...",
+      "errorIndicator": "Save failed",
+      "restoreDialog": {
+        "title": "Restore Draft",
+        "body": "You have a saved draft from earlier.",
+        "continue": "Continue",
+        "continueRecommended": "Continue (recommended)",
+        "restorePrevious": "Restore previous version",
+        "discard": "Start fresh",
+        "discardAll": "Delete both"
+      },
+      "list": {
+        "title": "Drafts",
+        "empty": "No drafts yet",
+        "newPost": "Create new post"
+      },
+      "deleted": "Draft deleted",
+      "card": {
+        "untitled": "(Untitled)",
+        "openInEditor": "Continue",
+        "delete": "Delete",
+        "typeGeneral": "General",
+        "typeProduct": "Product"
+      },
+      "multiTabWarning": "Another tab is editing. The most recent save wins."
+    }
   },
   "bluebird": {
     "unitLabel": "Bluebird",

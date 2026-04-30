@@ -280,6 +280,18 @@ async def create_post(
             )
         )
 
+    # editor-draft-autosave: publish-from-draft path
+    # If client sent from_draft_id, delete that draft in the same transaction.
+    # Silent on failure — publishing succeeded; orphan draft is the worst case.
+    if body.from_draft_id:
+        draft = await db.get(Post, body.from_draft_id)
+        if (
+            draft
+            and draft.author_id == user.id
+            and draft.status == "draft"
+        ):
+            await db.delete(draft)  # MediaAsset cascade
+
     await db.commit()
 
     full_post = await _load_post_full(db, post.id)

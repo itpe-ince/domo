@@ -1181,11 +1181,105 @@ export type CreatePostInput = {
   };
 };
 
-export async function createPost(input: CreatePostInput) {
+export async function createPost(input: CreatePostInput & { from_draft_id?: string }) {
   return apiFetch<PostView>("/posts", {
     method: "POST",
     body: JSON.stringify(input),
   });
+}
+
+// ─── Draft ──────────────────────────────────────────────────────────
+// editor-draft-autosave PDCA — server-side persistence for editor drafts.
+// Backend: api/drafts.py (POST/GET/DELETE /v1/posts/drafts)
+
+export type DraftMedia = CreatePostMedia & {
+  id?: string;
+  order_index?: number;
+};
+
+export type DraftProduct = {
+  is_auction?: boolean;
+  is_buy_now?: boolean;
+  buy_now_price?: number | string | null;
+  currency?: string;
+  dimensions?: string | null;
+  medium?: string | null;
+  year?: number | null;
+  is_sold?: boolean;
+};
+
+export type Draft = {
+  id: string;
+  type: "general" | "product";
+  title: string | null;
+  content: string | null;
+  genre: string | null;
+  tags: string[] | null;
+  language: string;
+  media: DraftMedia[];
+  product: DraftProduct | null;
+  scheduled_at: string | null;
+  location_name: string | null;
+  location_lat: number | null;
+  location_lng: number | null;
+  created_at: string;
+  updated_at: string; // Q-5 timestamp comparison anchor
+};
+
+export type DraftPayload = {
+  draft_id?: string;
+  type: "general" | "product";
+  title?: string | null;
+  content?: string | null;
+  genre?: string | null;
+  tags?: string[] | null;
+  language?: string;
+  media?: CreatePostMedia[];
+  product?: DraftProduct | null;
+  scheduled_at?: string | null;
+  location_name?: string | null;
+  location_lat?: number | null;
+  location_lng?: number | null;
+};
+
+/** List drafts owned by the current user (most recent first).
+ *
+ * Backend response shape: `{ data: Draft[], total, limit, offset }`.
+ * `apiFetch` unwraps `.data`. `total/limit/offset` are not exposed because
+ * NFR-4 limits per-user drafts to 20 — no pagination UI needed for v1.
+ */
+export async function listDrafts(
+  limit = 20,
+  offset = 0
+): Promise<Draft[]> {
+  return apiFetch<Draft[]>(
+    `/posts/drafts?limit=${limit}&offset=${offset}`
+  );
+}
+
+/** Fetch a single draft (404 if not owned). */
+export async function getDraft(id: string): Promise<Draft> {
+  return apiFetch<Draft>(`/posts/drafts/${encodeURIComponent(id)}`);
+}
+
+/**
+ * Upsert a draft. If `payload.draft_id` is set, updates that draft;
+ * otherwise creates a new one. Backend may auto-delete the oldest draft
+ * when the per-user limit (20) is hit; that does not raise an error.
+ */
+export async function saveDraft(payload: DraftPayload): Promise<Draft> {
+  return apiFetch<Draft>("/posts/drafts", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/** Delete a draft (idempotent — silent on 404). */
+export async function deleteDraft(id: string): Promise<void> {
+  await apiFetch<{ deleted: boolean; id: string }>(
+    `/posts/drafts/${encodeURIComponent(id)}`,
+    { method: "DELETE" }
+  );
 }
 
 export class ApiClientError extends Error {

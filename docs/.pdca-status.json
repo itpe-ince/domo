@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-28T05:00:00.000Z",
+  "lastUpdated": "2026-04-30T08:01:54.568Z",
   "activeFeatures": [
     "core",
     "db",
@@ -65,10 +65,104 @@
     "webhook_cleanup_jobs.py",
     "totp-setup",
     "recovery-codes",
-    "passkeys"
+    "passkeys",
+    "backend",
+    "draft_cleanup_jobs.py",
+    "drafts"
   ],
-  "primaryFeature": "real-auth",
+  "primaryFeature": "editor-responsive-redesign",
   "features": {
+    "editor-responsive-redesign": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "startedAt": "2026-04-30T15:50:00.000Z",
+      "scope": "에디터 #3 — 데스크탑 2-pane(편집+미리보기) + 모바일 단계형 wizard, 803줄 page.tsx 컴포넌트 분해 (DB·API 변경 0)",
+      "kind": "sub-pdca",
+      "parent_roadmap": "editor-revamp-roadmap",
+      "documents": {
+        "plan": "v1/docs/01-plan/features/editor-responsive-redesign.plan.md",
+        "design": "v1/docs/02-design/features/editor-responsive-redesign.design.md"
+      },
+      "openQuestions": [
+        {
+          "id": "OQ-1",
+          "question": "반응형 breakpoint 분기",
+          "decision": "A (768 단일 분기 — md 미만 wizard, md 이상 2-pane)",
+          "status": "resolved",
+          "resolvedAt": "2026-04-30"
+        },
+        {
+          "id": "OQ-2",
+          "question": "데스크탑 2-pane 미리보기 우선순위",
+          "decision": "C (사이드 미리보기 + 명시 토글)",
+          "status": "resolved",
+          "resolvedAt": "2026-04-30"
+        },
+        {
+          "id": "OQ-3",
+          "question": "page.tsx 803줄 분리 전략",
+          "decision": "B (점진적 hooks-first 추출)",
+          "status": "resolved",
+          "resolvedAt": "2026-04-30"
+        },
+        {
+          "id": "OQ-4",
+          "question": "모바일 단계형 wizard 단계 수",
+          "decision": "A (3단계: type→내용→발행), product 분기는 design 단계에서 결정",
+          "status": "resolved",
+          "resolvedAt": "2026-04-30"
+        },
+        {
+          "id": "OQ-D-1",
+          "question": "PreviewPane 상단 '미리보기' 레이블 표시 여부",
+          "decision": "A (레이블 있음)",
+          "status": "resolved",
+          "resolvedAt": "2026-04-30"
+        },
+        {
+          "id": "OQ-D-2",
+          "question": "wizard 하단 sticky 버튼 배경 (반투명 blur vs 불투명 단색)",
+          "decision": "B (불투명 단색)",
+          "status": "resolved",
+          "resolvedAt": "2026-04-30"
+        },
+        {
+          "id": "OQ-D-3",
+          "question": "모바일 wizard sticky header (임시저장/등록 버튼) 유지 여부",
+          "decision": "B (하단 버튼만)",
+          "status": "resolved",
+          "resolvedAt": "2026-04-30"
+        },
+        {
+          "id": "OQ-D-4",
+          "question": "데스크탑 진입 시 isPreviewVisible 기본값",
+          "decision": "A (기본 표시 = true)",
+          "status": "resolved",
+          "resolvedAt": "2026-04-30"
+        },
+        {
+          "id": "OQ-D-5",
+          "question": "6 step 추출을 단일 PR vs 단계별 다중 PR",
+          "decision": "B (단계별 PR — PR1: Step 1-2 hooks+신규UI / PR2: Step 3-5 추출 / PR3: Step 6 i18n+회귀)",
+          "status": "resolved",
+          "resolvedAt": "2026-04-30"
+        }
+      ],
+      "designResolutions": {
+        "product_wizard": "4단계 (type → content → product_meta → publish), product 타입일 때만 product_meta step 삽입. EditorStepProductMeta 컴포넌트 분리 → #7 editor-product-meta 마이그레이션 비용 최소화",
+        "preview_hide_strategy": "DOM 항상 마운트 + w-0/opacity-0/aria-hidden — React state 보존 (OQ-2=C 정신)",
+        "hooks_extraction": "usePostFormState (18개 useState 그룹화 + resetFromDraft) / useArtistGate (applicationStatus + 자동 fallback) / useEditorWizardStep (step state machine)",
+        "external_libs": "shadcn/ui, framer-motion 등 추가 도입 0 — 모두 HTML + Tailwind 네이티브"
+      },
+      "timestamps": {
+        "started": "2026-04-30T15:50:00.000Z",
+        "lastUpdated": "2026-04-30T17:00:00.000Z",
+        "planFinalized": "2026-04-30T16:10:00.000Z",
+        "designFinalized": "2026-04-30T17:00:00.000Z"
+      }
+    },
     "real-auth": {
       "phase": "plan",
       "phaseNumber": 1,
@@ -85,12 +179,17 @@
       }
     },
     "backend": {
-      "phase": "archived",
+      "phase": "do",
       "matchRate": 99,
       "iterationCount": 3,
       "startedAt": "2026-04-11T06:31:57.421Z",
       "archivedAt": "2026-04-25T04:30:00.000Z",
-      "archivedTo": "v1/docs/archive/2026-04/backend/"
+      "archivedTo": "v1/docs/archive/2026-04/backend/",
+      "phaseNumber": 3,
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/main.py",
+      "timestamps": {
+        "lastUpdated": "2026-04-30T00:24:38.027Z"
+      }
     },
     "core": {
       "phase": "do",
@@ -127,9 +226,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:23.836Z",
-        "lastUpdated": "2026-04-26T11:09:24.065Z"
+        "lastUpdated": "2026-04-30T00:23:38.784Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/me.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/drafts.py"
     },
     "schemas": {
       "phase": "do",
@@ -140,9 +239,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:30.319Z",
-        "lastUpdated": "2026-04-26T01:24:04.393Z"
+        "lastUpdated": "2026-04-30T00:22:24.655Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/auth.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/draft.py"
     },
     "google_auth.py": {
       "phase": "do",
@@ -192,9 +291,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:35:13.871Z",
-        "lastUpdated": "2026-04-26T00:19:56.043Z"
+        "lastUpdated": "2026-04-30T00:24:52.049Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0034_webauthn_credentials.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0035_draft_limit_index.py"
     },
     "frontend": {
       "phase": "do",
@@ -205,9 +304,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-04-28T04:09:33.434Z"
+        "lastUpdated": "2026-04-30T08:01:54.568Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/Sidebar.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/hooks/usePostFormState.ts"
     },
     "applications": {
       "phase": "do",
@@ -244,9 +343,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T09:22:43.092Z",
-        "lastUpdated": "2026-04-26T03:29:50.500Z"
+        "lastUpdated": "2026-04-30T00:25:16.688Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/scripts/dev-seed.sh"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/scripts/smoke_test_drafts.sh"
     },
     "[id]": {
       "phase": "do",
@@ -400,7 +499,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:41:45.679Z",
-        "lastUpdated": "2026-04-26T11:10:09.059Z"
+        "lastUpdated": "2026-04-30T07:59:29.601Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/new/page.tsx"
     },
@@ -582,7 +681,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-12T02:33:38.475Z",
-        "lastUpdated": "2026-04-18T04:21:27.877Z"
+        "lastUpdated": "2026-04-30T00:31:15.849Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/notifications/page.tsx"
     },
@@ -634,9 +733,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T01:31:08.565Z",
-        "lastUpdated": "2026-04-13T01:33:09.560Z"
+        "lastUpdated": "2026-04-29T19:59:17.070Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/MediaToolbar.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/PostTypeSelector.tsx"
     },
     "feed": {
       "phase": "do",
@@ -923,6 +1022,89 @@
         "lastUpdated": "2026-04-26T00:27:29.907Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/app/settings/passkeys/page.tsx"
+    },
+    "editor-revamp-roadmap": {
+      "phase": "plan",
+      "phaseNumber": 1,
+      "matchRate": null,
+      "iterationCount": 0,
+      "startedAt": "2026-04-29T00:00:00.000Z",
+      "scope": "에디터 전면 개편 11개 sub-PDCA 인덱스 (A 메이킹 + B-1~B-4 + C 화면개선)",
+      "kind": "roadmap",
+      "subFeatures": [
+        "editor-role-gating",
+        "editor-draft-autosave",
+        "editor-responsive-redesign",
+        "editor-media-ux",
+        "editor-rich-content",
+        "editor-media-studio",
+        "editor-product-meta",
+        "publish-controls",
+        "artist-pricing-assist",
+        "artist-tier-release",
+        "auction-promotion-suite",
+        "notifications-ux-audit"
+      ],
+      "documents": {
+        "plan": "v1/docs/01-plan/features/editor-revamp-roadmap.plan.md"
+      },
+      "timestamps": {
+        "started": "2026-04-29T00:00:00.000Z",
+        "lastUpdated": "2026-04-29T00:00:00.000Z"
+      }
+    },
+    "editor-role-gating": {
+      "phase": "archived",
+      "matchRate": 98,
+      "iterationCount": 1,
+      "startedAt": "2026-04-29T00:00:00.000Z",
+      "archivedAt": "2026-04-30T01:30:00.000Z",
+      "archivedTo": "v1/docs/archive/2026-04/editor-role-gating/"
+    },
+    "notifications-ux-audit": {
+      "phase": "queued",
+      "phaseNumber": 0,
+      "matchRate": null,
+      "iterationCount": 0,
+      "scope": "사용자 아이콘 N뱃지 + UserMenu 알림 항목 + NotificationCard 다중 deep link + read 상태 시각화",
+      "kind": "sub-pdca",
+      "parent_roadmap": "editor-revamp-roadmap",
+      "addedAt": "2026-04-29T00:45:00.000Z",
+      "addedReason": "사용자 우려 반영 (2026-04-29) — 알림 시스템 UX 일관성. Phase 3 배치"
+    },
+    "editor-draft-autosave": {
+      "phase": "archived",
+      "matchRate": 100,
+      "iterationCount": 1,
+      "startedAt": "2026-04-30T01:30:00.000Z",
+      "archivedAt": "2026-04-30T15:25:00.000Z",
+      "archivedTo": "v1/docs/archive/2026-04/editor-draft-autosave/"
+    },
+    "draft_cleanup_jobs.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-30T00:24:21.783Z",
+        "lastUpdated": "2026-04-30T00:24:21.783Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/draft_cleanup_jobs.py"
+    },
+    "drafts": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-30T00:37:18.635Z",
+        "lastUpdated": "2026-04-30T00:37:18.635Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/drafts/page.tsx"
     }
   },
   "pipeline": {
@@ -933,7 +1115,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-28T04:09:33.434Z"
+    "lastActivity": "2026-04-30T08:01:54.568Z"
   },
   "history": [
     {
@@ -6434,6 +6616,300 @@
     },
     {
       "timestamp": "2026-04-28T04:09:33.434Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-29T17:19:04.333Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-29T17:19:26.554Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-29T17:19:40.561Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-29T17:19:50.403Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-29T17:20:01.205Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-29T17:20:43.173Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-29T19:53:42.674Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-29T19:59:17.070Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:22:12.090Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:22:24.655Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:22:53.852Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:23:38.784Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:23:55.307Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:24:01.190Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:24:21.783Z",
+      "feature": "draft_cleanup_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:24:28.811Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:24:38.027Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:24:52.049Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:25:16.688Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:30:57.318Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:31:15.849Z",
+      "feature": "notifications",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:31:46.623Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:32:13.923Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:32:52.759Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:33:18.117Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:33:34.687Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:33:42.075Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:33:51.939Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:34:35.822Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:34:45.028Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:35:13.869Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:35:38.154Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:35:53.854Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:36:03.811Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:36:32.075Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T00:37:18.635Z",
+      "feature": "drafts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T01:16:45.553Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T01:17:16.639Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T01:17:39.646Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T07:56:41.310Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T07:58:01.278Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T07:58:18.917Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T07:58:26.094Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T07:58:43.358Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T07:58:58.112Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T07:59:06.910Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T07:59:18.625Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T07:59:29.601Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T08:01:54.568Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"

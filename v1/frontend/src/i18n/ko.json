@@ -36,7 +36,8 @@
     "warnings": "내 경고",
     "settings": "설정",
     "admin": "관리자",
-    "communities": "커뮤니티"
+    "communities": "커뮤니티",
+    "draftsList": "임시저장 목록"
   },
   "home": {
     "title": "Domo Lounge",
@@ -116,7 +117,47 @@
     "year": "제작 연도",
     "auctionSell": "경매로 판매",
     "buyNow": "즉시구매 가능",
-    "buyNowPrice": "즉시구매가 (USD)"
+    "buyNowPrice": "즉시구매가 (USD)",
+    "type": {
+      "product": {
+        "disabledTitle": "작가만 작성 가능",
+        "disabledHint": "작가 등록 후 작성 가능합니다",
+        "disabledHintPending": "작가 심사가 진행 중입니다 (보통 1-3일)",
+        "disabledHintRejected": "작가 신청이 반려되었습니다.",
+        "applyLink": "작가 신청",
+        "applyAgainLink": "재신청",
+        "errorOnlyArtists": "상품 포스트는 작가만 작성할 수 있습니다."
+      }
+    },
+    "draft": {
+      "saveButton": "임시저장",
+      "savedIndicator": "저장됨",
+      "savingIndicator": "저장 중...",
+      "errorIndicator": "저장 실패",
+      "restoreDialog": {
+        "title": "임시저장된 내용 복원",
+        "body": "이전에 작성하던 내용이 있습니다.",
+        "continue": "이어쓰기",
+        "continueRecommended": "이어쓰기 (권장)",
+        "restorePrevious": "이전 버전 복원",
+        "discard": "새로 작성",
+        "discardAll": "둘 다 삭제"
+      },
+      "list": {
+        "title": "임시저장 목록",
+        "empty": "아직 임시저장된 글이 없습니다",
+        "newPost": "새 글 작성"
+      },
+      "deleted": "임시저장 삭제됨",
+      "card": {
+        "untitled": "(제목 없음)",
+        "openInEditor": "이어쓰기",
+        "delete": "삭제",
+        "typeGeneral": "일반",
+        "typeProduct": "상품"
+      },
+      "multiTabWarning": "다른 탭에서 편집 중입니다. 마지막 저장이 우선됩니다."
+    }
   },
   "bluebird": {
     "unitLabel": "블루버드",

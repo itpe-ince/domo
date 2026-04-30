@@ -36,7 +36,8 @@
     "warnings": "Advertencias",
     "settings": "Configuración",
     "admin": "Admin",
-    "communities": "Comunidades"
+    "communities": "Comunidades",
+    "draftsList": "Borradores"
   },
   "home": {
     "title": "Domo Lounge",
@@ -116,7 +117,47 @@
     "year": "Año",
     "auctionSell": "Vender en subasta",
     "buyNow": "Compra inmediata",
-    "buyNowPrice": "Precio compra inmediata (USD)"
+    "buyNowPrice": "Precio compra inmediata (USD)",
+    "type": {
+      "product": {
+        "disabledTitle": "Solo artistas",
+        "disabledHint": "Disponible después del registro de artista",
+        "disabledHintPending": "Tu solicitud de artista está en revisión (1-3 días normalmente)",
+        "disabledHintRejected": "Tu solicitud de artista fue rechazada.",
+        "applyLink": "Solicitar como artista",
+        "applyAgainLink": "Volver a solicitar",
+        "errorOnlyArtists": "Solo los artistas pueden crear publicaciones de productos."
+      }
+    },
+    "draft": {
+      "saveButton": "Guardar borrador",
+      "savedIndicator": "Guardado",
+      "savingIndicator": "Guardando...",
+      "errorIndicator": "Error al guardar",
+      "restoreDialog": {
+        "title": "Restaurar borrador",
+        "body": "Hay un borrador guardado anteriormente.",
+        "continue": "Continuar",
+        "continueRecommended": "Continuar (recomendado)",
+        "restorePrevious": "Restaurar versión anterior",
+        "discard": "Empezar de nuevo",
+        "discardAll": "Eliminar ambos"
+      },
+      "list": {
+        "title": "Borradores",
+        "empty": "No hay borradores",
+        "newPost": "Nueva publicación"
+      },
+      "deleted": "Borrador eliminado",
+      "card": {
+        "untitled": "(Sin título)",
+        "openInEditor": "Continuar",
+        "delete": "Eliminar",
+        "typeGeneral": "General",
+        "typeProduct": "Producto"
+      },
+      "multiTabWarning": "Otra pestaña está editando. El guardado más reciente prevalece."
+    }
   },
   "bluebird": {
     "unitLabel": "Bluebird",

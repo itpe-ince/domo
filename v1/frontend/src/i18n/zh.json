@@ -36,7 +36,8 @@
     "warnings": "警告",
     "settings": "設定",
     "admin": "管理員",
-    "communities": "社群"
+    "communities": "社群",
+    "draftsList": "草稿"
   },
   "home": {
     "title": "Domo Lounge",
@@ -116,7 +117,47 @@
     "year": "年份",
     "auctionSell": "拍賣銷售",
     "buyNow": "可即時購買",
-    "buyNowPrice": "即購價格 (USD)"
+    "buyNowPrice": "即購價格 (USD)",
+    "type": {
+      "product": {
+        "disabledTitle": "僅限藝術家",
+        "disabledHint": "藝術家註冊後可創建",
+        "disabledHintPending": "藝術家申請審核中 (通常 1-3 天)",
+        "disabledHintRejected": "藝術家申請未通過。",
+        "applyLink": "申請成為藝術家",
+        "applyAgainLink": "重新申請",
+        "errorOnlyArtists": "只有藝術家可以創建商品貼文。"
+      }
+    },
+    "draft": {
+      "saveButton": "儲存草稿",
+      "savedIndicator": "已儲存",
+      "savingIndicator": "儲存中...",
+      "errorIndicator": "儲存失敗",
+      "restoreDialog": {
+        "title": "恢復草稿",
+        "body": "有先前編輯的內容。",
+        "continue": "繼續編輯",
+        "continueRecommended": "繼續編輯 (推薦)",
+        "restorePrevious": "恢復先前版本",
+        "discard": "重新開始",
+        "discardAll": "全部刪除"
+      },
+      "list": {
+        "title": "草稿列表",
+        "empty": "還沒有草稿",
+        "newPost": "新建貼文"
+      },
+      "deleted": "草稿已刪除",
+      "card": {
+        "untitled": "(無標題)",
+        "openInEditor": "繼續編輯",
+        "delete": "刪除",
+        "typeGeneral": "一般",
+        "typeProduct": "商品"
+      },
+      "multiTabWarning": "另一個分頁正在編輯。最後儲存將優先。"
+    }
   },
   "bluebird": {
     "unitLabel": "藍鳥",
