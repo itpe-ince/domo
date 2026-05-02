@@ -266,3 +266,38 @@ export function DraftIcon(p: IconProps) {
     </svg>
   );
 }
+
+// editor-media-ux PDCA — Drag handle (dots-grip) for SortableMediaCard
+export function DragHandleIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <circle cx="9" cy="6" r="1.2" fill="currentColor" />
+      <circle cx="15" cy="6" r="1.2" fill="currentColor" />
+      <circle cx="9" cy="12" r="1.2" fill="currentColor" />
+      <circle cx="15" cy="12" r="1.2" fill="currentColor" />
+      <circle cx="9" cy="18" r="1.2" fill="currentColor" />
+      <circle cx="15" cy="18" r="1.2" fill="currentColor" />
+    </svg>
+  );
+}
+
+// editor-responsive-redesign PDCA — Preview pane toggle
+export function EyeIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+export function EyeOffIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-10-7-10-7a18.7 18.7 0 0 1 5.06-5.94" />
+      <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 10 7 10 7a18.7 18.7 0 0 1-2.16 3.19" />
+      <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+      <line x1="2" y1="2" x2="22" y2="22" />
+    </svg>
+  );
+}

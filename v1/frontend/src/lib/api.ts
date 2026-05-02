@@ -1081,31 +1081,113 @@ export type UploadedMedia = {
   is_making_video?: boolean;
 };
 
-export async function uploadMediaFile(
+// editor-media-ux PDCA #4 — OQ-D-3 = B (XHR-based real upload progress).
+export interface UploadProgressEvent {
+  loaded: number;
+  total: number;
+  percent: number; // 0-100
+}
+
+/**
+ * Upload a media file with real-time progress reporting via XMLHttpRequest.
+ *
+ * `fetch` cannot expose upload progress (the ReadableStream on the response
+ * side is download-only), so this XHR-based function is the canonical entry
+ * point. The legacy `uploadMediaFile` is kept as a thin no-callback wrapper
+ * so existing call sites work unchanged.
+ *
+ * 401 token-refresh is intentionally not handled here — callers that need
+ * refresh-on-401 should use the `apiFetch`-based path. In practice, upload
+ * endpoints are called immediately after a user action where the access
+ * token is fresh, so this simplification is acceptable for MVP.
+ */
+export async function uploadMediaFileWithProgress(
   file: File,
-  isMakingVideo = false
+  isMakingVideo = false,
+  onProgress?: (e: UploadProgressEvent) => void
 ): Promise<UploadedMedia> {
   const token = tokenStore.get();
   if (!token) throw new ApiClientError("UNAUTHORIZED", "Login required");
 
-  const form = new FormData();
-  form.append("file", file);
-  form.append("is_making_video", String(isMakingVideo));
+  return new Promise<UploadedMedia>((resolve, reject) => {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("is_making_video", String(isMakingVideo));
 
-  const res = await fetch(`${API_BASE}/media/upload`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: form,
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${API_BASE}/media/upload`);
+    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+
+    if (onProgress) {
+      xhr.upload.onprogress = (e) => {
+        if (!e.lengthComputable) return;
+        onProgress({
+          loaded: e.loaded,
+          total: e.total,
+          percent: Math.round((e.loaded / e.total) * 100),
+        });
+      };
+    }
+
+    xhr.onload = () => {
+      let json: unknown;
+      try {
+        json = JSON.parse(xhr.responseText);
+      } catch {
+        reject(new ApiClientError("UNKNOWN", "응답 파싱 실패"));
+        return;
+      }
+      const obj = json as Record<string, unknown>;
+      if (xhr.status >= 200 && xhr.status < 300 && !("error" in obj)) {
+        resolve(obj.data as UploadedMedia);
+        return;
+      }
+      const err =
+        "error" in obj
+          ? (obj.error as { code: string; message: string; details?: Record<string, unknown> })
+          : { code: "UNKNOWN", message: xhr.statusText || `HTTP ${xhr.status}` };
+      reject(new ApiClientError(err.code, err.message, err.details));
+    };
+
+    xhr.onerror = () =>
+      reject(new ApiClientError("NETWORK_ERROR", "네트워크 오류"));
+    xhr.ontimeout = () =>
+      reject(new ApiClientError("UPLOAD_TIMEOUT", "업로드 시간 초과"));
+
+    xhr.send(form);
   });
-  const json = await res.json();
-  if (!res.ok || "error" in json) {
-    const err =
-      "error" in json
-        ? json.error
-        : { code: "UNKNOWN", message: res.statusText };
-    throw new ApiClientError(err.code, err.message, err.details);
-  }
-  return json.data as UploadedMedia;
+}
+
+/**
+ * Backwards-compatible wrapper around `uploadMediaFileWithProgress` —
+ * existing callers that don't need progress callbacks keep their signature.
+ */
+export async function uploadMediaFile(
+  file: File,
+  isMakingVideo = false
+): Promise<UploadedMedia> {
+  return uploadMediaFileWithProgress(file, isMakingVideo);
+}
+
+/**
+ * editor-media-ux PDCA #4 — Caption editing endpoint.
+ *
+ * Owner-only. Permitted after publication; blocked by the backend with
+ * `AUCTION_ACTIVE_MEDIA_LOCKED` (409) when the host post has an active
+ * auction (OQ-D-1 = A).
+ */
+export interface PatchMediaBody {
+  caption?: string;
+}
+
+export async function patchMedia(
+  mediaId: string,
+  body: PatchMediaBody
+): Promise<UploadedMedia> {
+  return apiFetch<UploadedMedia>(`/media/${encodeURIComponent(mediaId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
 }
 
 export async function registerExternalMedia(url: string, isMakingVideo = false) {
@@ -1127,6 +1209,13 @@ export type CreatePostMedia = {
   external_source?: string | null;
   external_id?: string | null;
   is_making_video?: boolean;
+  // editor-media-ux PDCA #4 — optional caption (max 280 chars, validated
+  // server-side via Pydantic). undefined for legacy localStorage drafts.
+  caption?: string;
+  // Client-only identifier used by @dnd-kit's SortableContext. MUST be
+  // stripped from the publish payload (POST /v1/posts) — backend Pydantic
+  // schema does not declare this field.
+  _clientId?: string;
 };
 
 // ─── oEmbed + Tags ──────────────────────────────────────────────────────

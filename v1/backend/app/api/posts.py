@@ -257,6 +257,9 @@ async def create_post(
                 external_id=m.external_id,
                 is_making_video=m.is_making_video,
                 order_index=idx,
+                # editor-media-ux PDCA #4 — caption pass-through (None safe fallback
+                # for clients not yet sending the field).
+                caption=m.caption,
             )
         )
 

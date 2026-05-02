@@ -35,6 +35,7 @@ DEFAULT_LIMITS: dict[str, dict] = {
     "buy_now": {"limit": 10, "window_sec": 60, "by": "user"},
     "report_create": {"limit": 5, "window_sec": 60, "by": "user"},
     "media_upload": {"limit": 20, "window_sec": 60, "by": "user"},
+    "media_patch": {"limit": 30, "window_sec": 60, "by": "user"},
     "feed_read": {"limit": 120, "window_sec": 60, "by": "user"},
     "explore_read": {"limit": 60, "window_sec": 60, "by": "ip"},
     "search": {"limit": 30, "window_sec": 60, "by": "ip"},

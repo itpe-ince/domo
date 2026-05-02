@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-30T08:01:54.568Z",
+  "lastUpdated": "2026-05-02T02:01:47.748Z",
   "activeFeatures": [
     "core",
     "db",
@@ -68,100 +68,151 @@
     "passkeys",
     "backend",
     "draft_cleanup_jobs.py",
-    "drafts"
+    "drafts",
+    "wizard"
   ],
-  "primaryFeature": "editor-responsive-redesign",
+  "primaryFeature": "editor-media-ux",
   "features": {
-    "editor-responsive-redesign": {
+    "editor-media-ux": {
       "phase": "do",
       "phaseNumber": 3,
       "matchRate": null,
       "iterationCount": 0,
-      "startedAt": "2026-04-30T15:50:00.000Z",
-      "scope": "에디터 #3 — 데스크탑 2-pane(편집+미리보기) + 모바일 단계형 wizard, 803줄 page.tsx 컴포넌트 분해 (DB·API 변경 0)",
+      "startedAt": "2026-05-01T13:16:54.807Z",
+      "scope": "에디터 #4 — dnd-kit 드래그 reorder + 이미지 캡션(MediaAsset.caption 컬럼 + PATCH /media/{id}) + 다중 업로드 진행률. backend·frontend 양면 변경",
       "kind": "sub-pdca",
       "parent_roadmap": "editor-revamp-roadmap",
       "documents": {
-        "plan": "v1/docs/01-plan/features/editor-responsive-redesign.plan.md",
-        "design": "v1/docs/02-design/features/editor-responsive-redesign.design.md"
+        "plan": "v1/docs/01-plan/features/editor-media-ux.plan.md",
+        "design": "v1/docs/02-design/features/editor-media-ux.design.md"
       },
       "openQuestions": [
         {
           "id": "OQ-1",
-          "question": "반응형 breakpoint 분기",
-          "decision": "A (768 단일 분기 — md 미만 wizard, md 이상 2-pane)",
+          "question": "캡션 입력 위치 (inline vs 모달 vs floating)",
+          "decision": "A (각 미디어 카드 아래 inline textarea)",
           "status": "resolved",
-          "resolvedAt": "2026-04-30"
+          "resolvedAt": "2026-05-01"
         },
         {
           "id": "OQ-2",
-          "question": "데스크탑 2-pane 미리보기 우선순위",
-          "decision": "C (사이드 미리보기 + 명시 토글)",
+          "question": "다중 업로드 동시성 전략 (순차 vs 병렬 vs 청크)",
+          "decision": "B (Promise.all 병렬)",
           "status": "resolved",
-          "resolvedAt": "2026-04-30"
+          "resolvedAt": "2026-05-01"
         },
         {
           "id": "OQ-3",
-          "question": "page.tsx 803줄 분리 전략",
-          "decision": "B (점진적 hooks-first 추출)",
+          "question": "캡션 자동 저장 시점 (draft에만 / 즉시 PATCH / 발행 시 일괄)",
+          "decision": "A (draft에 포함, 발행 시 서버)",
           "status": "resolved",
-          "resolvedAt": "2026-04-30"
+          "resolvedAt": "2026-05-01"
         },
         {
           "id": "OQ-4",
-          "question": "모바일 단계형 wizard 단계 수",
-          "decision": "A (3단계: type→내용→발행), product 분기는 design 단계에서 결정",
+          "question": "drag handle 디자인",
+          "decision": "A (dots-grip 아이콘 카드 좌측 상단)",
           "status": "resolved",
-          "resolvedAt": "2026-04-30"
+          "resolvedAt": "2026-05-01"
         },
         {
-          "id": "OQ-D-1",
-          "question": "PreviewPane 상단 '미리보기' 레이블 표시 여부",
-          "decision": "A (레이블 있음)",
+          "id": "OQ-5",
+          "question": "캡션 길이 제한",
+          "decision": "B (280자, Twitter 기준)",
           "status": "resolved",
-          "resolvedAt": "2026-04-30"
+          "resolvedAt": "2026-05-01"
+        },
+        {
+          "id": "OQ-6",
+          "question": "PATCH /media/{id} 권한 — 발행 후 수정 정책",
+          "decision": "A (발행 후도 소유자 수정 가능). 단, auction/product 진행 중 정책은 design 단계에서 OQ-D로 surface 의무 (사용자 추가 우려 반영)",
+          "status": "resolved",
+          "resolvedAt": "2026-05-01",
+          "note": "사용자 우려 — 입찰자 알림 또는 수정 잠금 정책 검토 필요"
+        },
+        {
+          "id": "OQ-7",
+          "question": "MediaUploadProgress 표시 위치",
+          "decision": "A (MediaToolbar 근처 고정 배지)",
+          "status": "resolved",
+          "resolvedAt": "2026-05-01"
+        }
+      ],
+      "openQuestionsDesign": [
+        {
+          "id": "OQ-D-1",
+          "question": "auction status='active' 시 caption 수정 정책 (backend, 비즈니스 영향 큼)",
+          "options": "A 차단(409) / B 허용+입찰자 알림 / C 허용(조용히 audit log)",
+          "decision": "A (차단) — 입찰 근거 보호. 경매 종료 후 수정 가능하므로 작가 편의 완전 차단 아님",
+          "status": "resolved",
+          "resolvedAt": "2026-05-02",
+          "area": "backend"
         },
         {
           "id": "OQ-D-2",
-          "question": "wizard 하단 sticky 버튼 배경 (반투명 blur vs 불투명 단색)",
-          "decision": "B (불투명 단색)",
+          "question": "caption textarea 높이 — 고정 vs auto-grow",
+          "options": "A 고정 2 rows / B auto-grow",
+          "decision": "A (고정 2 rows) — drag 좌표 안정성 우선",
           "status": "resolved",
-          "resolvedAt": "2026-04-30"
+          "resolvedAt": "2026-05-02",
+          "area": "frontend"
         },
         {
           "id": "OQ-D-3",
-          "question": "모바일 wizard sticky header (임시저장/등록 버튼) 유지 여부",
-          "decision": "B (하단 버튼만)",
+          "question": "upload progress 정확도",
+          "options": "A mock 50%/100% (fetch 유지) / B XHR 전환 실제 progress",
+          "decision": "B (XHR 전환 실제 progress 추적) — 권장 A에서 변경. uploadMediaFileWithProgress 신규 함수 도입, 기존 uploadMediaFile은 wrapper로",
           "status": "resolved",
-          "resolvedAt": "2026-04-30"
+          "resolvedAt": "2026-05-02",
+          "area": "frontend",
+          "note": "사용자 결정 — 권장(A mock)에서 B로 변경. 사용자 UX 정확도 우선"
         },
         {
           "id": "OQ-D-4",
-          "question": "데스크탑 진입 시 isPreviewVisible 기본값",
-          "decision": "A (기본 표시 = true)",
+          "question": "dnd-kit DragOverlay 사용 여부",
+          "options": "A 사용 안 함(반투명 카드) / B DragOverlay floating preview",
+          "decision": "A (DragOverlay 사용 안 함, 반투명 카드) — 단순화",
           "status": "resolved",
-          "resolvedAt": "2026-04-30"
+          "resolvedAt": "2026-05-02",
+          "area": "frontend"
         },
         {
           "id": "OQ-D-5",
-          "question": "6 step 추출을 단일 PR vs 단계별 다중 PR",
-          "decision": "B (단계별 PR — PR1: Step 1-2 hooks+신규UI / PR2: Step 3-5 추출 / PR3: Step 6 i18n+회귀)",
+          "question": "(OQ-1=A로 기결정) 빈 캡션 카드 표시 — 항상 textarea 노출",
+          "options": "A (OQ-1=A 확정)",
+          "recommended": "A",
           "status": "resolved",
-          "resolvedAt": "2026-04-30"
+          "resolvedAt": "2026-04-30",
+          "area": "frontend"
         }
       ],
-      "designResolutions": {
-        "product_wizard": "4단계 (type → content → product_meta → publish), product 타입일 때만 product_meta step 삽입. EditorStepProductMeta 컴포넌트 분리 → #7 editor-product-meta 마이그레이션 비용 최소화",
-        "preview_hide_strategy": "DOM 항상 마운트 + w-0/opacity-0/aria-hidden — React state 보존 (OQ-2=C 정신)",
-        "hooks_extraction": "usePostFormState (18개 useState 그룹화 + resetFromDraft) / useArtistGate (applicationStatus + 자동 fallback) / useEditorWizardStep (step state machine)",
-        "external_libs": "shadcn/ui, framer-motion 등 추가 도입 0 — 모두 HTML + Tailwind 네이티브"
+      "estimate": "M (3-4일)",
+      "newDependencies": [
+        "@dnd-kit/core",
+        "@dnd-kit/sortable"
+      ]
+    },
+    "editor-i18n-cleanup": {
+      "phase": "plan",
+      "phaseNumber": 1,
+      "matchRate": null,
+      "iterationCount": 0,
+      "startedAt": "2026-05-01T11:35:00.000Z",
+      "scope": "Carry-over from #3 m-2 — EditorWorkspace/ProductFields/PostPreviewCard 비-wizard 영역 한국어 hardcode 외재화 (13 기존 키 활용 + 9 신규 키 추가, 5 locale)",
+      "kind": "carry-over-pdca",
+      "parent_pdca": "editor-responsive-redesign",
+      "documents": {
+        "plan": "v1/docs/01-plan/features/editor-i18n-cleanup.plan.md"
       },
-      "timestamps": {
-        "started": "2026-04-30T15:50:00.000Z",
-        "lastUpdated": "2026-04-30T17:00:00.000Z",
-        "planFinalized": "2026-04-30T16:10:00.000Z",
-        "designFinalized": "2026-04-30T17:00:00.000Z"
-      }
+      "estimate": "XS (~2 hours)"
+    },
+    "editor-responsive-redesign": {
+      "phase": "archived",
+      "matchRate": 96,
+      "iterationCount": 0,
+      "startedAt": "2026-04-30T15:50:00.000Z",
+      "archivedAt": "2026-05-01T11:35:00.000Z",
+      "archivedTo": "v1/docs/archive/2026-05/editor-responsive-redesign/"
     },
     "real-auth": {
       "phase": "plan",
@@ -186,9 +237,9 @@
       "archivedAt": "2026-04-25T04:30:00.000Z",
       "archivedTo": "v1/docs/archive/2026-04/backend/",
       "phaseNumber": 3,
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/main.py",
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/models/post.py",
       "timestamps": {
-        "lastUpdated": "2026-04-30T00:24:38.027Z"
+        "lastUpdated": "2026-05-02T01:18:32.913Z"
       }
     },
     "core": {
@@ -200,9 +251,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:32:03.535Z",
-        "lastUpdated": "2026-04-26T22:49:12.903Z"
+        "lastUpdated": "2026-05-02T01:29:21.778Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/core/config.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/core/rate_limit.py"
     },
     "db": {
       "phase": "do",
@@ -226,9 +277,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:23.836Z",
-        "lastUpdated": "2026-04-30T00:23:38.784Z"
+        "lastUpdated": "2026-05-02T01:30:05.023Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/drafts.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/media.py"
     },
     "schemas": {
       "phase": "do",
@@ -239,9 +290,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:30.319Z",
-        "lastUpdated": "2026-04-30T00:22:24.655Z"
+        "lastUpdated": "2026-05-02T01:18:42.817Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/draft.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/post.py"
     },
     "google_auth.py": {
       "phase": "do",
@@ -291,9 +342,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:35:13.871Z",
-        "lastUpdated": "2026-04-30T00:24:52.049Z"
+        "lastUpdated": "2026-05-02T01:18:26.010Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0035_draft_limit_index.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0036_media_caption.py"
     },
     "frontend": {
       "phase": "do",
@@ -304,9 +355,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-04-30T08:01:54.568Z"
+        "lastUpdated": "2026-05-02T02:00:28.446Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/hooks/usePostFormState.ts"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/hooks/useMediaUploadQueue.ts"
     },
     "applications": {
       "phase": "do",
@@ -499,7 +550,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:41:45.679Z",
-        "lastUpdated": "2026-04-30T07:59:29.601Z"
+        "lastUpdated": "2026-05-01T02:04:48.915Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/new/page.tsx"
     },
@@ -733,9 +784,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T01:31:08.565Z",
-        "lastUpdated": "2026-04-29T19:59:17.070Z"
+        "lastUpdated": "2026-05-02T02:01:47.748Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/PostTypeSelector.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/MediaPreviewList.tsx"
     },
     "feed": {
       "phase": "do",
@@ -1105,6 +1156,19 @@
         "lastUpdated": "2026-04-30T00:37:18.635Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/drafts/page.tsx"
+    },
+    "wizard": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-01T02:01:35.488Z",
+        "lastUpdated": "2026-05-01T02:17:17.875Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/wizard/EditorStepPublish.tsx"
     }
   },
   "pipeline": {
@@ -1115,7 +1179,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-30T08:01:54.568Z"
+    "lastActivity": "2026-05-02T02:01:47.748Z"
   },
   "history": [
     {
@@ -6911,6 +6975,396 @@
     {
       "timestamp": "2026-04-30T08:01:54.568Z",
       "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T09:33:12.401Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T09:33:28.180Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T09:33:37.334Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T09:34:04.922Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T09:34:31.149Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T09:34:43.977Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T09:35:00.387Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T09:36:36.716Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T09:36:45.065Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T09:36:53.776Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T09:37:01.903Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T09:37:21.878Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-30T09:37:32.012Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T01:57:44.018Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T01:58:38.106Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T01:59:08.830Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T01:59:42.018Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T01:59:50.420Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:00:43.177Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:00:49.634Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:01:24.948Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:01:35.488Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:01:58.010Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:02:10.120Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:02:26.105Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:03:10.797Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:04:42.560Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:04:48.915Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:14:16.653Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:14:23.605Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:14:30.109Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:14:36.729Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:14:42.468Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:14:49.435Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:14:55.567Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:15:02.120Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:15:12.597Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:15:19.333Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:15:30.219Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:15:38.632Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:15:45.100Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:15:50.936Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:15:56.863Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:16:04.583Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:16:10.616Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:16:18.175Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:16:23.383Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:16:59.564Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:17:05.917Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:17:12.142Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-01T02:17:17.875Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-02T01:18:26.010Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-02T01:18:32.913Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-02T01:18:42.817Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-02T01:18:54.967Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-02T01:29:21.778Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-02T01:29:39.217Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-02T01:30:05.023Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-02T01:44:56.654Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-02T01:45:07.391Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-02T01:45:16.527Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-02T02:00:28.446Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-02T02:01:02.393Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-02T02:01:18.157Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-02T02:01:47.748Z",
+      "feature": "post-editor",
       "phase": "do",
       "action": "updated"
     }

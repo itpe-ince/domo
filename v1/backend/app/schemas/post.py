@@ -16,6 +16,9 @@ class MediaAssetIn(BaseModel):
     external_source: str | None = None
     external_id: str | None = None
     is_making_video: bool = False
+    # editor-media-ux PDCA #4 — optional caption (max 280 chars).
+    # Validated here so the constraint can change without DB migration.
+    caption: str | None = Field(None, max_length=280)
 
 
 class MediaAssetOut(MediaAssetIn):
@@ -24,6 +27,16 @@ class MediaAssetOut(MediaAssetIn):
 
     class Config:
         from_attributes = True
+
+
+class MediaPatchRequest(BaseModel):
+    """PATCH /v1/media/{id} request body — editor-media-ux PDCA #4.
+
+    Currently only caption is editable. Future #6 editor-media-studio may
+    extend this with thumbnail_url, crop_meta, etc.
+    """
+
+    caption: str | None = Field(None, max_length=280)
 
 
 class ProductPostIn(BaseModel):

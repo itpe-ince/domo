@@ -11,6 +11,7 @@ Changes in Phase 4 M4:
 """
 from __future__ import annotations
 
+import logging
 import re
 import uuid
 from datetime import datetime, timezone
@@ -21,11 +22,17 @@ import httpx
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
 from app.core.errors import ApiError
 from app.core.rate_limit import rate_limit
+from app.db.session import get_db
+from app.models.auction import Auction
+from app.models.post import MediaAsset, Post
 from app.models.user import User
+from app.schemas.post import MediaAssetOut, MediaPatchRequest
 from app.services.media_processing import (
     image_extension,
     process_image,
@@ -426,3 +433,101 @@ async def serve_file(key: str):
     if not path.exists() or not path.is_file():
         raise ApiError("NOT_FOUND", "File not found", http_status=404)
     return FileResponse(path)
+
+
+# ─── editor-media-ux PDCA #4 — Caption editing ─────────────────────────────
+
+_log = logging.getLogger(__name__)
+
+
+async def _check_auction_media_lock(db: AsyncSession, post: Post) -> None:
+    """OQ-D-1 = A — block caption edits while a product post has an active auction.
+
+    Caption changes during an active auction would invalidate bids placed on the
+    earlier description. We allow edits before the auction starts and after it
+    ends (any non-active status: scheduled / ended / cancelled / settled).
+
+    General posts (post.type='general') and product posts without an active
+    auction (no auction row, or auction.status != 'active') are unaffected.
+    """
+    if post.type != "product":
+        return
+    result = await db.execute(
+        select(Auction).where(
+            Auction.product_post_id == post.id,
+            Auction.status == "active",
+        )
+    )
+    active_auction = result.scalar_one_or_none()
+    if active_auction is not None:
+        raise ApiError(
+            "AUCTION_ACTIVE_MEDIA_LOCKED",
+            "미디어 수정은 경매 종료 후 가능합니다",
+            details={"auction_id": str(active_auction.id)},
+            http_status=409,
+        )
+
+
+@router.patch("/{media_id}")
+async def patch_media(
+    media_id: uuid.UUID,
+    body: MediaPatchRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("media_patch"),
+):
+    """Update editable fields of a media asset (currently caption only).
+
+    Permission model (OQ-6 = A): only the post author can edit. Edits are
+    allowed after publication; the only block is OQ-D-1 = A — active auctions
+    lock the caption to protect bidders' decision basis.
+
+    Errors:
+      - 404 MEDIA_NOT_FOUND     — media_id does not exist
+      - 403 MEDIA_NOT_OWNER     — caller is not the post author
+      - 409 AUCTION_ACTIVE_MEDIA_LOCKED — active auction blocks edits (OQ-D-1)
+      - 422 (Pydantic)          — caption length > 280
+    """
+    # 1. Fetch media
+    result = await db.execute(select(MediaAsset).where(MediaAsset.id == media_id))
+    media = result.scalar_one_or_none()
+    if media is None:
+        raise ApiError("MEDIA_NOT_FOUND", "Media asset not found", http_status=404)
+
+    # 2. Authorize via post.author_id (OWASP A01 — Broken Access Control)
+    post_result = await db.execute(select(Post).where(Post.id == media.post_id))
+    post = post_result.scalar_one_or_none()
+    if post is None or post.author_id != user.id:
+        raise ApiError(
+            "MEDIA_NOT_OWNER",
+            "You can only edit your own media",
+            http_status=403,
+        )
+
+    # 3. Auction lock check (OQ-D-1 = A)
+    await _check_auction_media_lock(db, post)
+
+    # 4. Apply update (caption=None is a valid clear operation)
+    before_len = len(media.caption) if media.caption else 0
+    media.caption = body.caption
+    after_len = len(body.caption) if body.caption else 0
+
+    await db.commit()
+    await db.refresh(media)
+
+    # 5. Structured audit log — UserActivityLog is a recommendation-engine
+    #    model and not appropriate for caption-edit audit; using stdlib
+    #    logging keeps the audit trail in the regular log pipeline.
+    _log.info(
+        "media.caption.updated",
+        extra={
+            "event": "media.caption.updated",
+            "user_id": str(user.id),
+            "media_id": str(media.id),
+            "post_id": str(media.post_id),
+            "caption_before_len": before_len,
+            "caption_after_len": after_len,
+        },
+    )
+
+    return {"data": MediaAssetOut.model_validate(media).model_dump(mode="json")}

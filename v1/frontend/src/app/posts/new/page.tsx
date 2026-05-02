@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import {
@@ -16,11 +15,9 @@ import {
 } from "@/lib/api";
 import { useI18n } from "@/i18n";
 import { useMe } from "@/lib/useMe";
-import { formatRelativeTime } from "@/lib/formatRelativeTime";
 import {
   readLocalStorageDraft,
   useDraftAutosave,
-  type DraftSaveStatus,
   type DraftState,
 } from "@/lib/hooks/useDraftAutosave";
 import { usePostFormState } from "@/lib/hooks/usePostFormState";
@@ -30,21 +27,12 @@ import {
   DraftRestoreDialog,
   type DraftRestoreSource,
 } from "@/components/DraftRestoreDialog";
-import { MediaToolbar } from "@/components/post-editor/MediaToolbar";
-import { MediaPreviewList } from "@/components/post-editor/MediaPreviewList";
-import { PostTypeSelector } from "@/components/post-editor/PostTypeSelector";
-import { TagAutocomplete } from "@/components/post-editor/TagAutocomplete";
+import { EditorMobileWizard } from "@/components/post-editor/EditorMobileWizard";
+import { EditorWorkspace } from "@/components/post-editor/EditorWorkspace";
+import { PreviewPane } from "@/components/post-editor/PreviewPane";
 
 // Disable prerender — uses useSearchParams() which requires runtime
 export const dynamic = "force-dynamic";
-
-const GENRES = [
-  "painting",
-  "drawing",
-  "photography",
-  "sculpture",
-  "mixed_media",
-];
 
 export default function CreatePostPage() {
   return (
@@ -134,6 +122,11 @@ function CreatePostPageInner() {
   const [serverDraftForRestore, setServerDraftForRestore] =
     useState<DraftRestoreSource | null>(null);
   const [multiTabWarning, setMultiTabWarning] = useState(false);
+
+  // ─── Preview pane (editor-responsive-redesign PDCA, OQ-D-4 = A) ─────
+  // Default visible on desktop. Hidden on mobile via PreviewPane's own
+  // `hidden md:block` classes; toggle below only matters when ≥ md.
+  const [isPreviewVisible, setIsPreviewVisible] = useState(true);
 
   useEffect(() => {
     if (!meLoading && !me) {
@@ -357,8 +350,9 @@ function CreatePostPageInner() {
   }
 
   return (
-    <main className="flex-1 min-w-0 max-w-3xl mx-auto">
-      {/* Draft restore dialog — editor-draft-autosave PDCA */}
+    <>
+      {/* Draft restore dialog (editor-draft-autosave PDCA) — fixed position
+          modal, lives outside <main> so it does not become a grid item. */}
       <DraftRestoreDialog
         open={showRestoreDialog}
         localDraft={(() => {
@@ -386,66 +380,6 @@ function CreatePostPageInner() {
         }}
       />
 
-      {/* Header */}
-      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between gap-2">
-        <div className="flex flex-col min-w-0">
-          <h1 className="text-xl font-bold">{t("post.createTitle")}</h1>
-          <AutosaveIndicator
-            status={draftStatus}
-            lastSavedAt={lastSavedAt}
-            t={t}
-          />
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <Link
-            href="/posts/drafts"
-            className="text-xs text-text-muted hover:text-primary transition-colors hidden sm:inline"
-          >
-            {t("post.draft.list.title")}
-          </Link>
-          {me && (
-            <button
-              onClick={handleManualSave}
-              disabled={draftStatus === "saving" || submitting}
-              className="text-sm text-text-secondary border border-border rounded-full px-3 py-1.5 hover:bg-surface-hover disabled:opacity-40 transition-colors"
-            >
-              {draftStatus === "saving"
-                ? t("post.draft.savingIndicator")
-                : t("post.draft.saveButton")}
-            </button>
-          )}
-        <button
-          onClick={handleSubmit}
-          disabled={submitting || !me}
-          className="btn-primary text-sm disabled:opacity-50"
-        >
-          {submitting
-            ? t("post.submitting")
-            : scheduledAt
-              ? t("post.submitScheduled")
-              : t("post.submit")}
-        </button>
-        </div>
-      </div>
-
-      {/* AC-7: multi-tab edit warning banner */}
-      {multiTabWarning && (
-        <div
-          className="bg-warning/10 border-b border-warning/40 px-4 py-2 text-xs text-warning flex items-center justify-between gap-2"
-          role="status"
-        >
-          <span>{t("post.draft.multiTabWarning")}</span>
-          <button
-            type="button"
-            onClick={() => setMultiTabWarning(false)}
-            aria-label="dismiss"
-            className="text-warning/80 hover:text-warning text-sm leading-none"
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
       {!me && !meLoading && (
         <LoginModal
           open={loginOpen}
@@ -457,267 +391,118 @@ function CreatePostPageInner() {
         />
       )}
 
-      {error && (
-        <div className="mx-4 mt-4 card border-danger p-3 text-danger text-sm">
-          {error}
-        </div>
-      )}
+      <main
+        className={`flex-1 min-w-0 md:grid md:items-start ${
+          isPreviewVisible
+            ? "md:grid-cols-[minmax(0,1fr)_24rem]"
+            : "md:grid-cols-1"
+        }`}
+      >
+        {/* Mobile (< md): step wizard. Internally owns useEditorWizardStep
+            and renders the four EditorStepXxx components plus a sticky
+            footer with prev/next/submit + 임시저장 buttons. */}
+        <EditorMobileWizard
+          type={type}
+          title={title}
+          content={content}
+          genre={genre}
+          tags={tags}
+          media={media}
+          embeds={embeds}
+          isMakingVideo={isMakingVideo}
+          scheduledAt={scheduledAt}
+          locationName={locationName}
+          isAuction={isAuction}
+          isBuyNow={isBuyNow}
+          buyNowPrice={buyNowPrice}
+          dimensions={dimensions}
+          medium={medium}
+          year={year}
+          setters={setters}
+          textareaRef={textareaRef}
+          tagRef={tagRef}
+          me={me ?? null}
+          applicationStatus={applicationStatus}
+          uploading={uploading}
+          submitting={submitting}
+          error={error}
+          draftStatus={draftStatus}
+          lastSavedAt={lastSavedAt}
+          onManualSave={handleManualSave}
+          onSubmit={handleSubmit}
+          multiTabWarning={multiTabWarning}
+          onDismissWarning={() => setMultiTabWarning(false)}
+          onFiles={handleFiles}
+          onGif={handleGif}
+          onEmojiInsert={handleEmojiInsert}
+          onEmbedAdd={handleEmbedAdd}
+        />
 
-      {me && (
-        <div className="p-4 space-y-4">
-          {/* Post type toggle — UI guard: non-artists cannot select 'product'.
-              Backend defense remains at api/posts.py:206-210 (FORBIDDEN 403). */}
-          <PostTypeSelector
-            value={type}
-            onChange={setType}
-            userRole={me.role}
-            applicationStatus={applicationStatus}
-            disabled={uploading || submitting}
-          />
-
-          {/* Title */}
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="제목"
-            className="w-full bg-transparent text-xl font-bold text-text-primary placeholder:text-text-muted outline-none border-none"
-          />
-
-          {/* Content */}
-          <textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder={t("post.contentPlaceholder")}
-            rows={6}
-            className="w-full bg-transparent text-text-primary placeholder:text-text-muted outline-none border-none resize-none text-sm leading-relaxed"
-          />
-
-          {/* Media Preview */}
-          <MediaPreviewList
+        {/* Desktop (≥ md): single-column workspace + side preview pane.
+            EditorMobileWizard above sets `display:none` on md+ so it is
+            removed from the CSS grid; grid placement falls to these
+            two children. */}
+        <div className="hidden md:block max-w-3xl mx-auto md:mx-0 md:max-w-none w-full">
+          <EditorWorkspace
+            type={type}
+            title={title}
+            content={content}
+            genre={genre}
+            tags={tags}
             media={media}
             embeds={embeds}
-            onRemoveMedia={(i) => setMedia((prev) => prev.filter((_, j) => j !== i))}
-            onRemoveEmbed={(i) => {
-              setEmbeds((prev) => prev.filter((_, j) => j !== i));
-              // Also remove corresponding external_embed from media
-              const embedUrl = embeds[i]?.url;
-              if (embedUrl) {
-                setMedia((prev) =>
-                  prev.filter((m) => !(m.type === "external_embed" && m.url === embedUrl))
-                );
-              }
-            }}
+            isMakingVideo={isMakingVideo}
+            scheduledAt={scheduledAt}
+            locationName={locationName}
+            isAuction={isAuction}
+            isBuyNow={isBuyNow}
+            buyNowPrice={buyNowPrice}
+            dimensions={dimensions}
+            medium={medium}
+            year={year}
+            setters={setters}
+            textareaRef={textareaRef}
+            tagRef={tagRef}
+            me={me ?? null}
+            applicationStatus={applicationStatus}
+            uploading={uploading}
+            submitting={submitting}
+            error={error}
+            draftStatus={draftStatus}
+            lastSavedAt={lastSavedAt}
+            onManualSave={handleManualSave}
+            onSubmit={handleSubmit}
+            isPreviewVisible={isPreviewVisible}
+            onTogglePreview={() => setIsPreviewVisible((v) => !v)}
+            multiTabWarning={multiTabWarning}
+            onDismissWarning={() => setMultiTabWarning(false)}
+            onFiles={handleFiles}
+            onGif={handleGif}
+            onEmojiInsert={handleEmojiInsert}
+            onEmbedAdd={handleEmbedAdd}
           />
-
-          {uploading && (
-            <div className="text-text-muted text-xs animate-pulse">
-              업로드 중...
-            </div>
-          )}
-
-          {/* Schedule / Location badges */}
-          {(scheduledAt || locationName) && (
-            <div className="flex flex-wrap gap-2">
-              {scheduledAt && (
-                <span className="flex items-center gap-1.5 bg-surface rounded-full px-3 py-1 text-xs text-primary">
-                  ⏰ {new Date(scheduledAt).toLocaleString("ko-KR")} 예약
-                  <button
-                    onClick={() => setScheduledAt("")}
-                    className="text-text-muted hover:text-danger"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-              {locationName && (
-                <span className="flex items-center gap-1.5 bg-surface rounded-full px-3 py-1 text-xs text-primary">
-                  📍 {locationName}
-                  <button
-                    onClick={() => {
-                      setLocationName("");
-                      setLocationLat(null);
-                      setLocationLng(null);
-                    }}
-                    className="text-text-muted hover:text-danger"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Making video checkbox */}
-          <label className="flex items-center gap-2 text-xs text-text-secondary cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isMakingVideo}
-              onChange={(e) => setIsMakingVideo(e.target.checked)}
-              className="accent-primary"
-            />
-            다음 업로드를 메이킹/타임랩스 영상으로 표시
-          </label>
-
-          {/* Media Toolbar */}
-          <div className="card">
-            <MediaToolbar
-              onImageSelect={handleFiles}
-              onGifSelect={handleGif}
-              onEmojiInsert={handleEmojiInsert}
-              onEmbedAdd={handleEmbedAdd}
-              onLocationClick={() => {
-                // Kakao Maps 미연동 상태에서는 수동 입력
-                const name = prompt("장소명을 입력하세요 (예: 서울시립미술관)");
-                if (name) {
-                  setLocationName(name);
-                  setLocationLat(37.5665);
-                  setLocationLng(126.978);
-                }
-              }}
-              scheduledAt={scheduledAt}
-              onScheduleChange={setScheduledAt}
-              onTagFocus={() => tagRef.current?.scrollIntoView({ behavior: "smooth" })}
-              disabled={uploading || submitting}
-            />
-          </div>
-
-          {/* Tags */}
-          <div ref={tagRef}>
-            <label className="block text-sm text-text-secondary mb-1">태그</label>
-            <TagAutocomplete tags={tags} onTagsChange={setTags} />
-          </div>
-
-          {/* Product fields */}
-          {type === "product" && (
-            <div className="card p-4 space-y-4">
-              <h3 className="font-semibold text-sm">상품 정보</h3>
-
-              <div>
-                <label className="block text-xs text-text-secondary mb-1">장르</label>
-                <select
-                  value={genre}
-                  onChange={(e) => setGenre(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none"
-                >
-                  {GENRES.map((g) => (
-                    <option key={g} value={g}>{g}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-text-secondary mb-1">크기</label>
-                  <input
-                    type="text"
-                    placeholder="50x70cm"
-                    value={dimensions}
-                    onChange={(e) => setDimensions(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-text-secondary mb-1">매체</label>
-                  <input
-                    type="text"
-                    placeholder="Oil on canvas"
-                    value={medium}
-                    onChange={(e) => setMedium(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-text-secondary mb-1">제작 연도</label>
-                  <input
-                    type="number"
-                    value={year}
-                    onChange={(e) => setYear(e.target.value ? Number(e.target.value) : "")}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2 text-sm">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isAuction}
-                    onChange={(e) => setIsAuction(e.target.checked)}
-                    className="accent-primary"
-                  />
-                  경매로 판매
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isBuyNow}
-                    onChange={(e) => setIsBuyNow(e.target.checked)}
-                    className="accent-primary"
-                  />
-                  즉시구매 가능
-                </label>
-                {isBuyNow && (
-                  <div>
-                    <label className="block text-xs text-text-secondary mb-1">
-                      즉시구매가 (USD)
-                    </label>
-                    <input
-                      type="number"
-                      value={buyNowPrice}
-                      onChange={(e) =>
-                        setBuyNowPrice(e.target.value ? Number(e.target.value) : "")
-                      }
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <p className="text-text-muted text-xs">
-            ※ 이미지/영상 포함 시 디지털 아트 판독 큐에 진입합니다 (관리자 승인 필요).
-          </p>
         </div>
-      )}
-    </main>
+
+        <PreviewPane
+          isVisible={isPreviewVisible}
+          type={type}
+          title={title}
+          content={content}
+          media={media}
+          embeds={embeds}
+          tags={tags}
+          genre={genre}
+          isAuction={isAuction}
+          isBuyNow={isBuyNow}
+          buyNowPrice={buyNowPrice}
+          me={me ?? null}
+        />
+      </main>
+    </>
   );
 }
 
 // ─── Draft helpers (editor-draft-autosave PDCA) ─────────────────────────
-
-function AutosaveIndicator({
-  status,
-  lastSavedAt,
-  t,
-}: {
-  status: DraftSaveStatus;
-  lastSavedAt: Date | null;
-  t: (key: string) => string;
-}) {
-  if (status === "idle" || !lastSavedAt) return null;
-  if (status === "error") {
-    return (
-      <span className="text-xs text-danger">
-        {t("post.draft.errorIndicator")}
-      </span>
-    );
-  }
-  if (status === "saving") {
-    return (
-      <span className="text-xs text-text-muted">
-        {t("post.draft.savingIndicator")}
-      </span>
-    );
-  }
-  return (
-    <span className="text-xs text-text-muted">
-      {t("post.draft.savedIndicator")} · {formatRelativeTime(lastSavedAt)}
-    </span>
-  );
-}
 
 /** Convert a server-side Draft into the editor's DraftState shape. */
 function draftToFormState(d: Draft): DraftState {

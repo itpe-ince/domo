@@ -120,10 +120,10 @@
     "buyNowPrice": "即購入価格 (USD)",
     "type": {
       "product": {
-        "disabledTitle": "アーティスト限定",
-        "disabledHint": "アーティスト登録後に作成可能です",
-        "disabledHintPending": "アーティスト審査中です (通常1〜3日)",
-        "disabledHintRejected": "アーティスト申請が却下されました。",
+        "disabledTitle": "商品投稿はアーティスト限定",
+        "disabledHint": "商品投稿はアーティスト登録後に作成可能です",
+        "disabledHintPending": "商品投稿のためのアーティスト審査中です (通常1〜3日)",
+        "disabledHintRejected": "商品投稿のためのアーティスト申請が却下されました。",
         "applyLink": "アーティスト申請",
         "applyAgainLink": "再申請",
         "errorOnlyArtists": "商品投稿はアーティストのみ作成できます。"
@@ -157,6 +157,44 @@
         "typeProduct": "商品"
       },
       "multiTabWarning": "別のタブで編集中です。最新の保存が優先されます。"
+    },
+    "editor": {
+      "preview": {
+        "title": "プレビュー",
+        "toggleShow": "プレビュー",
+        "toggleHide": "プレビューを隠す",
+        "label": "プレビュー",
+        "video": "▶ 動画",
+        "externalEmbed": "外部埋め込み",
+        "empty": {
+          "title": "まだ何も入力されていません。",
+          "hint": "タイトル・本文・メディアを追加するとプレビューが表示されます。"
+        }
+      },
+      "wizard": {
+        "indicator": "ステップ進行状況",
+        "prev": "戻る",
+        "next": "次へ",
+        "steps": {
+          "type": "種類",
+          "content": "内容",
+          "productMeta": "商品情報",
+          "publish": "公開"
+        },
+        "stepType": {
+          "title": "どのような投稿を作成しますか?",
+          "hint": "通常投稿は誰でも作成できますが、商品投稿はアーティスト登録が必要です。"
+        },
+        "stepProductMeta": {
+          "title": "商品情報の入力",
+          "hint": "作品のメタデータと販売オプションを入力してください。"
+        },
+        "stepPublish": {
+          "title": "公開設定の確認",
+          "hint": "予約公開と位置情報があれば下で確認・修正できます。",
+          "empty": "予約公開と位置情報は前のステップのツールバーから追加できます。"
+        }
+      }
     }
   },
   "bluebird": {

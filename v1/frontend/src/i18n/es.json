@@ -120,10 +120,10 @@
     "buyNowPrice": "Precio compra inmediata (USD)",
     "type": {
       "product": {
-        "disabledTitle": "Solo artistas",
-        "disabledHint": "Disponible después del registro de artista",
-        "disabledHintPending": "Tu solicitud de artista está en revisión (1-3 días normalmente)",
-        "disabledHintRejected": "Tu solicitud de artista fue rechazada.",
+        "disabledTitle": "Publicaciones de producto: solo artistas",
+        "disabledHint": "Las publicaciones de producto están disponibles tras el registro de artista",
+        "disabledHintPending": "Tu solicitud de artista para publicaciones de producto está en revisión (1-3 días normalmente)",
+        "disabledHintRejected": "Tu solicitud de artista para publicaciones de producto fue rechazada.",
         "applyLink": "Solicitar como artista",
         "applyAgainLink": "Volver a solicitar",
         "errorOnlyArtists": "Solo los artistas pueden crear publicaciones de productos."
@@ -157,6 +157,44 @@
         "typeProduct": "Producto"
       },
       "multiTabWarning": "Otra pestaña está editando. El guardado más reciente prevalece."
+    },
+    "editor": {
+      "preview": {
+        "title": "Vista previa",
+        "toggleShow": "Vista previa",
+        "toggleHide": "Ocultar vista previa",
+        "label": "Vista previa",
+        "video": "▶ Vídeo",
+        "externalEmbed": "Incrustado externo",
+        "empty": {
+          "title": "Aún no se ha introducido nada.",
+          "hint": "Añade un título, contenido o medios para ver la vista previa."
+        }
+      },
+      "wizard": {
+        "indicator": "Progreso de pasos",
+        "prev": "Atrás",
+        "next": "Siguiente",
+        "steps": {
+          "type": "Tipo",
+          "content": "Contenido",
+          "productMeta": "Producto",
+          "publish": "Publicar"
+        },
+        "stepType": {
+          "title": "¿Qué tipo de publicación vas a crear?",
+          "hint": "Las publicaciones generales están abiertas a todos; las de producto requieren registro como artista."
+        },
+        "stepProductMeta": {
+          "title": "Detalles del producto",
+          "hint": "Añade los metadatos de la obra y las opciones de venta."
+        },
+        "stepPublish": {
+          "title": "Confirmar ajustes de publicación",
+          "hint": "Revisa o modifica la programación y la ubicación a continuación.",
+          "empty": "Puedes añadir programación y ubicación desde la barra de herramientas del paso anterior."
+        }
+      }
     }
   },
   "bluebird": {

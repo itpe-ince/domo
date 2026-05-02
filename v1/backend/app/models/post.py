@@ -93,6 +93,11 @@ class MediaAsset(Base):
     order_index: Mapped[int] = mapped_column(Integer, default=0)
     is_making_video: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    # editor-media-ux PDCA #4 — optional per-media caption.
+    # Max 280 chars enforced at Pydantic schema level (MediaAssetIn.caption)
+    # to allow future limit changes without data migration.
+    caption: Mapped[str | None] = mapped_column(Text, nullable=True, default=None)
+
     # M4 storage abstraction
     storage_provider: Mapped[str] = mapped_column(String(20), default="local")
     # 'local' | 's3' | 'external'
