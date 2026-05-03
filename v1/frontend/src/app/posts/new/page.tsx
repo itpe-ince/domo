@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
+import { arrayMove } from "@dnd-kit/sortable";
 import {
   ApiClientError,
   CreatePostMedia,
@@ -10,7 +11,6 @@ import {
   deleteDraft,
   getDraft,
   registerExternalMedia,
-  uploadMediaFile,
   type Draft,
 } from "@/lib/api";
 import { useI18n } from "@/i18n";
@@ -22,6 +22,7 @@ import {
 } from "@/lib/hooks/useDraftAutosave";
 import { usePostFormState } from "@/lib/hooks/usePostFormState";
 import { useArtistGate } from "@/lib/hooks/useArtistGate";
+import { useMediaUploadQueue } from "@/lib/hooks/useMediaUploadQueue";
 import { LoginModal } from "@/components/LoginModal";
 import {
   DraftRestoreDialog,
@@ -112,6 +113,13 @@ function CreatePostPageInner() {
     onTypeChange: setType,
   });
 
+  // editor-media-ux PDCA #4 — parallel upload queue with real progress
+  const {
+    queue: uploadQueue,
+    enqueue: enqueueUploads,
+    enqueueGif: enqueueGifUpload,
+  } = useMediaUploadQueue();
+
   // ─── Draft autosave (editor-draft-autosave PDCA) ────────────────────
   const draftParamRaw = searchParams.get("draft");
   const draftParam = draftParamRaw && draftParamRaw.length > 0 ? draftParamRaw : undefined;
@@ -192,7 +200,17 @@ function CreatePostPageInner() {
   }, [meLoading, storageKey, draftParam]);
 
   function handleRestore(d: DraftState, sourceId?: string) {
-    resetFromDraft(d);
+    // editor-media-ux PDCA #4 — backfill _clientId for legacy drafts saved
+    // before this PDCA. New drafts get _clientId from useMediaUploadQueue,
+    // but pre-existing localStorage entries omit it — adding stable ids now
+    // makes drag-reorder deterministic across renders.
+    const restored: DraftState = {
+      ...d,
+      media: d.media.map((m) =>
+        m._clientId ? m : { ...m, _clientId: crypto.randomUUID() }
+      ),
+    };
+    resetFromDraft(restored);
     if (sourceId) setCurrentDraftId(sourceId);
     setShowRestoreDialog(false);
   }
@@ -216,21 +234,18 @@ function CreatePostPageInner() {
     return () => window.removeEventListener("storage", handleStorage);
   }, [storageKey]);
 
+  // editor-media-ux PDCA #4 — replaced sequential `for...of` with the
+  // parallel queue. Each successful upload comes back with a `_clientId`
+  // pre-filled by useMediaUploadQueue, so SortableContext gets a stable id
+  // immediately. Failures stay in the queue with status='error' for the
+  // MediaUploadProgress badge to surface.
   async function handleFiles(files: FileList) {
     setUploading(true);
     setError(null);
     try {
-      for (const file of Array.from(files)) {
-        const uploaded = await uploadMediaFile(file, isMakingVideo);
-        setMedia((prev) => [
-          ...prev,
-          {
-            type: uploaded.type,
-            url: uploaded.url,
-            size_bytes: uploaded.size_bytes,
-            is_making_video: uploaded.is_making_video,
-          },
-        ]);
+      const newMedia = await enqueueUploads(files, isMakingVideo);
+      if (newMedia.length > 0) {
+        setMedia((prev) => [...prev, ...newMedia]);
       }
     } catch (e) {
       setError(
@@ -245,16 +260,33 @@ function CreatePostPageInner() {
     setUploading(true);
     setError(null);
     try {
-      const uploaded = await uploadMediaFile(file, false);
-      setMedia((prev) => [
-        ...prev,
-        { type: uploaded.type, url: uploaded.url, size_bytes: uploaded.size_bytes },
-      ]);
-    } catch (e) {
+      const created = await enqueueGifUpload(file);
+      if (created) setMedia((prev) => [...prev, created]);
+    } catch {
       setError("GIF 업로드 실패");
     } finally {
       setUploading(false);
     }
+  }
+
+  // editor-media-ux PDCA #4 — drag-reorder + caption change handlers.
+  // mediaIdOf MUST mirror MediaPreviewList's `mediaId` fallback so
+  // legacy drafts (no _clientId) reorder predictably.
+  function mediaIdOf(m: CreatePostMedia, i: number): string {
+    return m._clientId ?? `legacy-${i}-${m.url.length}-${m.url.slice(-12)}`;
+  }
+  function handleReorder(activeId: string, overId: string) {
+    setMedia((prev) => {
+      const oldIdx = prev.findIndex((m, i) => mediaIdOf(m, i) === activeId);
+      const newIdx = prev.findIndex((m, i) => mediaIdOf(m, i) === overId);
+      if (oldIdx === -1 || newIdx === -1) return prev;
+      return arrayMove(prev, oldIdx, newIdx);
+    });
+  }
+  function handleCaptionChange(id: string, caption: string) {
+    setMedia((prev) =>
+      prev.map((m, i) => (mediaIdOf(m, i) === id ? { ...m, caption } : m))
+    );
   }
 
   function handleEmojiInsert(emoji: string) {
@@ -298,13 +330,18 @@ function CreatePostPageInner() {
     }
     setSubmitting(true);
     try {
+      // editor-media-ux PDCA #4 — strip the client-only _clientId before
+      // sending to the backend. Pydantic schemas don't declare this field
+      // (and may reject it under `extra="forbid"` in future), so we must
+      // not leak it across the API boundary.
+      const mediaPayload = media.map(({ _clientId: _ignore, ...rest }) => rest);
       const post = await createPost({
         type,
         title: title || undefined,
         content: content || undefined,
         genre: type === "product" ? genre : undefined,
         tags: tags.length ? tags : undefined,
-        media,
+        media: mediaPayload,
         scheduled_at: scheduledAt || undefined,
         location_name: locationName || undefined,
         location_lat: locationLat ?? undefined,
@@ -436,6 +473,9 @@ function CreatePostPageInner() {
           onGif={handleGif}
           onEmojiInsert={handleEmojiInsert}
           onEmbedAdd={handleEmbedAdd}
+          onReorder={handleReorder}
+          onCaptionChange={handleCaptionChange}
+          uploadQueue={uploadQueue}
         />
 
         {/* Desktop (≥ md): single-column workspace + side preview pane.
@@ -480,6 +520,9 @@ function CreatePostPageInner() {
             onGif={handleGif}
             onEmojiInsert={handleEmojiInsert}
             onEmbedAdd={handleEmbedAdd}
+            onReorder={handleReorder}
+            onCaptionChange={handleCaptionChange}
+            uploadQueue={uploadQueue}
           />
         </div>
 

@@ -171,6 +171,28 @@
           "hint": "Add a title, body, or media to see a live preview."
         }
       },
+      "media": {
+        "caption": {
+          "label": "Caption",
+          "placeholder": "Add a caption... (e.g. intent, medium)",
+          "tooLong": "Exceeds 280 characters"
+        },
+        "dragHandle": {
+          "aria": "Drag to reorder"
+        },
+        "reorder": {
+          "aria": "Media item {{index}}"
+        },
+        "remove": {
+          "aria": "Remove media"
+        },
+        "upload": {
+          "progress": "Uploading {{done}}/{{total}}",
+          "complete": "Upload complete",
+          "failed": "{{n}} upload(s) failed"
+        },
+        "uploading": "Uploading..."
+      },
       "wizard": {
         "indicator": "Step progress",
         "prev": "Back",

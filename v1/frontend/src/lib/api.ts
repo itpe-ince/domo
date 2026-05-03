@@ -86,8 +86,11 @@ async function _fetchOnce(
   path: string,
   init?: RequestInit & { token?: string; auth?: boolean; _retry?: boolean }
 ): Promise<Response> {
+  // When the body is FormData, omit Content-Type so the browser can set the
+  // correct multipart boundary automatically (e.g. POST /v1/me/signature).
+  const isFormData = init?.body instanceof FormData;
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(init?.headers as Record<string, string>),
   };
   const token =
@@ -118,6 +121,11 @@ export async function apiFetch<T>(
     if (ok) {
       res = await _fetchOnce(path, { ...init, _retry: true });
     }
+  }
+
+  // 204 No Content — no body to parse (e.g. DELETE /v1/me/signature).
+  if (res.status === 204) {
+    return undefined as unknown as T;
   }
 
   const json = (await res.json()) as ApiResponse<T>;

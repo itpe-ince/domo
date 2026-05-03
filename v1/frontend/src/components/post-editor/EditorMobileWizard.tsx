@@ -30,6 +30,7 @@ import {
   useEditorWizardStep,
   type WizardStep,
 } from "@/lib/hooks/useEditorWizardStep";
+import type { UploadTask } from "@/lib/hooks/useMediaUploadQueue";
 import type { PostFormSetters } from "@/lib/hooks/usePostFormState";
 import type { ArtistApplicationStatus } from "@/components/post-editor/PostTypeSelector";
 import { WizardStepIndicator } from "@/components/post-editor/WizardStepIndicator";
@@ -81,6 +82,10 @@ export interface EditorMobileWizardProps {
   onGif: (file: File) => Promise<void>;
   onEmojiInsert: (emoji: string) => void;
   onEmbedAdd: (data: OEmbedData) => void;
+  // editor-media-ux PDCA #4
+  onReorder: (activeId: string, overId: string) => void;
+  onCaptionChange: (id: string, caption: string) => void;
+  uploadQueue: UploadTask[];
 }
 
 export function EditorMobileWizard(props: EditorMobileWizardProps) {
@@ -120,6 +125,9 @@ export function EditorMobileWizard(props: EditorMobileWizardProps) {
     onGif,
     onEmojiInsert,
     onEmbedAdd,
+    onReorder,
+    onCaptionChange,
+    uploadQueue,
   } = props;
 
   // Derive step machine from current post type — type=product adds a
@@ -205,6 +213,9 @@ export function EditorMobileWizard(props: EditorMobileWizardProps) {
               onEmojiInsert={onEmojiInsert}
               onEmbedAdd={onEmbedAdd}
               onLocationManualEntry={onLocationManualEntry}
+              onReorder={onReorder}
+              onCaptionChange={onCaptionChange}
+              uploadQueue={uploadQueue}
             />
           )}
           {wizard.step === "product_meta" && (

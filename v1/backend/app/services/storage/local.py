@@ -68,6 +68,22 @@ class LocalStorageProvider(StorageProvider):
             return f"{base}/media/files/{safe_key}"
         return f"/v1/media/files/{safe_key}"  # legacy fallback
 
+    async def get(self, key: str) -> bytes:
+        """Read object bytes from local storage.
+
+        Applies the same traversal guard as put().
+
+        Raises:
+            FileNotFoundError: if the path does not exist.
+        """
+        safe_key = key.lstrip("/")
+        if ".." in Path(safe_key).parts:
+            raise ValueError(f"Invalid key (path traversal): {key}")
+        path = self.root / safe_key
+        if not path.exists():
+            raise FileNotFoundError(f"Storage object not found: {key}")
+        return path.read_bytes()
+
     async def exists(self, key: str) -> bool:
         safe_key = key.lstrip("/")
         return (self.root / safe_key).exists()

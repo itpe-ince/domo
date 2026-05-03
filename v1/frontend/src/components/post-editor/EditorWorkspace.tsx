@@ -28,6 +28,7 @@ import type {
   DraftSaveStatus,
 } from "@/lib/hooks/useDraftAutosave";
 import type { PostFormSetters } from "@/lib/hooks/usePostFormState";
+import type { UploadTask } from "@/lib/hooks/useMediaUploadQueue";
 import {
   PostTypeSelector,
   type ArtistApplicationStatus,
@@ -84,6 +85,10 @@ export interface EditorWorkspaceProps {
   onGif: (file: File) => Promise<void>;
   onEmojiInsert: (emoji: string) => void;
   onEmbedAdd: (data: OEmbedData) => void;
+  // editor-media-ux PDCA #4 — drag-reorder + caption + upload queue
+  onReorder: (activeId: string, overId: string) => void;
+  onCaptionChange: (id: string, caption: string) => void;
+  uploadQueue: UploadTask[];
 }
 
 export function EditorWorkspace(props: EditorWorkspaceProps) {
@@ -125,6 +130,9 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
     onGif,
     onEmojiInsert,
     onEmbedAdd,
+    onReorder,
+    onCaptionChange,
+    uploadQueue,
   } = props;
 
   return (
@@ -233,7 +241,7 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
             className="w-full bg-transparent text-text-primary placeholder:text-text-muted outline-none border-none resize-none text-sm leading-relaxed"
           />
 
-          {/* Media Preview */}
+          {/* Media Preview — dnd-kit drag-reorder + caption (PDCA #4) */}
           <MediaPreviewList
             media={media}
             embeds={embeds}
@@ -251,13 +259,12 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
                 );
               }
             }}
+            onReorder={onReorder}
+            onCaptionChange={onCaptionChange}
+            uploadQueue={uploadQueue}
           />
-
-          {uploading && (
-            <div className="text-text-muted text-xs animate-pulse">
-              업로드 중...
-            </div>
-          )}
+          {/* Note: legacy "uploading..." inline status is replaced by
+              MediaUploadProgress badge inside MediaPreviewList (OQ-7=A). */}
 
           {/* Schedule / Location badges */}
           {(scheduledAt || locationName) && (

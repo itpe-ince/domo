@@ -171,6 +171,28 @@
           "hint": "タイトル・本文・メディアを追加するとプレビューが表示されます。"
         }
       },
+      "media": {
+        "caption": {
+          "label": "キャプション",
+          "placeholder": "キャプションを入力... (例: 意図, 素材)",
+          "tooLong": "280文字を超えています"
+        },
+        "dragHandle": {
+          "aria": "並べ替えハンドル"
+        },
+        "reorder": {
+          "aria": "{{index}}番目のメディア"
+        },
+        "remove": {
+          "aria": "メディアを削除"
+        },
+        "upload": {
+          "progress": "{{done}}/{{total}} アップロード中",
+          "complete": "アップロード完了",
+          "failed": "{{n}}件のアップロード失敗"
+        },
+        "uploading": "アップロード中..."
+      },
       "wizard": {
         "indicator": "ステップ進行状況",
         "prev": "戻る",

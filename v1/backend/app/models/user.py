@@ -42,6 +42,14 @@ class User(Base):
     avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+    # editor-image-studio PDCA #6-image v1.1 — watermark signature storage key (alembic 0038).
+    # OQ-D-B = C, OQ-D-3 = B: pre-stored separate user asset (not avatar reuse).
+    # Backend reads directly from storage by key — no external URL fetch (SSRF defense).
+    # Populated via POST /v1/users/me/signature; cleared by DELETE /v1/users/me/signature.
+    signature_storage_key: Mapped[str | None] = mapped_column(
+        String(512), nullable=True
+    )
+
     country_code: Mapped[str | None] = mapped_column(String(2), nullable=True)
     language: Mapped[str] = mapped_column(String(10), default="ko")
     birth_year: Mapped[int | None] = mapped_column(Integer, nullable=True)

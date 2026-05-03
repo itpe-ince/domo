@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from app.schemas.media_transform import CropMetaSchema
+
 
 class MediaAssetIn(BaseModel):
     type: str  # 'image' | 'video' | 'external_embed'
@@ -19,6 +21,9 @@ class MediaAssetIn(BaseModel):
     # editor-media-ux PDCA #4 — optional caption (max 280 chars).
     # Validated here so the constraint can change without DB migration.
     caption: str | None = Field(None, max_length=280)
+    # editor-image-studio PDCA #6-image — non-destructive edit metadata.
+    # Persisted in media_assets.crop_meta JSONB. Stored on POST /transform.
+    crop_meta: CropMetaSchema | None = None
 
 
 class MediaAssetOut(MediaAssetIn):
@@ -32,8 +37,8 @@ class MediaAssetOut(MediaAssetIn):
 class MediaPatchRequest(BaseModel):
     """PATCH /v1/media/{id} request body — editor-media-ux PDCA #4.
 
-    Currently only caption is editable. Future #6 editor-media-studio may
-    extend this with thumbnail_url, crop_meta, etc.
+    Currently only caption is editable. Image transforms use the dedicated
+    POST /v1/media/{id}/transform endpoint (editor-image-studio PDCA #6-image).
     """
 
     caption: str | None = Field(None, max_length=280)

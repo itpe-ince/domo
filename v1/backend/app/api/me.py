@@ -2,10 +2,12 @@
 
 Reference: phase4.design.md §6
 """
+import io
+import uuid
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -554,3 +556,188 @@ async def request_guardian(
             "status": "pending",
         }
     }
+
+
+# ─── Signature (OQ-D-3=B + OQ-D-B=C) ───────────────────────────────────
+#
+# Path deviation from design v1.3: endpoints live under /me/signature
+# (actual: /v1/me/signature) rather than /v1/users/me/signature.
+# Frontend useSignature hook and SignatureUploadModal must call /v1/me/signature.
+# Design will be updated to v1.4 to record this convention.
+
+SIGNATURE_MAX_BYTES = 2 * 1024 * 1024  # 2 MB
+SIGNATURE_ALLOWED_MIME = {"image/png", "image/webp"}
+
+
+@router.post("/signature")
+async def upload_signature(
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("signature_upload"),
+):
+    """Upload watermark signature image (OQ-D-3=B).
+
+    Validates MIME (PNG/WebP only), size (<=2MB), strips EXIF, stores via
+    StorageProvider.put(). On replacement the previous file is best-effort
+    deleted. The storage key is persisted on User.signature_storage_key.
+
+    Path: POST /v1/me/signature  (deviation from design v1.3 /v1/users/me/signature)
+
+    Errors:
+      - 403 ACCOUNT_SUSPENDED
+      - 413 SIGNATURE_TOO_LARGE
+      - 415 SIGNATURE_UNSUPPORTED_TYPE
+      - 500 SIGNATURE_UPLOAD_FAILED
+    """
+    from PIL import Image
+
+    from app.schemas.media_transform import SignatureResponse
+    from app.services.media_processing import _encode, _strip_exif_and_orient
+    from app.services.storage import get_storage_provider
+
+    if user.warning_count >= 3 or user.status == "suspended":
+        raise ApiError("ACCOUNT_SUSPENDED", "Account suspended", http_status=403)
+
+    # MIME check
+    if file.content_type not in SIGNATURE_ALLOWED_MIME:
+        raise ApiError(
+            "SIGNATURE_UNSUPPORTED_TYPE",
+            "시그니처는 PNG 또는 WebP 이미지만 업로드 가능합니다",
+            http_status=415,
+        )
+
+    # Size check — read max+1 bytes so we can detect oversized files
+    data = await file.read(SIGNATURE_MAX_BYTES + 1)
+    if len(data) > SIGNATURE_MAX_BYTES:
+        raise ApiError(
+            "SIGNATURE_TOO_LARGE",
+            "시그니처 이미지는 2MB 이하여야 합니다",
+            http_status=413,
+        )
+
+    # EXIF strip + re-encode
+    try:
+        img = Image.open(io.BytesIO(data))
+        img.load()
+    except Exception as e:
+        raise ApiError(
+            "SIGNATURE_UPLOAD_FAILED",
+            "이미지 디코드 실패",
+            http_status=500,
+        ) from e
+
+    cleaned = _strip_exif_and_orient(img)
+
+    # Preserve transparency (signatures are typically PNG with alpha)
+    has_alpha = cleaned.mode in ("RGBA", "LA") or (
+        cleaned.mode == "P" and "transparency" in cleaned.info
+    )
+    out_format = "PNG" if has_alpha else "WEBP"
+    content_type = "image/png" if has_alpha else "image/webp"
+
+    # _encode supports JPEG and PNG; WebP signatures → fall back to PNG
+    # (preserves transparency; PNG is universally supported)
+    cleaned_bytes = _encode(cleaned, "PNG" if out_format == "WEBP" else out_format)
+    final_content_type = "image/png" if out_format == "WEBP" else content_type
+
+    ext = ".png"
+    sig_key = f"signatures/{user.id}/{uuid.uuid4().hex}{ext}"
+
+    provider = get_storage_provider()
+    try:
+        stored_obj = await provider.put(sig_key, cleaned_bytes, final_content_type)
+    except Exception as e:
+        log.exception("signature.upload.storage_put_failed", extra={"user_id": str(user.id)})
+        raise ApiError(
+            "SIGNATURE_UPLOAD_FAILED",
+            "시그니처 저장 중 오류가 발생했습니다",
+            http_status=500,
+        ) from e
+
+    # Track previous key for cleanup after commit
+    prev_key = user.signature_storage_key
+    user.signature_storage_key = stored_obj.key
+    await db.commit()
+
+    # Best-effort cleanup of previous signature file
+    if prev_key and prev_key != stored_obj.key:
+        try:
+            await provider.delete(prev_key)
+        except Exception:
+            log.warning(
+                "signature.previous.cleanup_failed",
+                extra={"key": prev_key, "user_id": str(user.id)},
+            )
+
+    log.info(
+        "signature.uploaded",
+        extra={
+            "event": "signature.uploaded",
+            "user_id": str(user.id),
+            "prev_key": prev_key,
+            "new_key": stored_obj.key,
+            "size_bytes": stored_obj.size_bytes,
+        },
+    )
+
+    sig_response = SignatureResponse(signature_url=stored_obj.url)
+    return {"data": sig_response.model_dump(mode="json")}
+
+
+@router.get("/signature")
+async def get_signature(
+    user: User = Depends(get_current_user),
+):
+    """Return the current user's signature URL or null.
+
+    Path: GET /v1/me/signature  (deviation from design v1.3 /v1/users/me/signature)
+    """
+    from app.schemas.media_transform import SignatureResponse
+    from app.services.storage import get_storage_provider
+
+    if user.signature_storage_key is None:
+        return {"data": SignatureResponse(signature_url=None).model_dump(mode="json")}
+
+    provider = get_storage_provider()
+    url = provider.public_url(user.signature_storage_key)
+    return {"data": SignatureResponse(signature_url=url).model_dump(mode="json")}
+
+
+@router.delete("/signature", status_code=204)
+async def delete_signature(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Delete the current user's signature (idempotent).
+
+    Path: DELETE /v1/me/signature  (deviation from design v1.3 /v1/users/me/signature)
+    """
+    from app.services.storage import get_storage_provider
+
+    if user.signature_storage_key is None:
+        return Response(status_code=204)
+
+    prev_key = user.signature_storage_key
+    user.signature_storage_key = None
+    await db.commit()
+
+    provider = get_storage_provider()
+    try:
+        await provider.delete(prev_key)
+    except Exception:
+        log.warning(
+            "signature.delete.cleanup_failed",
+            extra={"key": prev_key, "user_id": str(user.id)},
+        )
+
+    log.info(
+        "signature.deleted",
+        extra={
+            "event": "signature.deleted",
+            "user_id": str(user.id),
+            "prev_key": prev_key,
+        },
+    )
+
+    return Response(status_code=204)

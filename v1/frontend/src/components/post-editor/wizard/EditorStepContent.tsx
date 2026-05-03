@@ -12,6 +12,7 @@
 
 import type { CreatePostMedia, OEmbedData } from "@/lib/api";
 import { useI18n } from "@/i18n";
+import type { UploadTask } from "@/lib/hooks/useMediaUploadQueue";
 import { MediaToolbar } from "@/components/post-editor/MediaToolbar";
 import { MediaPreviewList } from "@/components/post-editor/MediaPreviewList";
 import { TagAutocomplete } from "@/components/post-editor/TagAutocomplete";
@@ -40,6 +41,10 @@ export interface EditorStepContentProps {
   onEmojiInsert: (emoji: string) => void;
   onEmbedAdd: (data: OEmbedData) => void;
   onLocationManualEntry: (name: string) => void;
+  // editor-media-ux PDCA #4
+  onReorder: (activeId: string, overId: string) => void;
+  onCaptionChange: (id: string, caption: string) => void;
+  uploadQueue: UploadTask[];
 }
 
 export function EditorStepContent(props: EditorStepContentProps) {
@@ -68,6 +73,9 @@ export function EditorStepContent(props: EditorStepContentProps) {
     onEmojiInsert,
     onEmbedAdd,
     onLocationManualEntry,
+    onReorder,
+    onCaptionChange,
+    uploadQueue,
   } = props;
 
   return (
@@ -92,6 +100,9 @@ export function EditorStepContent(props: EditorStepContentProps) {
       <MediaPreviewList
         media={media}
         embeds={embeds}
+        onReorder={onReorder}
+        onCaptionChange={onCaptionChange}
+        uploadQueue={uploadQueue}
         onRemoveMedia={(i) => onMediaChange((prev) => prev.filter((_, j) => j !== i))}
         onRemoveEmbed={(i) => {
           onEmbedsChange((prev) => prev.filter((_, j) => j !== i));

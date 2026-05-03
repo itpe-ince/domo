@@ -171,6 +171,28 @@
           "hint": "제목·내용·미디어를 추가하면 미리보기가 표시됩니다."
         }
       },
+      "media": {
+        "caption": {
+          "label": "캡션",
+          "placeholder": "캡션을 입력하세요... (예: 작품 의도, 매체)",
+          "tooLong": "280자를 초과했습니다"
+        },
+        "dragHandle": {
+          "aria": "순서 변경 핸들"
+        },
+        "reorder": {
+          "aria": "{{index}}번째 미디어"
+        },
+        "remove": {
+          "aria": "미디어 삭제"
+        },
+        "upload": {
+          "progress": "{{done}}/{{total}} 업로드 중",
+          "complete": "업로드 완료",
+          "failed": "{{n}}개 업로드 실패"
+        },
+        "uploading": "업로드 중..."
+      },
       "wizard": {
         "indicator": "단계 진행률",
         "prev": "이전",

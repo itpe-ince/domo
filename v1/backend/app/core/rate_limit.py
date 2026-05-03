@@ -36,6 +36,12 @@ DEFAULT_LIMITS: dict[str, dict] = {
     "report_create": {"limit": 5, "window_sec": 60, "by": "user"},
     "media_upload": {"limit": 20, "window_sec": 60, "by": "user"},
     "media_patch": {"limit": 30, "window_sec": 60, "by": "user"},
+    # editor-image-studio PDCA #6-image — Pillow processing is heavy;
+    # 5/min/user is enough for interactive editing while bounding load.
+    "media_transform": {"limit": 5, "window_sec": 60, "by": "user"},
+    # OQ-D-3 = B — separate signature upload endpoint. 5/min/user mirrors
+    # transform; signature uploads are rare in normal use.
+    "signature_upload": {"limit": 5, "window_sec": 60, "by": "user"},
     "feed_read": {"limit": 120, "window_sec": 60, "by": "user"},
     "explore_read": {"limit": 60, "window_sec": 60, "by": "ip"},
     "search": {"limit": 30, "window_sec": 60, "by": "ip"},

@@ -28,7 +28,13 @@ export const LOCALE_LABELS: Record<Locale, { flag: string; name: string }> = {
 type I18nContextType = {
   locale: Locale;
   setLocale: (l: Locale) => void;
-  t: (key: string) => string;
+  /**
+   * Translate a key. Optional `params` performs simple `{{varName}}`
+   * substitution — added 2026-05-02 (editor-media-ux PDCA #4) so callers
+   * can pass `{ remaining: "10" }` etc. Existing single-arg calls are
+   * unaffected.
+   */
+  t: (key: string, params?: Record<string, string | number>) => string;
 };
 
 const I18nContext = createContext<I18nContextType>({
@@ -40,6 +46,16 @@ const I18nContext = createContext<I18nContextType>({
 function getNestedValue(obj: any, path: string): string {
   const result = path.split(".").reduce((o, k) => o?.[k], obj);
   return typeof result === "string" ? result : path;
+}
+
+function interpolate(
+  template: string,
+  params?: Record<string, string | number>
+): string {
+  if (!params) return template;
+  return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_match, name: string) =>
+    params[name] !== undefined ? String(params[name]) : `{{${name}}}`
+  );
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
@@ -58,7 +74,8 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const t = useCallback(
-    (key: string) => getNestedValue(messages[locale], key),
+    (key: string, params?: Record<string, string | number>) =>
+      interpolate(getNestedValue(messages[locale], key), params),
     [locale]
   );
 

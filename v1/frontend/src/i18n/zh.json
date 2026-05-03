@@ -171,6 +171,28 @@
           "hint": "新增標題、內文或媒體後即可看到即時預覽。"
         }
       },
+      "media": {
+        "caption": {
+          "label": "說明",
+          "placeholder": "新增說明... (例: 意圖, 媒材)",
+          "tooLong": "超過280個字元"
+        },
+        "dragHandle": {
+          "aria": "拖動排序"
+        },
+        "reorder": {
+          "aria": "第{{index}}個媒體"
+        },
+        "remove": {
+          "aria": "刪除媒體"
+        },
+        "upload": {
+          "progress": "上傳中 {{done}}/{{total}}",
+          "complete": "上傳完成",
+          "failed": "{{n}}個上傳失敗"
+        },
+        "uploading": "上傳中..."
+      },
       "wizard": {
         "indicator": "步驟進度",
         "prev": "上一步",

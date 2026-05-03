@@ -171,6 +171,28 @@
           "hint": "Añade un título, contenido o medios para ver la vista previa."
         }
       },
+      "media": {
+        "caption": {
+          "label": "Leyenda",
+          "placeholder": "Añade una leyenda... (ej. intención, medio)",
+          "tooLong": "Supera los 280 caracteres"
+        },
+        "dragHandle": {
+          "aria": "Arrastrar para reordenar"
+        },
+        "reorder": {
+          "aria": "Elemento multimedia {{index}}"
+        },
+        "remove": {
+          "aria": "Eliminar medio"
+        },
+        "upload": {
+          "progress": "Subiendo {{done}}/{{total}}",
+          "complete": "Carga completa",
+          "failed": "{{n}} carga(s) fallida(s)"
+        },
+        "uploading": "Subiendo..."
+      },
       "wizard": {
         "indicator": "Progreso de pasos",
         "prev": "Atrás",

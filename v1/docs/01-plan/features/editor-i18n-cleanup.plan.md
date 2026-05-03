@@ -210,3 +210,4 @@ editor-responsive-redesign(#3) 분석 보고서의 minor gap **m-2**: 비-wizard
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
 | 0.1 | 2026-05-01 | Initial draft from #3 m-2 carry-over. 13개 기존 키 활용 + 9개 신규 키 추가 = 22 위치 정리 계획 | itpe-ince (Claude Opus 4.7) |
+| 0.2 | 2026-05-03 | **#4 (editor-media-ux) 분석 결과 통합**: (a) m-2 `post.editor.media.uploading` dead key 제거 또는 retry-UI에서 활용 검토, (b) m-3 `EditorStepContent.tsx:120-122` 인라인 `"업로드 중..."` 한국어 잔존 1줄 제거, (c) m-4 #3 carry-over 잔존(EditorWorkspace 한국어 5건 + EditorStepContent prompt 1건) 통합 처리. 본 PDCA의 작업 항목이 +3 추가됨 — 위치 약 25곳으로 확장 | itpe-ince (Claude Opus 4.7) |

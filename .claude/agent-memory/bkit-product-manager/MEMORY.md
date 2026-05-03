@@ -1,1 +1,1 @@
-- [domo editor-revamp-roadmap 진행 상태](project_editor_revamp.md) — 11개 sub-PDCA 현황, #1 role-gating plan 완료, Q-1/Q-2/Q-3 대기 중
+- [domo editor-revamp-roadmap 진행 상태](project_editor_revamp.md) — #1~#4 완료, #6 plan 완료(OQ-8개 대기), OQ-6 PDCA 분할 여부 사용자 결정 필수

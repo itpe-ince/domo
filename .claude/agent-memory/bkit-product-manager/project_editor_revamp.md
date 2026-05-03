@@ -16,13 +16,17 @@ type: project
 - #3 `editor-responsive-redesign`: 완료 아카이브 (2026-05-01). Match Rate 96%. 아카이브: `docs/archive/2026-05/editor-responsive-redesign/`
   - 산출물: 12 컴포넌트 + 3 hooks + 2 icons + 135 i18n entries. page.tsx 803→547 LOC
   - 5개 통합 지점: useDraftAutosave / DraftRestoreDialog / 멀티탭 경고 / PostTypeSelector / useArtistGate 모두 회귀 0
-- #4 `editor-media-ux`: **Plan 완료 (2026-05-01)**. OQ-1~OQ-7 사용자 답변 대기.
-  - 파일: `docs/01-plan/features/editor-media-ux.plan.md`
-  - 핵심: backend 변경 포함 (alembic 0036_media_caption + PATCH /v1/media/{id}). @dnd-kit 도입. CreatePostMedia.caption 추가.
-  - 영향 컴포넌트: MediaPreviewList(재작성) / EditorWorkspace / EditorStepContent
-  - 다음: /pdca design editor-media-ux (bkend-expert + frontend-architect 병렬 위임)
+- #4 `editor-media-ux`: **완료 아카이브 (2026-05-02)**. Match Rate 95%.
+  - 아카이브: `docs/archive/2026-05/editor-media-ux/`
+  - 산출물: useMediaUploadQueue / MediaPreviewList(재작성) / SortableMediaCard(신규) / MediaUploadProgress(신규) / alembic 0036_media_caption / PATCH /v1/media/{id}
+  - 5개 통합 지점: 회귀 0 확인
+- #6 `editor-media-studio`: **Plan 완료 (2026-04-30)**. OQ-1~OQ-8 사용자 답변 대기.
+  - 파일: `v1/docs/01-plan/features/editor-media-studio.plan.md`
+  - 핵심: XL (2주+). 이미지 에디터(회전·크롭·모자이크·워터마크) + 영상 에디터(trim·썸네일) + MakingVideoModal. 영상 인프라(OQ-2) 결정 필요.
+  - **OQ-6 (PDCA 분할)**: 권장 B — `editor-image-studio` + `editor-video-studio` 2개로 분리. 사용자 확인 필수.
+  - 다음: OQ-6 사용자 결정 → /pdca design (또는 분할 후 각각 진행)
 
-Critical Path: 1 ✅ → 2 ✅ → 3 ✅ → **4 ⏭️** → 6 → 8 → 10 (약 5~6주)
+Critical Path: 1 ✅ → 2 ✅ → 3 ✅ → 4 ✅ → **6 ⏭️** → 8 → 10 (약 5~6주)
 Deferred: #9 `artist-pricing-assist` (데이터 축적 부족)
 
 Lessons learned (#1~#3 기준, #4 이후 적용):

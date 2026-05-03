@@ -13,7 +13,7 @@ from sqlalchemy import (
     Text,
     func,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -97,6 +97,19 @@ class MediaAsset(Base):
     # Max 280 chars enforced at Pydantic schema level (MediaAssetIn.caption)
     # to allow future limit changes without data migration.
     caption: Mapped[str | None] = mapped_column(Text, nullable=True, default=None)
+
+    # editor-image-studio PDCA #6-image — non-destructive edit metadata (alembic 0037).
+    # Schema validated at Pydantic level (CropMetaSchema in app/schemas/media_transform.py).
+    # OQ-3 = A: stores rotate/crop/mosaic/watermark ops to allow re-entry restoration.
+    crop_meta: Mapped[dict | None] = mapped_column(JSONB, nullable=True, default=None)
+
+    # editor-image-studio PDCA #6-image v1.1 — original key preserved on first transform.
+    # OQ-D-A = C, OQ-D-C = B: ensures re-edits always re-process from the original
+    # (avoids cumulative re-encoding loss). NULL until first transform; code falls
+    # back to current storage_key when NULL.
+    original_storage_key: Mapped[str | None] = mapped_column(
+        String(512), nullable=True, default=None
+    )
 
     # M4 storage abstraction
     storage_provider: Mapped[str] = mapped_column(String(20), default="local")
