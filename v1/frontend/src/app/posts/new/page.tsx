@@ -10,6 +10,7 @@ import {
   createPost,
   deleteDraft,
   getDraft,
+  publishPost,
   registerExternalMedia,
   type Draft,
 } from "@/lib/api";
@@ -23,6 +24,7 @@ import {
 import { usePostFormState } from "@/lib/hooks/usePostFormState";
 import { useArtistGate } from "@/lib/hooks/useArtistGate";
 import { useMediaUploadQueue } from "@/lib/hooks/useMediaUploadQueue";
+import { useMySeries } from "@/lib/hooks/useMySeries";
 import { LoginModal } from "@/components/LoginModal";
 import {
   DraftRestoreDialog,
@@ -31,6 +33,8 @@ import {
 import { EditorMobileWizard } from "@/components/post-editor/EditorMobileWizard";
 import { EditorWorkspace } from "@/components/post-editor/EditorWorkspace";
 import { PreviewPane } from "@/components/post-editor/PreviewPane";
+import { ImageEditorLazy } from "@/components/post-editor/ImageEditorLazy";
+import { SeriesCreateModal } from "@/components/post-editor/SeriesCreateModal";
 
 // Disable prerender — uses useSearchParams() which requires runtime
 export const dynamic = "force-dynamic";
@@ -79,6 +83,9 @@ function CreatePostPageInner() {
     setDimensions,
     setMedium,
     setYear,
+    setVisibility,
+    setCommentsEnabled,
+    setSeriesIds,
   } = setters;
   const {
     type,
@@ -99,6 +106,9 @@ function CreatePostPageInner() {
     dimensions,
     medium,
     year,
+    visibility = "public",
+    commentsEnabled = true,
+    seriesIds = [],
   } = formState;
 
   const [uploading, setUploading] = useState(false);
@@ -119,6 +129,14 @@ function CreatePostPageInner() {
     enqueue: enqueueUploads,
     enqueueGif: enqueueGifUpload,
   } = useMediaUploadQueue();
+
+  // publish-controls PDCA #8 — series list + create modal
+  const {
+    series: mySeries,
+    loading: mySeriesLoading,
+    add: addSeries,
+  } = useMySeries();
+  const [seriesCreateModalOpen, setSeriesCreateModalOpen] = useState(false);
 
   // ─── Draft autosave (editor-draft-autosave PDCA) ────────────────────
   const draftParamRaw = searchParams.get("draft");
@@ -289,6 +307,18 @@ function CreatePostPageInner() {
     );
   }
 
+  // editor-image-studio PDCA #6-image — Step 6: open/close image editor modal
+  const [editingMediaId, setEditingMediaId] = useState<string | null>(null);
+
+  function handleEditMedia(id: string) {
+    setEditingMediaId(id);
+  }
+
+  // Find the media item currently being edited (null when modal is closed)
+  const editingMedia = editingMediaId
+    ? formState.media.find((m, i) => mediaIdOf(m, i) === editingMediaId) ?? null
+    : null;
+
   function handleEmojiInsert(emoji: string) {
     const ta = textareaRef.current;
     if (!ta) {
@@ -330,60 +360,101 @@ function CreatePostPageInner() {
     }
     setSubmitting(true);
     try {
-      // editor-media-ux PDCA #4 — strip the client-only _clientId before
-      // sending to the backend. Pydantic schemas don't declare this field
-      // (and may reject it under `extra="forbid"` in future), so we must
-      // not leak it across the API boundary.
-      const mediaPayload = media.map(({ _clientId: _ignore, ...rest }) => rest);
-      const post = await createPost({
-        type,
-        title: title || undefined,
-        content: content || undefined,
-        genre: type === "product" ? genre : undefined,
-        tags: tags.length ? tags : undefined,
-        media: mediaPayload,
-        scheduled_at: scheduledAt || undefined,
-        location_name: locationName || undefined,
-        location_lat: locationLat ?? undefined,
-        location_lng: locationLng ?? undefined,
-        product:
-          type === "product"
-            ? {
-                is_auction: isAuction,
-                is_buy_now: isBuyNow,
-                buy_now_price:
-                  isBuyNow && typeof buyNowPrice === "number"
-                    ? buyNowPrice
-                    : undefined,
-                currency: "USD",
-                dimensions: dimensions || undefined,
-                medium: medium || undefined,
-                year: typeof year === "number" ? year : undefined,
-              }
-            : undefined,
-        // editor-draft-autosave PDCA Q-4: server deletes the draft atomically
-        // in the same transaction as the publish. localStorage cleared below.
-        from_draft_id: currentDraftId,
-      });
-      // Wipe localStorage entry. Server draft is deleted by from_draft_id above;
-      // also fire DELETE as a belt-and-suspenders fallback (silent on failure)
-      // in case the server didn't process from_draft_id.
-      clearDraft();
-      if (currentDraftId) {
-        try {
-          await deleteDraft(currentDraftId);
-        } catch {
-          /* silent — already deleted by from_draft_id path */
+      // publish-controls PDCA #8 — Hybrid path C:
+      //   For EXISTING drafts (currentDraftId set by autosave/restore): call publishPost directly.
+      //   For NEW posts (no currentDraftId): create draft first via saveToServer, then publish.
+      //   This avoids any Backend changes to createPost while enabling the full publish endpoint flow.
+      const mediaPayload = media.map(({ _clientId: _c, id: _id, ...rest }) => rest);
+
+      let draftId = currentDraftId;
+
+      if (!draftId) {
+        // No existing draft — save to server first to get a post id
+        const serverDraftId = await saveToServer();
+        if (!serverDraftId) {
+          // saveToServer failed (network error etc.) — fall back to legacy createPost
+          const post = await createPost({
+            type,
+            title: title || undefined,
+            content: content || undefined,
+            genre: type === "product" ? genre : undefined,
+            tags: tags.length ? tags : undefined,
+            media: mediaPayload,
+            scheduled_at: scheduledAt || undefined,
+            location_name: locationName || undefined,
+            location_lat: locationLat ?? undefined,
+            location_lng: locationLng ?? undefined,
+            product:
+              type === "product"
+                ? {
+                    is_auction: isAuction,
+                    is_buy_now: isBuyNow,
+                    buy_now_price:
+                      isBuyNow && typeof buyNowPrice === "number"
+                        ? buyNowPrice
+                        : undefined,
+                    currency: "USD",
+                    dimensions: dimensions || undefined,
+                    medium: medium || undefined,
+                    year: typeof year === "number" ? year : undefined,
+                  }
+                : undefined,
+            from_draft_id: undefined,
+          });
+          clearDraft();
+          router.push(`/posts/${post.id}`);
+          return;
         }
+        draftId = serverDraftId;
+        setCurrentDraftId(draftId);
       }
-      router.push(`/posts/${post.id}`);
+
+      // Publish via the new endpoint
+      const result = await publishPost(draftId, {
+        publish_at: scheduledAt || null,
+        visibility,
+        comments_enabled: commentsEnabled,
+        series_ids: seriesIds,
+      });
+
+      // Wipe localStorage. Server draft deleted by publishPost's from_draft_id;
+      // belt-and-suspenders DELETE as fallback.
+      clearDraft();
+      try {
+        await deleteDraft(draftId);
+      } catch {
+        /* silent — draft may already be deleted by publish endpoint */
+      }
+
+      if (result.status === "scheduled") {
+        router.push(`/posts/${result.id}?scheduled=1`);
+      } else {
+        router.push(`/posts/${result.id}`);
+      }
     } catch (e) {
-      setError(
-        e instanceof ApiClientError ? `${e.code}: ${e.message}` : "작성 실패"
-      );
+      setError(mapPublishError(e, t));
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function mapPublishError(
+    e: unknown,
+    t: (key: string) => string
+  ): string {
+    if (!(e instanceof ApiClientError)) return "작성 실패";
+    const codeMap: Record<string, string> = {
+      POST_NOT_FOUND: t("post.editor.error.postNotFound"),
+      POST_NOT_OWNER: t("post.editor.error.postNotOwner"),
+      POST_INVALID_STATE: t("post.editor.error.postInvalidState"),
+      AUCTION_ACTIVE_VISIBILITY_LOCKED: t("post.editor.error.auctionActiveVisibilityLocked"),
+      SERIES_NOT_FOUND: t("post.editor.error.seriesNotFound"),
+      SERIES_NOT_OWNER: t("post.editor.error.seriesNotOwner"),
+      SCHEDULED_AT_TOO_SOON: t("post.editor.error.scheduledAtTooSoon"),
+      SCHEDULED_AT_TOO_FAR: t("post.editor.error.scheduledAtTooFar"),
+      COMMENTS_DISABLED: t("post.editor.error.commentsDisabled"),
+    };
+    return codeMap[e.code] ?? `${e.code}: ${e.message}`;
   }
 
   return (
@@ -476,6 +547,16 @@ function CreatePostPageInner() {
           onReorder={handleReorder}
           onCaptionChange={handleCaptionChange}
           uploadQueue={uploadQueue}
+          onEditMedia={handleEditMedia}
+          visibility={visibility}
+          setVisibility={setVisibility}
+          commentsEnabled={commentsEnabled}
+          setCommentsEnabled={setCommentsEnabled}
+          seriesIds={seriesIds}
+          setSeriesIds={setSeriesIds}
+          mySeries={mySeries}
+          mySeriesLoading={mySeriesLoading}
+          onCreateSeriesClick={() => setSeriesCreateModalOpen(true)}
         />
 
         {/* Desktop (≥ md): single-column workspace + side preview pane.
@@ -523,6 +604,16 @@ function CreatePostPageInner() {
             onReorder={handleReorder}
             onCaptionChange={handleCaptionChange}
             uploadQueue={uploadQueue}
+            onEditMedia={handleEditMedia}
+            visibility={visibility}
+            setVisibility={setVisibility}
+            commentsEnabled={commentsEnabled}
+            setCommentsEnabled={setCommentsEnabled}
+            seriesIds={seriesIds}
+            setSeriesIds={setSeriesIds}
+            mySeries={mySeries}
+            mySeriesLoading={mySeriesLoading}
+            onCreateSeriesClick={() => setSeriesCreateModalOpen(true)}
           />
         </div>
 
@@ -541,6 +632,41 @@ function CreatePostPageInner() {
           me={me ?? null}
         />
       </main>
+
+      {/* editor-image-studio PDCA #6-image — image editor modal (Konva, browser-only).
+          Mounted outside <main> so it is not a grid item.
+          Save wired in Step 8 via patchMediaTransform. */}
+      {editingMedia && (
+        <ImageEditorLazy
+          media={editingMedia}
+          initialOps={editingMedia.crop_meta}
+          onSave={(updated) => {
+            // editor-image-studio PDCA #6-image Step 8:
+            // ImageEditor calls patchMediaTransform internally and passes back
+            // the updated CreatePostMedia (with new url/crop_meta/id).
+            // Replacing the item in formState triggers useDraftAutosave
+            // within 2s — no explicit call needed.
+            setMedia((prev) =>
+              prev.map((m, i) =>
+                mediaIdOf(m, i) === editingMediaId ? updated : m
+              )
+            );
+            setEditingMediaId(null);
+          }}
+          onCancel={() => setEditingMediaId(null)}
+        />
+      )}
+
+      {/* publish-controls PDCA #8 — series create modal (z-[60]) */}
+      <SeriesCreateModal
+        open={seriesCreateModalOpen}
+        onClose={() => setSeriesCreateModalOpen(false)}
+        onCreated={(series) => {
+          addSeries(series);
+          // Auto-select the newly created series
+          setSeriesIds([...seriesIds, series.id]);
+        }}
+      />
     </>
   );
 }

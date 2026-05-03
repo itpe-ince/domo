@@ -183,6 +183,9 @@
         "reorder": {
           "aria": "{{index}}番目のメディア"
         },
+        "edit": {
+          "aria": "画像を編集"
+        },
         "remove": {
           "aria": "メディアを削除"
         },
@@ -191,7 +194,78 @@
           "complete": "アップロード完了",
           "failed": "{{n}}件のアップロード失敗"
         },
-        "uploading": "アップロード中..."
+        "uploading": "アップロード中...",
+        "studio": {
+          "image": {
+            "editor": {
+              "title": "画像編集",
+              "saving": "保存中...",
+              "noIdHint": "画像編集は公開後に利用できます",
+              "error": {
+                "auctionActive": "オークション中は編集できません",
+                "signatureMissing": "先にシグネチャをアップロードしてください",
+                "tooLarge": "ファイルが大きすぎます（最大20MB）",
+                "unsupportedType": "対応していないファイル形式です",
+                "notOwner": "自分のメディアのみ編集できます",
+                "rateLimit": "リクエストが多すぎます。しばらくしてから再試行してください",
+                "generic": "保存に失敗しました。再試行してください",
+                "noMediaId": "画像編集は公開後に利用できます"
+              }
+            },
+            "tool": {
+              "rotate": {
+                "label": "回転",
+                "90": "90° 回転",
+                "180": "180° 回転",
+                "270": "270° 回転",
+                "current": "現在"
+              },
+              "crop": {
+                "label": "切り抜き",
+                "ratio_1_1": "1:1",
+                "ratio_4_3": "4:3",
+                "ratio_16_9": "16:9",
+                "ratio_free": "自由",
+                "ratio_original": "元のサイズ"
+              },
+              "mosaic": {
+                "label": "モザイク",
+                "strength": "強度",
+                "clearAll": "すべて消去"
+              },
+              "watermark": {
+                "label": "透かし",
+                "text": {
+                  "label": "透かしテキスト",
+                  "placeholder": "テキストを入力"
+                },
+                "opacity": "不透明度",
+                "apply": "適用",
+                "remove": "削除",
+                "signature": {
+                  "label": "署名",
+                  "upload": "署名をアップロード",
+                  "change": "変更",
+                  "remove": "削除",
+                  "removeConfirm": "署名を削除してもよろしいですか？",
+                  "current": "現在の署名",
+                  "loading": "署名を確認中...",
+                  "useToggle": "透かしに署名を使用する",
+                  "tooLarge": "ファイルが大きすぎます（最大2MB）",
+                  "unsupportedType": "サポートされていない形式です（PNG/WebPのみ）",
+                  "uploadFailed": "アップロードに失敗しました。もう一度お試しください",
+                  "modal": {
+                    "title": "署名をアップロード",
+                    "hint": "透かしとして使用する署名画像をアップロードしてください",
+                    "requirements": "PNGまたはWebP、最大2MB。透明背景を推奨します。",
+                    "upload": "アップロード",
+                    "uploading": "アップロード中..."
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "wizard": {
         "indicator": "ステップ進行状況",
@@ -201,6 +275,7 @@
           "type": "種類",
           "content": "内容",
           "productMeta": "商品情報",
+          "publishOptions": "公開設定",
           "publish": "公開"
         },
         "stepType": {
@@ -216,6 +291,79 @@
           "hint": "予約公開と位置情報があれば下で確認・修正できます。",
           "empty": "予約公開と位置情報は前のステップのツールバーから追加できます。"
         }
+      },
+      "publishOptions": {
+        "title": "公開オプション",
+        "visibility": {
+          "label": "公開範囲",
+          "public": "全体公開",
+          "followersOnly": "フォロワーのみ",
+          "unlisted": "リンク共有",
+          "publicHint": "すべての人が閲覧できます",
+          "followersHint": "フォロワーのみ閲覧できます",
+          "unlistedHint": "URLを知っている人のみ閲覧できます"
+        },
+        "comments": {
+          "label": "コメントを許可",
+          "enabled": "許可",
+          "disabled": "不許可",
+          "hint": "コメントを無効にしても既存のコメントは保持されます"
+        },
+        "series": {
+          "label": "シリーズ",
+          "select": "シリーズを選択",
+          "createNew": "+ 新しいシリーズを作成",
+          "none": "まだシリーズがありません"
+        },
+        "scheduled": {
+          "label": "予約公開",
+          "placeholder": "公開日時を選択",
+          "timezone": "タイムゾーン: {tz}",
+          "clearLabel": "即時公開に変更",
+          "tooSoon": "5分以上後に設定してください",
+          "tooFar": "1年以内に設定してください"
+        }
+      },
+      "error": {
+        "postNotFound": "投稿が見つかりません",
+        "postNotOwner": "自分の投稿のみ公開できます",
+        "postInvalidState": "すでに公開済みの投稿です",
+        "auctionActiveVisibilityLocked": "オークション進行中は公開範囲を変更できません",
+        "seriesNotFound": "選択したシリーズが見つかりません",
+        "seriesNotOwner": "自分のシリーズのみ選択できます",
+        "scheduledAtTooSoon": "予約公開は5分後以降に設定できます",
+        "scheduledAtTooFar": "予約公開は1年以内に設定できます",
+        "commentsDisabled": "コメントは無効です"
+      }
+    },
+    "series": {
+      "viewAll": "シリーズを見る",
+      "byAuthor": "{{name}}のシリーズ",
+      "edit": "シリーズ編集",
+      "delete": "シリーズ削除",
+      "deleteConfirm": "このシリーズを削除しますか？シリーズに含まれる投稿は保持されます。",
+      "empty": "このシリーズにはまだ投稿がありません",
+      "notFound": "シリーズが見つかりません",
+      "postCount": "{{count}}件の投稿",
+      "addPost": "投稿を追加",
+      "removePost": "シリーズから削除",
+      "createModal": {
+        "title": "新しいシリーズを作成",
+        "titleLabel": "シリーズタイトル",
+        "descriptionLabel": "説明（任意）",
+        "submit": "作成",
+        "cancel": "キャンセル",
+        "coverLabel": "カバー画像（任意）",
+        "coverHint": "未設定の場合、最初の投稿の画像が自動的に使用されます",
+        "coverUploading": "カバーをアップロード中...",
+        "coverUploadFailed": "カバーのアップロードに失敗しました"
+      }
+    },
+    "feed": {
+      "indicator": {
+        "followersOnly": "フォロワー限定",
+        "unlisted": "リンク共有",
+        "commentsDisabled": "このポストはコメントが許可されていません"
       }
     }
   },

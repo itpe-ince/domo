@@ -18,13 +18,14 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-export type WizardStep = "type" | "content" | "product_meta" | "publish";
+export type WizardStep = "type" | "content" | "product_meta" | "publish-options" | "publish";
 
-const GENERAL_STEPS: readonly WizardStep[] = ["type", "content", "publish"];
+const GENERAL_STEPS: readonly WizardStep[] = ["type", "content", "publish-options", "publish"];
 const PRODUCT_STEPS: readonly WizardStep[] = [
   "type",
   "content",
   "product_meta",
+  "publish-options",
   "publish",
 ];
 

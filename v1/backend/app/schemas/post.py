@@ -109,6 +109,10 @@ class PostOut(BaseModel):
     created_at: datetime
     media: list[MediaAssetOut] = []
     product: ProductPostOut | None = None
+    # publish-controls PDCA #8 §B-6 — visibility + comments_enabled surfaced to API.
+    # Defaults match DB defaults so existing serialization is backward-compatible.
+    visibility: str = "public"
+    comments_enabled: bool = True
 
 
 class CommentIn(BaseModel):

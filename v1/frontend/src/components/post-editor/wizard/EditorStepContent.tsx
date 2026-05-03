@@ -45,6 +45,8 @@ export interface EditorStepContentProps {
   onReorder: (activeId: string, overId: string) => void;
   onCaptionChange: (id: string, caption: string) => void;
   uploadQueue: UploadTask[];
+  // editor-image-studio PDCA #6-image — Step 6 props drilling
+  onEditMedia?: (id: string) => void;
 }
 
 export function EditorStepContent(props: EditorStepContentProps) {
@@ -76,6 +78,7 @@ export function EditorStepContent(props: EditorStepContentProps) {
     onReorder,
     onCaptionChange,
     uploadQueue,
+    onEditMedia,
   } = props;
 
   return (
@@ -103,6 +106,7 @@ export function EditorStepContent(props: EditorStepContentProps) {
         onReorder={onReorder}
         onCaptionChange={onCaptionChange}
         uploadQueue={uploadQueue}
+        onEditMedia={onEditMedia}
         onRemoveMedia={(i) => onMediaChange((prev) => prev.filter((_, j) => j !== i))}
         onRemoveEmbed={(i) => {
           onEmbedsChange((prev) => prev.filter((_, j) => j !== i));

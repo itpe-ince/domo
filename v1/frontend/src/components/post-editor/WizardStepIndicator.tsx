@@ -16,6 +16,7 @@ const STEP_LABEL_KEYS: Record<WizardStep, string> = {
   type: "post.editor.wizard.steps.type",
   content: "post.editor.wizard.steps.content",
   product_meta: "post.editor.wizard.steps.productMeta",
+  "publish-options": "post.editor.wizard.steps.publishOptions",
   publish: "post.editor.wizard.steps.publish",
 };
 

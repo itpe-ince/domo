@@ -22,6 +22,7 @@ import {
   type CreatePostMedia,
   type DraftPayload,
   type OEmbedData,
+  type Visibility,
   saveDraft,
 } from "@/lib/api";
 
@@ -48,6 +49,10 @@ export type DraftState = {
   dimensions: string;
   medium: string;
   year: number | "";
+  // publish-controls PDCA #8 — optional for legacy compat
+  visibility?: Visibility;
+  commentsEnabled?: boolean;
+  seriesIds?: string[];
 };
 
 interface StoredDraft {
@@ -161,6 +166,10 @@ function buildDraftPayload(
     location_name: state.locationName || null,
     location_lat: state.locationLat,
     location_lng: state.locationLng,
+    // publish-controls PDCA #8 — persisted in draft payload
+    visibility: state.visibility ?? "public",
+    comments_enabled: state.commentsEnabled ?? true,
+    series_ids: state.seriesIds ?? [],
   };
 }
 

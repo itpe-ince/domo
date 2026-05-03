@@ -25,7 +25,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 import { useI18n } from "@/i18n";
 import type { CreatePostMedia } from "@/lib/api";
-import { DragHandleIcon } from "@/components/icons";
+import { DragHandleIcon, EditPencilIcon } from "@/components/icons";
 import type { UploadTask } from "@/lib/hooks/useMediaUploadQueue";
 
 export interface SortableMediaCardProps {
@@ -38,6 +38,15 @@ export interface SortableMediaCardProps {
   uploadTask?: UploadTask;
   onRemove: (id: string) => void;
   onCaptionChange: (id: string, caption: string) => void;
+  // editor-image-studio PDCA #6-image — Step 5 entry point (inert until Step 6).
+  // Optional: when undefined the EditButton is not rendered, keeping backwards
+  // compatibility with callers that don't pass this prop yet.
+  onEditMedia?: (id: string) => void;
+}
+
+/** Returns true when the URL points to a GIF file (OQ-9 = B: no GIF editing). */
+function isGif(url: string): boolean {
+  return /\.gif(\?|$)/i.test(url);
 }
 
 const CAPTION_MAX = 280;
@@ -50,6 +59,7 @@ export function SortableMediaCard({
   uploadTask,
   onRemove,
   onCaptionChange,
+  onEditMedia,
 }: SortableMediaCardProps) {
   const { t } = useI18n();
   const {
@@ -129,6 +139,18 @@ export function SortableMediaCard({
           <div className="w-full h-full flex items-center justify-center text-text-muted text-xs p-2">
             {media.external_source || media.type}
           </div>
+        )}
+
+        {/* Edit button (top-right, offset left of Remove) — image+!gif+!uploading only */}
+        {onEditMedia && media.type === "image" && !isGif(media.url) && !isUploading && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onEditMedia(id); }}
+            aria-label={t("post.editor.media.edit.aria")}
+            className="absolute top-1 right-8 z-20 bg-black/60 hover:bg-black/80 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+          >
+            <EditPencilIcon className="w-3.5 h-3.5" />
+          </button>
         )}
 
         {/* Remove button (top-right) */}

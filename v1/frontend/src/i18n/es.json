@@ -183,6 +183,9 @@
         "reorder": {
           "aria": "Elemento multimedia {{index}}"
         },
+        "edit": {
+          "aria": "Editar imagen"
+        },
         "remove": {
           "aria": "Eliminar medio"
         },
@@ -191,7 +194,78 @@
           "complete": "Carga completa",
           "failed": "{{n}} carga(s) fallida(s)"
         },
-        "uploading": "Subiendo..."
+        "uploading": "Subiendo...",
+        "studio": {
+          "image": {
+            "editor": {
+              "title": "Editar imagen",
+              "saving": "Guardando...",
+              "noIdHint": "La edición de imágenes está disponible después de publicar",
+              "error": {
+                "auctionActive": "No se puede editar mientras hay una subasta activa",
+                "signatureMissing": "Por favor, sube una firma primero",
+                "tooLarge": "El archivo es demasiado grande (máx. 20MB)",
+                "unsupportedType": "Formato de archivo no compatible",
+                "notOwner": "Solo puedes editar tus propios medios",
+                "rateLimit": "Demasiadas solicitudes. Inténtalo de nuevo más tarde",
+                "generic": "Error al guardar. Inténtalo de nuevo",
+                "noMediaId": "La edición de imágenes está disponible después de publicar"
+              }
+            },
+            "tool": {
+              "rotate": {
+                "label": "Rotar",
+                "90": "Rotar 90°",
+                "180": "Rotar 180°",
+                "270": "Rotar 270°",
+                "current": "Actual"
+              },
+              "crop": {
+                "label": "Recortar",
+                "ratio_1_1": "1:1",
+                "ratio_4_3": "4:3",
+                "ratio_16_9": "16:9",
+                "ratio_free": "Libre",
+                "ratio_original": "Original"
+              },
+              "mosaic": {
+                "label": "Mosaico",
+                "strength": "Intensidad",
+                "clearAll": "Borrar todo"
+              },
+              "watermark": {
+                "label": "Marca de agua",
+                "text": {
+                  "label": "Texto de marca de agua",
+                  "placeholder": "Escribe el texto"
+                },
+                "opacity": "Opacidad",
+                "apply": "Aplicar",
+                "remove": "Quitar",
+                "signature": {
+                  "label": "Firma",
+                  "upload": "Subir firma",
+                  "change": "Cambiar",
+                  "remove": "Eliminar",
+                  "removeConfirm": "¿Eliminar la firma?",
+                  "current": "Firma actual",
+                  "loading": "Verificando firma...",
+                  "useToggle": "Usar firma como marca de agua",
+                  "tooLarge": "El archivo es demasiado grande (máx. 2MB)",
+                  "unsupportedType": "Formato no compatible (solo PNG/WebP)",
+                  "uploadFailed": "Error al subir. Por favor, inténtalo de nuevo",
+                  "modal": {
+                    "title": "Subir firma",
+                    "hint": "Sube una imagen de firma para usarla como marca de agua",
+                    "requirements": "PNG o WebP, máx. 2MB. Se recomienda fondo transparente.",
+                    "upload": "Subir",
+                    "uploading": "Subiendo..."
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "wizard": {
         "indicator": "Progreso de pasos",
@@ -201,6 +275,7 @@
           "type": "Tipo",
           "content": "Contenido",
           "productMeta": "Producto",
+          "publishOptions": "Opciones",
           "publish": "Publicar"
         },
         "stepType": {
@@ -216,6 +291,79 @@
           "hint": "Revisa o modifica la programación y la ubicación a continuación.",
           "empty": "Puedes añadir programación y ubicación desde la barra de herramientas del paso anterior."
         }
+      },
+      "publishOptions": {
+        "title": "Opciones de publicación",
+        "visibility": {
+          "label": "Visibilidad",
+          "public": "Público",
+          "followersOnly": "Solo seguidores",
+          "unlisted": "Solo con enlace",
+          "publicHint": "Cualquier persona puede ver esta publicación",
+          "followersHint": "Solo tus seguidores pueden verla",
+          "unlistedHint": "Solo quienes tengan el enlace pueden verla"
+        },
+        "comments": {
+          "label": "Permitir comentarios",
+          "enabled": "Activados",
+          "disabled": "Desactivados",
+          "hint": "Los comentarios existentes se conservan aunque desactives los comentarios"
+        },
+        "series": {
+          "label": "Serie",
+          "select": "Seleccionar serie",
+          "createNew": "+ Crear nueva serie",
+          "none": "Todavía no has creado ninguna serie"
+        },
+        "scheduled": {
+          "label": "Publicación programada",
+          "placeholder": "Selecciona fecha y hora",
+          "timezone": "Tu zona horaria: {tz}",
+          "clearLabel": "Publicar ahora",
+          "tooSoon": "Por favor, selecciona al menos 5 minutos a partir de ahora",
+          "tooFar": "Por favor, selecciona un tiempo dentro del próximo año"
+        }
+      },
+      "error": {
+        "postNotFound": "Publicación no encontrada",
+        "postNotOwner": "Solo puedes publicar tus propias publicaciones",
+        "postInvalidState": "Esta publicación ya ha sido publicada",
+        "auctionActiveVisibilityLocked": "No se puede cambiar la visibilidad mientras hay una subasta activa",
+        "seriesNotFound": "La serie seleccionada no existe",
+        "seriesNotOwner": "Solo puedes seleccionar tus propias series",
+        "scheduledAtTooSoon": "La publicación programada debe ser al menos 5 minutos después",
+        "scheduledAtTooFar": "La publicación programada debe ser dentro de 1 año",
+        "commentsDisabled": "Los comentarios están desactivados"
+      }
+    },
+    "series": {
+      "viewAll": "Ver series",
+      "byAuthor": "Series de {{name}}",
+      "edit": "Editar serie",
+      "delete": "Eliminar serie",
+      "deleteConfirm": "¿Eliminar esta serie? Las publicaciones de la serie se conservarán.",
+      "empty": "Esta serie aún no tiene publicaciones",
+      "notFound": "Serie no encontrada",
+      "postCount": "{{count}} publicaciones",
+      "addPost": "Añadir publicación",
+      "removePost": "Quitar de la serie",
+      "createModal": {
+        "title": "Crear nueva serie",
+        "titleLabel": "Título de la serie",
+        "descriptionLabel": "Descripción (opcional)",
+        "submit": "Crear",
+        "cancel": "Cancelar",
+        "coverLabel": "Imagen de portada (opcional)",
+        "coverHint": "Si no se establece, se usa automáticamente la imagen de la primera publicación",
+        "coverUploading": "Subiendo portada...",
+        "coverUploadFailed": "Error al subir la portada"
+      }
+    },
+    "feed": {
+      "indicator": {
+        "followersOnly": "Solo seguidores",
+        "unlisted": "Enlace compartido",
+        "commentsDisabled": "Los comentarios están deshabilitados en esta publicación"
       }
     }
   },

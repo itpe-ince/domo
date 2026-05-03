@@ -9,6 +9,7 @@ from app.models.kyc import KYCSession
 from app.models.moderation import Report, Warning
 from app.models.notification import Notification
 from app.models.post import Comment, Follow, Like, MediaAsset, Post, ProductPost
+from app.models.series import PostSeriesMembership, Series
 from app.models.school import School
 from app.models.reward import RewardClaim, SponsorReward
 from app.models.search_log import SearchLog
@@ -50,4 +51,6 @@ __all__ = [
     "Bookmark",
     "PostCollection",
     "PostCollectionItem",
+    "Series",
+    "PostSeriesMembership",
 ]

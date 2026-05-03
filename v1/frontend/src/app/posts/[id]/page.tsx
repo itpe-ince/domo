@@ -22,6 +22,7 @@ import {
   tokenStore,
   unlikePost,
 } from "@/lib/api";
+import { useI18n } from "@/i18n";
 
 export default function PostDetailPage({
   params,
@@ -29,6 +30,7 @@ export default function PostDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const { t } = useI18n();
   const [post, setPost] = useState<PostView | null>(null);
   const [comments, setComments] = useState<CommentView[]>([]);
   const [me, setMe] = useState<ApiUser | null>(null);
@@ -350,25 +352,31 @@ export default function PostDetailPage({
               댓글 {post.comment_count}
             </h3>
 
-            {me && (
-              <div className="card p-3 mb-4">
-                <textarea
-                  value={commentDraft}
-                  onChange={(e) => setCommentDraft(e.target.value)}
-                  rows={2}
-                  placeholder="댓글을 남겨보세요"
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none resize-none"
-                />
-                <div className="flex justify-end mt-2">
-                  <button
-                    onClick={handleSubmitComment}
-                    disabled={posting || !commentDraft.trim()}
-                    className="btn-primary text-xs disabled:opacity-50"
-                  >
-                    {posting ? "작성 중..." : "작성"}
-                  </button>
-                </div>
+            {post.comments_enabled === false ? (
+              <div className="text-text-muted text-sm py-4 text-center border border-border rounded-lg my-4">
+                {t("post.feed.indicator.commentsDisabled")}
               </div>
+            ) : (
+              me && (
+                <div className="card p-3 mb-4">
+                  <textarea
+                    value={commentDraft}
+                    onChange={(e) => setCommentDraft(e.target.value)}
+                    rows={2}
+                    placeholder="댓글을 남겨보세요"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none resize-none"
+                  />
+                  <div className="flex justify-end mt-2">
+                    <button
+                      onClick={handleSubmitComment}
+                      disabled={posting || !commentDraft.trim()}
+                      className="btn-primary text-xs disabled:opacity-50"
+                    >
+                      {posting ? "작성 중..." : "작성"}
+                    </button>
+                  </div>
+                </div>
+              )
             )}
 
             {comments.length === 0 ? (

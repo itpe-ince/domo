@@ -24,6 +24,7 @@ from app.api import collections as collections_router
 from app.api import communities as communities_router
 from app.api import drafts as drafts_router
 from app.api import posts as posts_router
+from app.api import series as series_router
 from app.api import rankings as rankings_router
 from app.api import reports as reports_router
 from app.api import rewards as rewards_router
@@ -140,6 +141,7 @@ api_v1.include_router(communities_router.router)
 api_v1.include_router(drafts_router.router)
 api_v1.include_router(kyc_router.router)
 api_v1.include_router(posts_router.router)
+api_v1.include_router(series_router.router)
 api_v1.include_router(rankings_router.router)
 api_v1.include_router(reports_router.router)
 api_v1.include_router(rewards_router.router)

@@ -23,6 +23,8 @@ import {
   type ApiUser,
   type CreatePostMedia,
   type OEmbedData,
+  type Visibility,
+  type Series,
 } from "@/lib/api";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 import type { DraftSaveStatus } from "@/lib/hooks/useDraftAutosave";
@@ -38,6 +40,7 @@ import { EditorStepType } from "@/components/post-editor/wizard/EditorStepType";
 import { EditorStepContent } from "@/components/post-editor/wizard/EditorStepContent";
 import { EditorStepProductMeta } from "@/components/post-editor/wizard/EditorStepProductMeta";
 import { EditorStepPublish } from "@/components/post-editor/wizard/EditorStepPublish";
+import { PublishOptionsPanel } from "@/components/post-editor/PublishOptionsPanel";
 
 export interface EditorMobileWizardProps {
   // Form state read
@@ -86,6 +89,18 @@ export interface EditorMobileWizardProps {
   onReorder: (activeId: string, overId: string) => void;
   onCaptionChange: (id: string, caption: string) => void;
   uploadQueue: UploadTask[];
+  // editor-image-studio PDCA #6-image — Step 6 props drilling
+  onEditMedia?: (id: string) => void;
+  // publish-controls PDCA #8
+  visibility: Visibility;
+  setVisibility: (v: Visibility) => void;
+  commentsEnabled: boolean;
+  setCommentsEnabled: (b: boolean) => void;
+  seriesIds: string[];
+  setSeriesIds: (ids: string[]) => void;
+  mySeries: Series[];
+  mySeriesLoading: boolean;
+  onCreateSeriesClick: () => void;
 }
 
 export function EditorMobileWizard(props: EditorMobileWizardProps) {
@@ -128,6 +143,16 @@ export function EditorMobileWizard(props: EditorMobileWizardProps) {
     onReorder,
     onCaptionChange,
     uploadQueue,
+    onEditMedia,
+    visibility,
+    setVisibility,
+    commentsEnabled,
+    setCommentsEnabled,
+    seriesIds,
+    setSeriesIds,
+    mySeries,
+    mySeriesLoading,
+    onCreateSeriesClick,
   } = props;
 
   // Derive step machine from current post type — type=product adds a
@@ -216,6 +241,7 @@ export function EditorMobileWizard(props: EditorMobileWizardProps) {
               onReorder={onReorder}
               onCaptionChange={onCaptionChange}
               uploadQueue={uploadQueue}
+              onEditMedia={onEditMedia}
             />
           )}
           {wizard.step === "product_meta" && (
@@ -234,6 +260,22 @@ export function EditorMobileWizard(props: EditorMobileWizardProps) {
               onIsBuyNowChange={setters.setIsBuyNow}
               buyNowPrice={buyNowPrice}
               onBuyNowPriceChange={setters.setBuyNowPrice}
+            />
+          )}
+          {wizard.step === "publish-options" && (
+            <PublishOptionsPanel
+              visibility={visibility}
+              setVisibility={setVisibility}
+              commentsEnabled={commentsEnabled}
+              setCommentsEnabled={setCommentsEnabled}
+              seriesIds={seriesIds}
+              setSeriesIds={setSeriesIds}
+              scheduledAt={scheduledAt}
+              setScheduledAt={setters.setScheduledAt}
+              mySeries={mySeries}
+              seriesLoading={mySeriesLoading}
+              disabled={uploading || submitting}
+              onCreateSeriesClick={onCreateSeriesClick}
             />
           )}
           {wizard.step === "publish" && (

@@ -19,6 +19,7 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
 
 import type { DraftState } from "@/lib/hooks/useDraftAutosave";
+import type { Visibility } from "@/lib/api";
 
 // Each setter is the full React Dispatch<SetStateAction<T>> so callers can
 // pass either a value or a `(prev) => next` updater — same contract as the
@@ -42,6 +43,10 @@ export interface PostFormSetters {
   setDimensions: Dispatch<SetStateAction<string>>;
   setMedium: Dispatch<SetStateAction<string>>;
   setYear: Dispatch<SetStateAction<number | "">>;
+  // publish-controls PDCA #8
+  setVisibility: Dispatch<SetStateAction<Visibility>>;
+  setCommentsEnabled: Dispatch<SetStateAction<boolean>>;
+  setSeriesIds: Dispatch<SetStateAction<string[]>>;
 }
 
 export interface UsePostFormStateOptions {
@@ -78,6 +83,11 @@ export function usePostFormState({
   const [medium, setMedium] = useState("");
   const [year, setYear] = useState<number | "">(2026);
 
+  // publish-controls PDCA #8
+  const [visibility, setVisibility] = useState<Visibility>("public");
+  const [commentsEnabled, setCommentsEnabled] = useState(true);
+  const [seriesIds, setSeriesIds] = useState<string[]>([]);
+
   const formState: DraftState = {
     type,
     title,
@@ -97,6 +107,9 @@ export function usePostFormState({
     dimensions,
     medium,
     year,
+    visibility,
+    commentsEnabled,
+    seriesIds,
   };
 
   const setters: PostFormSetters = {
@@ -118,6 +131,9 @@ export function usePostFormState({
     setDimensions,
     setMedium,
     setYear,
+    setVisibility,
+    setCommentsEnabled,
+    setSeriesIds,
   };
 
   function resetFromDraft(d: DraftState): void {
@@ -139,6 +155,10 @@ export function usePostFormState({
     setDimensions(d.dimensions);
     setMedium(d.medium);
     setYear(d.year);
+    // publish-controls PDCA #8 — legacy default for older drafts
+    setVisibility(d.visibility ?? "public");
+    setCommentsEnabled(d.commentsEnabled ?? true);
+    setSeriesIds(d.seriesIds ?? []);
   }
 
   return { formState, setters, resetFromDraft };

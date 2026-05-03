@@ -183,6 +183,9 @@
         "reorder": {
           "aria": "{{index}}번째 미디어"
         },
+        "edit": {
+          "aria": "이미지 편집"
+        },
         "remove": {
           "aria": "미디어 삭제"
         },
@@ -191,7 +194,121 @@
           "complete": "업로드 완료",
           "failed": "{{n}}개 업로드 실패"
         },
-        "uploading": "업로드 중..."
+        "uploading": "업로드 중...",
+        "studio": {
+          "image": {
+            "editor": {
+              "title": "이미지 편집",
+              "saving": "저장 중...",
+              "noIdHint": "이미지 편집은 발행 후 가능합니다",
+              "error": {
+                "auctionActive": "경매 진행 중에는 편집할 수 없습니다",
+                "signatureMissing": "시그니처를 먼저 업로드하세요",
+                "tooLarge": "파일이 너무 큽니다 (최대 20MB)",
+                "unsupportedType": "지원하지 않는 형식입니다",
+                "notOwner": "본인의 미디어만 편집할 수 있습니다",
+                "rateLimit": "너무 많은 요청. 잠시 후 다시 시도하세요",
+                "generic": "저장 실패. 다시 시도해주세요",
+                "noMediaId": "이미지 편집은 발행 후 가능합니다"
+              }
+            },
+            "tool": {
+              "rotate": {
+                "label": "회전",
+                "90": "90° 회전",
+                "180": "180° 회전",
+                "270": "270° 회전",
+                "current": "현재"
+              },
+              "crop": {
+                "label": "자르기",
+                "ratio_1_1": "1:1",
+                "ratio_4_3": "4:3",
+                "ratio_16_9": "16:9",
+                "ratio_free": "자유",
+                "ratio_original": "원본"
+              },
+              "mosaic": {
+                "label": "모자이크",
+                "strength": "강도",
+                "clearAll": "모두 지우기"
+              },
+              "watermark": {
+                "label": "워터마크",
+                "text": {
+                  "label": "워터마크 텍스트",
+                  "placeholder": "텍스트를 입력하세요"
+                },
+                "opacity": "투명도",
+                "apply": "적용",
+                "remove": "제거",
+                "signature": {
+                  "label": "시그니처",
+                  "upload": "시그니처 업로드",
+                  "change": "변경",
+                  "remove": "삭제",
+                  "removeConfirm": "시그니처를 삭제하시겠습니까?",
+                  "current": "현재 시그니처",
+                  "loading": "시그니처 확인 중...",
+                  "useToggle": "워터마크에 시그니처 사용",
+                  "tooLarge": "파일이 너무 큽니다 (최대 2MB)",
+                  "unsupportedType": "지원하지 않는 형식입니다 (PNG/WebP만 가능)",
+                  "uploadFailed": "업로드 실패. 다시 시도하세요",
+                  "modal": {
+                    "title": "시그니처 업로드",
+                    "hint": "워터마크로 사용할 서명 이미지를 업로드하세요",
+                    "requirements": "PNG 또는 WebP, 최대 2MB. 투명 배경 권장.",
+                    "upload": "업로드",
+                    "uploading": "업로드 중..."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "publishOptions": {
+        "title": "발행 옵션",
+        "visibility": {
+          "label": "공개 범위",
+          "public": "전체 공개",
+          "followersOnly": "팔로워만",
+          "unlisted": "링크 공유",
+          "publicHint": "모든 사람이 볼 수 있어요",
+          "followersHint": "나를 팔로우하는 사람만 볼 수 있어요",
+          "unlistedHint": "URL이 있는 사람만 볼 수 있어요"
+        },
+        "comments": {
+          "label": "댓글 허용",
+          "enabled": "허용",
+          "disabled": "비허용",
+          "hint": "댓글을 비허용해도 기존 댓글은 보존됩니다"
+        },
+        "series": {
+          "label": "시리즈",
+          "select": "시리즈 선택",
+          "createNew": "+ 새 시리즈 만들기",
+          "none": "아직 시리즈가 없습니다"
+        },
+        "scheduled": {
+          "label": "예약 발행",
+          "placeholder": "발행 일시 선택",
+          "timezone": "내 시간대: {tz}",
+          "clearLabel": "즉시 발행으로",
+          "tooSoon": "최소 5분 이후로 설정해주세요",
+          "tooFar": "최대 1년 이내로 설정해주세요"
+        }
+      },
+      "error": {
+        "postNotFound": "포스트를 찾을 수 없습니다",
+        "postNotOwner": "본인의 포스트만 발행할 수 있습니다",
+        "postInvalidState": "이미 발행된 포스트입니다",
+        "auctionActiveVisibilityLocked": "경매 진행 중에는 공개 범위를 변경할 수 없습니다",
+        "seriesNotFound": "선택한 시리즈를 찾을 수 없습니다",
+        "seriesNotOwner": "내 시리즈만 선택할 수 있습니다",
+        "scheduledAtTooSoon": "예약 발행은 5분 이후부터 설정할 수 있습니다",
+        "scheduledAtTooFar": "예약 발행은 1년 이내로 설정할 수 있습니다",
+        "commentsDisabled": "댓글이 비활성화되어 있습니다"
       },
       "wizard": {
         "indicator": "단계 진행률",
@@ -201,6 +318,7 @@
           "type": "유형",
           "content": "내용",
           "productMeta": "상품 정보",
+          "publishOptions": "발행 옵션",
           "publish": "발행"
         },
         "stepType": {
@@ -216,6 +334,36 @@
           "hint": "예약 발행과 위치 정보가 있다면 아래에서 확인·수정할 수 있습니다.",
           "empty": "예약 발행과 위치 정보는 이전 단계의 도구 모음에서 추가할 수 있습니다."
         }
+      }
+    },
+    "series": {
+      "viewAll": "시리즈 보기",
+      "byAuthor": "{{name}}의 시리즈",
+      "edit": "시리즈 편집",
+      "delete": "시리즈 삭제",
+      "deleteConfirm": "이 시리즈를 삭제하시겠습니까? 시리즈에 속한 포스트는 유지됩니다.",
+      "empty": "이 시리즈에 아직 포스트가 없습니다",
+      "notFound": "시리즈를 찾을 수 없습니다",
+      "postCount": "{{count}}개의 포스트",
+      "addPost": "포스트 추가",
+      "removePost": "시리즈에서 제거",
+      "createModal": {
+        "title": "새 시리즈 만들기",
+        "titleLabel": "시리즈 제목",
+        "descriptionLabel": "설명 (선택)",
+        "submit": "만들기",
+        "cancel": "취소",
+        "coverLabel": "커버 이미지 (선택)",
+        "coverHint": "없으면 첫 포스트 이미지가 자동 사용됩니다",
+        "coverUploading": "커버 업로드 중...",
+        "coverUploadFailed": "커버 업로드 실패"
+      }
+    },
+    "feed": {
+      "indicator": {
+        "followersOnly": "팔로워 전용",
+        "unlisted": "링크 공유",
+        "commentsDisabled": "댓글이 비허용된 게시물입니다"
       }
     }
   },

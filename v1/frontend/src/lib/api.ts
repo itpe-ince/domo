@@ -369,6 +369,9 @@ export type PostView = {
   location_lng?: number | null;
   scheduled_at?: string | null;
   recommendation_reason?: string | null;
+  // publish-controls PDCA #8 — Backend _serialize_post() already includes these (Step 1.7)
+  visibility?: Visibility;
+  comments_enabled?: boolean;
 };
 
 export type CommentView = {
@@ -1198,6 +1201,107 @@ export async function patchMedia(
   });
 }
 
+// ─── editor-image-studio PDCA #6-image — CropMeta types (1:1 with backend) ─
+
+/** Pixel-space crop rectangle. Coords are post-rotate source pixels. */
+export interface CropRect { x: number; y: number; w: number; h: number; }
+
+export interface MosaicRegion {
+  x: number; y: number; w: number; h: number;
+  strength: 10 | 20 | 40;
+}
+
+export interface WatermarkPosition { x: number; y: number; }
+
+export interface WatermarkMeta {
+  source: "text" | "signature";
+  text?: string;
+  position: WatermarkPosition;
+  size?: number;
+  opacity: number;
+}
+
+export interface CropMeta {
+  version: 1;
+  rotation: 0 | 90 | 180 | 270;
+  crop?: CropRect;
+  mosaic_regions: MosaicRegion[];
+  watermark?: WatermarkMeta;
+}
+
+// Discriminated union for the request body's ops list
+
+export interface RotateOp { type: "rotate"; degrees: 90 | 180 | 270; }
+
+export interface CropOp {
+  type: "crop"; x: number; y: number; w: number; h: number;
+  ratio?: "1:1" | "4:3" | "16:9" | "free" | "original";
+}
+
+export interface MosaicOp { type: "mosaic"; regions: MosaicRegion[]; }
+
+export interface WatermarkOp {
+  type: "watermark";
+  source: "text" | "signature";
+  text?: string;
+  position: WatermarkPosition;
+  size?: number;
+  opacity: number;
+}
+
+export type MediaTransformOp = RotateOp | CropOp | MosaicOp | WatermarkOp;
+
+export interface MediaTransformResponse {
+  id: string;
+  url: string;
+  thumbnail_url: string | null;
+  thumb_small_url: string | null;
+  thumb_medium_url: string | null;
+  thumb_large_url: string | null;
+  width: number | null;
+  height: number | null;
+  crop_meta: CropMeta;
+}
+
+/**
+ * Apply non-destructive image edits.
+ *
+ * Owner-only. Permitted after publication; blocked by the backend with
+ * `AUCTION_ACTIVE_MEDIA_LOCKED` (409) when the host post has an active
+ * auction (OQ-8 = C, mirrors PATCH /media/{id} caption flow).
+ */
+export async function patchMediaTransform(
+  mediaId: string,
+  ops: MediaTransformOp[]
+): Promise<MediaTransformResponse> {
+  return apiFetch<MediaTransformResponse>(
+    `/media/${encodeURIComponent(mediaId)}/transform`,
+    { method: "POST", body: JSON.stringify({ ops }) }
+  );
+}
+
+// ─── editor-image-studio — Signature endpoints (OQ-D-3 = B, OQ-D-B = C) ────
+
+export interface SignatureResponse { signature_url: string | null; }
+
+export async function getMySignature(): Promise<SignatureResponse> {
+  return apiFetch<SignatureResponse>("/me/signature", { method: "GET" });
+}
+
+export async function uploadMySignature(file: File): Promise<SignatureResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+  return apiFetch<SignatureResponse>("/me/signature", {
+    method: "POST",
+    body: formData,
+  });
+}
+
+export async function deleteMySignature(): Promise<void> {
+  // 204 No Content — apiFetch handles empty body via the res.status === 204 guard.
+  await apiFetch<void>("/me/signature", { method: "DELETE" });
+}
+
 export async function registerExternalMedia(url: string, isMakingVideo = false) {
   return apiFetch<UploadedMedia>("/media/external", {
     method: "POST",
@@ -1224,6 +1328,16 @@ export type CreatePostMedia = {
   // stripped from the publish payload (POST /v1/posts) — backend Pydantic
   // schema does not declare this field.
   _clientId?: string;
+  // editor-image-studio PDCA #6-image — non-destructive edit metadata.
+  // undefined for legacy drafts and unedited media. Set by the backend
+  // POST /v1/media/{id}/transform response and persisted in localStorage.
+  crop_meta?: CropMeta;
+  // editor-image-studio PDCA #6-image Step 8 — backend MediaAsset.id.
+  // Populated from MediaAssetView.id when restoring from a published post or
+  // from patchMediaTransform response. Undefined for freshly-uploaded draft
+  // media (no MediaAsset row exists yet — upload creates a temp blob, the row
+  // is created on publish). MUST be stripped from the publish payload.
+  id?: string;
 };
 
 // ─── oEmbed + Tags ──────────────────────────────────────────────────────
@@ -1337,6 +1451,10 @@ export type DraftPayload = {
   location_name?: string | null;
   location_lat?: number | null;
   location_lng?: number | null;
+  // publish-controls PDCA #8 — persisted in draft for restore continuity
+  visibility?: Visibility;
+  comments_enabled?: boolean;
+  series_ids?: string[];
 };
 
 /** List drafts owned by the current user (most recent first).
@@ -1388,4 +1506,112 @@ export class ApiClientError extends Error {
     super(message);
     this.name = "ApiClientError";
   }
+}
+
+// ─── publish-controls PDCA #8 — Visibility + Series + Publish types ──────
+
+export type Visibility = "public" | "followers_only" | "unlisted";
+
+export interface Series {
+  id: string;
+  author_id: string;
+  title: string;
+  description?: string | null;
+  cover_url?: string | null;
+  created_at: string;
+  updated_at: string;
+  post_count?: number;
+}
+
+export interface SeriesCreate {
+  title: string;
+  description?: string | null;
+  cover_url?: string | null;
+}
+
+export interface SeriesPatch {
+  title?: string;
+  description?: string | null;
+  cover_url?: string | null;
+}
+
+export interface SeriesWithPosts {
+  id: string;
+  author_id: string;
+  title: string;
+  description?: string | null;
+  cover_url?: string | null;
+  created_at: string;
+  updated_at: string;
+  post_count: number;
+  posts: { id: string; title: string | null }[];
+}
+
+export interface PostPublishRequest {
+  publish_at?: string | null;
+  visibility?: Visibility;
+  comments_enabled?: boolean;
+  series_ids?: string[];
+}
+
+export interface PostPublishResponse {
+  id: string;
+  status: "published" | "scheduled" | "pending_review";
+  visibility: Visibility;
+  comments_enabled: boolean;
+  scheduled_at: string | null;
+  series_count: number;
+  updated_at: string;
+}
+
+// ─── publish-controls — API client functions (8) ──────────────────────────
+
+export async function listMySeries(): Promise<Series[]> {
+  return apiFetch<Series[]>("/series");
+}
+
+export async function listSeriesByAuthor(authorId: string): Promise<Series[]> {
+  return apiFetch<Series[]>(`/series?author_id=${encodeURIComponent(authorId)}`);
+}
+
+export async function createSeries(body: SeriesCreate): Promise<Series> {
+  return apiFetch<Series>("/series", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function patchSeries(id: string, body: SeriesPatch): Promise<Series> {
+  return apiFetch<Series>(`/series/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function deleteSeries(id: string): Promise<void> {
+  await apiFetch<void>(`/series/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export async function getSeriesWithPosts(id: string): Promise<SeriesWithPosts> {
+  return apiFetch<SeriesWithPosts>(`/series/${encodeURIComponent(id)}`);
+}
+
+export async function setPostSeriesIds(
+  postId: string,
+  seriesIds: string[]
+): Promise<{ post_id: string; series_count: number }> {
+  return apiFetch(`/posts/${encodeURIComponent(postId)}/series`, {
+    method: "POST",
+    body: JSON.stringify({ series_ids: seriesIds }),
+  });
+}
+
+export async function publishPost(
+  postId: string,
+  body: PostPublishRequest
+): Promise<PostPublishResponse> {
+  return apiFetch<PostPublishResponse>(
+    `/posts/${encodeURIComponent(postId)}/publish`,
+    { method: "POST", body: JSON.stringify(body) }
+  );
 }

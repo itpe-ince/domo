@@ -43,6 +43,19 @@ class Post(Base):
     status: Mapped[str] = mapped_column(String(20), default="pending_review")
     # 'draft' | 'pending_review' | 'published' | 'hidden' | 'deleted'
     digital_art_check: Mapped[str] = mapped_column(String(20), default="pending")
+
+    # publish-controls PDCA #8 §B-2 — visibility + comments_enabled.
+    # OQ-1=A: enum 'public'/'followers_only'/'unlisted'. String(20) leaves room for
+    # Phase 4 #10 'tier_only' additive expansion.
+    visibility: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="public",
+        comment="OQ-1=A. Phase 4 #10 may add 'tier_only' etc."
+    )
+    # OQ-3=A: False blocks new POST /comments; existing comments preserved (read-only).
+    comments_enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True,
+        comment="OQ-3=A. False → POST /comments 403; existing comments preserved."
+    )
     # 'pending' | 'approved' | 'rejected' | 'not_required'
 
     scheduled_at: Mapped[datetime | None] = mapped_column(

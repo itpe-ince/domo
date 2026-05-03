@@ -47,6 +47,10 @@ DEFAULT_LIMITS: dict[str, dict] = {
     "search": {"limit": 30, "window_sec": 60, "by": "ip"},
     "default_read": {"limit": 120, "window_sec": 60, "by": "user"},
     "gdpr_export": {"limit": 1, "window_sec": 86400, "by": "user"},
+    # publish-controls PDCA #8 §B-12
+    "post_publish": {"limit": 10, "window_sec": 60, "by": "user"},
+    "series_write": {"limit": 30, "window_sec": 60, "by": "user"},
+    "series_read": {"limit": 60, "window_sec": 60, "by": "user"},
 }
 
 

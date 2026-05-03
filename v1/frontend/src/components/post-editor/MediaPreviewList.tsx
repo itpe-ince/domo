@@ -55,6 +55,8 @@ interface MediaPreviewListProps {
   onReorder: (activeId: string, overId: string) => void;
   onCaptionChange: (id: string, caption: string) => void;
   uploadQueue: UploadTask[];
+  // editor-image-studio PDCA #6-image — Step 6 props drilling
+  onEditMedia?: (id: string) => void;
 }
 
 /**
@@ -77,6 +79,7 @@ export function MediaPreviewList({
   onReorder,
   onCaptionChange,
   uploadQueue,
+  onEditMedia,
 }: MediaPreviewListProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -144,6 +147,7 @@ export function MediaPreviewList({
                     uploadTask={taskById.get(id)}
                     onRemove={handleRemoveById}
                     onCaptionChange={onCaptionChange}
+                    onEditMedia={onEditMedia}
                   />
                 );
               })}

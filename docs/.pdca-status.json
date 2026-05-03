@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-03T11:55:17.602Z",
+  "lastUpdated": "2026-05-03T22:27:02.205Z",
   "activeFeatures": [
     "core",
     "db",
@@ -73,9 +73,13 @@
     "image_transform.py",
     "tests",
     "unit",
-    "integration"
+    "integration",
+    "image-editor",
+    "series"
   ],
-  "primaryFeature": "editor-image-studio",
+  "primaryFeature": null,
+  "previousPrimaryFeature": "publish-controls (archived 2026-05-03, matchRate 100%)",
+  "criticalPathNext": "Critical Path #1-#8 모두 완료 — 다음: #10 artist-tier-release (Phase 4, visibility 시스템 위에서 동작) 또는 #12 notifications-ux-audit (Phase 3, 독립 병렬). carry-over: editor-video-studio (#6-video, ffmpeg 인프라 차단), series reorder persistence endpoint, upload-retry-ui, editor-i18n-cleanup",
   "features": {
     "editor-media-ux": {
       "phase": "archived",
@@ -86,144 +90,29 @@
       "archivedTo": "v1/docs/archive/2026-05/editor-media-ux/"
     },
     "editor-image-studio": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "doProgress": {
-        "step1_backend_alembic_models_schemas": "completed_2026-05-03",
-        "step2_backend_image_processing": "completed_2026-05-03 (image_transform.py 367L + 12 unit tests passing in 0.63s)",
-        "step3_backend_endpoints": "completed_2026-05-03 (StorageProvider.get + POST /v1/media/{id}/transform + POST/GET/DELETE /v1/me/signature, path /me/signature 통일 → design v1.4)",
-        "step4_backend_tests": "completed_2026-05-03 (10 integration tests + 2 smoke scripts + 22 total tests passing in 1.06s)",
-        "step5_frontend_deps_types": "pending",
-        "step6_frontend_modal_skeleton": "pending",
-        "step7_frontend_4tools": "pending",
-        "step7b_frontend_signature_modal": "pending",
-        "step8_frontend_integration": "pending",
-        "step9_frontend_i18n": "pending",
-        "step10_frontend_regression": "pending"
-      },
-      "matchRate": null,
+      "phase": "archived",
+      "matchRate": 96,
       "iterationCount": 0,
-      "startedAt": "2026-05-03T16:30:00.000Z",
-      "scope": "에디터 #6-image (split from editor-media-studio per OQ-6=B) — 이미지 에디터(회전·크롭·모자이크·워터마크) + Konva + Pillow + crop_meta jsonb + POST /v1/media/{id}/transform 이미지 분기. M~L 5-8일",
+      "startedAt": "2026-05-03T08:18:20.124Z",
+      "completedAt": "2026-05-03T13:16:52.268Z",
+      "archivedAt": "2026-05-03T13:18:00.000Z",
+      "archivedTo": "v1/docs/archive/2026-05/editor-image-studio/",
       "kind": "sub-pdca",
       "parent_roadmap": "editor-revamp-roadmap",
-      "splitFrom": "editor-media-studio (combined plan deleted 2026-05-03)",
       "sisterPdca": "editor-video-studio",
-      "documents": {
-        "plan": "v1/docs/01-plan/features/editor-image-studio.plan.md",
-        "design": "v1/docs/02-design/features/editor-image-studio.design.md"
-      },
-      "designVersion": "1.1",
-      "openQuestions": [
-        {
-          "id": "OQ-1",
-          "question": "이미지 편집 라이브러리",
-          "decision": "B (Konva + react-konva — 4기능 단일 라이브러리)",
-          "status": "resolved",
-          "resolvedAt": "2026-05-03"
-        },
-        {
-          "id": "OQ-3",
-          "question": "비파괴 vs 파괴적 편집",
-          "decision": "A (crop_meta jsonb 보존)",
-          "status": "resolved",
-          "resolvedAt": "2026-05-03"
-        },
-        {
-          "id": "OQ-5",
-          "question": "워터마크 소스",
-          "decision": "C (텍스트 + 시그니처 이미지 둘 다)",
-          "status": "resolved",
-          "resolvedAt": "2026-05-03"
-        },
-        {
-          "id": "OQ-7",
-          "question": "모바일 지원",
-          "decision": "A (데스크탑+모바일 동시)",
-          "status": "resolved",
-          "resolvedAt": "2026-05-03"
-        },
-        {
-          "id": "OQ-8",
-          "question": "transform API 권한",
-          "decision": "C (_check_auction_media_lock 동일 적용)",
-          "status": "resolved",
-          "resolvedAt": "2026-05-03"
-        },
-        {
-          "id": "OQ-9",
-          "question": "GIF transform 처리",
-          "decision": "B (편집 버튼 비활성, 후속 PDCA)",
-          "status": "resolved",
-          "resolvedAt": "2026-05-03"
-        },
-        {
-          "id": "OQ-D-A",
-          "question": "원본 파일 보존 정책",
-          "decision": "C (MediaAsset.original_storage_key 컬럼 추가, alembic 0038)",
-          "status": "resolved",
-          "resolvedAt": "2026-05-03"
-        },
-        {
-          "id": "OQ-D-B",
-          "question": "워터마크 시그니처 취득 방법",
-          "decision": "C (User.signature_storage_key 사전 저장, SSRF 차단)",
-          "status": "resolved",
-          "resolvedAt": "2026-05-03"
-        },
-        {
-          "id": "OQ-D-C",
-          "question": "재처리 기반",
-          "decision": "B (항상 최초 원본, OQ-D-A=C 전제)",
-          "status": "resolved",
-          "resolvedAt": "2026-05-03"
-        },
-        {
-          "id": "OQ-D-1",
-          "question": "Konva Stage 크기 정책",
-          "decision": "A (컨테이너 fit + DPR 보정)",
-          "status": "resolved",
-          "resolvedAt": "2026-05-03"
-        },
-        {
-          "id": "OQ-D-2",
-          "question": "도구 전환 단축키 (1/2/3/4)",
-          "decision": "A (도입)",
-          "status": "resolved",
-          "resolvedAt": "2026-05-03"
-        },
-        {
-          "id": "OQ-D-3",
-          "question": "워터마크 시그니처 소스",
-          "decision": "B (별도 시그니처 업로드 UI/엔드포인트, avatar 재사용 ❌, 신규 §B-14 + §F-10b)",
-          "status": "resolved",
-          "resolvedAt": "2026-05-03",
-          "note": "user override (recommended A → B). +1.5일 추가 작업"
-        },
-        {
-          "id": "OQ-D-4",
-          "question": "모자이크 미리보기 렌더",
-          "decision": "A 시도 → B fallback (Konva.Filters.Pixelate 우선)",
-          "status": "resolved",
-          "resolvedAt": "2026-05-03"
-        },
-        {
-          "id": "OQ-D-5",
-          "question": "크롭 초기화",
-          "decision": "A ('원본' preset 통합)",
-          "status": "resolved",
-          "resolvedAt": "2026-05-03"
-        }
-      ],
-      "estimate": "M~L (5-8일) → v1.1 11.5일 (단축 9.5일, OQ-D-3=B 영향)",
-      "newDependenciesProposed": [
-        "konva",
-        "react-konva"
-      ],
-      "newMigrationsProposed": [
-        "alembic 0037_media_crop_meta (crop_meta)",
-        "alembic 0038_orig_signature_keys (original_storage_key + signature_storage_key) — renamed from 0038_signature_and_original_storage (35>32 char overflow on alembic_version.version_num)"
-      ]
+      "summary": "에디터 #6-image: Konva 클라이언트 4 도구(회전/크롭/모자이크/워터마크) + Pillow 서버 처리 + crop_meta JSONB 비파괴 + alembic 0037+0038 + POST /v1/media/{id}/transform + Signature 3 endpoints (OQ-D-3=B 사용자 override 별도 시그니처 업로드 UI). Backend ~2300 LOC + Frontend ~1500 LOC + 22 tests + 47 i18n × 5 locale, 14 OQ resolved (Plan 6 + Design 8), 5 통합 지점 회귀 0."
+    },
+    "publish-controls": {
+      "phase": "archived",
+      "matchRate": 100,
+      "iterationCount": 0,
+      "startedAt": "2026-05-03T13:32:15.504Z",
+      "completedAt": "2026-05-03T22:42:02.870Z",
+      "archivedAt": "2026-05-03T22:45:00.000Z",
+      "archivedTo": "v1/docs/archive/2026-05/publish-controls/",
+      "kind": "sub-pdca",
+      "parent_roadmap": "editor-revamp-roadmap",
+      "summary": "에디터 #8 Critical Path: B-3 발행 옵션 4건 통합 (공개범위/댓글/시리즈/예약). alembic 0039+0040 + Series 모델 + 6 endpoints (publish + Series CRUD 5종) + visibility 필터 + comments lock + audit log. Frontend PublishOptionsPanel + SeriesCreateModal + /series/[id] dnd-kit reorder + VisibilityBadge + handleSubmit hybrid C. Backend ~1800 LOC + Frontend ~2200 LOC + 22 tests + 2 smoke + 47 i18n × 5 locale = 235 entries. 14 OQ resolved (10 Plan + 5 OQ-D), Match Rate 100%, 5 통합 지점 회귀 0."
     },
     "editor-video-studio": {
       "phase": "plan",
@@ -352,9 +241,9 @@
       "archivedAt": "2026-04-25T04:30:00.000Z",
       "archivedTo": "v1/docs/archive/2026-04/backend/",
       "phaseNumber": 3,
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/conftest.py",
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/main.py",
       "timestamps": {
-        "lastUpdated": "2026-05-03T11:12:45.733Z"
+        "lastUpdated": "2026-05-03T13:53:42.016Z"
       }
     },
     "core": {
@@ -366,7 +255,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:32:03.535Z",
-        "lastUpdated": "2026-05-03T10:30:42.578Z"
+        "lastUpdated": "2026-05-03T13:52:49.333Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/core/rate_limit.py"
     },
@@ -392,9 +281,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:23.836Z",
-        "lastUpdated": "2026-05-03T11:30:11.034Z"
+        "lastUpdated": "2026-05-03T14:08:39.779Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/me.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/posts.py"
     },
     "schemas": {
       "phase": "do",
@@ -405,7 +294,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:30.319Z",
-        "lastUpdated": "2026-05-03T10:30:23.515Z"
+        "lastUpdated": "2026-05-03T13:51:23.575Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/post.py"
     },
@@ -457,9 +346,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:35:13.871Z",
-        "lastUpdated": "2026-05-03T10:50:52.592Z"
+        "lastUpdated": "2026-05-03T13:50:25.034Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0038_orig_signature_keys.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0040_series_tables.py"
     },
     "frontend": {
       "phase": "do",
@@ -470,9 +359,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-05-03T11:55:17.602Z"
+        "lastUpdated": "2026-05-03T22:22:54.014Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/api.ts"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/PostCard.tsx"
     },
     "applications": {
       "phase": "do",
@@ -509,9 +398,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T09:22:43.092Z",
-        "lastUpdated": "2026-05-03T11:42:25.880Z"
+        "lastUpdated": "2026-05-03T14:18:48.152Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/scripts/smoke_test_signature.sh"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/scripts/smoke_test_series.sh"
     },
     "[id]": {
       "phase": "do",
@@ -522,9 +411,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T09:25:54.640Z",
-        "lastUpdated": "2026-04-18T13:18:31.400Z"
+        "lastUpdated": "2026-05-03T22:26:50.409Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/communities/[id]/page.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/series/[id]/page.tsx"
     },
     "payments": {
       "phase": "do",
@@ -665,7 +554,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:41:45.679Z",
-        "lastUpdated": "2026-05-02T02:16:37.865Z"
+        "lastUpdated": "2026-05-03T14:54:59.029Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/new/page.tsx"
     },
@@ -899,9 +788,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T01:31:08.565Z",
-        "lastUpdated": "2026-05-02T02:14:19.661Z"
+        "lastUpdated": "2026-05-03T22:27:02.205Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/EditorMobileWizard.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/PublishOptionsPanel.tsx"
     },
     "feed": {
       "phase": "do",
@@ -1281,7 +1170,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-01T02:01:35.488Z",
-        "lastUpdated": "2026-05-02T02:13:23.539Z"
+        "lastUpdated": "2026-05-03T12:05:21.095Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/wizard/EditorStepContent.tsx"
     },
@@ -1320,9 +1209,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T11:12:44.673Z",
-        "lastUpdated": "2026-05-03T11:18:51.350Z"
+        "lastUpdated": "2026-05-03T14:20:14.075Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/unit/test_image_transform.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/unit/test_publish_controls.py"
     },
     "integration": {
       "phase": "do",
@@ -1333,9 +1222,35 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T11:40:14.639Z",
-        "lastUpdated": "2026-05-03T11:47:26.429Z"
+        "lastUpdated": "2026-05-03T14:19:54.433Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/integration/test_image_studio_endpoints.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/integration/test_publish_controls_endpoints.py"
+    },
+    "image-editor": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-03T12:19:07.610Z",
+        "lastUpdated": "2026-05-03T13:01:20.635Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/image-editor/CropTool.tsx"
+    },
+    "series": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-03T20:37:02.257Z",
+        "lastUpdated": "2026-05-03T20:37:02.257Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/users/[id]/series/page.tsx"
     }
   },
   "pipeline": {
@@ -1346,7 +1261,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-05-03T11:55:17.602Z"
+    "lastActivity": "2026-05-03T22:27:02.205Z"
   },
   "history": [
     {
@@ -7886,6 +7801,954 @@
     {
       "timestamp": "2026-05-03T11:55:17.602Z",
       "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T11:55:35.479Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T11:55:42.103Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T11:55:48.310Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T11:55:52.758Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T11:56:00.789Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T11:56:04.747Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T11:56:12.702Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:03:58.830Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:04:27.587Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:04:35.104Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:04:41.940Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:04:45.795Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:04:50.617Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:04:55.537Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:04:59.421Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:05:06.126Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:05:11.330Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:05:15.025Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:05:21.095Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:05:25.807Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:05:31.363Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:05:35.693Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:05:41.734Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:05:48.574Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:05:54.009Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:05:58.121Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:06:07.509Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:19:07.610Z",
+      "feature": "image-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:19:35.527Z",
+      "feature": "image-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:20:00.907Z",
+      "feature": "image-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:20:22.962Z",
+      "feature": "image-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:21:20.749Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:39:19.920Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:39:37.229Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:39:44.279Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:40:11.130Z",
+      "feature": "image-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:40:16.827Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:40:21.254Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:40:25.922Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:40:30.048Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:40:38.217Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:46:18.673Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:46:26.597Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:46:34.816Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:46:39.668Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:46:54.454Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:46:59.204Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:47:07.515Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:47:17.874Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:47:27.164Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:48:12.010Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:48:21.548Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T12:48:28.220Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:00:25.875Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:00:33.965Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:00:44.017Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:00:56.755Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:01:02.606Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:01:08.724Z",
+      "feature": "image-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:01:15.062Z",
+      "feature": "image-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:01:20.635Z",
+      "feature": "image-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:01:26.680Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:01:31.996Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:01:37.743Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:01:42.591Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:50:11.762Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:50:25.034Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:50:36.397Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:50:48.978Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:50:52.761Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:50:56.385Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:51:14.230Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:51:23.575Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:51:34.622Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:51:42.810Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:51:53.638Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:52:04.949Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:52:11.526Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:52:16.918Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:52:23.363Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:52:37.125Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:52:43.569Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:52:49.333Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:53:33.357Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:53:37.552Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T13:53:42.016Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:08:07.717Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:08:12.121Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:08:39.779Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:09:05.621Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:09:59.911Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:10:58.881Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:11:06.250Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:11:12.760Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:18:15.563Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:18:48.152Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:19:54.433Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:19:58.227Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:20:14.075Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:49:28.621Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:49:34.337Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:49:42.247Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:49:49.858Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:49:54.787Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:50:04.975Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:50:11.691Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:50:15.929Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:50:20.315Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:50:25.048Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:50:37.887Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:51:18.436Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:51:44.307Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:51:50.777Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:51:57.651Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:52:04.653Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:52:09.247Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:52:15.665Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:52:20.507Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:52:30.276Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:52:35.315Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:52:41.306Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:52:48.072Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:52:52.972Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:53:01.122Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:53:07.610Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:53:12.505Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:53:19.257Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:53:26.920Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:53:36.030Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:54:09.466Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:54:26.966Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:54:38.505Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:54:53.843Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T14:54:59.029Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T17:03:58.892Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T19:34:21.570Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T20:36:41.002Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T20:37:02.257Z",
+      "feature": "series",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T20:37:08.426Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T20:37:15.384Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T20:37:21.453Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T20:37:28.916Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T20:37:34.009Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T20:37:39.493Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T20:37:45.411Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T20:37:54.553Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T20:38:05.114Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T20:38:19.892Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T22:22:35.468Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T22:22:44.502Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T22:22:48.789Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T22:22:54.014Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T22:23:00.161Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T22:23:04.976Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T22:23:14.611Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T22:26:39.209Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T22:26:50.409Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T22:27:02.205Z",
+      "feature": "post-editor",
       "phase": "do",
       "action": "updated"
     }

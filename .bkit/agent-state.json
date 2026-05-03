@@ -1,25 +1,17 @@
 {
   "version": "1.0",
-  "enabled": true,
+  "enabled": false,
   "teamName": "",
-  "feature": "editor-image-studio",
-  "pdcaPhase": "do",
+  "feature": null,
+  "pdcaPhase": "archived",
+  "lastArchivedFeature": "publish-controls",
+  "lastArchivedAt": "2026-05-03T22:45:00.000Z",
+  "lastMatchRate": 100,
   "orchestrationPattern": "leader",
   "ctoAgent": "opus",
-  "startedAt": "2026-05-03T11:54:13.623Z",
-  "lastUpdated": "2026-05-03T11:54:13.624Z",
-  "teammates": [
-    {
-      "name": "aadc6bc7ef1ed9329",
-      "role": "bkit:frontend-architect",
-      "model": "sonnet",
-      "status": "spawning",
-      "currentTask": null,
-      "taskId": null,
-      "startedAt": "2026-05-03T11:54:13.623Z",
-      "lastActivityAt": "2026-05-03T11:54:13.623Z"
-    }
-  ],
+  "startedAt": "2026-05-03T22:32:34.095Z",
+  "lastUpdated": "2026-05-03T22:45:37.604Z",
+  "teammates": [],
   "progress": {
     "totalTasks": 0,
     "completedTasks": 0,

@@ -183,6 +183,9 @@
         "reorder": {
           "aria": "第{{index}}個媒體"
         },
+        "edit": {
+          "aria": "编辑图片"
+        },
         "remove": {
           "aria": "刪除媒體"
         },
@@ -191,7 +194,78 @@
           "complete": "上傳完成",
           "failed": "{{n}}個上傳失敗"
         },
-        "uploading": "上傳中..."
+        "uploading": "上傳中...",
+        "studio": {
+          "image": {
+            "editor": {
+              "title": "編輯圖片",
+              "saving": "儲存中...",
+              "noIdHint": "圖片編輯在發佈後可用",
+              "error": {
+                "auctionActive": "拍賣進行中無法編輯",
+                "signatureMissing": "請先上傳簽名",
+                "tooLarge": "檔案太大（最大 20MB）",
+                "unsupportedType": "不支援的檔案格式",
+                "notOwner": "只能編輯自己的媒體",
+                "rateLimit": "請求過多，請稍後再試",
+                "generic": "儲存失敗，請再試一次",
+                "noMediaId": "圖片編輯在發佈後可用"
+              }
+            },
+            "tool": {
+              "rotate": {
+                "label": "旋轉",
+                "90": "旋轉 90°",
+                "180": "旋轉 180°",
+                "270": "旋轉 270°",
+                "current": "目前"
+              },
+              "crop": {
+                "label": "裁剪",
+                "ratio_1_1": "1:1",
+                "ratio_4_3": "4:3",
+                "ratio_16_9": "16:9",
+                "ratio_free": "自由",
+                "ratio_original": "原始"
+              },
+              "mosaic": {
+                "label": "馬賽克",
+                "strength": "強度",
+                "clearAll": "全部清除"
+              },
+              "watermark": {
+                "label": "浮水印",
+                "text": {
+                  "label": "浮水印文字",
+                  "placeholder": "請輸入文字"
+                },
+                "opacity": "透明度",
+                "apply": "套用",
+                "remove": "移除",
+                "signature": {
+                  "label": "簽名",
+                  "upload": "上傳簽名",
+                  "change": "更換",
+                  "remove": "刪除",
+                  "removeConfirm": "確定要刪除簽名嗎？",
+                  "current": "目前簽名",
+                  "loading": "正在確認簽名...",
+                  "useToggle": "將簽名用作浮水印",
+                  "tooLarge": "檔案過大（最大 2MB）",
+                  "unsupportedType": "不支援的格式（僅限 PNG/WebP）",
+                  "uploadFailed": "上傳失敗，請再試一次",
+                  "modal": {
+                    "title": "上傳簽名",
+                    "hint": "請上傳用作浮水印的簽名圖片",
+                    "requirements": "PNG 或 WebP，最大 2MB。建議使用透明背景。",
+                    "upload": "上傳",
+                    "uploading": "上傳中..."
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "wizard": {
         "indicator": "步驟進度",
@@ -201,6 +275,7 @@
           "type": "類型",
           "content": "內容",
           "productMeta": "商品資訊",
+          "publishOptions": "發佈設定",
           "publish": "發佈"
         },
         "stepType": {
@@ -216,6 +291,79 @@
           "hint": "若有排程發佈或地點資訊,可在下方檢視或修改。",
           "empty": "排程發佈與地點資訊可從前一步的工具列加入。"
         }
+      },
+      "publishOptions": {
+        "title": "發佈設定",
+        "visibility": {
+          "label": "公開範圍",
+          "public": "全體公開",
+          "followersOnly": "僅限追蹤者",
+          "unlisted": "連結分享",
+          "publicHint": "所有人都可以查看",
+          "followersHint": "只有追蹤者可以查看",
+          "unlistedHint": "只有擁有連結的人可以查看"
+        },
+        "comments": {
+          "label": "允許留言",
+          "enabled": "允許",
+          "disabled": "不允許",
+          "hint": "停用留言後，現有留言仍會保留"
+        },
+        "series": {
+          "label": "系列",
+          "select": "選擇系列",
+          "createNew": "+ 建立新系列",
+          "none": "尚未建立任何系列"
+        },
+        "scheduled": {
+          "label": "排程發佈",
+          "placeholder": "選擇發佈時間",
+          "timezone": "時區: {tz}",
+          "clearLabel": "立即發佈",
+          "tooSoon": "請設定至少 5 分鐘後的時間",
+          "tooFar": "請設定 1 年以內的時間"
+        }
+      },
+      "error": {
+        "postNotFound": "找不到貼文",
+        "postNotOwner": "只能發佈自己的貼文",
+        "postInvalidState": "此貼文已發佈",
+        "auctionActiveVisibilityLocked": "拍賣進行中無法變更公開範圍",
+        "seriesNotFound": "找不到選取的系列",
+        "seriesNotOwner": "只能選取自己的系列",
+        "scheduledAtTooSoon": "排程發佈時間需在 5 分鐘後以上",
+        "scheduledAtTooFar": "排程發佈時間需在 1 年內",
+        "commentsDisabled": "留言功能已停用"
+      }
+    },
+    "series": {
+      "viewAll": "查看系列",
+      "byAuthor": "{{name}} 的系列",
+      "edit": "編輯系列",
+      "delete": "刪除系列",
+      "deleteConfirm": "確定刪除此系列嗎？系列中的貼文將予以保留。",
+      "empty": "此系列目前沒有貼文",
+      "notFound": "找不到系列",
+      "postCount": "{{count}} 篇貼文",
+      "addPost": "新增貼文",
+      "removePost": "從系列移除",
+      "createModal": {
+        "title": "建立新系列",
+        "titleLabel": "系列名稱",
+        "descriptionLabel": "說明（選填）",
+        "submit": "建立",
+        "cancel": "取消",
+        "coverLabel": "封面圖片（選填）",
+        "coverHint": "未設定時，自動使用第一篇貼文的圖片",
+        "coverUploading": "上傳封面中...",
+        "coverUploadFailed": "封面上傳失敗"
+      }
+    },
+    "feed": {
+      "indicator": {
+        "followersOnly": "僅限關注者",
+        "unlisted": "連結分享",
+        "commentsDisabled": "此貼文的留言已停用"
       }
     }
   },

@@ -22,6 +22,8 @@ import {
   type ApiUser,
   type CreatePostMedia,
   type OEmbedData,
+  type Visibility,
+  type Series,
 } from "@/lib/api";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 import type {
@@ -38,6 +40,7 @@ import { MediaPreviewList } from "@/components/post-editor/MediaPreviewList";
 import { ProductFields } from "@/components/post-editor/ProductFields";
 import { PreviewToggleButton } from "@/components/post-editor/PreviewToggleButton";
 import { TagAutocomplete } from "@/components/post-editor/TagAutocomplete";
+import { PublishOptionsPanel } from "@/components/post-editor/PublishOptionsPanel";
 
 export interface EditorWorkspaceProps {
   // Form state (read)
@@ -89,6 +92,18 @@ export interface EditorWorkspaceProps {
   onReorder: (activeId: string, overId: string) => void;
   onCaptionChange: (id: string, caption: string) => void;
   uploadQueue: UploadTask[];
+  // editor-image-studio PDCA #6-image — Step 6 props drilling
+  onEditMedia?: (id: string) => void;
+  // publish-controls PDCA #8
+  visibility: Visibility;
+  setVisibility: (v: Visibility) => void;
+  commentsEnabled: boolean;
+  setCommentsEnabled: (b: boolean) => void;
+  seriesIds: string[];
+  setSeriesIds: (ids: string[]) => void;
+  mySeries: Series[];
+  mySeriesLoading: boolean;
+  onCreateSeriesClick: () => void;
 }
 
 export function EditorWorkspace(props: EditorWorkspaceProps) {
@@ -133,6 +148,16 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
     onReorder,
     onCaptionChange,
     uploadQueue,
+    onEditMedia,
+    visibility,
+    setVisibility,
+    commentsEnabled,
+    setCommentsEnabled,
+    seriesIds,
+    setSeriesIds,
+    mySeries,
+    mySeriesLoading,
+    onCreateSeriesClick,
   } = props;
 
   return (
@@ -262,6 +287,7 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
             onReorder={onReorder}
             onCaptionChange={onCaptionChange}
             uploadQueue={uploadQueue}
+            onEditMedia={onEditMedia}
           />
           {/* Note: legacy "uploading..." inline status is replaced by
               MediaUploadProgress badge inside MediaPreviewList (OQ-7=A). */}
@@ -362,6 +388,24 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
           <p className="text-text-muted text-xs">
             ※ 이미지/영상 포함 시 디지털 아트 판독 큐에 진입합니다 (관리자 승인 필요).
           </p>
+
+          {/* publish-controls PDCA #8 — PublishOptionsPanel (desktop inline) */}
+          <div className="rounded-lg bg-surface border border-border overflow-hidden">
+            <PublishOptionsPanel
+              visibility={visibility}
+              setVisibility={setVisibility}
+              commentsEnabled={commentsEnabled}
+              setCommentsEnabled={setCommentsEnabled}
+              seriesIds={seriesIds}
+              setSeriesIds={setSeriesIds}
+              scheduledAt={scheduledAt}
+              setScheduledAt={setters.setScheduledAt}
+              mySeries={mySeries}
+              seriesLoading={mySeriesLoading}
+              disabled={uploading || submitting}
+              onCreateSeriesClick={onCreateSeriesClick}
+            />
+          </div>
         </div>
       )}
     </>

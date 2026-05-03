@@ -1,8 +1,9 @@
 from typing import Annotated
 from uuid import UUID
 
+import sqlalchemy as sa
 from fastapi import APIRouter, Depends, Header, Query
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -16,6 +17,7 @@ from app.db.session import get_db
 from app.models.auction import Auction
 from app.models.post import Comment, Follow, Like, MediaAsset, Post, ProductPost
 from app.models.search_log import SearchLog
+from app.models.series import PostSeriesMembership, Series
 from app.models.user import User
 
 _log = logging.getLogger(__name__)
@@ -28,6 +30,7 @@ from app.schemas.post import (
     PostOut,
     ProductPostOut,
 )
+from app.schemas.series import PostPublishRequest, PostPublishResponse
 
 router = APIRouter(prefix="/posts", tags=["posts"])
 
@@ -57,6 +60,10 @@ def _serialize_post(post: Post) -> dict:
         created_at=post.created_at,
         media=[MediaAssetOut.model_validate(m) for m in (post.media or [])],
         product=ProductPostOut.model_validate(post.product) if post.product else None,
+        # publish-controls PDCA #8 §B-6 — pass through new columns.
+        # getattr fallback keeps compatibility with any cached/partial Post objects.
+        visibility=getattr(post, "visibility", "public"),
+        comments_enabled=getattr(post, "comments_enabled", True),
     ).model_dump(mode="json")
 
 
@@ -93,6 +100,197 @@ def _trending_score_expr():
         Post.like_count * 0.4
         + Post.bluebird_count * 0.4
         + recency_score * 0.2 * 100  # recency를 0~100 스케일로 맞춤
+    )
+
+
+# ─── Publish helpers — publish-controls PDCA #8 §B-7 ────────────────────
+
+_PUBLISHABLE_STATUSES = {"draft", "scheduled", "pending_review"}
+
+
+async def _check_auction_visibility_lock(db: AsyncSession, post: Post) -> None:
+    """OQ-D-1=A: block visibility changes on posts with an active auction.
+
+    Only applies to product posts; non-product posts skip immediately.
+    Mirrors _check_auction_media_lock in media.py (#4 PDCA pattern).
+    """
+    if post.type != "product":
+        return
+    result = await db.execute(
+        select(Auction).where(
+            Auction.product_post_id == post.id,
+            Auction.status == "active",
+        )
+    )
+    if result.scalar_one_or_none():
+        raise ApiError(
+            "AUCTION_ACTIVE_VISIBILITY_LOCKED",
+            "경매 진행 중에는 공개 범위를 변경할 수 없습니다",
+            http_status=409,
+        )
+
+
+async def _replace_post_series(
+    db: AsyncSession,
+    post_id: UUID,
+    series_ids: list[UUID],
+    user_id: UUID,
+) -> int:
+    """Replace a post's full series membership list.
+
+    Per design §B-7:
+    1. Delete all existing PostSeriesMembership rows for post_id.
+    2. If series_ids is empty, return 0.
+    3. For each series_id: verify exists (SERIES_NOT_FOUND 404) AND
+       author_id == user_id (SERIES_NOT_OWNER 403).
+    4. Insert new memberships with order_index from enumerate(series_ids).
+    Returns count of inserted memberships.
+    """
+    existing_result = await db.execute(
+        select(PostSeriesMembership).where(PostSeriesMembership.post_id == post_id)
+    )
+    for m in existing_result.scalars().all():
+        await db.delete(m)
+
+    if not series_ids:
+        return 0
+
+    series_result = await db.execute(
+        select(Series).where(Series.id.in_(series_ids))
+    )
+    series_map = {s.id: s for s in series_result.scalars().all()}
+
+    for sid in series_ids:
+        if sid not in series_map:
+            raise ApiError("SERIES_NOT_FOUND", f"Series {sid} not found", http_status=404)
+        if series_map[sid].author_id != user_id:
+            raise ApiError(
+                "SERIES_NOT_OWNER",
+                f"Series {sid} does not belong to you",
+                http_status=403,
+            )
+
+    for idx, sid in enumerate(series_ids):
+        db.add(PostSeriesMembership(series_id=sid, post_id=post_id, order_index=idx))
+
+    return len(series_ids)
+
+
+@router.post("/{post_id}/publish", status_code=200)
+async def publish_post(
+    post_id: UUID,
+    body: PostPublishRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("post_publish"),
+):
+    """Publish (or schedule) a post with visibility, comments, and series options.
+
+    6-step permission flow per design §B-7:
+    1. get_current_user → 401 (handled by Depends)
+    2. Post not found / deleted → POST_NOT_FOUND 404
+    3. Not owner (and not admin) → POST_NOT_OWNER 403
+    4. Status not in publishable set → POST_INVALID_STATE 409
+    5. Visibility change on active-auction product → AUCTION_ACTIVE_VISIBILITY_LOCKED 409
+    6. Transaction: status transition + field updates + series replace + audit log + commit
+    """
+    post = await _load_post_full(db, post_id)
+    if not post or post.status == "deleted":
+        raise ApiError("POST_NOT_FOUND", "Post not found", http_status=404)
+
+    if post.author_id != user.id and user.role != "admin":
+        raise ApiError("POST_NOT_OWNER", "Post does not belong to you", http_status=403)
+
+    if post.status not in _PUBLISHABLE_STATUSES:
+        raise ApiError(
+            "POST_INVALID_STATE",
+            f"Post status '{post.status}' cannot be published",
+            http_status=409,
+        )
+
+    current_visibility = getattr(post, "visibility", "public")
+    if body.visibility != current_visibility:
+        await _check_auction_visibility_lock(db, post)
+
+    prev_status = post.status
+    if body.publish_at:
+        post.status = "scheduled"
+        post.scheduled_at = body.publish_at
+    else:
+        has_visual = any(m.type in ("image", "video") for m in (post.media or []))
+        post.status = "pending_review" if has_visual else "published"
+        post.scheduled_at = None
+
+    post.visibility = body.visibility
+    post.comments_enabled = body.comments_enabled
+    series_count = await _replace_post_series(db, post.id, body.series_ids, user.id)
+
+    await db.flush()
+    _log.info(
+        "post.publish.applied",
+        extra={
+            "event": "post.publish.applied",
+            "user_id": str(user.id),
+            "post_id": str(post.id),
+            "prev_status": prev_status,
+            "new_status": post.status,
+            "visibility": body.visibility,
+            "comments_enabled": body.comments_enabled,
+            "series_count": series_count,
+            "scheduled_at": body.publish_at.isoformat() if body.publish_at else None,
+        },
+    )
+    await db.commit()
+    await db.refresh(post)
+
+    return {
+        "data": PostPublishResponse(
+            id=post.id,
+            status=post.status,
+            visibility=post.visibility,
+            comments_enabled=post.comments_enabled,
+            scheduled_at=post.scheduled_at,
+            series_count=series_count,
+            updated_at=post.updated_at,
+        ).model_dump(mode="json")
+    }
+
+
+# ─── Visibility filter — publish-controls PDCA #8 §B-9 ──────────────────
+
+
+def _visibility_filter_for_viewer(viewer, author_id_col, viewing_self: bool, followee_ids=None):
+    """Return a SQLAlchemy WHERE clause for visibility based on viewer context.
+
+    Rules:
+    - viewing_self=True  → all visibility values allowed (no filter)
+    - viewer=None        → only 'public'
+    - followee_ids list  → 'public' OR ('followers_only' AND author in followee_ids)
+    - no followee_ids    → 'public' OR ('followers_only' AND author in follows subquery)
+
+    The followee_ids fast-path reuses an already-fetched list (e.g. home_feed)
+    to avoid N+1 subquery overhead (R-2 mitigation).
+    """
+    if viewing_self:
+        return sa.true()
+    if viewer is None:
+        return Post.visibility == "public"
+    if followee_ids is not None:
+        return or_(
+            Post.visibility == "public",
+            and_(
+                Post.visibility == "followers_only",
+                author_id_col.in_(followee_ids),
+            ),
+        )
+    follows_subq = (
+        select(Follow.followee_id)
+        .where(Follow.follower_id == viewer.id)
+        .scalar_subquery()
+    )
+    return or_(
+        Post.visibility == "public",
+        and_(Post.visibility == "followers_only", author_id_col.in_(follows_subq)),
     )
 
 
@@ -328,12 +526,20 @@ async def home_feed(
 
     follow_posts: list[Post] = []
     if followee_ids:
+        # publish-controls §B-9: following posts may include followers_only visibility.
+        vis_filter = _visibility_filter_for_viewer(
+            viewer=user,
+            author_id_col=Post.author_id,
+            viewing_self=False,
+            followee_ids=followee_ids,
+        )
         result = await db.execute(
             select(Post)
             .where(
                 and_(
                     Post.author_id.in_(followee_ids),
                     Post.status == "published",
+                    vis_filter,
                 )
             )
             .options(selectinload(Post.media), selectinload(Post.product))
@@ -345,9 +551,10 @@ async def home_feed(
     trending_posts: list[Post] = []
     if trending_limit > 0:
         exclude_ids = [p.id for p in follow_posts]
+        # publish-controls §B-9: trending shows public only.
         trending_query = (
             select(Post)
-            .where(Post.status == "published")
+            .where(Post.status == "published", Post.visibility == "public")
             .options(selectinload(Post.media), selectinload(Post.product))
             .order_by(_trending_score_expr().desc(), Post.created_at.desc())
             .limit(trending_limit)
@@ -394,9 +601,10 @@ async def explore_posts(
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
+    # publish-controls §B-9: explore shows public only.
     query = (
         select(Post)
-        .where(Post.status == "published")
+        .where(Post.status == "published", Post.visibility == "public")
         .options(selectinload(Post.media), selectinload(Post.product))
         .limit(limit)
     )
@@ -449,9 +657,10 @@ async def search_posts(
         | Post.tags.any(func.concat("%", q, "%"))  # partial tag match via LIKE pattern
     )
 
+    # publish-controls §B-9: search shows public only.
     query = (
         select(Post)
-        .where(Post.status == "published", text_match)
+        .where(Post.status == "published", Post.visibility == "public", text_match)
         .options(selectinload(Post.media), selectinload(Post.product))
         .limit(limit + 1)  # fetch one extra to determine has_more
     )
@@ -557,6 +766,35 @@ async def get_post(
         is_admin = viewer_role == "admin"
         if not (is_owner or is_admin):
             raise ApiError("NOT_FOUND", "Post not found", http_status=404)
+    else:
+        # publish-controls §B-9: visibility check for published posts.
+        # OQ-7=A: 'unlisted' permits direct URL access (no restriction here).
+        # 'followers_only' requires Follow relationship or ownership/admin.
+        visibility = getattr(post, "visibility", "public")
+        if visibility == "followers_only":
+            viewer_id, viewer_role = await _optional_viewer_id(authorization)
+            is_owner = viewer_id is not None and viewer_id == post.author_id
+            is_admin = viewer_role == "admin"
+            if not (is_owner or is_admin):
+                if viewer_id is None:
+                    raise ApiError(
+                        "POST_VISIBILITY_RESTRICTED",
+                        "This post is for followers only",
+                        http_status=403,
+                    )
+                follow_check = await db.execute(
+                    select(Follow).where(
+                        Follow.follower_id == viewer_id,
+                        Follow.followee_id == post.author_id,
+                    )
+                )
+                if not follow_check.scalar_one_or_none():
+                    raise ApiError(
+                        "POST_VISIBILITY_RESTRICTED",
+                        "This post is for followers only",
+                        http_status=403,
+                    )
+        # 'unlisted': URL direct access allowed (OQ-7=A) — no action needed.
 
     post.author = await _author_for(db, post.author_id)  # type: ignore[attr-defined]
     return {"data": _serialize_post(post)}
@@ -653,10 +891,14 @@ async def my_bookmarks(
     db: AsyncSession = Depends(get_db),
 ):
     from app.models.bookmark import Bookmark
+    # publish-controls §B-9: bookmarks show own posts (any visibility) or public posts.
     result = await db.execute(
         select(Post)
         .join(Bookmark, Bookmark.post_id == Post.id)
-        .where(Bookmark.user_id == user.id)
+        .where(
+            Bookmark.user_id == user.id,
+            or_(Post.author_id == user.id, Post.visibility == "public"),
+        )
         .options(selectinload(Post.media), selectinload(Post.product))
         .order_by(Bookmark.created_at.desc())
         .limit(limit)
@@ -722,6 +964,15 @@ async def create_comment(
     post = post_result.scalar_one_or_none()
     if not post:
         raise ApiError("NOT_FOUND", "Post not found", http_status=404)
+
+    # publish-controls §B-10 / OQ-3=A: block new comments when disabled.
+    # Existing comments are preserved (read-only via GET /comments).
+    if not getattr(post, "comments_enabled", True):
+        raise ApiError(
+            "COMMENTS_DISABLED",
+            "Comments are disabled for this post",
+            http_status=403,
+        )
 
     comment = Comment(
         post_id=post_id,

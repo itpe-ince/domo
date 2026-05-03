@@ -4,6 +4,8 @@
 |---|---|---|---|---|
 | [editor-responsive-redesign](./editor-responsive-redesign/) | 2026-05-01 | 96% | 0 rounds | 에디터 #3: 데스크탑 2-pane(편집+미리보기 토글) + 모바일 3·4단 wizard, 803줄 page.tsx 컴포넌트 분해(547줄, -32%), 3 hooks + 9 신규 컴포넌트 + 23 i18n × 5 locale, DB·API 변경 0 |
 | [editor-media-ux](./editor-media-ux/) | 2026-05-03 | 95% | 0 rounds | 에디터 #4: dnd-kit drag-reorder + 이미지 캡션(280자, MediaAsset.caption + PATCH /media/{id}) + 다중 업로드 XHR 실시간 progress(OQ-D-3=B 사용자 변경). Backend 5파일 + Frontend 10+파일 + 11 i18n × 5 locale + 첫 외부 라이브러리(@dnd-kit) 도입 |
+| [editor-image-studio](./editor-image-studio/) | 2026-05-03 | 96% | 0 rounds | 에디터 #6-image: Konva 클라이언트 4 도구(회전/크롭/모자이크/워터마크) + Pillow 서버 처리 + crop_meta JSONB 비파괴 + alembic 0037+0038 + POST /v1/media/{id}/transform + Signature 3 endpoints (OQ-D-3=B 사용자 override 별도 시그니처 업로드 UI). Backend ~2300 LOC + Frontend ~1500 LOC + 22 tests + 47 i18n × 5 locale |
+| [publish-controls](./publish-controls/) | 2026-05-03 | 100% | 0 rounds | 에디터 #8 Critical Path: B-3 발행 옵션 4건 통합. alembic 0039+0040 + Series 모델 + 6 endpoints (publish + Series CRUD 5종) + visibility 필터 + comments lock + audit log. Frontend PublishOptionsPanel + SeriesCreateModal + /series/[id] dnd-kit reorder + VisibilityBadge + handleSubmit hybrid C. Backend ~1800 LOC + Frontend ~2200 LOC + 22 tests + 2 smoke + 47 i18n × 5 locale = 235 entries |
 
 ## editor-responsive-redesign
 
@@ -77,3 +79,82 @@
   - `formatRelativeTime` 한국어 (#2 carry-over) — `i18n-time-formatting`
   - ProductFields 구조화 입력 — `editor-product-meta` (#7, 이미 예정)
 - **Production Readiness**: ✅ TypeScript 0 에러. 5 locale JSON valid. Backend Pydantic 280자 검증 정상. 5 통합 지점 회귀 0. AC 10/10 Pass. 사용자 매뉴얼 QA 통과. ⚠ alembic upgrade 필수 (사용자 측 실행 완료).
+
+## editor-image-studio
+
+- **Scope**: 에디터 전면 개편 로드맵 sub-PDCA #6-image (split from combined editor-media-studio per OQ-6=B, M~L → 11.5일) — 이미지 에디터(회전/크롭/모자이크/워터마크) Konva 클라이언트 미리보기 + Pillow 서버 처리 + `crop_meta jsonb` 비파괴 메타. Backend·Frontend 양면 변경 + Signature 별도 업로드 UI(OQ-D-3=B 사용자 override).
+- **Artifacts**: [plan](./editor-image-studio/editor-image-studio.plan.md), [design](./editor-image-studio/editor-image-studio.design.md), [analysis](./editor-image-studio/editor-image-studio.analysis.md), [report](./editor-image-studio/editor-image-studio.report.md)
+- **Parent Roadmap**: `v1/docs/01-plan/features/editor-revamp-roadmap.plan.md`
+- **Sister PDCA**: `editor-video-studio` (#6-video, blocked on OQ-2 ffmpeg 인프라 결정)
+- **Key Files Touched**:
+  - Backend (신규 마이그레이션): `alembic/versions/0037_media_crop_meta.py` (`crop_meta JSONB`), `alembic/versions/0038_orig_signature_keys.py` (`original_storage_key` + `signature_storage_key`, revision ID 길이 v1.3 단축)
+  - Backend (신규): `app/services/image_transform.py` (367줄, `process_image_transform()` + 4 helpers + `WatermarkSignatureNotSetError`), `app/schemas/media_transform.py` (CropMetaSchema + 4 ops discriminated union + SignatureResponse), `tests/unit/test_image_transform.py` (12 tests), `tests/integration/test_image_studio_endpoints.py` (10 tests), `scripts/smoke_test_image_transform.sh` + `smoke_test_signature.sh`, `conftest.py` + pytest config
+  - Backend (수정): `models/post.py` `MediaAsset.crop_meta`+`original_storage_key`, `models/user.py` `User.signature_storage_key`, `schemas/post.py` `MediaAssetIn.crop_meta`, `services/storage/{base,local,s3}.py` (`StorageProvider.get()` 추가), `api/media.py` (`POST /v1/media/{id}/transform` 6단계 권한 + first-transform original-key seeding + audit log), `api/me.py` (POST/GET/DELETE `/v1/me/signature` 3 endpoints), `core/rate_limit.py` (`media_transform` + `signature_upload` 5/min/user)
+  - Frontend (신규 hooks): `lib/hooks/useImageEditor.ts` (204줄, state + setters + `buildOps`/`buildCropMeta` + 비파괴 재진입), `lib/hooks/useSignature.ts` (113줄, GET/upload/delete + error i18n key 매핑)
+  - Frontend (신규 컴포넌트): `components/post-editor/{ImageEditor,ImageEditorLazy,SignatureUploadModal,SignaturePreview}.tsx` (총 ~720줄), `components/post-editor/image-editor/{Rotate,Crop,Mosaic,Watermark}Tool.tsx` (4 도구, 총 ~610줄)
+  - Frontend (신규 아이콘): `components/icons.tsx` `EditPencilIcon`
+  - Frontend (수정): `lib/api.ts` (CropMeta + 4 ops 타입 + `patchMediaTransform` + 3 signature client fns + `apiFetch` FormData/204 인프라 fix + `CreatePostMedia.crop_meta?`+`id?`), `components/post-editor/SortableMediaCard.tsx` (`onEditMedia?` optional + `isGif()` + EditButton JSX), `components/post-editor/{MediaPreviewList,EditorWorkspace,EditorMobileWizard}.tsx` + `wizard/EditorStepContent.tsx` (props +1 forward), `app/posts/new/page.tsx` (`editingMediaId` state + `<ImageEditorLazy>` 마운트 + `handleEditMedia` + 발행 페이로드 `id`+`_clientId` strip)
+  - i18n: `i18n/{ko,en,ja,zh,es}.json` `post.editor.media.studio.image.*` 47키 × 5 locale = **235 entries**
+- **New Dependencies**: `konva@^9.3.16`, `react-konva@^18.2.10` (~50KB gzip, dynamic({ssr:false}) lazy import로 main bundle 영향 0)
+- **Decisions** (Plan 6 + Design 8 = 14 OQ):
+  - Plan: OQ-1=B Konva, OQ-3=A crop_meta jsonb 비파괴, OQ-5=C 텍스트+시그니처 둘 다, OQ-7=A 데스크탑+모바일 동시, OQ-8=C `_check_auction_media_lock` 동일 적용, OQ-9=B GIF 편집 비활성
+  - Design: OQ-D-A=C `original_storage_key` 추가 (alembic 0038), OQ-D-B=C `signature_storage_key` 사전 저장 (SSRF 방어), OQ-D-C=B 항상 최초 원본 재처리, OQ-D-1=A Stage 컨테이너 fit + DPR, OQ-D-2=A 단축키 1/2/3/4 도입
+  - **OQ-D-3 = B (사용자 override from recommended A)**: 별도 시그니처 업로드 UI/엔드포인트 신설 — avatar 재사용 ❌ — 신규 §B-14 (POST/GET/DELETE `/v1/me/signature`) + §F-10b SignatureUploadModal/SignaturePreview/useSignature
+  - OQ-D-4: A 시도 (Konva.Filters.Pixelate 우선) → 부족 시 B fallback (Canvas 2D)
+  - OQ-D-5=A "원본" preset = 크롭 초기화 통합
+- **Match Rate**: **96%** (initial — Critical/Major Gap 0, 5 통합 지점 회귀 0, 2 minor partial: storage key uuid vs timestamp + i18n key count 추정 vs 실제). Iterate 사이클 발생 안 함 (≥ 90% 임계 즉시 통과)
+- **Iteration**: 0 round
+- **Lessons Learned** (보고서 §9에 상세 기재):
+  1. **Keep / OQ-D Early Binding**: Design v1.4에서 8 OQ-D 모두 user 결정 surface → 빌더 의도 명확 + OQ-D-3=B 사용자 override가 SSRF 방어 + UX 균형 동시 달성. 4번 design 패치(v1.0→v1.4)로 발견 즉시 정정.
+  2. **Keep / Original Storage Key Architecture**: `original_storage_key` 컬럼 + first-transform auto-init 로직 (OQ-D-A=C + OQ-D-C=B) → 재인코딩 누적 손실 0, 향후 "필터·자동 보정" PDCA 재사용 가능 기반.
+  3. **Keep / Signature Pre-Storage SSRF Defense**: User가 시그니처 업로드 → `User.signature_storage_key` 저장 → 워터마크 도구는 외부 URL fetch 없이 직접 storage GET. "사용자 업로드-서버 처리" 패턴의 보안 모범 사례.
+  4. **Problem 1 (P1)**: storage key suffix 디자인 `{timestamp}.jpg` → 구현 `{uuid.hex}.jpg` (collision-proof improvement이나 디자인 명세 deviation).
+  5. **Problem 2 (P2)**: i18n key count 디자인 추정 ~44 × 5 = 220 → 실제 47 × 5 = 235. 디자인 추정이 conservative.
+  6. **Problem 3 (인프라 발견)**: `alembic_version.version_num` = `varchar(32)` 제약 — 0038 revision ID `0038_signature_and_original_storage` (35자) → `0038_orig_signature_keys` (24자) 단축 (design v1.3 즉시 반영). 향후 모든 alembic revision ≤32자 필수.
+  7. **Try**: 다음 PDCA부터 — (1) 디자인 §B 마이그레이션 명세에 revision ID 길이 ≤32 명시 게이트, (2) 디자인 i18n 키 카운트 정확 산정 (탑업 추정 → 실제 leaf key 열거), (3) `apiFetch` 같은 인프라 boundary fix는 첫 발견 step에 일괄 적용 (Step 7b에서 발견 후 Step 5에서 처리).
+- **Carry-over**:
+  - **`editor-video-studio` (#6-video, 자매 PDCA)**: OQ-2 ffmpeg 인프라 결정 후 별도 진행 (서버 ffmpeg vs ffmpeg.wasm vs 외부 transcode service)
+  - **(옵션) design 마이너 정정 P1/P2**: 디자인 문서 정확도 (non-blocking, 5분씩)
+  - **`upload-retry-ui` (#4 carry-over 유지)**: 별도 PDCA 진행 예정 (S 3.5h)
+  - **`editor-i18n-cleanup` v0.2 (#3+#4 carry-over 유지)**: m-2/m-3/m-4 통합 정리 후속
+  - **알려진 한계 3건 수용 처리됨**: Konva Transformer 키보드 미지원 / Mosaic Konva Rect SR semantic / `media.id` 부재 시 Save disabled (Option D, `noIdHint` 안내)
+- **Production Readiness**: ✅ TypeScript 0 에러. 5 locale JSON valid. Backend 22 tests passing in 1.06s (12 unit + 10 integration). 2 smoke 스크립트 ready. `_check_auction_media_lock` 정상 적용. EXIF 이중 strip 검증. SSRF 방어 (signature 외부 URL fetch 0). 5 통합 지점 회귀 0. ⚠ alembic upgrade 필수 (0037 + 0038, 사용자 측 실행 완료).
+
+## publish-controls
+
+- **Scope**: 에디터 전면 개편 로드맵 sub-PDCA #8 — Phase 3 Critical Path Publishing System (L 1.5주, 11일). B-3 발행 옵션 4건 (공개범위/댓글 허용/시리즈/예약발행) 통합 endpoint + Series 모델 + frontend PublishOptionsPanel.
+- **Artifacts**: [plan](./publish-controls/publish-controls.plan.md), [design](./publish-controls/publish-controls.design.md), [analysis](./publish-controls/publish-controls.analysis.md), [report](./publish-controls/publish-controls.report.md)
+- **Parent Roadmap**: `v1/docs/01-plan/features/editor-revamp-roadmap.plan.md`
+- **Critical Path Position**: 1 → 2 → 3 → 4 → #6-image → **#8 ✅** → 다음: #10 artist-tier-release (Phase 4, visibility 시스템 위에서 동작)
+- **Sister PDCA**: #12 notifications-ux-audit (independent, parallel possible)
+- **Key Files Touched**:
+  - Backend (신규 마이그레이션): `alembic/versions/0039_post_visibility_comments.py` (29 chars revision id, visibility/comments_enabled 컬럼 + 복합 인덱스 + CHECK constraint), `alembic/versions/0040_series_tables.py` (18 chars, series + post_series_membership + CASCADE FK + 2 인덱스)
+  - Backend (신규): `app/models/series.py` (70L, Series + PostSeriesMembership), `app/schemas/series.py` (106L, Visibility Literal + PostPublishRequest validator + SeriesCreate/Out/Patch + PostSeriesUpdateIn), `app/api/series.py` (327L, 6 Series CRUD endpoints + `_check_series_owner` helper R-8 완화), `tests/unit/test_publish_controls.py` (10 tests), `tests/integration/test_publish_controls_endpoints.py` (12 tests), `scripts/smoke_test_publish_controls.sh` + `smoke_test_series.sh` (2 smoke scripts)
+  - Backend (수정): `app/models/post.py` (visibility String(20) + comments_enabled Boolean), `app/models/__init__.py` (Series, PostSeriesMembership 등록), `app/schemas/post.py` (PostOut +2 필드), `app/api/posts.py` (publish_post 엔드포인트 + `_visibility_filter_for_viewer` helper + `_check_auction_visibility_lock` + `_replace_post_series` + `_PUBLISHABLE_STATUSES` + 5 endpoints visibility 필터 적용 + comments_lock check), `app/core/rate_limit.py` (post_publish/series_write/series_read 3 scope), `app/main.py` (series_router 등록)
+  - Frontend (신규 컴포넌트): `components/post-editor/PublishOptionsPanel.tsx` (329L, 4 sub-controls: VisibilitySelector + CommentsToggle + SeriesSelector + ScheduledPicker), `components/post-editor/SeriesCreateModal.tsx` (~260L, z-[60] focus trap + cover_url upload `uploadMediaFile` 재사용), `components/SeriesCard.tsx` (48L), `components/VisibilityBadge.tsx` (30L, public 시 null + LockClosedIcon/LinkIcon)
+  - Frontend (신규 hooks): `lib/hooks/useMySeries.ts` (88L, optimistic CRUD)
+  - Frontend (신규 페이지): `app/series/[id]/page.tsx` (346L, 헤더 + 갤러리 + 편집 모드 + dnd-kit reorder), `app/users/[id]/series/page.tsx` (97L, 작가 시리즈 grid)
+  - Frontend (신규 아이콘): `components/icons.tsx` `LockClosedIcon` + `LinkIcon`
+  - Frontend (수정): `lib/api.ts` (Visibility type + Series 4 interfaces + 8 API client functions + PostView 확장 + DraftPayload 확장), `lib/hooks/{useDraftAutosave,usePostFormState,useEditorWizardStep}.ts` (3 신규 필드 + setters + WizardStep union 확장 + publish-options step), `components/post-editor/{EditorWorkspace,EditorMobileWizard,WizardStepIndicator}.tsx` (props +9 forward + 신규 step 분기), `components/PostCard.tsx` (VisibilityBadge 통합), `app/posts/new/page.tsx` (handleSubmit Hybrid C + mapPublishError 9-code + useMySeries 통합), `app/posts/[id]/page.tsx` (comments_disabled UI), `app/users/[id]/page.tsx` ("시리즈 보기" 링크)
+  - i18n: `i18n/{ko,en,ja,zh,es}.json` `post.editor.publishOptions.*` (22 keys) + `post.editor.error.*` (7 신규 keys) + `post.editor.wizard.steps.publishOptions` (1) + `post.series.*` (19 keys, createModal 9 + 10 top-level) + `post.feed.indicator.*` (3 keys) = 47 keys × 5 locale = **235 entries**
+- **New Dependencies**: 없음 (dnd-kit는 #4에서 도입됨, 재사용)
+- **Decisions** (10 Plan + 5 OQ-D = 14 OQ resolved):
+  - Plan: OQ-1=A `public/followers_only/unlisted` enum, OQ-2=A 기존 행 모두 `public` backfill, OQ-3=A comments_enabled=false 시 기존 댓글 보존, OQ-4=C cover_url 수동 + 첫 포스트 thumbnail fallback, OQ-5=A 시리즈 drag-reorder (dnd-kit 재사용), OQ-6=A scheduled_at 5분~1년, OQ-7=A unlisted URL `/posts/{uuid}` 그대로, OQ-8=A wizard step + sidebar, OQ-9=A `POST /v1/posts/{id}/publish` 신규 endpoint, OQ-10=A SQLAlchemy WHERE + 복합 인덱스
+  - Design: OQ-D-1=A `_check_auction_visibility_lock` 적용, OQ-D-2=A scheduledAt state singleton (MediaToolbar 비활성화 대신 단일 setter 공유), OQ-D-3=A 시리즈 reorder 명시 "저장" 버튼만 API, OQ-D-4=A 별도 `/users/[id]/series` 라우트, OQ-D-5=A `GET /series/{id}` 본 PDCA에서는 `status='published'`만 노출
+- **Match Rate**: **100%** (initial — Critical/Major/Minor Gap 0건. 14/14 OQs implemented, 11/11 error codes, 17/17 AC pass, 5/5 integration regression 0). Iterate 사이클 발생 안 함.
+- **Iteration**: 0 round
+- **Lessons Learned** (보고서 §9에 상세):
+  1. **Keep / Design verbatim 가능성**: bkend-expert + frontend-architect 병렬 위임으로 §B/§F 섹션 모두 verbatim 구현 가능 — design v1.1 OQ-D 5개 결정 echo가 빌더 의도 명확화에 결정적. 14 OQ 모두 코드 evidence와 1:1 매칭.
+  2. **Keep / Hybrid C handleSubmit 패턴**: 기존 draft → publishPost / 신규 → saveToServer + publishPost / fallback createPost. 상태 전이 명확 + 재시도 가능 + legacy 호환. 향후 발행 흐름 PDCAs에서 재사용 가능.
+  3. **Keep / dnd-kit 재사용 (외부 lib 추가 0)**: #4에서 도입된 `@dnd-kit/core`+`@dnd-kit/sortable`을 `/series/[id]` 편집 모드 reorder + MediaPreviewList 모두 재사용. 의존성 부담 0으로 리치 UX 추가.
+  4. **Problem 1**: Series reorder 백엔드 endpoint 부재 — 본 PDCA에서는 local-only로 출시. UX는 정상이나 새로고침 시 원래 순서. 별도 PDCA `series-reorder-persistence` 또는 #10 통합 처리.
+  5. **Problem 2**: design §B-9 `GET /users/{id}/posts` 명세는 helper만 준비됨 — endpoint 자체는 별도 PDCA로 deferred. visibility 시스템이 정확히 동작하므로 #10 진입 무영향.
+  6. **Problem 3**: EXPLAIN ANALYZE 검증 누락 — design §B-14 R-1이 권고했으나 테스트에 미포함. 인덱스 자체는 정확히 생성됨. 모니터링 단계에서 `feed_read` p95 추적 권장.
+  7. **Try**: 다음 PDCA부터 — (1) 인덱스 R-mitigation은 EXPLAIN ANALYZE 자동화 게이트 추가, (2) 디자인이 helper 정의했으나 endpoint 명세 누락한 케이스는 §B 섹션에 "endpoint deferred" 명시, (3) handleSubmit 같은 bound flow는 reset 시 강력하게 분기 — Hybrid C 패턴 표준화.
+- **Carry-over**:
+  - **Series reorder persistence endpoint**: `POST /v1/series/{id}/reorder` 신규 — 별도 PDCA 또는 #10 통합 (Medium, ~2일)
+  - **`GET /users/{id}/posts` viewer-aware**: `_visibility_filter_for_viewer` helper 이미 ready, endpoint 별도 PDCA (Medium, ~1일)
+  - **EXPLAIN ANALYZE 모니터링**: Phase 4 모니터링 자동화 (S, ~0.5일)
+  - **OQ-D-2 strategy 문서화**: state singleton 접근법 — 다음 PDCA 디자인 단계에 reference로 활용 가능
+  - 이전 PDCAs carry-over 유지: `editor-video-studio` (#6-video, ffmpeg 인프라 차단), `upload-retry-ui` (#4), `editor-i18n-cleanup` v0.2 (#3+#4)
+- **Production Readiness**: ✅ TypeScript 0 에러. 5 locale JSON valid (47 키 일관). Backend 22 tests passing in 1.15s (10 unit + 12 integration). 2 smoke 스크립트 ready (`smoke_test_publish_controls.sh` + `smoke_test_series.sh`). `_check_auction_visibility_lock` 정상 적용 (#4 패턴 재사용). 5 통합 지점 회귀 0 (autosave/DraftRestoreDialog/multi-tab/role-gating/useArtistGate). ⚠ alembic upgrade 필수 (0039 + 0040, 사용자 측 실행 완료).

@@ -183,6 +183,9 @@
         "reorder": {
           "aria": "Media item {{index}}"
         },
+        "edit": {
+          "aria": "Edit image"
+        },
         "remove": {
           "aria": "Remove media"
         },
@@ -191,7 +194,78 @@
           "complete": "Upload complete",
           "failed": "{{n}} upload(s) failed"
         },
-        "uploading": "Uploading..."
+        "uploading": "Uploading...",
+        "studio": {
+          "image": {
+            "editor": {
+              "title": "Edit Image",
+              "saving": "Saving...",
+              "noIdHint": "Image editing is available after publishing",
+              "error": {
+                "auctionActive": "Cannot edit while an auction is active",
+                "signatureMissing": "Please upload a signature first",
+                "tooLarge": "File is too large (max 20MB)",
+                "unsupportedType": "Unsupported file format",
+                "notOwner": "You can only edit your own media",
+                "rateLimit": "Too many requests. Please try again later",
+                "generic": "Save failed. Please try again",
+                "noMediaId": "Image editing is available after publishing"
+              }
+            },
+            "tool": {
+              "rotate": {
+                "label": "Rotate",
+                "90": "Rotate 90°",
+                "180": "Rotate 180°",
+                "270": "Rotate 270°",
+                "current": "Current"
+              },
+              "crop": {
+                "label": "Crop",
+                "ratio_1_1": "1:1",
+                "ratio_4_3": "4:3",
+                "ratio_16_9": "16:9",
+                "ratio_free": "Free",
+                "ratio_original": "Original"
+              },
+              "mosaic": {
+                "label": "Mosaic",
+                "strength": "Strength",
+                "clearAll": "Clear all"
+              },
+              "watermark": {
+                "label": "Watermark",
+                "text": {
+                  "label": "Watermark text",
+                  "placeholder": "Enter text"
+                },
+                "opacity": "Opacity",
+                "apply": "Apply",
+                "remove": "Remove",
+                "signature": {
+                  "label": "Signature",
+                  "upload": "Upload signature",
+                  "change": "Change",
+                  "remove": "Delete",
+                  "removeConfirm": "Delete your signature?",
+                  "current": "Current signature",
+                  "loading": "Checking signature...",
+                  "useToggle": "Use signature as watermark",
+                  "tooLarge": "File is too large (max 2MB)",
+                  "unsupportedType": "Unsupported format (PNG/WebP only)",
+                  "uploadFailed": "Upload failed. Please try again",
+                  "modal": {
+                    "title": "Upload signature",
+                    "hint": "Upload a signature image to use as a watermark",
+                    "requirements": "PNG or WebP, max 2MB. Transparent background recommended.",
+                    "upload": "Upload",
+                    "uploading": "Uploading..."
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "wizard": {
         "indicator": "Step progress",
@@ -201,6 +275,7 @@
           "type": "Type",
           "content": "Content",
           "productMeta": "Product",
+          "publishOptions": "Publish Options",
           "publish": "Publish"
         },
         "stepType": {
@@ -216,6 +291,79 @@
           "hint": "Review or adjust your scheduled time and location below.",
           "empty": "You can add a scheduled time and location from the toolbar in the previous step."
         }
+      },
+      "publishOptions": {
+        "title": "Publish Options",
+        "visibility": {
+          "label": "Visibility",
+          "public": "Public",
+          "followersOnly": "Followers only",
+          "unlisted": "Link only",
+          "publicHint": "Anyone can see this post",
+          "followersHint": "Only your followers can see this",
+          "unlistedHint": "Only people with the link can see this"
+        },
+        "comments": {
+          "label": "Allow comments",
+          "enabled": "Enabled",
+          "disabled": "Disabled",
+          "hint": "Existing comments are preserved even when comments are disabled"
+        },
+        "series": {
+          "label": "Series",
+          "select": "Select series",
+          "createNew": "+ Create new series",
+          "none": "You haven't created any series yet"
+        },
+        "scheduled": {
+          "label": "Schedule",
+          "placeholder": "Select publish time",
+          "timezone": "Your timezone: {tz}",
+          "clearLabel": "Publish immediately",
+          "tooSoon": "Please set a time at least 5 minutes from now",
+          "tooFar": "Please set a time within 1 year from now"
+        }
+      },
+      "error": {
+        "postNotFound": "Post not found",
+        "postNotOwner": "You can only publish your own posts",
+        "postInvalidState": "This post has already been published",
+        "auctionActiveVisibilityLocked": "Visibility cannot be changed while an auction is active",
+        "seriesNotFound": "Selected series not found",
+        "seriesNotOwner": "You can only select your own series",
+        "scheduledAtTooSoon": "Scheduled time must be at least 5 minutes from now",
+        "scheduledAtTooFar": "Scheduled time must be within 1 year from now",
+        "commentsDisabled": "Comments are disabled"
+      }
+    },
+    "series": {
+      "viewAll": "View series",
+      "byAuthor": "{{name}}'s series",
+      "edit": "Edit series",
+      "delete": "Delete series",
+      "deleteConfirm": "Delete this series? Posts in the series will be kept.",
+      "empty": "No posts in this series yet",
+      "notFound": "Series not found",
+      "postCount": "{{count}} posts",
+      "addPost": "Add post",
+      "removePost": "Remove from series",
+      "createModal": {
+        "title": "Create new series",
+        "titleLabel": "Series title",
+        "descriptionLabel": "Description (optional)",
+        "submit": "Create",
+        "cancel": "Cancel",
+        "coverLabel": "Cover image (optional)",
+        "coverHint": "If empty, the first post's image is used automatically",
+        "coverUploading": "Uploading cover...",
+        "coverUploadFailed": "Cover upload failed"
+      }
+    },
+    "feed": {
+      "indicator": {
+        "followersOnly": "Followers only",
+        "unlisted": "Unlisted",
+        "commentsDisabled": "Comments are disabled for this post"
       }
     }
   },

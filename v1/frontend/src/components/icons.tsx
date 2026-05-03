@@ -281,6 +281,16 @@ export function DragHandleIcon(p: IconProps) {
   );
 }
 
+// editor-image-studio PDCA #6-image — Edit pencil icon for SortableMediaCard
+export function EditPencilIcon(p: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+    </svg>
+  );
+}
+
 // editor-responsive-redesign PDCA — Preview pane toggle
 export function EyeIcon(p: IconProps) {
   return (
@@ -298,6 +308,16 @@ export function EyeOffIcon(p: IconProps) {
       <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 10 7 10 7a18.7 18.7 0 0 1-2.16 3.19" />
       <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
       <line x1="2" y1="2" x2="22" y2="22" />
+    </svg>
+  );
+}
+
+// publish-controls PDCA #8 — visibility indicators (Step 5에서 사용)
+export function LockClosedIcon(p: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
   );
 }

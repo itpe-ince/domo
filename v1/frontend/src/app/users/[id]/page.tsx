@@ -14,6 +14,7 @@ import {
   UserProfileView,
 } from "@/lib/api";
 import { PostCard } from "@/components/PostCard";
+import { useI18n } from "@/i18n";
 
 function fmt(n: string | number) {
   const v = typeof n === "string" ? Number(n) : n;
@@ -26,6 +27,7 @@ export default function UserProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const { t } = useI18n();
   const [profile, setProfile] = useState<UserProfileView | null>(null);
   const [posts, setPosts] = useState<PostView[]>([]);
   const [sponsorships, setSponsorships] = useState<ReceivedSponsorshipView[]>(
@@ -142,11 +144,19 @@ export default function UserProfilePage({
               </div>
             </div>
           </div>
-          {me?.id === profile.id && (
-            <Link href="/orders" className="btn-secondary text-sm">
-              내 주문
+          <div className="flex flex-col gap-2 items-end">
+            <Link
+              href={`/users/${id}/series`}
+              className="btn-secondary text-sm"
+            >
+              {t("post.series.viewAll")}
             </Link>
-          )}
+            {me?.id === profile.id && (
+              <Link href="/orders" className="btn-secondary text-sm">
+                내 주문
+              </Link>
+            )}
+          </div>
         </div>
 
         {profile.artist_profile && (
