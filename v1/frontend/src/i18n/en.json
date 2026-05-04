@@ -454,5 +454,57 @@
     "minutesAgo": "m ago",
     "hoursAgo": "h ago",
     "daysAgo": "d ago"
+  },
+  "auction": {
+    "ended": "Ended",
+    "countdown": {
+      "label": "Time remaining",
+      "compact": {
+        "day": "D-{{days}}d {{hours}}h",
+        "hour": "{{hours}}h {{minutes}}m"
+      },
+      "full": {
+        "day_hour": "{{days}}d {{hours}}h",
+        "hour_minute": "{{hours}}h {{minutes}}m"
+      }
+    },
+    "shareCard": {
+      "title": "Share Card",
+      "generate": "Generate Share Card",
+      "generating": "Generating share card...",
+      "regenerate": "Regenerate Share Card",
+      "download": "Download Image",
+      "copyLink": "Copy Link",
+      "copied": "Link copied!",
+      "errorOwnerOnly": "Only the artist can generate this",
+      "errorActiveOnly": "Only active auctions are supported",
+      "errorRateLimit": "Please try again in a moment",
+      "errorGenerate": "Failed to generate share card",
+      "loading": "Generating share card..."
+    }
+  },
+  "share": {
+    "title": "Share Card",
+    "generate": "Generate Share Card",
+    "download": "Download Image",
+    "copyLink": "Copy Link",
+    "copied": "Link copied!",
+    "errorOwnerOnly": "Only the artist can generate this",
+    "errorActiveOnly": "Only active auctions are supported",
+    "errorRateLimit": "Please try again in a moment",
+    "errorGenerate": "Failed to generate share card",
+    "loading": "Generating share card..."
+  },
+  "notification": {
+    "type": {
+      "auction": {
+        "ending": {
+          "24h": "Auction ending in 24h",
+          "6h": "Auction ending in 6h",
+          "1h": "Auction ending in 1h"
+        },
+        "ended": "Auction ended"
+      }
+    }
   }
 }

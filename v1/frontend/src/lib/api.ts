@@ -376,6 +376,8 @@ export type PostView = {
   early_access_until?: string | null;
   early_access_tier?: EarlyAccessTier | null;
   is_tier_locked?: boolean;
+  // auction-promotion-suite PDCA #11 — feed countdown (OQ-10=B, OQ-D-1=A)
+  active_auction_end_at?: string | null;
 };
 
 export type CommentView = {
@@ -630,6 +632,9 @@ export type AuctionView = {
   bid_count: number;
   payment_deadline: string | null;
   created_at: string;
+  // auction-promotion-suite PDCA #11 — share card cache fields
+  share_card_url?: string | null;
+  share_card_generated_at?: string | null;
 };
 
 export type BidView = {
@@ -681,6 +686,23 @@ export async function createAuction(input: {
     method: "POST",
     body: JSON.stringify(input),
   });
+}
+
+// auction-promotion-suite PDCA #11 — share card generation
+export type AuctionShareCardResponse = {
+  auction_id: string;
+  share_card_url: string;
+  generated_at: string;
+  cached: boolean;
+};
+
+export async function generateAuctionShareCard(
+  auctionId: string
+): Promise<AuctionShareCardResponse> {
+  return apiFetch<AuctionShareCardResponse>(
+    `/auctions/${encodeURIComponent(auctionId)}/share-card`,
+    { method: "POST" }
+  );
 }
 
 // ─── Orders & Buy-now (Phase 2 Week 10) ──────────────────────────────────

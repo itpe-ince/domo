@@ -71,6 +71,9 @@ def _serialize_post(post: Post) -> dict:
         # is_tier_locked stays False here; get_post (PR2) fills it per-viewer.
         early_access_until=getattr(post, "early_access_until", None),
         early_access_tier=getattr(post, "early_access_tier", None),
+        # Phase 4 #11 auction-promotion-suite — OQ-D-1=A
+        # Populated by _attach_active_auction_end_at before serialization.
+        active_auction_end_at=getattr(post, "_active_auction_end_at", None),
     ).model_dump(mode="json")
 
 
@@ -89,6 +92,37 @@ async def _author_for(db: AsyncSession, user_id: UUID) -> PostAuthor:
     if not user:
         return PostAuthor(id=user_id, display_name="unknown", role="user")
     return PostAuthor.model_validate(user)
+
+
+async def _attach_active_auction_end_at(
+    db: AsyncSession,
+    posts: list,
+) -> None:
+    """Bulk-load active auction end_at for product posts and attach as _active_auction_end_at.
+
+    Phase 4 #11 auction-promotion-suite — OQ-D-1=A, AC-12.
+    Executes exactly ONE query for all posts (no N+1).
+    Only auctions with status='active' AND end_at > now() are considered.
+    Non-product posts and posts without an active auction get None.
+    """
+    now = datetime.now(timezone.utc)
+    product_post_ids = [p.id for p in posts if getattr(p, "type", None) == "product"]
+
+    end_at_map: dict = {}
+    if product_post_ids:
+        rows = await db.execute(
+            select(Auction.product_post_id, Auction.end_at)
+            .where(
+                Auction.product_post_id.in_(product_post_ids),
+                Auction.status == "active",
+                Auction.end_at > now,
+            )
+        )
+        for post_id, end_at in rows.all():
+            end_at_map[post_id] = end_at
+
+    for p in posts:
+        p._active_auction_end_at = end_at_map.get(p.id)  # type: ignore[attr-defined]
 
 
 def _trending_score_expr():
@@ -630,6 +664,7 @@ async def create_post(
 
     full_post = await _load_post_full(db, post.id)
     full_post.author = user  # type: ignore[attr-defined]
+    await _attach_active_auction_end_at(db, [full_post])
     return {"data": _serialize_post(full_post)}
 
 
@@ -718,6 +753,9 @@ async def home_feed(
     for p in all_posts:
         p.author = author_map.get(p.author_id)  # type: ignore[attr-defined]
 
+    # Phase 4 #11 — bulk-attach active_auction_end_at (single query, no N+1)
+    await _attach_active_auction_end_at(db, all_posts)
+
     data = []
     for p in all_posts:
         item = _serialize_post(p)
@@ -776,6 +814,9 @@ async def explore_posts(
     author_map = {u.id: u for u in (authors_result.scalars().all() if authors_result else [])}
     for p in posts:
         p.author = author_map.get(p.author_id)  # type: ignore[attr-defined]
+
+    # Phase 4 #11 — bulk-attach active_auction_end_at (single query, no N+1)
+    await _attach_active_auction_end_at(db, posts)
 
     return {
         "data": [_serialize_post(p) for p in posts],
@@ -871,6 +912,9 @@ async def search_posts(
         author_map = {}
     for p in posts:
         p.author = author_map.get(p.author_id)  # type: ignore[attr-defined]
+
+    # Phase 4 #11 — bulk-attach active_auction_end_at (single query, no N+1)
+    await _attach_active_auction_end_at(db, posts)
 
     data = [_serialize_post(p) for p in posts]
     next_cursor = str(posts[-1].id) if has_more and posts else None
@@ -980,6 +1024,8 @@ async def get_post(
         # All successful responses: is_tier_locked=False (viewer qualifies or is owner/admin)
 
     post.author = await _author_for(db, post.author_id)  # type: ignore[attr-defined]
+    # Phase 4 #11 — attach active_auction_end_at for detail view consistency
+    await _attach_active_auction_end_at(db, [post])
     serialized = _serialize_post(post)
     serialized["is_tier_locked"] = is_tier_locked
     return {"data": serialized}
@@ -1106,6 +1152,8 @@ async def my_bookmarks(
         author_map = {u.id: u for u in authors.scalars()}
     for p in posts:
         p.author = author_map.get(p.author_id)
+    # Phase 4 #11 — bulk-attach active_auction_end_at (single query, no N+1)
+    await _attach_active_auction_end_at(db, posts)
     return {"data": [_serialize_post(p) for p in posts]}
 
 

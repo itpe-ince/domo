@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-04T02:40:13.935Z",
+  "lastUpdated": "2026-05-04T09:51:08.554Z",
   "activeFeatures": [
     "core",
     "db",
@@ -79,9 +79,9 @@
     "tier_release_jobs.py",
     "auction_promotion_jobs.py"
   ],
-  "primaryFeature": "auction-promotion-suite",
-  "previousPrimaryFeature": "artist-tier-release (archived 2026-05-04, matchRate 99%)",
-  "criticalPathNext": "Critical Path #1-#10 모두 완료 — 다음: #11 auction-promotion-suite (Phase 4 마지막) 또는 #12 notifications-ux-audit (Phase 3 독립). carry-over: editor-video-studio (#6-video, ffmpeg 인프라 차단), series reorder persistence endpoint (#8), upload-retry-ui (#4), editor-i18n-cleanup (#3+#4), POST_TIER_RESTRICTED CTA UI / sponsor N일 제한 / SQL-only filter (#10.1)",
+  "primaryFeature": null,
+  "previousPrimaryFeature": "auction-promotion-suite (archived 2026-05-04, matchRate 97%, iterate 1회 — Phase 4 종결)",
+  "criticalPathNext": "**editor-revamp-roadmap Phase 4 종결 — #1~#11 = 11/11 100%**. 다음 옵션: (1) Phase 5 신규 로드맵 정의, (2) #12 notifications-ux-audit (Phase 3 독립), (3) carry-over 정리 PDCA: editor-i18n-cleanup v0.3 (#3+#4+#11 m-1 통합), upload-retry-ui (#4), series reorder persistence endpoint (#8), POST_TIER_RESTRICTED CTA UI / sponsor N일 제한 / SQL-only filter (#10.1), 서버측 알림 i18n (#11 m-2), editor-video-studio (#6-video, ffmpeg 차단 해제 후)",
   "features": {
     "editor-media-ux": {
       "phase": "archived",
@@ -129,15 +129,26 @@
       "summary": "에디터 #10 Phase 4 Critical Path: B-4 후원자/단골 우선 공개. **Option β 채택 (R-1 dissolved)** — Post.visibility enum 미확장, tier_only는 computed effective state. alembic 0041 + Post +2 컬럼 + sponsorships R-5 인덱스 + 3 helpers (UNION ALL EXISTS + 2단계 SQL+Python) + tier_release_jobs.py 60s cron + 5 endpoints visibility 필터. Frontend TierReleasePicker (PublishOptionsPanel 5번째 expand) + TierBadge + handleSubmit + posts/[id] 403. Backend ~750 LOC + Frontend ~400 LOC + 17 신규 tests (61 total) + 1 smoke + 22 신규 i18n × 5 = 110 entries. 15 OQ resolved (10 Plan + 5 OQ-D), Match Rate 99%, 5 통합 지점 회귀 0."
     },
     "auction-promotion-suite": {
-      "phase": "do",
-      "phaseNumber": 3,
+      "phase": "archived",
+      "phaseNumber": 6,
+      "archivedAt": "2026-05-04T08:30:00.000Z",
+      "archivedTo": "v1/docs/archive/2026-05/auction-promotion-suite/",
+      "summary": "에디터 #11 Phase 4 마지막 Critical Path: B-4 옥션 종료 알림/홍보 도구 (24h+6h+1h 알림 + Pillow 1200x630 share card + D-1h 1초 adaptive countdown). alembic 0042 + Auction +5 컬럼 + auction_promotion_jobs.py 60s cron (R-5 격리) + share-card 6단계 endpoint + _auto_transition no-winner 분기. Frontend AuctionCountdown SSR-safe + AuctionShareCard z-[60] + ShareIcon + PostCard/FeedItem D-1h compact + posts/[id] full owner-gated. Backend ~700 LOC + Frontend ~570 LOC + 16 tests + 1 smoke + 100 i18n × 5. Iterate 1회 (C-1 PostOut+active_auction_end_at + M-1 4 i18n keys × 5)로 92→97%. **editor-revamp-roadmap Phase 4 종결 (#1~#11 = 11/11 100%)**",
       "doProgress": {
         "pr1_backend_foundation": "completed_2026-05-04 (alembic 0042 22ch + Auction +5 컬럼 + ShareCardResponse + AuctionOut +2 + _serialize_auction +2 + auction_promotion_jobs.py 110L 60s cron (auction_jobs.py 5min 격리) + main.py 등록 + share_card rate_limit. 7 files: 2 신규 + 5 수정. 61 baseline tests still passing 1.16s)",
-        "pr2_backend_endpoint_tests": "pending",
-        "pr3_frontend_countdown_share_card": "pending"
+        "pr2_backend_endpoint_tests": "completed_2026-05-04 (auction_promotion_jobs.py +107L _generate_share_card Pillow 1200x630 + R-2 thumbnail fallback + R-3 thumbnail((600,630))+convert('RGB') 메모리 제어 + httpx 2.0s timeout. api/auctions.py +101L share-card endpoint 6단계 (auth→404→403→409 active만→1h cache→run_in_executor 합성→storage.put) + _auto_transition no-winner 분기. tests/unit/test_auction_promotion.py 211L 6 tests + tests/integration/test_auction_promotion_endpoints.py 240L 6 tests + scripts/smoke_test_auction_promotion.sh 120L +x 4 steps. 5 files: 3 신규 + 2 수정. **73 passed (61 baseline + 12 신규) 1.28s** R-5 격리 유지 _create_order_for_winner 무수정)",
+        "pr3_frontend_countdown_share_card": "completed_2026-05-04 (AuctionCountdown.tsx 167L 60s/1s adaptive polling SSR-safe + AuctionShareCard.tsx 288L z-[60] modal 다운로드/링크복사/오류 401·403·409·429·500. ShareIcon icons.tsx +15L, lib/api.ts +22L (AuctionView +2 + PostView +active_auction_end_at + generateAuctionShareCard()), PostCard.tsx +15L D-1h compact badge, FeedItem.tsx +13L D-1h compact, posts/[id] +22L full+owner-gated share trigger. i18n 5 langs × 10 share keys + auction.shareCard.* aliases (=80 entries). 10 files: 2 신규 + 8 수정. **tsc 0 errors**. 5 integration points (feed/explore/search/users[id]/posts[id]) 회귀 0. R-FE-6 graceful degradation: active_auction_end_at undefined 시 D-1h badge 미표시)"
       },
-      "matchRate": null,
-      "iterationCount": 0,
+      "matchRate": 97,
+      "iterationCount": 1,
+      "analyzedAt": "2026-05-04T03:50:00.000Z",
+      "iteratedAt": "2026-05-04T08:10:00.000Z",
+      "analysisDocument": "v1/docs/03-analysis/auction-promotion-suite.analysis.md",
+      "iterate1Outcome": "C-1 + M-1 모두 CLOSED. PostOut +active_auction_end_at + _attach_active_auction_end_at() bulk 쿼리 (N+1 없음) + 6 endpoint 적용 (home_feed/explore_posts/search_posts/my_bookmarks/get_post/create_post) + 3 unit + 1 integration test. i18n 5 locales × 4 keys = 20 entries (notification.type.auction.{ending.{24h,6h,1h},ended}). **77 passed (73→77)** + tsc 0. AC-12 + AC-14 + F-3 + F-8 + OQ-D-1 + OQ-D-3 모두 ✅. Match Rate 92% → 97%",
+      "remainingGaps": {
+        "minor1": "m-1: `share.*` vs `auction.shareCard.*` namespace 중복 — editor-i18n-cleanup carry-over 합류 (Phase 5 i18n cleanup)",
+        "minor2": "m-2: 서버측 알림 title/body 한국어 하드코딩 — 향후 i18n PDCA"
+      },
       "startedAt": "2026-05-04T01:17:10.887Z",
       "scope": "에디터 #11 Phase 4 마지막 Critical Path — B-4 옥션 종료 알림/홍보 도구. (1) 종료 N시간 전 알림 (24h+6h+1h, 작가+최고입찰자) + (2) 공유 카드 자동 생성 (Pillow 1200x630 OG) + (3) 카운트다운 위젯 (D-1h 1초 polling). DB: auctions +5 컬럼 (notified_24h_at + notified_6h_at + notified_1h_at + share_card_url + share_card_generated_at). M (4~5일).",
       "kind": "sub-pdca",
@@ -325,9 +336,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:23.836Z",
-        "lastUpdated": "2026-05-04T02:39:37.225Z"
+        "lastUpdated": "2026-05-04T09:50:14.050Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/auctions.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/posts.py"
     },
     "schemas": {
       "phase": "do",
@@ -338,9 +349,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:30.319Z",
-        "lastUpdated": "2026-05-04T02:39:31.939Z"
+        "lastUpdated": "2026-05-04T09:49:10.940Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/auction.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/post.py"
     },
     "google_auth.py": {
       "phase": "do",
@@ -403,9 +414,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-05-04T00:41:14.266Z"
+        "lastUpdated": "2026-05-04T07:04:20.925Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/PostCard.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/FeedItem.tsx"
     },
     "applications": {
       "phase": "do",
@@ -442,9 +453,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T09:22:43.092Z",
-        "lastUpdated": "2026-05-03T23:56:15.160Z"
+        "lastUpdated": "2026-05-04T02:56:30.431Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/scripts/smoke_test_tier_release.sh"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/scripts/smoke_test_auction_promotion.sh"
     },
     "[id]": {
       "phase": "do",
@@ -455,7 +466,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T09:25:54.640Z",
-        "lastUpdated": "2026-05-04T00:42:20.235Z"
+        "lastUpdated": "2026-05-04T07:02:24.720Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/[id]/page.tsx"
     },
@@ -1253,9 +1264,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T11:12:44.673Z",
-        "lastUpdated": "2026-05-03T23:55:03.517Z"
+        "lastUpdated": "2026-05-04T09:50:42.041Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/unit/test_artist_tier_release.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/unit/test_active_auction_end_at.py"
     },
     "integration": {
       "phase": "do",
@@ -1266,9 +1277,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T11:40:14.639Z",
-        "lastUpdated": "2026-05-04T00:26:51.647Z"
+        "lastUpdated": "2026-05-04T09:51:08.554Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/integration/test_artist_tier_release_endpoints.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/integration/test_active_auction_end_at_endpoint.py"
     },
     "image-editor": {
       "phase": "do",
@@ -1318,7 +1329,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-04T02:39:58.824Z",
-        "lastUpdated": "2026-05-04T02:39:58.824Z"
+        "lastUpdated": "2026-05-04T03:08:59.241Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/auction_promotion_jobs.py"
     }
@@ -1331,7 +1342,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-05-04T02:40:13.935Z"
+    "lastActivity": "2026-05-04T09:51:08.554Z"
   },
   "history": [
     {
@@ -9263,6 +9274,198 @@
     {
       "timestamp": "2026-05-04T02:40:13.935Z",
       "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:51:12.534Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:51:55.317Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:53:22.188Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:53:34.443Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:54:34.267Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:55:28.650Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:56:06.916Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:56:30.431Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T03:08:51.478Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T03:08:59.241Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T07:00:10.777Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T07:00:25.833Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T07:00:33.585Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T07:00:43.241Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T07:01:08.314Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T07:01:44.845Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T07:02:04.787Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T07:02:12.760Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T07:02:24.720Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T07:04:07.911Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T07:04:20.925Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T09:49:10.940Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T09:49:18.041Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T09:49:29.005Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T09:49:38.173Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T09:49:46.273Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T09:49:55.791Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T09:50:02.306Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T09:50:08.119Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T09:50:14.050Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T09:50:42.041Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T09:51:08.554Z",
+      "feature": "integration",
       "phase": "do",
       "action": "updated"
     }

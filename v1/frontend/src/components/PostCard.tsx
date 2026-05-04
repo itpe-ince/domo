@@ -2,10 +2,21 @@ import Link from "next/link";
 import type { PostView } from "@/lib/api";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
 import { TierBadge } from "@/components/TierBadge";
+import { AuctionCountdown } from "@/components/AuctionCountdown";
 
 export function PostCard({ post }: { post: PostView }) {
   const cover = post.media[0];
   const isProduct = post.type === "product";
+
+  // auction-promotion-suite PDCA #11 — F-4: D-1h compact countdown
+  // OQ-10=B: only show in feed when end_at is within 1h (R-FE-6: optional field)
+  const auctionEndAt = post.active_auction_end_at;
+  const showCountdown = isProduct &&
+    auctionEndAt != null &&
+    (() => {
+      const msLeft = new Date(auctionEndAt).getTime() - Date.now();
+      return msLeft > 0 && msLeft <= 3_600_000;
+    })();
 
   return (
     <Link
@@ -32,6 +43,15 @@ export function PostCard({ post }: { post: PostView }) {
               {post.product.is_buy_now && (
                 <span className="badge-primary">즉시구매</span>
               )}
+            </div>
+          )}
+          {/* D-1h compact countdown badge — bottom-left, opposite corner from badges */}
+          {showCountdown && auctionEndAt && (
+            <div className="absolute bottom-3 left-3 right-3 pointer-events-none">
+              <div className="bg-black/60 backdrop-blur-sm rounded px-2 py-1 inline-flex items-center gap-1">
+                <span className="text-xs text-amber-200">⏱</span>
+                <AuctionCountdown endAt={auctionEndAt} compact />
+              </div>
             </div>
           )}
         </div>

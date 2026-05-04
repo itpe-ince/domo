@@ -454,5 +454,57 @@
     "minutesAgo": "분 전",
     "hoursAgo": "시간 전",
     "daysAgo": "일 전"
+  },
+  "auction": {
+    "ended": "종료됨",
+    "countdown": {
+      "label": "남은 시간",
+      "compact": {
+        "day": "D-{{days}}일 {{hours}}h",
+        "hour": "{{hours}}h {{minutes}}m"
+      },
+      "full": {
+        "day_hour": "{{days}}일 {{hours}}시간",
+        "hour_minute": "{{hours}}시간 {{minutes}}분"
+      }
+    },
+    "shareCard": {
+      "title": "공유 카드",
+      "generate": "공유 카드 생성",
+      "generating": "공유 카드 생성 중...",
+      "regenerate": "공유 카드 다시 만들기",
+      "download": "이미지 다운로드",
+      "copyLink": "링크 복사",
+      "copied": "링크가 복사되었습니다",
+      "errorOwnerOnly": "작가만 생성할 수 있습니다",
+      "errorActiveOnly": "진행 중인 경매만 가능합니다",
+      "errorRateLimit": "잠시 후 다시 시도해주세요",
+      "errorGenerate": "공유 카드 생성에 실패했습니다",
+      "loading": "공유 카드 생성 중..."
+    }
+  },
+  "share": {
+    "title": "공유 카드",
+    "generate": "공유 카드 생성",
+    "download": "이미지 다운로드",
+    "copyLink": "링크 복사",
+    "copied": "링크가 복사되었습니다",
+    "errorOwnerOnly": "작가만 생성할 수 있습니다",
+    "errorActiveOnly": "진행 중인 경매만 가능합니다",
+    "errorRateLimit": "잠시 후 다시 시도해주세요",
+    "errorGenerate": "공유 카드 생성에 실패했습니다",
+    "loading": "공유 카드 생성 중..."
+  },
+  "notification": {
+    "type": {
+      "auction": {
+        "ending": {
+          "24h": "경매 종료 24시간 전",
+          "6h": "경매 종료 6시간 전",
+          "1h": "경매 종료 1시간 전"
+        },
+        "ended": "경매 종료"
+      }
+    }
   }
 }

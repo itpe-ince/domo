@@ -117,6 +117,10 @@ class PostOut(BaseModel):
     early_access_until: datetime | None = None
     early_access_tier: str | None = None
     is_tier_locked: bool = False  # viewer 기준 계산값 — get_post에서만 채움 (PR2)
+    # Phase 4 #11 auction-promotion-suite — OQ-D-1=A
+    # active auction end_at for feed card D-1h compact countdown (AC-12).
+    # None when no active auction exists for this post.
+    active_auction_end_at: datetime | None = None
 
 
 class CommentIn(BaseModel):

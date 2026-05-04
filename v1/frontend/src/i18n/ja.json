@@ -426,5 +426,57 @@
     "minutesAgo": "分前",
     "hoursAgo": "時間前",
     "daysAgo": "日前"
+  },
+  "auction": {
+    "ended": "終了",
+    "countdown": {
+      "label": "残り時間",
+      "compact": {
+        "day": "D-{{days}}日{{hours}}h",
+        "hour": "{{hours}}h {{minutes}}m"
+      },
+      "full": {
+        "day_hour": "{{days}}日{{hours}}時間",
+        "hour_minute": "{{hours}}時間{{minutes}}分"
+      }
+    },
+    "shareCard": {
+      "title": "シェアカード",
+      "generate": "シェアカードを生成",
+      "generating": "シェアカード生成中...",
+      "regenerate": "シェアカードを再生成",
+      "download": "画像をダウンロード",
+      "copyLink": "リンクをコピー",
+      "copied": "リンクをコピーしました",
+      "errorOwnerOnly": "アーティストのみ生成できます",
+      "errorActiveOnly": "進行中のオークションのみ可能です",
+      "errorRateLimit": "しばらくしてからお試しください",
+      "errorGenerate": "シェアカードの生成に失敗しました",
+      "loading": "シェアカード生成中..."
+    }
+  },
+  "share": {
+    "title": "シェアカード",
+    "generate": "シェアカードを生成",
+    "download": "画像をダウンロード",
+    "copyLink": "リンクをコピー",
+    "copied": "リンクをコピーしました",
+    "errorOwnerOnly": "アーティストのみ生成できます",
+    "errorActiveOnly": "進行中のオークションのみ可能です",
+    "errorRateLimit": "しばらくしてからお試しください",
+    "errorGenerate": "シェアカードの生成に失敗しました",
+    "loading": "シェアカード生成中..."
+  },
+  "notification": {
+    "type": {
+      "auction": {
+        "ending": {
+          "24h": "オークション終了24時間前",
+          "6h": "オークション終了6時間前",
+          "1h": "オークション終了1時間前"
+        },
+        "ended": "オークション終了"
+      }
+    }
   }
 }

@@ -426,5 +426,57 @@
     "minutesAgo": "m atrás",
     "hoursAgo": "h atrás",
     "daysAgo": "d atrás"
+  },
+  "auction": {
+    "ended": "Finalizado",
+    "countdown": {
+      "label": "Tiempo restante",
+      "compact": {
+        "day": "D-{{days}}d {{hours}}h",
+        "hour": "{{hours}}h {{minutes}}m"
+      },
+      "full": {
+        "day_hour": "{{days}}d {{hours}}h",
+        "hour_minute": "{{hours}}h {{minutes}}m"
+      }
+    },
+    "shareCard": {
+      "title": "Tarjeta de compartir",
+      "generate": "Generar tarjeta",
+      "generating": "Generando tarjeta...",
+      "regenerate": "Regenerar tarjeta",
+      "download": "Descargar imagen",
+      "copyLink": "Copiar enlace",
+      "copied": "Enlace copiado",
+      "errorOwnerOnly": "Solo el artista puede generarla",
+      "errorActiveOnly": "Solo subastas activas",
+      "errorRateLimit": "Inténtelo de nuevo en un momento",
+      "errorGenerate": "Error al generar la tarjeta",
+      "loading": "Generando tarjeta de compartir..."
+    }
+  },
+  "share": {
+    "title": "Tarjeta de compartir",
+    "generate": "Generar tarjeta",
+    "download": "Descargar imagen",
+    "copyLink": "Copiar enlace",
+    "copied": "Enlace copiado",
+    "errorOwnerOnly": "Solo el artista puede generarla",
+    "errorActiveOnly": "Solo subastas activas",
+    "errorRateLimit": "Inténtelo de nuevo en un momento",
+    "errorGenerate": "Error al generar la tarjeta",
+    "loading": "Generando tarjeta de compartir..."
+  },
+  "notification": {
+    "type": {
+      "auction": {
+        "ending": {
+          "24h": "Subasta termina en 24h",
+          "6h": "Subasta termina en 6h",
+          "1h": "Subasta termina en 1h"
+        },
+        "ended": "Subasta finalizada"
+      }
+    }
   }
 }

@@ -10,9 +10,12 @@ Notification recipients (OQ-2=B, OQ-8=B):
 from __future__ import annotations
 
 import asyncio
+import io
 import logging
 from datetime import datetime, timedelta, timezone
 
+import httpx
+from PIL import Image, ImageDraw, ImageFont
 from sqlalchemy import select, update
 
 from app.db.session import AsyncSessionLocal
@@ -124,11 +127,81 @@ async def dispatch_pending_notifications_once(db) -> dict[str, int]:
     return summary
 
 
-async def dispatch_auction_ended_notifications(db) -> None:  # noqa: RUF029
-    """Stub for PR2 — notify seller on no-winner auction end.
+def _fetch_thumbnail_sync(url: str, timeout: float = 2.0) -> bytes:
+    """Synchronous thumbnail fetch via httpx (R-2: raises on failure)."""
+    resp = httpx.get(url, timeout=timeout)
+    resp.raise_for_status()
+    return resp.content
 
-    Will be implemented in PR2 alongside _auto_transition() no-winner branch.
+
+def _generate_share_card(
+    *,
+    thumbnail_url: str | None,
+    artist_name: str,
+    current_price: int,
+    currency: str,
+    end_at: datetime,
+) -> bytes:
+    """Pillow 합성 — 1200×630 PNG bytes. R-2/R-3 mitigation.
+
+    Left 50%: artwork thumbnail (fallback: amber rect + 🎨 text)
+    Right 50%: artist name (amber) + price (white) + remaining time (amber)
+    Bottom-right: domo.art watermark (OQ-9=A, RGBA semi-transparent)
     """
+    # Canvas: 1200×630, Domo dark background
+    canvas = Image.new("RGB", (1200, 630), (26, 20, 16))
+    draw = ImageDraw.Draw(canvas, "RGBA")
+    font = ImageFont.load_default()
+
+    # Left 50%: thumbnail (R-2 fallback)
+    thumb_placed = False
+    if thumbnail_url:
+        try:
+            raw = _fetch_thumbnail_sync(thumbnail_url, timeout=2.0)
+            thumb = Image.open(io.BytesIO(raw)).convert("RGB")  # R-3: RGB only
+            thumb.thumbnail((600, 630), Image.Resampling.LANCZOS)  # R-3: size limit
+            paste_x = (600 - thumb.width) // 2
+            paste_y = (630 - thumb.height) // 2
+            canvas.paste(thumb, (paste_x, paste_y))
+            thumb_placed = True
+        except Exception:
+            pass  # R-2: silent fallback
+
+    if not thumb_placed:
+        draw.rectangle([0, 0, 600, 630], fill=(40, 32, 26))
+        draw.text((300, 315), "\U0001f3a8", anchor="mm", fill="white", font=font)
+
+    # Right 50%: text info
+    draw.text((640, 80), artist_name, fill=(255, 210, 60), font=font)
+
+    if currency == "KRW":
+        price_str = f"₩{current_price:,}"
+    else:
+        price_str = f"{current_price:,} {currency}"
+    draw.text((640, 190), price_str, fill="white", font=font)
+
+    now_utc = datetime.now(timezone.utc)
+    delta_seconds = max(0, int((end_at - now_utc).total_seconds()))
+    h, remainder = divmod(delta_seconds // 60, 60)
+    m = remainder
+    draw.text((640, 330), f"{h}시간 {m}분 남음", fill=(255, 210, 60), font=font)
+
+    # OQ-9=A watermark: bottom-right, semi-transparent RGBA
+    draw.text(
+        (1180, 610),
+        f"domo.art  @{artist_name}",
+        anchor="rs",
+        fill=(200, 200, 200, 160),
+        font=font,
+    )
+
+    buf = io.BytesIO()
+    canvas.save(buf, format="PNG", optimize=True)
+    return buf.getvalue()
+
+
+async def dispatch_auction_ended_notifications(db) -> None:  # noqa: RUF029
+    """Stub — no-winner end notification handled in _auto_transition() auctions.py."""
     pass  # noqa: PIE790
 
 

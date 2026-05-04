@@ -6,6 +6,8 @@ import { use } from "react";
 import { useRouter } from "next/navigation";
 import { BluebirdModal } from "@/components/BluebirdModal";
 import { ReportModal } from "@/components/ReportModal";
+import { AuctionCountdown } from "@/components/AuctionCountdown";
+import { AuctionShareCard } from "@/components/AuctionShareCard";
 import {
   ApiClientError,
   ApiUser,
@@ -334,13 +336,37 @@ export default function PostDetailPage({
               </div>
             )}
             {isProduct && product?.is_auction && auction && (
-              <Link
-                href={`/auctions/${auction.id}`}
-                className="btn-secondary w-full text-sm text-center block"
-              >
-                🔨 경매 입찰 — 현재 ₩
-                {Math.round(Number(auction.current_price)).toLocaleString()}
-              </Link>
+              <div className="space-y-2">
+                <Link
+                  href={`/auctions/${auction.id}`}
+                  className="btn-secondary w-full text-sm text-center block"
+                >
+                  🔨 경매 입찰 — 현재 ₩
+                  {Math.round(Number(auction.current_price)).toLocaleString()}
+                </Link>
+                {/* auction-promotion-suite PDCA #11 — F-5: full countdown (always visible while active) */}
+                {auction.status === "active" && (
+                  <div className="card p-3 flex items-center justify-between gap-2">
+                    <AuctionCountdown
+                      endAt={auction.end_at}
+                      onEnded={() =>
+                        setAuction((prev) =>
+                          prev ? { ...prev, status: "ended" } : prev
+                        )
+                      }
+                    />
+                  </div>
+                )}
+                {/* Share card — only for auction owner (backend 403s others anyway) */}
+                {auction.status === "active" && me?.id === post.author.id && (
+                  <AuctionShareCard
+                    auctionId={auction.id}
+                    isOwner={true}
+                    cachedUrl={auction.share_card_url}
+                    cachedAt={auction.share_card_generated_at}
+                  />
+                )}
+              </div>
             )}
             {isProduct && product?.is_auction && !auction && (
               <button className="btn-secondary w-full text-sm" disabled>

@@ -426,5 +426,57 @@
     "minutesAgo": "分前",
     "hoursAgo": "小時前",
     "daysAgo": "天前"
+  },
+  "auction": {
+    "ended": "已結束",
+    "countdown": {
+      "label": "剩餘時間",
+      "compact": {
+        "day": "D-{{days}}天{{hours}}h",
+        "hour": "{{hours}}h {{minutes}}m"
+      },
+      "full": {
+        "day_hour": "{{days}}天{{hours}}小時",
+        "hour_minute": "{{hours}}小時{{minutes}}分"
+      }
+    },
+    "shareCard": {
+      "title": "分享卡片",
+      "generate": "生成分享卡片",
+      "generating": "正在生成分享卡片...",
+      "regenerate": "重新生成分享卡片",
+      "download": "下載圖片",
+      "copyLink": "複製連結",
+      "copied": "已複製連結",
+      "errorOwnerOnly": "只有藝術家可以生成",
+      "errorActiveOnly": "僅限進行中的拍賣",
+      "errorRateLimit": "請稍後再試",
+      "errorGenerate": "生成分享卡片失敗",
+      "loading": "正在生成分享卡片..."
+    }
+  },
+  "share": {
+    "title": "分享卡片",
+    "generate": "生成分享卡片",
+    "download": "下載圖片",
+    "copyLink": "複製連結",
+    "copied": "已複製連結",
+    "errorOwnerOnly": "只有藝術家可以生成",
+    "errorActiveOnly": "僅限進行中的拍賣",
+    "errorRateLimit": "請稍後再試",
+    "errorGenerate": "生成分享卡片失敗",
+    "loading": "正在生成分享卡片..."
+  },
+  "notification": {
+    "type": {
+      "auction": {
+        "ending": {
+          "24h": "拍卖结束24小时前",
+          "6h": "拍卖结束6小时前",
+          "1h": "拍卖结束1小时前"
+        },
+        "ended": "拍卖已结束"
+      }
+    }
   }
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useI18n } from "@/i18n";
 import { PostView } from "@/lib/api";
 import { usePostTranslation } from "@/lib/useTranslation";
+import { AuctionCountdown } from "@/components/AuctionCountdown";
 
 export function FeedItem({ post }: { post: PostView }) {
   const { t } = useI18n();
@@ -115,6 +116,18 @@ export function FeedItem({ post }: { post: PostView }) {
           📍 {post.location_name}
         </div>
       )}
+
+      {/* auction-promotion-suite PDCA #11 — D-1h compact countdown for feed (OQ-10=B) */}
+      {post.type === "product" && post.active_auction_end_at && (() => {
+        const msLeft = new Date(post.active_auction_end_at!).getTime() - Date.now();
+        const isUnder1h = msLeft > 0 && msLeft <= 3_600_000;
+        return isUnder1h ? (
+          <div className="mb-3 flex items-center gap-2 text-xs">
+            <span className="text-amber-400">⏱</span>
+            <AuctionCountdown endAt={post.active_auction_end_at!} compact />
+          </div>
+        ) : null;
+      })()}
 
       {/* Engagement bar */}
       <div className="flex items-center gap-6 text-text-muted text-sm">
