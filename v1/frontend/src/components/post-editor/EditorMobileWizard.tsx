@@ -22,6 +22,8 @@ import { useI18n } from "@/i18n";
 import {
   type ApiUser,
   type CreatePostMedia,
+  type EarlyAccessDuration,
+  type EarlyAccessTier,
   type OEmbedData,
   type Visibility,
   type Series,
@@ -101,6 +103,11 @@ export interface EditorMobileWizardProps {
   mySeries: Series[];
   mySeriesLoading: boolean;
   onCreateSeriesClick: () => void;
+  // artist-tier-release PDCA #10
+  earlyAccessDuration: EarlyAccessDuration | null;
+  setEarlyAccessDuration: (v: EarlyAccessDuration | null) => void;
+  earlyAccessTier: EarlyAccessTier | null;
+  setEarlyAccessTier: (v: EarlyAccessTier | null) => void;
 }
 
 export function EditorMobileWizard(props: EditorMobileWizardProps) {
@@ -153,6 +160,10 @@ export function EditorMobileWizard(props: EditorMobileWizardProps) {
     mySeries,
     mySeriesLoading,
     onCreateSeriesClick,
+    earlyAccessDuration,
+    setEarlyAccessDuration,
+    earlyAccessTier,
+    setEarlyAccessTier,
   } = props;
 
   // Derive step machine from current post type — type=product adds a
@@ -276,6 +287,10 @@ export function EditorMobileWizard(props: EditorMobileWizardProps) {
               seriesLoading={mySeriesLoading}
               disabled={uploading || submitting}
               onCreateSeriesClick={onCreateSeriesClick}
+              earlyAccessDuration={earlyAccessDuration}
+              setEarlyAccessDuration={setEarlyAccessDuration}
+              earlyAccessTier={earlyAccessTier}
+              setEarlyAccessTier={setEarlyAccessTier}
             />
           )}
           {wizard.step === "publish" && (

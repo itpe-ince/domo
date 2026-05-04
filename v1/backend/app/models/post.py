@@ -56,6 +56,15 @@ class Post(Base):
         Boolean, nullable=False, default=True,
         comment="OQ-3=A. False → POST /comments 403; existing comments preserved."
     )
+    # Phase 4 #10 artist-tier-release §B-2
+    early_access_until: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None,
+        comment="Phase 4 #10. UTC. NULL=early_access off.",
+    )
+    early_access_tier: Mapped[str | None] = mapped_column(
+        String(20), nullable=True, default=None,
+        comment="Phase 4 #10. 'subscriber'|'sponsor'|'follower'. NULL=off.",
+    )
     # 'pending' | 'approved' | 'rejected' | 'not_required'
 
     scheduled_at: Mapped[datetime | None] = mapped_column(

@@ -1,1 +1,1 @@
-- [domo editor-revamp-roadmap 진행 상태](project_editor_revamp.md) — #1~#4 완료, #6 plan 완료(OQ-8개 대기), OQ-6 PDCA 분할 여부 사용자 결정 필수
+- [domo editor-revamp-roadmap 진행 상태](project_editor_revamp.md) — #1~#4,#6,#8 완료 아카이브. #10 plan 완료(OQ-10개 대기). Critical Path 거의 완주

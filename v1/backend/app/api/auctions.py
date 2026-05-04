@@ -54,6 +54,10 @@ def _serialize_auction(a: Auction) -> dict:
         if a.payment_deadline
         else None,
         "created_at": a.created_at.isoformat(),
+        "share_card_url": getattr(a, "share_card_url", None),
+        "share_card_generated_at": getattr(a, "share_card_generated_at", None).isoformat()
+        if getattr(a, "share_card_generated_at", None)
+        else None,
     }
 
 

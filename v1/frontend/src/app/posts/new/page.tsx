@@ -86,6 +86,8 @@ function CreatePostPageInner() {
     setVisibility,
     setCommentsEnabled,
     setSeriesIds,
+    setEarlyAccessDuration,
+    setEarlyAccessTier,
   } = setters;
   const {
     type,
@@ -109,11 +111,18 @@ function CreatePostPageInner() {
     visibility = "public",
     commentsEnabled = true,
     seriesIds = [],
+    earlyAccessDuration = null,
+    earlyAccessTier = null,
   } = formState;
 
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // artist-tier-release PDCA #10 — prevent publish when only one of the two
+  // tier fields is set (mirrors server-side TIER_FIELDS_INCONSISTENT check).
+  const tierInconsistent =
+    (earlyAccessDuration !== null) !== (earlyAccessTier !== null);
 
   // Artist gate — encapsulates the non-artist auto-fallback effect and the
   // application-status fetch. PostTypeSelector consumes applicationStatus.
@@ -358,6 +367,11 @@ function CreatePostPageInner() {
       setError(t("post.type.product.errorOnlyArtists"));
       return;
     }
+    // artist-tier-release PDCA #10 — tier/duration consistency guard
+    if (tierInconsistent) {
+      setError(t("post.editor.error.tierFieldsInconsistent"));
+      return;
+    }
     setSubmitting(true);
     try {
       // publish-controls PDCA #8 — Hybrid path C:
@@ -415,6 +429,9 @@ function CreatePostPageInner() {
         visibility,
         comments_enabled: commentsEnabled,
         series_ids: seriesIds,
+        // artist-tier-release PDCA #10
+        early_access_duration: earlyAccessDuration ?? null,
+        early_access_tier: earlyAccessTier ?? null,
       });
 
       // Wipe localStorage. Server draft deleted by publishPost's from_draft_id;
@@ -453,6 +470,10 @@ function CreatePostPageInner() {
       SCHEDULED_AT_TOO_SOON: t("post.editor.error.scheduledAtTooSoon"),
       SCHEDULED_AT_TOO_FAR: t("post.editor.error.scheduledAtTooFar"),
       COMMENTS_DISABLED: t("post.editor.error.commentsDisabled"),
+      // artist-tier-release PDCA #10
+      INVALID_TIER: t("post.editor.error.invalidTier"),
+      INVALID_DURATION: t("post.editor.error.invalidDuration"),
+      TIER_FIELDS_INCONSISTENT: t("post.editor.error.tierFieldsInconsistent"),
     };
     return codeMap[e.code] ?? `${e.code}: ${e.message}`;
   }
@@ -557,6 +578,10 @@ function CreatePostPageInner() {
           mySeries={mySeries}
           mySeriesLoading={mySeriesLoading}
           onCreateSeriesClick={() => setSeriesCreateModalOpen(true)}
+          earlyAccessDuration={earlyAccessDuration}
+          setEarlyAccessDuration={setEarlyAccessDuration}
+          earlyAccessTier={earlyAccessTier}
+          setEarlyAccessTier={setEarlyAccessTier}
         />
 
         {/* Desktop (≥ md): single-column workspace + side preview pane.
@@ -614,6 +639,10 @@ function CreatePostPageInner() {
             mySeries={mySeries}
             mySeriesLoading={mySeriesLoading}
             onCreateSeriesClick={() => setSeriesCreateModalOpen(true)}
+            earlyAccessDuration={earlyAccessDuration}
+            setEarlyAccessDuration={setEarlyAccessDuration}
+            earlyAccessTier={earlyAccessTier}
+            setEarlyAccessTier={setEarlyAccessTier}
           />
         </div>
 

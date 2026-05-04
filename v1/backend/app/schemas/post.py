@@ -113,6 +113,10 @@ class PostOut(BaseModel):
     # Defaults match DB defaults so existing serialization is backward-compatible.
     visibility: str = "public"
     comments_enabled: bool = True
+    # Phase 4 #10 artist-tier-release §B-4
+    early_access_until: datetime | None = None
+    early_access_tier: str | None = None
+    is_tier_locked: bool = False  # viewer 기준 계산값 — get_post에서만 채움 (PR2)
 
 
 class CommentIn(BaseModel):

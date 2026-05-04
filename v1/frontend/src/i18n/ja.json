@@ -322,6 +322,27 @@
           "clearLabel": "即時公開に変更",
           "tooSoon": "5分以上後に設定してください",
           "tooFar": "1年以内に設定してください"
+        },
+        "tierRelease": {
+          "label": "先行公開設定",
+          "activeHint": "{duration}間 {tier}に先行公開",
+          "tier": {
+            "label": "公開対象",
+            "subscriber": "サブスク限定",
+            "sponsor": "サブスク + スポンサー",
+            "follower": "フォロワー以上"
+          },
+          "duration": {
+            "label": "先行公開期間",
+            "1h": "1時間",
+            "6h": "6時間",
+            "24h": "24時間",
+            "3d": "3日間",
+            "7d": "7日間"
+          },
+          "expiryHint": "{duration}後に{visibility}で公開されます",
+          "clear": "先行公開を解除",
+          "errorBothRequired": "対象と期間の両方を選択してください"
         }
       },
       "error": {
@@ -333,7 +354,10 @@
         "seriesNotOwner": "自分のシリーズのみ選択できます",
         "scheduledAtTooSoon": "予約公開は5分後以降に設定できます",
         "scheduledAtTooFar": "予約公開は1年以内に設定できます",
-        "commentsDisabled": "コメントは無効です"
+        "commentsDisabled": "コメントは無効です",
+        "invalidTier": "無効なtier値です",
+        "invalidDuration": "サポートされていない期間です (1h/6h/24h/3d/7d)",
+        "tierFieldsInconsistent": "tierと期間の両方を設定するか、両方を空にしてください"
       }
     },
     "series": {
@@ -363,8 +387,16 @@
       "indicator": {
         "followersOnly": "フォロワー限定",
         "unlisted": "リンク共有",
-        "commentsDisabled": "このポストはコメントが許可されていません"
+        "commentsDisabled": "このポストはコメントが許可されていません",
+        "tier": {
+          "subscriber": "サブスク先行",
+          "sponsor": "スポンサー先行",
+          "follower": "フォロワー先行"
+        }
       }
+    },
+    "detail": {
+      "tierRestricted": "この投稿は特定のサブスク会員またはスポンサーのみ閲覧できます"
     }
   },
   "bluebird": {

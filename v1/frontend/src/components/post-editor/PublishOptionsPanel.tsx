@@ -14,7 +14,7 @@
 
 import { useState, useEffect } from "react";
 import { useI18n } from "@/i18n";
-import type { Visibility, Series } from "@/lib/api";
+import type { EarlyAccessDuration, EarlyAccessTier, Visibility, Series } from "@/lib/api";
 
 export interface PublishOptionsPanelProps {
   visibility: Visibility;
@@ -29,6 +29,11 @@ export interface PublishOptionsPanelProps {
   seriesLoading: boolean;
   disabled?: boolean;
   onCreateSeriesClick: () => void;
+  // artist-tier-release PDCA #10
+  earlyAccessDuration: EarlyAccessDuration | null;
+  setEarlyAccessDuration: (v: EarlyAccessDuration | null) => void;
+  earlyAccessTier: EarlyAccessTier | null;
+  setEarlyAccessTier: (v: EarlyAccessTier | null) => void;
 }
 
 // ─── Scheduled date helpers ───────────────────────────────────────────────
@@ -80,6 +85,26 @@ const VISIBILITY_OPTIONS: VisibilityOption[] = [
   },
 ];
 
+// ─── Tier Release helpers ─────────────────────────────────────────────────
+
+const EARLY_ACCESS_DURATIONS: EarlyAccessDuration[] = [1, 6, 24, 72, 168];
+const EARLY_ACCESS_TIERS: EarlyAccessTier[] = ["subscriber", "sponsor", "follower"];
+
+function durationLabel(h: EarlyAccessDuration, t: (k: string) => string): string {
+  const map: Record<EarlyAccessDuration, string> = {
+    1: t("post.editor.publishOptions.tierRelease.duration.1h"),
+    6: t("post.editor.publishOptions.tierRelease.duration.6h"),
+    24: t("post.editor.publishOptions.tierRelease.duration.24h"),
+    72: t("post.editor.publishOptions.tierRelease.duration.3d"),
+    168: t("post.editor.publishOptions.tierRelease.duration.7d"),
+  };
+  return map[h];
+}
+
+function tierLabel(tier: EarlyAccessTier, t: (k: string) => string): string {
+  return t(`post.editor.publishOptions.tierRelease.tier.${tier}`);
+}
+
 // ─── Component ────────────────────────────────────────────────────────────
 
 export function PublishOptionsPanel({
@@ -95,10 +120,17 @@ export function PublishOptionsPanel({
   seriesLoading,
   disabled = false,
   onCreateSeriesClick,
+  earlyAccessDuration,
+  setEarlyAccessDuration,
+  earlyAccessTier,
+  setEarlyAccessTier,
 }: PublishOptionsPanelProps) {
   const { t } = useI18n();
   const [scheduleError, setScheduleError] = useState<string | null>(null);
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const tierInconsistent =
+    (earlyAccessDuration !== null) !== (earlyAccessTier !== null);
 
   // Re-validate whenever scheduledAt changes
   useEffect(() => {
@@ -323,6 +355,129 @@ export function PublishOptionsPanel({
             </button>
           )}
         </div>
+      </section>
+
+      {/* 5. Tier Release — artist-tier-release PDCA #10 */}
+      <section className="px-4 py-4 border-t border-border">
+        <details>
+          <summary
+            className="flex items-center justify-between cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden"
+            style={{ listStyle: "none" }}
+          >
+            <span className="text-sm font-medium text-text-primary">
+              {t("post.editor.publishOptions.tierRelease.label")}
+            </span>
+            {earlyAccessDuration !== null && earlyAccessTier !== null && (
+              <span className="ml-2 text-xs text-amber-600">
+                {t("post.editor.publishOptions.tierRelease.activeHint")
+                  .replace("{duration}", durationLabel(earlyAccessDuration, t))
+                  .replace("{tier}", tierLabel(earlyAccessTier, t))}
+              </span>
+            )}
+          </summary>
+
+          <div className="pt-4 space-y-4">
+            {/* Tier selection */}
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+                {t("post.editor.publishOptions.tierRelease.tier.label")}
+              </p>
+              <div role="radiogroup" aria-label={t("post.editor.publishOptions.tierRelease.tier.label")} className="flex flex-col gap-1.5">
+                {EARLY_ACCESS_TIERS.map((tier) => {
+                  const isSelected = earlyAccessTier === tier;
+                  return (
+                    <button
+                      key={tier}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      disabled={disabled}
+                      onClick={() => setEarlyAccessTier(isSelected ? null : tier)}
+                      className={[
+                        "flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+                        isSelected
+                          ? "bg-amber-50 border-amber-400 text-amber-700"
+                          : "border-border hover:bg-surface-hover text-text-primary",
+                        disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
+                      ].join(" ")}
+                    >
+                      <span
+                        className={[
+                          "h-3.5 w-3.5 rounded-full border-2 flex-shrink-0 transition-colors",
+                          isSelected ? "border-amber-500 bg-amber-500" : "border-border",
+                        ].join(" ")}
+                      />
+                      {tierLabel(tier, t)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Duration selection */}
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+                {t("post.editor.publishOptions.tierRelease.duration.label")}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {EARLY_ACCESS_DURATIONS.map((h) => {
+                  const isPressed = earlyAccessDuration === h;
+                  return (
+                    <button
+                      key={h}
+                      type="button"
+                      aria-pressed={isPressed}
+                      disabled={disabled}
+                      onClick={() => setEarlyAccessDuration(isPressed ? null : h)}
+                      className={[
+                        "rounded-md border px-3 py-1.5 text-xs font-medium transition-colors",
+                        isPressed
+                          ? "bg-amber-100 border-amber-400 text-amber-700"
+                          : "border-border hover:bg-surface-hover text-text-primary",
+                        disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
+                      ].join(" ")}
+                    >
+                      {durationLabel(h, t)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Expiry hint — shown only when both fields set */}
+            {earlyAccessDuration !== null && earlyAccessTier !== null && (
+              <p className="text-xs text-text-muted">
+                {t("post.editor.publishOptions.tierRelease.expiryHint")
+                  .replace("{duration}", durationLabel(earlyAccessDuration, t))
+                  .replace("{visibility}", t(`post.editor.publishOptions.visibility.${
+                    visibility === "followers_only" ? "followersOnly" : visibility
+                  }`))}
+              </p>
+            )}
+
+            {/* Validation alert — shown when only one of the two fields is set */}
+            {tierInconsistent && (
+              <p role="alert" className="text-xs text-danger">
+                {t("post.editor.publishOptions.tierRelease.errorBothRequired")}
+              </p>
+            )}
+
+            {/* Clear button */}
+            {(earlyAccessDuration !== null || earlyAccessTier !== null) && (
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => {
+                  setEarlyAccessDuration(null);
+                  setEarlyAccessTier(null);
+                }}
+                className="text-xs text-text-muted hover:text-text-primary disabled:opacity-50 transition-colors"
+              >
+                {t("post.editor.publishOptions.tierRelease.clear")}
+              </button>
+            )}
+          </div>
+        </details>
       </section>
     </div>
   );

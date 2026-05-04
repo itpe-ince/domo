@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-03T22:27:02.205Z",
+  "lastUpdated": "2026-05-04T02:40:13.935Z",
   "activeFeatures": [
     "core",
     "db",
@@ -75,11 +75,13 @@
     "unit",
     "integration",
     "image-editor",
-    "series"
+    "series",
+    "tier_release_jobs.py",
+    "auction_promotion_jobs.py"
   ],
-  "primaryFeature": null,
-  "previousPrimaryFeature": "publish-controls (archived 2026-05-03, matchRate 100%)",
-  "criticalPathNext": "Critical Path #1-#8 모두 완료 — 다음: #10 artist-tier-release (Phase 4, visibility 시스템 위에서 동작) 또는 #12 notifications-ux-audit (Phase 3, 독립 병렬). carry-over: editor-video-studio (#6-video, ffmpeg 인프라 차단), series reorder persistence endpoint, upload-retry-ui, editor-i18n-cleanup",
+  "primaryFeature": "auction-promotion-suite",
+  "previousPrimaryFeature": "artist-tier-release (archived 2026-05-04, matchRate 99%)",
+  "criticalPathNext": "Critical Path #1-#10 모두 완료 — 다음: #11 auction-promotion-suite (Phase 4 마지막) 또는 #12 notifications-ux-audit (Phase 3 독립). carry-over: editor-video-studio (#6-video, ffmpeg 인프라 차단), series reorder persistence endpoint (#8), upload-retry-ui (#4), editor-i18n-cleanup (#3+#4), POST_TIER_RESTRICTED CTA UI / sponsor N일 제한 / SQL-only filter (#10.1)",
   "features": {
     "editor-media-ux": {
       "phase": "archived",
@@ -113,6 +115,48 @@
       "kind": "sub-pdca",
       "parent_roadmap": "editor-revamp-roadmap",
       "summary": "에디터 #8 Critical Path: B-3 발행 옵션 4건 통합 (공개범위/댓글/시리즈/예약). alembic 0039+0040 + Series 모델 + 6 endpoints (publish + Series CRUD 5종) + visibility 필터 + comments lock + audit log. Frontend PublishOptionsPanel + SeriesCreateModal + /series/[id] dnd-kit reorder + VisibilityBadge + handleSubmit hybrid C. Backend ~1800 LOC + Frontend ~2200 LOC + 22 tests + 2 smoke + 47 i18n × 5 locale = 235 entries. 14 OQ resolved (10 Plan + 5 OQ-D), Match Rate 100%, 5 통합 지점 회귀 0."
+    },
+    "artist-tier-release": {
+      "phase": "archived",
+      "matchRate": 99,
+      "iterationCount": 0,
+      "startedAt": "2026-05-03T22:47:00.000Z",
+      "completedAt": "2026-05-04T01:04:03.015Z",
+      "archivedAt": "2026-05-04T01:08:00.000Z",
+      "archivedTo": "v1/docs/archive/2026-05/artist-tier-release/",
+      "kind": "sub-pdca",
+      "parent_roadmap": "editor-revamp-roadmap",
+      "summary": "에디터 #10 Phase 4 Critical Path: B-4 후원자/단골 우선 공개. **Option β 채택 (R-1 dissolved)** — Post.visibility enum 미확장, tier_only는 computed effective state. alembic 0041 + Post +2 컬럼 + sponsorships R-5 인덱스 + 3 helpers (UNION ALL EXISTS + 2단계 SQL+Python) + tier_release_jobs.py 60s cron + 5 endpoints visibility 필터. Frontend TierReleasePicker (PublishOptionsPanel 5번째 expand) + TierBadge + handleSubmit + posts/[id] 403. Backend ~750 LOC + Frontend ~400 LOC + 17 신규 tests (61 total) + 1 smoke + 22 신규 i18n × 5 = 110 entries. 15 OQ resolved (10 Plan + 5 OQ-D), Match Rate 99%, 5 통합 지점 회귀 0."
+    },
+    "auction-promotion-suite": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "doProgress": {
+        "pr1_backend_foundation": "completed_2026-05-04 (alembic 0042 22ch + Auction +5 컬럼 + ShareCardResponse + AuctionOut +2 + _serialize_auction +2 + auction_promotion_jobs.py 110L 60s cron (auction_jobs.py 5min 격리) + main.py 등록 + share_card rate_limit. 7 files: 2 신규 + 5 수정. 61 baseline tests still passing 1.16s)",
+        "pr2_backend_endpoint_tests": "pending",
+        "pr3_frontend_countdown_share_card": "pending"
+      },
+      "matchRate": null,
+      "iterationCount": 0,
+      "startedAt": "2026-05-04T01:17:10.887Z",
+      "scope": "에디터 #11 Phase 4 마지막 Critical Path — B-4 옥션 종료 알림/홍보 도구. (1) 종료 N시간 전 알림 (24h+6h+1h, 작가+최고입찰자) + (2) 공유 카드 자동 생성 (Pillow 1200x630 OG) + (3) 카운트다운 위젯 (D-1h 1초 polling). DB: auctions +5 컬럼 (notified_24h_at + notified_6h_at + notified_1h_at + share_card_url + share_card_generated_at). M (4~5일).",
+      "kind": "sub-pdca",
+      "parent_roadmap": "editor-revamp-roadmap",
+      "documents": {
+        "plan": "v1/docs/01-plan/features/auction-promotion-suite.plan.md",
+        "design": "v1/docs/02-design/features/auction-promotion-suite.design.md"
+      },
+      "designVersion": "1.0",
+      "openQuestionsCount": 10,
+      "openQuestionsDStatus": "5 OQ-D surfaced — 권장대로 일괄 수락 가능",
+      "acceptanceCriteriaCount": 15,
+      "openQuestionsStatus": "pending_user_decision",
+      "criticalRisks": [
+        "R-1 (Medium): cron 중복 실행 → UPDATE WHERE notified_Xh_at IS NULL + FOR UPDATE SKIP LOCKED",
+        "R-2 (Low): thumbnail fetch 실패 → text-only fallback",
+        "R-4 (Low): seller==current_winner edge case → 알림 1건 발송",
+        "R-5 (Low): 기존 auction_jobs.py 5분 cron 격리 — 파일 분리 + 독립 DB session"
+      ]
     },
     "editor-video-studio": {
       "phase": "plan",
@@ -243,7 +287,7 @@
       "phaseNumber": 3,
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/main.py",
       "timestamps": {
-        "lastUpdated": "2026-05-03T13:53:42.016Z"
+        "lastUpdated": "2026-05-04T02:40:08.062Z"
       }
     },
     "core": {
@@ -255,7 +299,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:32:03.535Z",
-        "lastUpdated": "2026-05-03T13:52:49.333Z"
+        "lastUpdated": "2026-05-04T02:40:13.935Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/core/rate_limit.py"
     },
@@ -281,9 +325,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:23.836Z",
-        "lastUpdated": "2026-05-03T14:08:39.779Z"
+        "lastUpdated": "2026-05-04T02:39:37.225Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/posts.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/auctions.py"
     },
     "schemas": {
       "phase": "do",
@@ -294,9 +338,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:30.319Z",
-        "lastUpdated": "2026-05-03T13:51:23.575Z"
+        "lastUpdated": "2026-05-04T02:39:31.939Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/post.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/auction.py"
     },
     "google_auth.py": {
       "phase": "do",
@@ -346,9 +390,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:35:13.871Z",
-        "lastUpdated": "2026-05-03T13:50:25.034Z"
+        "lastUpdated": "2026-05-04T02:39:10.818Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0040_series_tables.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0042_auction_promotion.py"
     },
     "frontend": {
       "phase": "do",
@@ -359,7 +403,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-05-03T22:22:54.014Z"
+        "lastUpdated": "2026-05-04T00:41:14.266Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/PostCard.tsx"
     },
@@ -398,9 +442,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T09:22:43.092Z",
-        "lastUpdated": "2026-05-03T14:18:48.152Z"
+        "lastUpdated": "2026-05-03T23:56:15.160Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/scripts/smoke_test_series.sh"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/scripts/smoke_test_tier_release.sh"
     },
     "[id]": {
       "phase": "do",
@@ -411,9 +455,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T09:25:54.640Z",
-        "lastUpdated": "2026-05-03T22:26:50.409Z"
+        "lastUpdated": "2026-05-04T00:42:20.235Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/series/[id]/page.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/[id]/page.tsx"
     },
     "payments": {
       "phase": "do",
@@ -554,7 +598,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:41:45.679Z",
-        "lastUpdated": "2026-05-03T14:54:59.029Z"
+        "lastUpdated": "2026-05-04T00:42:13.225Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/new/page.tsx"
     },
@@ -788,9 +832,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T01:31:08.565Z",
-        "lastUpdated": "2026-05-03T22:27:02.205Z"
+        "lastUpdated": "2026-05-04T00:45:07.160Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/PublishOptionsPanel.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/EditorMobileWizard.tsx"
     },
     "feed": {
       "phase": "do",
@@ -1209,9 +1253,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T11:12:44.673Z",
-        "lastUpdated": "2026-05-03T14:20:14.075Z"
+        "lastUpdated": "2026-05-03T23:55:03.517Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/unit/test_publish_controls.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/unit/test_artist_tier_release.py"
     },
     "integration": {
       "phase": "do",
@@ -1222,9 +1266,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T11:40:14.639Z",
-        "lastUpdated": "2026-05-03T14:19:54.433Z"
+        "lastUpdated": "2026-05-04T00:26:51.647Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/integration/test_publish_controls_endpoints.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/integration/test_artist_tier_release_endpoints.py"
     },
     "image-editor": {
       "phase": "do",
@@ -1251,6 +1295,32 @@
         "lastUpdated": "2026-05-03T20:37:02.257Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/users/[id]/series/page.tsx"
+    },
+    "tier_release_jobs.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-03T23:30:42.375Z",
+        "lastUpdated": "2026-05-03T23:30:42.375Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/tier_release_jobs.py"
+    },
+    "auction_promotion_jobs.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T02:39:58.824Z",
+        "lastUpdated": "2026-05-04T02:39:58.824Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/auction_promotion_jobs.py"
     }
   },
   "pipeline": {
@@ -1261,7 +1331,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-05-03T22:27:02.205Z"
+    "lastActivity": "2026-05-04T02:40:13.935Z"
   },
   "history": [
     {
@@ -8749,6 +8819,450 @@
     {
       "timestamp": "2026-05-03T22:27:02.205Z",
       "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:30:34.756Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:30:42.375Z",
+      "feature": "tier_release_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:30:50.760Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:30:56.316Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:31:11.601Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:31:18.594Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:31:25.902Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:31:29.778Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:31:35.161Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:52:38.864Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:52:56.103Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:53:11.590Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:53:23.056Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:53:33.881Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:53:44.897Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:53:49.938Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:53:56.298Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:54:05.222Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:54:22.549Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:54:43.183Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:55:03.517Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:55:43.155Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:56:15.160Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-03T23:57:30.401Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:26:51.647Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:27:12.969Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:27:25.081Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:38:49.108Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:38:56.325Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:39:03.681Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:39:09.473Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:39:15.355Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:39:20.297Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:39:25.447Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:39:30.711Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:39:35.913Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:39:41.498Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:39:45.745Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:39:49.925Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:39:55.926Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:40:01.674Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:40:08.811Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:40:17.585Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:40:25.195Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:40:54.871Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:41:04.824Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:41:09.870Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:41:14.266Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:41:23.099Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:41:29.671Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:41:38.613Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:41:45.906Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:41:52.677Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:41:58.161Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:42:13.225Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:42:20.235Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:44:23.851Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:44:30.836Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:44:35.883Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:44:43.060Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:44:48.095Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:44:54.788Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:44:59.830Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T00:45:07.160Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:39:10.818Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:39:14.940Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:39:22.029Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:39:27.610Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:39:31.939Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:39:37.225Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:39:58.824Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:40:02.994Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:40:08.062Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T02:40:13.935Z",
+      "feature": "core",
       "phase": "do",
       "action": "updated"
     }

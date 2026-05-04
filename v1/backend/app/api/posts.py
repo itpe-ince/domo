@@ -1,5 +1,7 @@
 from typing import Annotated
 from uuid import UUID
+import uuid
+from datetime import datetime, timedelta, timezone
 
 import sqlalchemy as sa
 from fastapi import APIRouter, Depends, Header, Query
@@ -18,6 +20,7 @@ from app.models.auction import Auction
 from app.models.post import Comment, Follow, Like, MediaAsset, Post, ProductPost
 from app.models.search_log import SearchLog
 from app.models.series import PostSeriesMembership, Series
+from app.models.sponsorship import Sponsorship, Subscription
 from app.models.user import User
 
 _log = logging.getLogger(__name__)
@@ -64,6 +67,10 @@ def _serialize_post(post: Post) -> dict:
         # getattr fallback keeps compatibility with any cached/partial Post objects.
         visibility=getattr(post, "visibility", "public"),
         comments_enabled=getattr(post, "comments_enabled", True),
+        # Phase 4 #10 artist-tier-release §B-4 — early_access fields.
+        # is_tier_locked stays False here; get_post (PR2) fills it per-viewer.
+        early_access_until=getattr(post, "early_access_until", None),
+        early_access_tier=getattr(post, "early_access_tier", None),
     ).model_dump(mode="json")
 
 
@@ -101,6 +108,96 @@ def _trending_score_expr():
         + Post.bluebird_count * 0.4
         + recency_score * 0.2 * 100  # recency를 0~100 스케일로 맞춤
     )
+
+
+# ─── Tier-release helpers — Phase 4 #10 §B-5, §B-6, §B-7 ───────────────
+
+
+async def _viewer_meets_tier(
+    db: AsyncSession,
+    viewer_id: uuid.UUID | None,
+    author_id: uuid.UUID,
+    required_tier: str,  # 'subscriber' | 'sponsor' | 'follower'
+) -> bool:
+    """OQ-2=A 자동 계층 포함 — UNION ALL EXISTS 단일 쿼리.
+
+    - subscriber: Subscription.status='active'
+    - sponsor: subscriber OR Sponsorship.status='completed'
+    - follower: 위 둘 OR Follow row exists
+
+    author 본인은 항상 통과 (return True).
+    """
+    if viewer_id is None:
+        return False
+    if viewer_id == author_id:
+        return True
+
+    sub_q = (
+        select(sa.literal(1))
+        .where(
+            Subscription.sponsor_id == viewer_id,
+            Subscription.artist_id == author_id,
+            Subscription.status == "active",
+        )
+        .limit(1)
+    )
+    spon_q = (
+        select(sa.literal(1))
+        .where(
+            Sponsorship.sponsor_id == viewer_id,
+            Sponsorship.artist_id == author_id,
+            Sponsorship.status == "completed",
+        )
+        .limit(1)
+    )
+    follow_q = (
+        select(sa.literal(1))
+        .where(
+            Follow.follower_id == viewer_id,
+            Follow.followee_id == author_id,
+        )
+        .limit(1)
+    )
+
+    if required_tier == "subscriber":
+        union_q = sub_q
+    elif required_tier == "sponsor":
+        union_q = sa.union_all(sub_q, spon_q)
+    else:  # 'follower'
+        union_q = sa.union_all(sub_q, spon_q, follow_q)
+
+    exists_q = select(sa.exists(union_q))
+    result = await db.execute(exists_q)
+    return bool(result.scalar())
+
+
+async def _filter_active_tier_only(
+    db: AsyncSession,
+    posts: list,
+    viewer_id: uuid.UUID | None,
+) -> list:
+    """Python post-filter — active tier_only 포스트의 viewer별 자격 검증.
+
+    SQL fast-path가 followee author 등 명백한 자격을 통과시킨 후,
+    실제 tier 자격 (subscription/sponsorship/follow OR)을 viewer별로 재검증.
+    """
+    now = datetime.now(timezone.utc)
+    filtered = []
+    for p in posts:
+        ea_until = getattr(p, "early_access_until", None)
+        ea_tier = getattr(p, "early_access_tier", None)
+        if (
+            ea_until is not None
+            and ea_until > now
+            and ea_tier is not None
+        ):
+            qualifies = await _viewer_meets_tier(
+                db, viewer_id, p.author_id, ea_tier
+            )
+            if not qualifies:
+                continue
+        filtered.append(p)
+    return filtered
 
 
 # ─── Publish helpers — publish-controls PDCA #8 §B-7 ────────────────────
@@ -223,6 +320,18 @@ async def publish_post(
 
     post.visibility = body.visibility
     post.comments_enabled = body.comments_enabled
+
+    # Phase 4 #10 OQ-9=A: tier release 통합
+    if body.early_access_duration is not None:
+        post.early_access_until = (
+            datetime.now(timezone.utc)
+            + timedelta(hours=body.early_access_duration)
+        )
+        post.early_access_tier = body.early_access_tier
+    else:
+        post.early_access_until = None
+        post.early_access_tier = None
+
     series_count = await _replace_post_series(db, post.id, body.series_ids, user.id)
 
     await db.flush()
@@ -238,6 +347,9 @@ async def publish_post(
             "comments_enabled": body.comments_enabled,
             "series_count": series_count,
             "scheduled_at": body.publish_at.isoformat() if body.publish_at else None,
+            "early_access_duration": body.early_access_duration,
+            "early_access_tier": body.early_access_tier,
+            "early_access_until": post.early_access_until.isoformat() if post.early_access_until else None,
         },
     )
     await db.commit()
@@ -252,6 +364,8 @@ async def publish_post(
             scheduled_at=post.scheduled_at,
             series_count=series_count,
             updated_at=post.updated_at,
+            early_access_until=post.early_access_until,
+            early_access_tier=getattr(post, "early_access_tier", None),
         ).model_dump(mode="json")
     }
 
@@ -262,35 +376,54 @@ async def publish_post(
 def _visibility_filter_for_viewer(viewer, author_id_col, viewing_self: bool, followee_ids=None):
     """Return a SQLAlchemy WHERE clause for visibility based on viewer context.
 
-    Rules:
-    - viewing_self=True  → all visibility values allowed (no filter)
-    - viewer=None        → only 'public'
-    - followee_ids list  → 'public' OR ('followers_only' AND author in followee_ids)
-    - no followee_ids    → 'public' OR ('followers_only' AND author in follows subquery)
+    Phase 4 #10 Option β extension — tier_only is computed effective state.
 
-    The followee_ids fast-path reuses an already-fetched list (e.g. home_feed)
-    to avoid N+1 subquery overhead (R-2 mitigation).
+    Rules:
+    - viewing_self=True  → all visibility values allowed (sa.true())
+    - viewer=None        → only 'public' AND not active tier_only
+    - followee_ids list  → 'public' (not active tier) OR 'followers_only' (followee author)
+                           OR active tier_only (followee author — Python post-filter re-validates)
+    - no followee_ids    → same but via subquery
+
+    SQL fast-path: active tier_only posts (early_access_until > now() AND tier IS NOT NULL)
+    are passed through for followee authors, then Python post-filter re-validates tier
+    qualification per viewer.
     """
+    now_expr = func.now()
+    is_active_tier = and_(
+        Post.early_access_until.is_not(None),
+        Post.early_access_until > now_expr,
+    )
+    is_not_active_tier = or_(
+        Post.early_access_until.is_(None),
+        Post.early_access_until <= now_expr,
+    )
+
     if viewing_self:
         return sa.true()
+
     if viewer is None:
-        return Post.visibility == "public"
+        return and_(
+            Post.visibility == "public",
+            is_not_active_tier,
+        )
+
     if followee_ids is not None:
         return or_(
-            Post.visibility == "public",
-            and_(
-                Post.visibility == "followers_only",
-                author_id_col.in_(followee_ids),
-            ),
+            and_(Post.visibility == "public", is_not_active_tier),
+            and_(Post.visibility == "followers_only", author_id_col.in_(followee_ids)),
+            and_(is_active_tier, author_id_col.in_(followee_ids)),
         )
+
     follows_subq = (
         select(Follow.followee_id)
         .where(Follow.follower_id == viewer.id)
         .scalar_subquery()
     )
     return or_(
-        Post.visibility == "public",
+        and_(Post.visibility == "public", is_not_active_tier),
         and_(Post.visibility == "followers_only", author_id_col.in_(follows_subq)),
+        and_(is_active_tier, author_id_col.in_(follows_subq)),
     )
 
 
@@ -547,14 +680,23 @@ async def home_feed(
             .limit(follow_limit)
         )
         follow_posts = list(result.scalars().all())
+        # Phase 4 #10 §B-9: Python post-filter for active tier_only posts
+        follow_posts = await _filter_active_tier_only(db, follow_posts, user.id)
 
     trending_posts: list[Post] = []
     if trending_limit > 0:
         exclude_ids = [p.id for p in follow_posts]
-        # publish-controls §B-9: trending shows public only.
+        # publish-controls §B-9: trending shows public only + not active tier_only.
         trending_query = (
             select(Post)
-            .where(Post.status == "published", Post.visibility == "public")
+            .where(
+                Post.status == "published",
+                Post.visibility == "public",
+                or_(
+                    Post.early_access_until.is_(None),
+                    Post.early_access_until <= func.now(),
+                ),
+            )
             .options(selectinload(Post.media), selectinload(Post.product))
             .order_by(_trending_score_expr().desc(), Post.created_at.desc())
             .limit(trending_limit)
@@ -601,10 +743,17 @@ async def explore_posts(
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    # publish-controls §B-9: explore shows public only.
+    # publish-controls §B-9: explore shows public only + not active tier_only.
     query = (
         select(Post)
-        .where(Post.status == "published", Post.visibility == "public")
+        .where(
+            Post.status == "published",
+            Post.visibility == "public",
+            or_(
+                Post.early_access_until.is_(None),
+                Post.early_access_until <= func.now(),
+            ),
+        )
         .options(selectinload(Post.media), selectinload(Post.product))
         .limit(limit)
     )
@@ -657,10 +806,18 @@ async def search_posts(
         | Post.tags.any(func.concat("%", q, "%"))  # partial tag match via LIKE pattern
     )
 
-    # publish-controls §B-9: search shows public only.
+    # publish-controls §B-9: search shows public only + not active tier_only.
     query = (
         select(Post)
-        .where(Post.status == "published", Post.visibility == "public", text_match)
+        .where(
+            Post.status == "published",
+            Post.visibility == "public",
+            or_(
+                Post.early_access_until.is_(None),
+                Post.early_access_until <= func.now(),
+            ),
+            text_match,
+        )
         .options(selectinload(Post.media), selectinload(Post.product))
         .limit(limit + 1)  # fetch one extra to determine has_more
     )
@@ -759,6 +916,10 @@ async def get_post(
     if not post or post.status == "deleted":
         raise ApiError("NOT_FOUND", "Post not found", http_status=404)
 
+    # Decode viewer once; reused by visibility, tier checks below.
+    viewer_id: UUID | None = None
+    viewer_role: str | None = None
+
     # G2: pending_review/hidden은 작성자 본인 또는 admin만 조회 가능
     if post.status != "published":
         viewer_id, viewer_role = await _optional_viewer_id(authorization)
@@ -796,8 +957,32 @@ async def get_post(
                     )
         # 'unlisted': URL direct access allowed (OQ-7=A) — no action needed.
 
+    # Phase 4 #10 §B-9: active tier_only check
+    ea_until = getattr(post, "early_access_until", None)
+    ea_tier = getattr(post, "early_access_tier", None)
+    is_tier_locked = False
+
+    if ea_until and ea_until > datetime.now(timezone.utc) and ea_tier:
+        # viewer_id may still be None if the post was public/unlisted and no token sent
+        if viewer_id is None and authorization:
+            viewer_id, viewer_role = await _optional_viewer_id(authorization)
+
+        is_owner = viewer_id is not None and viewer_id == post.author_id
+        is_admin = viewer_role == "admin"
+        if not (is_owner or is_admin):
+            qualifies = await _viewer_meets_tier(db, viewer_id, post.author_id, ea_tier)
+            if not qualifies:
+                raise ApiError(
+                    "POST_TIER_RESTRICTED",
+                    "이 포스트는 우선 공개 기간 중입니다",
+                    http_status=403,
+                )
+        # All successful responses: is_tier_locked=False (viewer qualifies or is owner/admin)
+
     post.author = await _author_for(db, post.author_id)  # type: ignore[attr-defined]
-    return {"data": _serialize_post(post)}
+    serialized = _serialize_post(post)
+    serialized["is_tier_locked"] = is_tier_locked
+    return {"data": serialized}
 
 
 # ─── Likes ──────────────────────────────────────────────────────────────
@@ -891,13 +1076,23 @@ async def my_bookmarks(
     db: AsyncSession = Depends(get_db),
 ):
     from app.models.bookmark import Bookmark
-    # publish-controls §B-9: bookmarks show own posts (any visibility) or public posts.
+    # publish-controls §B-9: bookmarks show own posts (any visibility) or public posts
+    # Phase 4 #10: exclude active tier_only posts that viewer doesn't qualify for.
     result = await db.execute(
         select(Post)
         .join(Bookmark, Bookmark.post_id == Post.id)
         .where(
             Bookmark.user_id == user.id,
-            or_(Post.author_id == user.id, Post.visibility == "public"),
+            or_(
+                Post.author_id == user.id,
+                and_(
+                    Post.visibility == "public",
+                    or_(
+                        Post.early_access_until.is_(None),
+                        Post.early_access_until <= func.now(),
+                    ),
+                ),
+            ),
         )
         .options(selectinload(Post.media), selectinload(Post.product))
         .order_by(Bookmark.created_at.desc())

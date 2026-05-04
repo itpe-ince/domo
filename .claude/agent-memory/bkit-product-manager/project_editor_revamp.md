@@ -23,12 +23,15 @@ type: project
 - #6-image `editor-image-studio`: **완료 아카이브 (2026-05-03)**. Match Rate 96%.
   - 아카이브: `docs/archive/2026-05/editor-image-studio/`
   - 산출물: ImageEditor 모달(Konva) + SortableMediaCard 편집 버튼 + POST /v1/media/{id}/transform + crop_meta jsonb + alembic 0037
-- #8 `publish-controls`: **Plan 완료 (2026-05-03)**. OQ 10개 사용자 결정 대기.
-  - 파일: `v1/docs/01-plan/features/publish-controls.plan.md`
-  - 핵심: L (1.5주). B-3 요구사항 4건 (공개범위/댓글/시리즈/예약발행). alembic 3개 (0038~0040) + Series 모델 + POST /v1/posts/{id}/publish + PublishOptionsPanel
-  - OQ 10개 (권장 default 모두 제시) — 사용자 "권장대로 일괄 수락" 또는 개별 수정 후 /pdca design 진입
+- #8 `publish-controls`: **완료 아카이브 (2026-05-03)**. Match Rate 100%.
+  - 아카이브: `docs/archive/2026-05/publish-controls/`
+  - 산출물: Post.visibility + Post.comments_enabled + Series 모델 + post_series_membership + alembic 0038~0040 + POST /v1/posts/{id}/publish + _visibility_filter_for_viewer + PublishOptionsPanel
+- #10 `artist-tier-release`: **Plan 완료 (2026-05-03)**. OQ 10개 사용자 결정 대기.
+  - 파일: `v1/docs/01-plan/features/artist-tier-release.plan.md`
+  - 핵심: M (4~5일). B-4 "후원자/단골 우선 공개". alembic 0041 (early_access_until + early_access_tier) + _visibility_filter_for_viewer 확장 + tier_release_jobs.py + TierReleasePicker
+  - OQ 10개 (권장 default 모두 제시) — 사용자 "권장대로 일괄 수락" 후 /pdca design 진입
 
-Critical Path: 1 ✅ → 2 ✅ → 3 ✅ → 4 ✅ → 6-image ✅ → **8 (plan 완료, OQ 대기)** → 10 (약 5~6주)
+Critical Path: 1 ✅ → 2 ✅ → 3 ✅ → 4 ✅ → 6-image ✅ → 8 ✅ → **10 (plan 완료, OQ 대기)** → (완료)
 Deferred: #9 `artist-pricing-assist` (데이터 축적 부족)
 
 Lessons learned (#1~#3 기준, #4 이후 적용):

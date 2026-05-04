@@ -322,6 +322,27 @@
           "clearLabel": "立即發佈",
           "tooSoon": "請設定至少 5 分鐘後的時間",
           "tooFar": "請設定 1 年以內的時間"
+        },
+        "tierRelease": {
+          "label": "搶先看設定",
+          "activeHint": "{duration}內 {tier}搶先看",
+          "tier": {
+            "label": "開放對象",
+            "subscriber": "訂閱者搶先看",
+            "sponsor": "訂閱者 + 贊助者",
+            "follower": "追蹤者以上"
+          },
+          "duration": {
+            "label": "搶先看期間",
+            "1h": "1 小時",
+            "6h": "6 小時",
+            "24h": "24 小時",
+            "3d": "3 天",
+            "7d": "7 天"
+          },
+          "expiryHint": "{duration}後以{visibility}對外公開",
+          "clear": "取消搶先看",
+          "errorBothRequired": "請同時選擇對象與期間"
         }
       },
       "error": {
@@ -333,7 +354,10 @@
         "seriesNotOwner": "只能選取自己的系列",
         "scheduledAtTooSoon": "排程發佈時間需在 5 分鐘後以上",
         "scheduledAtTooFar": "排程發佈時間需在 1 年內",
-        "commentsDisabled": "留言功能已停用"
+        "commentsDisabled": "留言功能已停用",
+        "invalidTier": "無效的 tier 值",
+        "invalidDuration": "不支援的期間 (1h/6h/24h/3d/7d)",
+        "tierFieldsInconsistent": "請同時設定 tier 與期間，或同時留空"
       }
     },
     "series": {
@@ -363,8 +387,16 @@
       "indicator": {
         "followersOnly": "僅限關注者",
         "unlisted": "連結分享",
-        "commentsDisabled": "此貼文的留言已停用"
+        "commentsDisabled": "此貼文的留言已停用",
+        "tier": {
+          "subscriber": "訂閱者搶先看",
+          "sponsor": "贊助者搶先看",
+          "follower": "追蹤者搶先看"
+        }
       }
+    },
+    "detail": {
+      "tierRestricted": "此貼文僅限特定訂閱者或贊助者瀏覽"
     }
   },
   "bluebird": {

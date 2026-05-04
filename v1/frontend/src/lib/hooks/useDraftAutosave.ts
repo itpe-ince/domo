@@ -21,6 +21,8 @@ import { useEffect, useRef, useState } from "react";
 import {
   type CreatePostMedia,
   type DraftPayload,
+  type EarlyAccessDuration,
+  type EarlyAccessTier,
   type OEmbedData,
   type Visibility,
   saveDraft,
@@ -53,6 +55,9 @@ export type DraftState = {
   visibility?: Visibility;
   commentsEnabled?: boolean;
   seriesIds?: string[];
+  // artist-tier-release PDCA #10 — optional for legacy compat
+  earlyAccessDuration?: EarlyAccessDuration | null;
+  earlyAccessTier?: EarlyAccessTier | null;
 };
 
 interface StoredDraft {
@@ -170,6 +175,9 @@ function buildDraftPayload(
     visibility: state.visibility ?? "public",
     comments_enabled: state.commentsEnabled ?? true,
     series_ids: state.seriesIds ?? [],
+    // artist-tier-release PDCA #10
+    early_access_duration: state.earlyAccessDuration ?? null,
+    early_access_tier: state.earlyAccessTier ?? null,
   };
 }
 

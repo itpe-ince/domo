@@ -372,6 +372,10 @@ export type PostView = {
   // publish-controls PDCA #8 — Backend _serialize_post() already includes these (Step 1.7)
   visibility?: Visibility;
   comments_enabled?: boolean;
+  // artist-tier-release PDCA #10
+  early_access_until?: string | null;
+  early_access_tier?: EarlyAccessTier | null;
+  is_tier_locked?: boolean;
 };
 
 export type CommentView = {
@@ -1455,6 +1459,9 @@ export type DraftPayload = {
   visibility?: Visibility;
   comments_enabled?: boolean;
   series_ids?: string[];
+  // artist-tier-release PDCA #10 — persisted for restore continuity
+  early_access_duration?: EarlyAccessDuration | null;
+  early_access_tier?: EarlyAccessTier | null;
 };
 
 /** List drafts owned by the current user (most recent first).
@@ -1512,6 +1519,11 @@ export class ApiClientError extends Error {
 
 export type Visibility = "public" | "followers_only" | "unlisted";
 
+// ─── artist-tier-release PDCA #10 — Early Access types ───────────────────
+
+export type EarlyAccessTier = "subscriber" | "sponsor" | "follower";
+export type EarlyAccessDuration = 1 | 6 | 24 | 72 | 168; // hours
+
 export interface Series {
   id: string;
   author_id: string;
@@ -1552,6 +1564,9 @@ export interface PostPublishRequest {
   visibility?: Visibility;
   comments_enabled?: boolean;
   series_ids?: string[];
+  // artist-tier-release PDCA #10
+  early_access_duration?: EarlyAccessDuration | null;
+  early_access_tier?: EarlyAccessTier | null;
 }
 
 export interface PostPublishResponse {
@@ -1562,6 +1577,9 @@ export interface PostPublishResponse {
   scheduled_at: string | null;
   series_count: number;
   updated_at: string;
+  // artist-tier-release PDCA #10
+  early_access_until?: string | null;
+  early_access_tier?: EarlyAccessTier | null;
 }
 
 // ─── publish-controls — API client functions (8) ──────────────────────────

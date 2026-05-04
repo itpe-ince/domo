@@ -322,6 +322,27 @@
           "clearLabel": "Publicar ahora",
           "tooSoon": "Por favor, selecciona al menos 5 minutos a partir de ahora",
           "tooFar": "Por favor, selecciona un tiempo dentro del próximo año"
+        },
+        "tierRelease": {
+          "label": "Acceso anticipado",
+          "activeHint": "{duration} antes para {tier}",
+          "tier": {
+            "label": "Audiencia",
+            "subscriber": "Solo suscriptores",
+            "sponsor": "Suscriptores y patrocinadores",
+            "follower": "Seguidores y superiores"
+          },
+          "duration": {
+            "label": "Período de acceso anticipado",
+            "1h": "1 hora",
+            "6h": "6 horas",
+            "24h": "24 horas",
+            "3d": "3 días",
+            "7d": "7 días"
+          },
+          "expiryHint": "Abre para {visibility} después de {duration}",
+          "clear": "Quitar acceso anticipado",
+          "errorBothRequired": "Por favor selecciona tanto la audiencia como la duración"
         }
       },
       "error": {
@@ -333,7 +354,10 @@
         "seriesNotOwner": "Solo puedes seleccionar tus propias series",
         "scheduledAtTooSoon": "La publicación programada debe ser al menos 5 minutos después",
         "scheduledAtTooFar": "La publicación programada debe ser dentro de 1 año",
-        "commentsDisabled": "Los comentarios están desactivados"
+        "commentsDisabled": "Los comentarios están desactivados",
+        "invalidTier": "Valor de tier no válido",
+        "invalidDuration": "Duración no soportada (1h/6h/24h/3d/7d)",
+        "tierFieldsInconsistent": "Por favor establece tanto el tier como la duración, o deja ambos vacíos"
       }
     },
     "series": {
@@ -363,8 +387,16 @@
       "indicator": {
         "followersOnly": "Solo seguidores",
         "unlisted": "Enlace compartido",
-        "commentsDisabled": "Los comentarios están deshabilitados en esta publicación"
+        "commentsDisabled": "Los comentarios están deshabilitados en esta publicación",
+        "tier": {
+          "subscriber": "Acceso anticipado para suscriptores",
+          "sponsor": "Acceso anticipado para patrocinadores",
+          "follower": "Acceso anticipado para seguidores"
+        }
       }
+    },
+    "detail": {
+      "tierRestricted": "Esta publicación solo está disponible para suscriptores o patrocinadores"
     }
   },
   "bluebird": {

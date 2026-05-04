@@ -322,6 +322,27 @@
           "clearLabel": "Publish immediately",
           "tooSoon": "Please set a time at least 5 minutes from now",
           "tooFar": "Please set a time within 1 year from now"
+        },
+        "tierRelease": {
+          "label": "Early Access",
+          "activeHint": "{duration} early for {tier}",
+          "tier": {
+            "label": "Audience",
+            "subscriber": "Subscribers only",
+            "sponsor": "Subscribers & sponsors",
+            "follower": "Followers & above"
+          },
+          "duration": {
+            "label": "Early Access Period",
+            "1h": "1 hour",
+            "6h": "6 hours",
+            "24h": "24 hours",
+            "3d": "3 days",
+            "7d": "7 days"
+          },
+          "expiryHint": "Opens to {visibility} after {duration}",
+          "clear": "Remove early access",
+          "errorBothRequired": "Please select both an audience and a duration"
         }
       },
       "error": {
@@ -333,7 +354,10 @@
         "seriesNotOwner": "You can only select your own series",
         "scheduledAtTooSoon": "Scheduled time must be at least 5 minutes from now",
         "scheduledAtTooFar": "Scheduled time must be within 1 year from now",
-        "commentsDisabled": "Comments are disabled"
+        "commentsDisabled": "Comments are disabled",
+        "invalidTier": "Invalid tier value",
+        "invalidDuration": "Unsupported duration (1h/6h/24h/3d/7d)",
+        "tierFieldsInconsistent": "Please set both tier and duration, or leave both empty"
       }
     },
     "series": {
@@ -363,8 +387,16 @@
       "indicator": {
         "followersOnly": "Followers only",
         "unlisted": "Unlisted",
-        "commentsDisabled": "Comments are disabled for this post"
+        "commentsDisabled": "Comments are disabled for this post",
+        "tier": {
+          "subscriber": "Subscriber early access",
+          "sponsor": "Sponsor early access",
+          "follower": "Follower early access"
+        }
       }
+    },
+    "detail": {
+      "tierRestricted": "This post is only available to qualifying subscribers or sponsors"
     }
   },
   "bluebird": {

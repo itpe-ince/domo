@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { PostView } from "@/lib/api";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
+import { TierBadge } from "@/components/TierBadge";
 
 export function PostCard({ post }: { post: PostView }) {
   const cover = post.media[0];
@@ -11,10 +12,10 @@ export function PostCard({ post }: { post: PostView }) {
       href={`/posts/${post.id}`}
       className="card overflow-hidden block group relative"
     >
-      <VisibilityBadge
-        visibility={post.visibility}
-        className="absolute top-2 right-2 z-10"
-      />
+      <div className="absolute top-2 right-2 z-10 flex items-center gap-1">
+        <VisibilityBadge visibility={post.visibility} />
+        <TierBadge post={post} />
+      </div>
       {cover && (
         <div className="relative aspect-[4/5] bg-background overflow-hidden">
           <img

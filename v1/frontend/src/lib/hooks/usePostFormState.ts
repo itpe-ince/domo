@@ -19,7 +19,7 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
 
 import type { DraftState } from "@/lib/hooks/useDraftAutosave";
-import type { Visibility } from "@/lib/api";
+import type { EarlyAccessDuration, EarlyAccessTier, Visibility } from "@/lib/api";
 
 // Each setter is the full React Dispatch<SetStateAction<T>> so callers can
 // pass either a value or a `(prev) => next` updater — same contract as the
@@ -47,6 +47,9 @@ export interface PostFormSetters {
   setVisibility: Dispatch<SetStateAction<Visibility>>;
   setCommentsEnabled: Dispatch<SetStateAction<boolean>>;
   setSeriesIds: Dispatch<SetStateAction<string[]>>;
+  // artist-tier-release PDCA #10
+  setEarlyAccessDuration: Dispatch<SetStateAction<EarlyAccessDuration | null>>;
+  setEarlyAccessTier: Dispatch<SetStateAction<EarlyAccessTier | null>>;
 }
 
 export interface UsePostFormStateOptions {
@@ -88,6 +91,10 @@ export function usePostFormState({
   const [commentsEnabled, setCommentsEnabled] = useState(true);
   const [seriesIds, setSeriesIds] = useState<string[]>([]);
 
+  // artist-tier-release PDCA #10
+  const [earlyAccessDuration, setEarlyAccessDuration] = useState<EarlyAccessDuration | null>(null);
+  const [earlyAccessTier, setEarlyAccessTier] = useState<EarlyAccessTier | null>(null);
+
   const formState: DraftState = {
     type,
     title,
@@ -110,6 +117,8 @@ export function usePostFormState({
     visibility,
     commentsEnabled,
     seriesIds,
+    earlyAccessDuration,
+    earlyAccessTier,
   };
 
   const setters: PostFormSetters = {
@@ -134,6 +143,8 @@ export function usePostFormState({
     setVisibility,
     setCommentsEnabled,
     setSeriesIds,
+    setEarlyAccessDuration,
+    setEarlyAccessTier,
   };
 
   function resetFromDraft(d: DraftState): void {
@@ -159,6 +170,9 @@ export function usePostFormState({
     setVisibility(d.visibility ?? "public");
     setCommentsEnabled(d.commentsEnabled ?? true);
     setSeriesIds(d.seriesIds ?? []);
+    // artist-tier-release PDCA #10 — legacy default for older drafts
+    setEarlyAccessDuration(d.earlyAccessDuration ?? null);
+    setEarlyAccessTier(d.earlyAccessTier ?? null);
   }
 
   return { formState, setters, resetFromDraft };

@@ -41,6 +41,8 @@ from app.services.draft_cleanup_jobs import draft_cleanup_cron_loop
 from app.services.gdpr_jobs import gdpr_cron_loop
 from app.services.badge_jobs import badge_cron_loop
 from app.services.schedule_jobs import schedule_cron_loop
+from app.services.tier_release_jobs import tier_release_cron_loop
+from app.services.auction_promotion_jobs import auction_promotion_cron_loop
 from app.services.settlement_jobs import settlement_cron_loop
 from app.services.webhook_cleanup_jobs import webhook_cleanup_cron_loop
 
@@ -64,10 +66,12 @@ async def lifespan(app: FastAPI):
     settle_task = asyncio.create_task(settlement_cron_loop(interval_seconds=86400))
     webhook_cleanup_task = asyncio.create_task(webhook_cleanup_cron_loop(interval_seconds=86400))
     draft_cleanup_task = asyncio.create_task(draft_cleanup_cron_loop(interval_seconds=86400))
+    tier_release_task = asyncio.create_task(tier_release_cron_loop(interval_seconds=60))
+    auction_promotion_task = asyncio.create_task(auction_promotion_cron_loop(interval_seconds=60))
     try:
         yield
     finally:
-        all_tasks = (auction_task, gdpr_task, schedule_task, badge_task, settle_task, webhook_cleanup_task, draft_cleanup_task)
+        all_tasks = (auction_task, gdpr_task, schedule_task, badge_task, settle_task, webhook_cleanup_task, draft_cleanup_task, tier_release_task, auction_promotion_task)
         for task in all_tasks:
             task.cancel()
         for task in all_tasks:

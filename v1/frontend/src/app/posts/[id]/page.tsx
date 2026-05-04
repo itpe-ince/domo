@@ -81,7 +81,10 @@ export default function PostDetailPage({
         }
       }
     } catch (e) {
-      if (e instanceof ApiClientError && e.code === "NOT_FOUND") {
+      if (e instanceof ApiClientError && e.code === "POST_TIER_RESTRICTED") {
+        // artist-tier-release PDCA #10 — viewer does not qualify for early access
+        setError(t("post.detail.tierRestricted"));
+      } else if (e instanceof ApiClientError && e.code === "NOT_FOUND") {
         setError("존재하지 않는 포스트입니다.");
       } else {
         setError(e instanceof Error ? e.message : "Failed to load post");

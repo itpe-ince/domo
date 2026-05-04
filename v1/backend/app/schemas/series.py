@@ -12,6 +12,10 @@ from pydantic import BaseModel, Field, field_validator
 # OQ-1=A: three-value enum; String(20) in DB leaves room for Phase 4 #10 expansion.
 Visibility = Literal["public", "followers_only", "unlisted"]
 
+# Phase 4 #10 artist-tier-release §B-4
+EarlyAccessTier = Literal["subscriber", "sponsor", "follower"]
+EARLY_ACCESS_DURATIONS: frozenset[int] = frozenset({1, 6, 24, 72, 168})
+
 
 # ─── Series ─────────────────────────────────────────────────────────────────
 
@@ -70,6 +74,10 @@ class PostPublishRequest(BaseModel):
     visibility: Visibility = "public"
     comments_enabled: bool = True
     series_ids: list[uuid.UUID] = Field(default_factory=list)
+    # Phase 4 #10 artist-tier-release §B-4
+    early_access_duration: int | None = Field(None,
+        description="우선 공개 기간(시간). 허용값: 1|6|24|72|168. None=비활성.")
+    early_access_tier: EarlyAccessTier | None = Field(None)
 
     @field_validator("publish_at", mode="before")
     @classmethod
@@ -88,6 +96,21 @@ class PostPublishRequest(BaseModel):
             raise ValueError("SCHEDULED_AT_TOO_FAR")
         return v
 
+    @field_validator("early_access_duration", mode="before")
+    @classmethod
+    def _validate_duration(cls, v):
+        if v is None:
+            return v
+        if int(v) not in EARLY_ACCESS_DURATIONS:
+            raise ValueError(f"INVALID_DURATION: must be one of {sorted(EARLY_ACCESS_DURATIONS)}")
+        return int(v)
+
+    def model_post_init(self, __context) -> None:
+        d = self.early_access_duration
+        t = self.early_access_tier
+        if (d is None) != (t is None):
+            raise ValueError("TIER_FIELDS_INCONSISTENT: 둘 다 set이거나 둘 다 None")
+
 
 class PostPublishResponse(BaseModel):
     id: uuid.UUID
@@ -97,6 +120,9 @@ class PostPublishResponse(BaseModel):
     scheduled_at: datetime | None
     series_count: int
     updated_at: datetime
+    # Phase 4 #10
+    early_access_until: datetime | None = None
+    early_access_tier: str | None = None
 
 
 class PostSeriesUpdateIn(BaseModel):

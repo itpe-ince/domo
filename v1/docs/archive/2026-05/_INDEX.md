@@ -6,6 +6,7 @@
 | [editor-media-ux](./editor-media-ux/) | 2026-05-03 | 95% | 0 rounds | 에디터 #4: dnd-kit drag-reorder + 이미지 캡션(280자, MediaAsset.caption + PATCH /media/{id}) + 다중 업로드 XHR 실시간 progress(OQ-D-3=B 사용자 변경). Backend 5파일 + Frontend 10+파일 + 11 i18n × 5 locale + 첫 외부 라이브러리(@dnd-kit) 도입 |
 | [editor-image-studio](./editor-image-studio/) | 2026-05-03 | 96% | 0 rounds | 에디터 #6-image: Konva 클라이언트 4 도구(회전/크롭/모자이크/워터마크) + Pillow 서버 처리 + crop_meta JSONB 비파괴 + alembic 0037+0038 + POST /v1/media/{id}/transform + Signature 3 endpoints (OQ-D-3=B 사용자 override 별도 시그니처 업로드 UI). Backend ~2300 LOC + Frontend ~1500 LOC + 22 tests + 47 i18n × 5 locale |
 | [publish-controls](./publish-controls/) | 2026-05-03 | 100% | 0 rounds | 에디터 #8 Critical Path: B-3 발행 옵션 4건 통합. alembic 0039+0040 + Series 모델 + 6 endpoints (publish + Series CRUD 5종) + visibility 필터 + comments lock + audit log. Frontend PublishOptionsPanel + SeriesCreateModal + /series/[id] dnd-kit reorder + VisibilityBadge + handleSubmit hybrid C. Backend ~1800 LOC + Frontend ~2200 LOC + 22 tests + 2 smoke + 47 i18n × 5 locale = 235 entries |
+| [artist-tier-release](./artist-tier-release/) | 2026-05-03 | 99% | 0 rounds | 에디터 #10 Phase 4 Critical Path: B-4 후원자/단골 우선 공개. **Option β 채택 (R-1 dissolved)** — Post.visibility enum 미확장, tier_only는 computed effective state. alembic 0041 (early_access_until + early_access_tier + sponsorships R-5 인덱스) + 3 helpers (UNION ALL EXISTS + 2단계 SQL+Python) + tier_release_jobs.py 60s cron + 5 endpoints visibility 필터. Frontend TierReleasePicker (PublishOptionsPanel 5번째 expand) + TierBadge + handleSubmit + posts/[id] 403. Backend ~750 LOC + Frontend ~400 LOC + 17 신규 tests (61 total) + 1 smoke + 22 신규 i18n × 5 = 110 entries |
 
 ## editor-responsive-redesign
 
@@ -158,3 +159,43 @@
   - **OQ-D-2 strategy 문서화**: state singleton 접근법 — 다음 PDCA 디자인 단계에 reference로 활용 가능
   - 이전 PDCAs carry-over 유지: `editor-video-studio` (#6-video, ffmpeg 인프라 차단), `upload-retry-ui` (#4), `editor-i18n-cleanup` v0.2 (#3+#4)
 - **Production Readiness**: ✅ TypeScript 0 에러. 5 locale JSON valid (47 키 일관). Backend 22 tests passing in 1.15s (10 unit + 12 integration). 2 smoke 스크립트 ready (`smoke_test_publish_controls.sh` + `smoke_test_series.sh`). `_check_auction_visibility_lock` 정상 적용 (#4 패턴 재사용). 5 통합 지점 회귀 0 (autosave/DraftRestoreDialog/multi-tab/role-gating/useArtistGate). ⚠ alembic upgrade 필수 (0039 + 0040, 사용자 측 실행 완료).
+
+## artist-tier-release
+
+- **Scope**: 에디터 전면 개편 로드맵 sub-PDCA #10 — Phase 4 Critical Path Artist Tools (M, 4~5일). B-4 후원자/단골 우선 공개. **Option β 채택**: `Post.visibility` enum 미확장, `tier_only`는 computed effective state — R-1 (CHECK constraint 확장) 완전 dissolved.
+- **Artifacts**: [plan](./artist-tier-release/artist-tier-release.plan.md), [design](./artist-tier-release/artist-tier-release.design.md), [analysis](./artist-tier-release/artist-tier-release.analysis.md), [report](./artist-tier-release/artist-tier-release.report.md)
+- **Parent Roadmap**: `v1/docs/01-plan/features/editor-revamp-roadmap.plan.md`
+- **Critical Path Position**: 1 → 2 → 3 → 4 → #6-image → #8 → **#10 ✅** → 다음: #11 auction-promotion-suite (Phase 4 마지막) 또는 #12 notifications-ux-audit (독립)
+- **Sister PDCA**: 없음 (#11 독립 — 병렬 가능)
+- **Dependency**: #8 publish-controls visibility 시스템 (archived 100%) 위에서 동작
+- **Key Files Touched**:
+  - Backend (신규 마이그레이션): `alembic/versions/0041_post_tier_release.py` (22 chars revision id, early_access_until + early_access_tier 컬럼 + 2 CHECK constraint + partial index + sponsorships(sponsor_id, artist_id, status) R-5 mitigation 인덱스)
+  - Backend (신규): `app/services/tier_release_jobs.py` (52L, 60s cron worker — schedule_jobs 패턴 미러), `tests/unit/test_artist_tier_release.py` (9 unit tests), `tests/integration/test_artist_tier_release_endpoints.py` (8 integration tests), `scripts/smoke_test_tier_release.sh` (5단계 smoke +x)
+  - Backend (수정): `app/models/post.py` (Post +2 컬럼), `app/schemas/series.py` (EarlyAccessTier Literal + EARLY_ACCESS_DURATIONS frozenset + PostPublishRequest cross-field validator + PostPublishResponse +2), `app/schemas/post.py` (PostOut +3 — early_access_until + early_access_tier + is_tier_locked), `app/api/posts.py` (3 helpers: `_viewer_meets_tier` UNION ALL EXISTS + `_filter_active_tier_only` Python post-filter + `_visibility_filter_for_viewer` Option β 확장. publish_post + get_post + 5 endpoints SQL filter), `app/main.py` (tier_release_task startup 등록)
+  - Frontend (신규 컴포넌트): `components/TierBadge.tsx` (44L, VisibilityBadge 패턴 미러, amber 색상)
+  - Frontend (수정): `lib/api.ts` (EarlyAccessTier + EarlyAccessDuration types + PostPublishRequest/Response/PostView/DraftPayload extensions), `lib/hooks/{useDraftAutosave,usePostFormState}.ts` (DraftState +2 + setters + resetFromDraft `?? null`), `components/post-editor/PublishOptionsPanel.tsx` (270→484L, 5번째 `<details>` expand TierReleasePicker w/ tier radio 3 + duration button group 5 + expiry hint + tierInconsistent alert + Clear), `components/PostCard.tsx` (VisibilityBadge wrapper + TierBadge), `components/post-editor/{EditorWorkspace,EditorMobileWizard}.tsx` (props +4 forward), `app/posts/new/page.tsx` (handleSubmit body +2 + mapPublishError +3 codes + tierInconsistent guard), `app/posts/[id]/page.tsx` (POST_TIER_RESTRICTED 403 분기)
+  - i18n: `i18n/{ko,en,ja,zh,es}.json` `post.editor.publishOptions.tierRelease.*` (15 keys) + `post.feed.indicator.tier.*` (3 keys) + `post.editor.error.*` 신규 (3 keys) + `post.detail.tierRestricted` (1 key) = 22 keys × 5 locale = **110 entries**
+- **New Dependencies**: 없음 (#6-image konva + #4 dnd-kit 모두 재사용 안 함, 외부 lib 추가 0)
+- **Decisions** (10 Plan + 5 OQ-D = 15 OQ resolved 모두 권장 default):
+  - Plan: OQ-1=A 3-tier (subscriber/sponsor/follower), OQ-2=A 자동 계층 포함 (subscriber > sponsor > follower), OQ-3=A 5 preset (1/6/24/72/168 hours), OQ-4=B 매 조회 실시간 검증, OQ-5=A 60s cron, OQ-6=A tier_only 상호 배타, OQ-7=B 만료 후 작가 지정 visibility 복귀, OQ-8=A PublishOptionsPanel expand, OQ-9=A publish endpoint 확장, OQ-10=A no-cache
+  - **Design (CRITICAL): OQ-D-1=B (Option β)** — Post.visibility enum 미확장, tier_only는 computed effective state. R-1 완전 해소. 만료 자동 복귀가 worker 지연(최대 60s)과 무관하게 실시간 처리.
+  - Design: OQ-D-2=B 22 keys × 5 locale, OQ-D-3=B SQL fast-path + Python post-filter 2단계, OQ-D-4=A 모든 completed Sponsorship 인정 (N일 제한은 #10.1), OQ-D-5=A `ix_sponsorships_sponsor_artist_status` 복합 인덱스 0041 통합 (R-5 mitigation)
+- **Match Rate**: **99%** (initial — Critical/Major Gap 0, 5 통합 지점 회귀 0, 81/81 measured items 100% match, conservative -1% for 5-locale parity not exhaustively grepped). Iterate 사이클 발생 안 함.
+- **Iteration**: 0 round
+- **Lessons Learned** (보고서 §9에 상세):
+  1. **Keep / Option β (Computed Effective State) 패턴**: 재사용 가능한 일반 패턴. enum 확장 vs computed state 결정 시 — DB 마이그레이션 단순성 + 자동 만료 처리 + worker 비-critical path 보장이 모두 confer. 향후 PDCAs에서 status/visibility 추가 시 default consideration.
+  2. **Keep / UNION ALL EXISTS R-2 mitigation**: tier 자격 검증 `_viewer_meets_tier` — 3-tier OR chain을 단일 쿼리로 통합. PostgreSQL EXISTS short-circuit으로 효율. 향후 multi-condition 권한 체크 패턴 표준.
+  3. **Keep / 2단계 SQL+Python 전략 (OQ-D-3=B)**: SQL fast-path로 명백한 비자격 케이스 제외 + Python post-filter로 viewer별 tier 자격 정밀 검증. 활성 tier_only 포스트가 초기 소수일 것이라는 데이터 기반 판단. perf 측정 후 #10.1에서 SQL-only로 전환 가능.
+  4. **Keep / no-cache + cron 협업 (OQ-4=B + OQ-5=A)**: 매 조회 실시간 자격 검증으로 구독 취소 즉시 반영 + cron worker는 DB 정리 보조 역할. 만료 후 자동 복귀가 worker 지연과 무관 — security critical path는 실시간 검증.
+  5. **Problem 1**: `tierInconsistent` 발행 버튼 disabled prop drilling 누락 — handleSubmit guard로 대체 (시각 활성 + 즉시 거부, UX equivalent). 향후 disclosure UX 개선 carry-over.
+  6. **Problem 2**: POST_TIER_RESTRICTED 403 후원/구독 CTA UI 부재 — out-of-scope (§F-12), 단순 텍스트 메시지만. 향후 별도 PDCA로 비즈니스 CTA UX 검토.
+  7. **Try**: 다음 PDCA부터 — (1) computed effective state 패턴이 적합한 케이스 우선 검토 (enum 확장 회피), (2) 권한 체크 OR chain은 UNION ALL EXISTS 단일 쿼리 표준화, (3) 2단계 SQL+Python filter는 데이터 분포 예측 후 선택 (초기 소수 → 2단계, 다수 → SQL-only).
+- **Carry-over**:
+  - **POST_TIER_RESTRICTED CTA UI** (out-of-scope §F-12): 후원/구독 deeplink CTA — 비즈니스 로직 별도 PDCA
+  - **`is_tier_locked` viewer hint UI** (out-of-scope §F-12): API field 노출되나 미사용 — 인라인 hint UX
+  - **Sponsor N일 제한 옵션화 (#10.1)**: 작가 setting (1d/7d/30d/lifetime). 본 PDCA는 모든 completed Sponsorship 인정
+  - **SQL-only tier filter (#10.1)**: home_feed.following Python post-filter 제거 — perf 측정 후 SQL subquery 전환
+  - **TierReleasePicker 만료 카운트다운**: 작가 대시보드용 (출시 후 enhancement)
+  - **tier_release worker Prometheus 메트릭**: cleared rows/min observability
+  - 이전 carry-over 유지: `editor-video-studio` (#6-video, ffmpeg 차단), `series reorder persistence endpoint` (#8), `upload-retry-ui` (#4), `editor-i18n-cleanup` v0.2 (#3+#4)
+- **Production Readiness**: ✅ TypeScript 0 에러. 5 locale JSON valid (22 신규 키 5 locale 일관). Backend 61 tests passing in 1.13s (44 baseline + 17 신규 = 9 unit + 8 integration). 1 smoke 스크립트 ready (`smoke_test_tier_release.sh`). 5 통합 지점 회귀 0. Option β 준수 (Post.visibility enum CHECK constraint 변경 0). ⚠ alembic upgrade 필수 (0041, 사용자 측 실행 완료).

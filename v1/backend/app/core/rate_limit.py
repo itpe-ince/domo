@@ -51,6 +51,8 @@ DEFAULT_LIMITS: dict[str, dict] = {
     "post_publish": {"limit": 10, "window_sec": 60, "by": "user"},
     "series_write": {"limit": 30, "window_sec": 60, "by": "user"},
     "series_read": {"limit": 60, "window_sec": 60, "by": "user"},
+    # auction-promotion-suite PDCA #11
+    "share_card": {"limit": 10, "window_sec": 60, "by": "user"},
 }
 
 

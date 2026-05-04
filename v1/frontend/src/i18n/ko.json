@@ -297,6 +297,27 @@
           "clearLabel": "즉시 발행으로",
           "tooSoon": "최소 5분 이후로 설정해주세요",
           "tooFar": "최대 1년 이내로 설정해주세요"
+        },
+        "tierRelease": {
+          "label": "우선 공개 설정",
+          "activeHint": "{duration} 동안 {tier}에게 먼저",
+          "tier": {
+            "label": "공개 대상",
+            "subscriber": "구독자만",
+            "sponsor": "구독자 + 후원자",
+            "follower": "팔로워 이상"
+          },
+          "duration": {
+            "label": "우선 공개 기간",
+            "1h": "1시간",
+            "6h": "6시간",
+            "24h": "24시간",
+            "3d": "3일",
+            "7d": "7일"
+          },
+          "expiryHint": "{duration} 후 {visibility}로 공개됩니다",
+          "clear": "우선 공개 해제",
+          "errorBothRequired": "tier와 기간을 둘 다 선택해주세요"
         }
       },
       "error": {
@@ -308,7 +329,10 @@
         "seriesNotOwner": "내 시리즈만 선택할 수 있습니다",
         "scheduledAtTooSoon": "예약 발행은 5분 이후부터 설정할 수 있습니다",
         "scheduledAtTooFar": "예약 발행은 1년 이내로 설정할 수 있습니다",
-        "commentsDisabled": "댓글이 비활성화되어 있습니다"
+        "commentsDisabled": "댓글이 비활성화되어 있습니다",
+        "invalidTier": "유효하지 않은 tier입니다",
+        "invalidDuration": "지원하지 않는 기간입니다 (1h/6h/24h/3d/7d)",
+        "tierFieldsInconsistent": "tier와 기간을 둘 다 설정하거나 둘 다 비워주세요"
       },
       "wizard": {
         "indicator": "단계 진행률",
@@ -363,8 +387,16 @@
       "indicator": {
         "followersOnly": "팔로워 전용",
         "unlisted": "링크 공유",
-        "commentsDisabled": "댓글이 비허용된 게시물입니다"
+        "commentsDisabled": "댓글이 비허용된 게시물입니다",
+        "tier": {
+          "subscriber": "구독자 우선",
+          "sponsor": "후원자 우선",
+          "follower": "팔로워 우선"
+        }
       }
+    },
+    "detail": {
+      "tierRestricted": "이 포스트는 특정 구독자/후원자만 볼 수 있습니다"
     }
   },
   "bluebird": {

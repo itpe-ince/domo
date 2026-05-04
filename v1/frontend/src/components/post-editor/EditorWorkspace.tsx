@@ -21,6 +21,8 @@ import { useI18n } from "@/i18n";
 import {
   type ApiUser,
   type CreatePostMedia,
+  type EarlyAccessDuration,
+  type EarlyAccessTier,
   type OEmbedData,
   type Visibility,
   type Series,
@@ -104,6 +106,11 @@ export interface EditorWorkspaceProps {
   mySeries: Series[];
   mySeriesLoading: boolean;
   onCreateSeriesClick: () => void;
+  // artist-tier-release PDCA #10
+  earlyAccessDuration: EarlyAccessDuration | null;
+  setEarlyAccessDuration: (v: EarlyAccessDuration | null) => void;
+  earlyAccessTier: EarlyAccessTier | null;
+  setEarlyAccessTier: (v: EarlyAccessTier | null) => void;
 }
 
 export function EditorWorkspace(props: EditorWorkspaceProps) {
@@ -158,6 +165,10 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
     mySeries,
     mySeriesLoading,
     onCreateSeriesClick,
+    earlyAccessDuration,
+    setEarlyAccessDuration,
+    earlyAccessTier,
+    setEarlyAccessTier,
   } = props;
 
   return (
@@ -404,6 +415,10 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
               seriesLoading={mySeriesLoading}
               disabled={uploading || submitting}
               onCreateSeriesClick={onCreateSeriesClick}
+              earlyAccessDuration={earlyAccessDuration}
+              setEarlyAccessDuration={setEarlyAccessDuration}
+              earlyAccessTier={earlyAccessTier}
+              setEarlyAccessTier={setEarlyAccessTier}
             />
           </div>
         </div>
