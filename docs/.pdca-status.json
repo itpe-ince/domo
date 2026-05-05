@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-04T09:51:08.554Z",
+  "lastUpdated": "2026-05-05T10:46:21.007Z",
   "activeFeatures": [
     "core",
     "db",
@@ -77,11 +77,136 @@
     "image-editor",
     "series",
     "tier_release_jobs.py",
-    "auction_promotion_jobs.py"
+    "auction_promotion_jobs.py",
+    "i18n.py",
+    "sponsorships",
+    "patronage",
+    "tier-benefits",
+    "sponsor-validity",
+    "coupons",
+    "analytics",
+    "feed_scoring.py",
+    "artist_index_scoring.py",
+    "artist_index_jobs.py",
+    "artists",
+    "index",
+    "stories",
+    "subscription_expiry_jobs.py",
+    "timeline",
+    "analytics.py",
+    "og",
+    "__mocks__",
+    "featured-artists",
+    "post_engagement_jobs.py",
+    "llm_gateway.py",
+    "interview_generator.py",
+    "interviews",
+    "artist-interviews",
+    "[locale]",
+    "story_translator.py",
+    "press_kit_generator.py",
+    "bio",
+    "press-kits",
+    "press-kit",
+    "email_ses.py",
+    "newsletter_composer.py",
+    "newsletter_jobs.py",
+    "newsletter",
+    "unsubscribe"
   ],
   "primaryFeature": null,
-  "previousPrimaryFeature": "auction-promotion-suite (archived 2026-05-04, matchRate 97%, iterate 1회 — Phase 4 종결)",
-  "criticalPathNext": "**editor-revamp-roadmap Phase 4 종결 — #1~#11 = 11/11 100%**. 다음 옵션: (1) Phase 5 신규 로드맵 정의, (2) #12 notifications-ux-audit (Phase 3 독립), (3) carry-over 정리 PDCA: editor-i18n-cleanup v0.3 (#3+#4+#11 m-1 통합), upload-retry-ui (#4), series reorder persistence endpoint (#8), POST_TIER_RESTRICTED CTA UI / sponsor N일 제한 / SQL-only filter (#10.1), 서버측 알림 i18n (#11 m-2), editor-video-studio (#6-video, ffmpeg 차단 해제 후)",
+  "phase7ArchivedAt": "2026-05-05T11:00:00.000Z",
+  "phase7ArchivedTo": "v1/docs/archive/2026-05/domo-phase7-roadmap/",
+  "phase6ArchivedAt": "2026-05-04T23:30:00.000Z",
+  "phase6ArchivedTo": "v1/docs/archive/2026-05/domo-phase6-roadmap/",
+  "phase7RoadmapStatus": {
+    "phase": "do",
+    "phaseStartedAt": "2026-05-05T08:16:00.000Z",
+    "currentStage": "G' (Carry-over Consolidation Wave 1 병렬 4 agents 진행 중)",
+    "nextStage": "G' Wave 2 (G'-5 + G'-8 + G'-9 + G'-10) → Wave 3 (G'-2 + G'-7) → C 단계",
+    "alembicCurrent": "0049_search_history (head)",
+    "subPdcaCount": "15 필수 + 5 선택",
+    "oqsResolved": "OQ-1=B(병렬) / OQ-2=C(G'-11~13 Phase 8+) / OQ-3=A(tuzigroup LLM Gateway) / OQ-4=A(Pillow+reportlab) / OQ-5=A(LLM Gateway 번역) / OQ-6=B(AWS SES) / OQ-7=D(사용자 선택 기본 매월) / OQ-8=C(매월) / OQ-9=B(100% archived) / OQ-10=A(즉시 시작)",
+    "planDocument": "v1/docs/01-plan/features/domo-phase7-roadmap.plan.md",
+    "subPdcas": {
+      "G-prime-1_stripe-webhook-extension": "completed_2026-05-05 (Backend: webhooks.py 전면 재작성 + 9 핸들러 + signing + WebhookEvent IntegrityError idempotency + metrics 3개. 13 신규 tests. R-5 격리. Frontend: SubscriptionCard past_due 배너. 5 locale × 7 keys = 35 entries. tsc 0)",
+      "G-prime-2_winback-coupon-endpoint": "completed_2026-05-05 (Backend: POST /v1/subscriptions/{id}/winback-coupon + 4 사유별 spec + idempotency 24h + rate limit 1/day + cancel 자동 무효화 + audit + G'-4 event. D'-3 CouponProvider 활용. 8 신규 tests. Frontend: CancelModal winback step 실제 통합 + WinbackSuccessModal z-[70] + 3 PostHog events. 5 locale × 15 keys = 75 entries. tsc 0. B-3/B-5 회귀 0)",
+      "G-prime-3_a11y-tailwind-cleanup": "completed_2026-05-05 (Frontend: tailwind text.muted 5.5:1 + border 3.2:1 + OEmbedInput/SchedulePicker heading 정정 + axe-core 옵션 C 스크립트. 5 locale × 8 keys = 40 entries. audit_report v0.3. tsc 0)",
+      "G-prime-4_backend-posthog-integration": "completed_2026-05-05 (Backend: posthog>=3.0.0 + analytics.py 신규 117L Mock 모드 fallback + 7 integration points + PII redact 6 keys. 7 신규 tests + 1 fix patch path. tsc 0)",
+      "G-prime-5_jest-test-runner-setup": "completed_2026-05-05 (Frontend: jest@29.7 + ts-jest + ts-node + @types/jest + jest-environment-jsdom + @testing-library/* 의존성. jest.config.ts + jest.setup.ts (PostHog mock) + tsconfig.test.json (strict:false override) + __mocks__/style+file. A-1 analytics tests **8 passed** (capture 5 + featureFlags 3). 4 npm scripts (test/watch/coverage/ci). tsc 0. carry-over: CI workflow GitHub Actions 통합)",
+      "G-prime-6_dynamic-og-card": "completed_2026-05-05 (Frontend: 8 신규 1743 LOC. 4 OG routes Edge runtime + Metadata API layout.tsx 패턴. lib/og/utils.ts 공통 helper. tsc 0. C-2/C-3/C-4 선결 충족)",
+      "G-prime-7_admin-featured-artists": "completed_2026-05-05 (Backend: alembic 0050_featured_artists + FeaturedArtist 모델 + partial UNIQUE WHERE is_active. 4 endpoints (admin POST/GET/DELETE require_admin_with_2fa + public GET /featured/artist/current with artist_index rank 1 fallback). 6 신규 tests + 2 fix http_status→status_code. Frontend: app/admin/featured-artists/page.tsx + FeaturedArtistForm + FeaturedArtistsList + useAdminFeaturedArtists. A-7 storyhub fetchFeaturedArtist 통합 + FeaturedArtistHero curation_note + curated badge. 5 locale × 13 keys = 65 entries (admin.featuredArtists.* + stories.featured.curatedBadge). tsc 0. A-7 회귀 0)",
+      "G-prime-8_region-genre-ranking": "completed_2026-05-05 (Backend: alembic 0052_artist_index_region_genre + User +5 cols (rank_region/score_region/rank_genre/score_genre/primary_genre). artist_index_jobs.py region/genre 계산 통합 (R-5 격리 유지) + ROW_NUMBER OVER country/genre + LATERAL unnest genre_tags primary_genre 추출. /artists/index endpoint region+genre filter + 응답 rank_region/rank_genre/primary_genre. 4 신규 unit tests + 4 baseline test fix (primary_genre None mock). Frontend: ArtistIndexEntry +3 fields + RankingCard 글로벌/region/genre 3중 badge + 5 locale × 1 key = 5 entries (genreRank). tsc 0)",
+      "G-prime-9_post-engagement-cache": "completed_2026-05-05 (Backend: alembic 0053_post_engagement_cache + 5 count fields + engagement_score 가중치 (likes 1 + comments 2 + bookmarks 1.5 + bids 5 + shares 3) + partial index. post_engagement_jobs.py 1h cron R-5 격리 + UPSERT idempotent + shares user_activity_logs graceful degrade. A-3 feed_scoring.py cache lookup boost (graceful degrade — cache miss → inline fallback). Prometheus +2 (calc_duration + rows_total). 6 신규 unit tests. tsc 0)",
+      "G-prime-10_price-unit-consistency": "completed_2026-05-05 (Backend: alembic 0051_product_price_cents + Post.buy_now_price Numeric(12,2)→BigInteger cents + Pydantic validator dollars→cents + ROUND backfill + downgrade reverse. orders.py fee 계산 cents 기준 + Stripe payment_intent.amount cents 일관. search.py A-5 booster price_min/max cents 일관. drafts.py 보강. 7 신규 tests. Frontend: lib/format.ts 신규 (formatPriceCents/parsePriceToCents/centsToDollarsString Intl.NumberFormat KRW/JPY/USD). lib/api.ts buy_now_price string→number cents. 7+ 컴포넌트 보강 (PostCard/FeedItem/GalleryView/posts[id]/posts/new draft restore/search/PostPreviewCard). UI input 달러 → API/DB cents 자동 변환. tsc 0. A-5 search 회귀 0 (price filter 정확). carry-over: Auction.start/current_price KRW Numeric 유지 — Phase 8+, multi-currency Phase 8+, 2-step production migration ops PDCA)",
+      "G-prime-stage-complete": "**2026-05-05 — G' 단계 종결: 10/10 = 100% (D'-6 deferred Phase 7+에서 G'-1으로 흡수 완료)**. 누적 메트릭: 207→263 passed (+56 tests) + 1 skipped + tsc 0 errors + alembic 0050~0053 (4 신규) + ~600+ 신규 i18n entries × 5 locales + Stripe webhook 9 핸들러 + winback coupon flow + Featured Artist admin + region/genre ranking + post_engagement_cache + price unit cents 통일 + Jest test runner + dynamic OG 4 routes + tailwind a11y + posthog backend",
+      "C-1_ai-artist-interview-generation": "completed_2026-05-05 (Backend: alembic 0054_artist_interviews + ArtistInterview 모델 + partial UNIQUE published. tuzigroup LLM Gateway (gemma4-e4b model) + Mock 모드 fallback. 6 endpoints (admin generate 5/hour + list + PATCH + publish + me consent + public). 16 신규 tests. **279 passed**. Frontend 11 신규 + A-7 timeline link booster. 5 locale × 25 keys = 125 entries (interview.*). tsc 0)",
+      "C-2_press-kit-auto-export": "completed_2026-05-05 (Backend: alembic 0055_press_kits + PressKit 모델 + 1 fix now() IMMUTABLE → plain index. press_kit_generator.py reportlab + Pillow PDF 5~8 페이지 (Cover/Bio/Featured Works/Interview C-1/Achievements/Sponsor stats/Contact). 3 endpoints + 6 tests + 1 http_status fix. Frontend 7 신규. 5 locale × 15 keys = 75 entries (pressKit.*). tsc 0. carry-over: CJK font 임베딩)",
+      "C-3_multi-language-story": "completed_2026-05-05 (Backend: alembic 0056_user_bio_translations + UserBioTranslation composite PK + story_translator.py (translate_bio_to_all_locales + 24h SHA256 cache + A-7 milestone booster). 4 endpoints + 8 tests + 4 fix (http_status + db.execute mock). Frontend: localStorage 'domo-locale' middleware + LocaleSwitcher + /me/bio 5 locale editor. 5 locale × 10 keys = 50 entries (bio.* + localeSwitcher.*). tsc 0. A-7/G'-6/C-1 회귀 0)",
+      "C-4_media-coverage-cms": "completed_2026-05-05 (Backend: alembic 0057_media_coverage + MediaCoverage + 3 인덱스 + HTML sanitize. 6 endpoints (admin 4 + public list filter + featured). 8 신규 tests. Frontend: A-7 MediaCoverageGrid graceful degrade + admin UI + users/[id] UserMediaCoverage. 5 locale × 15 keys = 75 entries. tsc 0. carry-over: RSS auto + click tracking + auto-thumbnail Phase 8+)",
+      "C-5_newsletter-digest": "completed_2026-05-05 (Backend: alembic 0058_newsletter + NewsletterPreferences + NewsletterIssue. email_ses.py SESClient + Mock fallback. newsletter_composer.py (C-1/C-2/C-3/C-4 booster). newsletter_jobs.py 1h cron R-5 격리 + batch 50. 7 endpoints. 10 신규 tests + 5 fix (http_status + class patch + refresh side effect). Frontend 5 신규 (admin newsletter + me preferences + unsubscribe). 5 locale × 25 keys = 125 entries. tsc 0. GDPR opt-in default. carry-over: A/B subject + bounce + ML + SMS Phase 8+)",
+      "C-stage-complete": "**2026-05-05 — C 단계 종결: 5/5 = 100%**. Phase 7 sub-PDCAs 15/15 = 100%. **README 비전 마케팅 hub 본격 구현**: AI 인터뷰 + Press Kit PDF + Multi-language + Media CMS + Newsletter"
+    },
+    "carryOverFromPhase6": "18건 → G' 흡수 12 + C-5 흡수 1 + 선택 2 + Phase 8+ deferred 3",
+    "rationale": "Phase 5 = 후원 인프라. Phase 6 = Discovery & Growth Funnel + 신진작가 인덱스 + 스토리텔링 hub. Phase 7 = Tech Debt 청산 (G' 2~3주) + 마케팅 hub 본격 (C 6주 PR Automation)"
+  },
+  "phase5ArchivedAt": "2026-05-04T22:00:00.000Z",
+  "phase5ArchivedTo": "v1/docs/archive/2026-05/domo-phase5-roadmap/",
+  "phase6RoadmapStatus": {
+    "phase": "do",
+    "phaseStartedAt": "2026-05-04T22:20:00.000Z",
+    "currentStage": "D' (Carry-over Consolidation 그룹 A 병렬 4 agents 진행 중)",
+    "nextStage": "D'-3 stripe-coupon-foundation 순차 → A 단계 진입",
+    "alembicApplied": "0043_artist_tier_benefits applied 2026-05-04",
+    "subPdcaCount": "13 (D' 6 + A 8)",
+    "openQuestionsResolved": "OQ-1=B(병렬) / OQ-2=B(D'-6 Phase 6.5) / OQ-3=A(PostHog) / OQ-4=A(SQL-only feed) / OQ-5=B(가중치 ranking) / OQ-6=C(작가자율+큐레이션) / OQ-7=A(USD lock) / OQ-8=A(alembic 후 즉시) / OQ-9=C(정량+정성) / OQ-10=B(100% archived 기준)",
+    "planDocument": "v1/docs/01-plan/features/domo-phase6-roadmap.plan.md",
+    "subPdcas": {
+      "D-prime-1_phase4-tech-debt-cleanup": "completed_2026-05-04 (Backend: alembic 0045_user_sponsor_validity (26ch, D'-2 0044 후 chain) + User.sponsor_validity_days INTEGER NULL + UserSponsorSettingsRequest/Out + GET/PATCH /v1/me/sponsor-settings + me_sponsor_settings rate_limit 10/min. _viewer_meets_tier() NULL=lifetime + N days=Sponsorship.created_at >= now-N. _filter_active_tier_only Python post-filter 제거 + _sql_tier_qualified_expr() EXISTS subquery inline → home_feed SQL-only filter. 5 신규 tests + 4 baseline test fix (validity_days mock side_effect). Frontend: TierRestrictedPanel + post.detail.tierRestricted CTA + PostCard is_tier_locked amber lock badge + SponsorValiditySettings.tsx 6-option radio + app/me/settings/sponsor-validity/ artist-only + lib/api.ts SponsorValidityDays type. 5 i18n × 14 keys = 70 entries. tsc 0 (type fix 후))",
+      "D-prime-2_subscription-cancellation-tracking": "completed_2026-05-04 (Backend: alembic 0044_subscription_cancellation (29ch) + Subscription +cancellation_reason String(50) +cancellation_feedback Text. cancel_subscription endpoint body 활용 + _strip_html() regex XSS 방어 + _log_action audit. GET /me/patronage/churn endpoint (artist-only, 30일 default, single SQL aggregate + User batch load N+1 zero, feedback_preview 100자 truncate, patronage_churn 30/min). 6 신규 integration tests. Frontend: cancelSubscription body 확장 (backward compat) + ChurnItem 8 fields + ReasonBadge 5 variant color-coded + FeedbackTooltip + ChurnAvatar. ChurnList 실제 사유 표시 (B-5 booster). 5 locale × 2 keys = 10 entries. tsc 0)",
+      "D-prime-3_stripe-coupon-foundation": "completed_2026-05-04 (Backend: alembic 0046_applied_coupons (20ch) + AppliedCoupon 모델 + 3 인덱스. services/payments/coupon.py (CouponProvider abstract + Mock + Stripe asyncio.to_thread + idempotency_key). 5 endpoints (admin POST/GET/DELETE require_admin_with_2fa + me POST apply 5/min + GET 60/min). 13 신규 tests (1 fix mock select() 호환). **171 passed (158→171)**. carry-over: winback-coupon Phase 6.5. Frontend: 9 신규/수정 (admin/coupons + me/coupons + CreateCouponModal + CouponsList + useMyCoupons + useAdminCoupons + lib/api.ts + SubscriptionCard 🎟 B-3 booster). 5 locale × 25 keys = 125 entries (coupon.admin.* + user.* + error.* + subscription.appliedBadge). tsc 0)",
+      "D-prime-stage-complete": "**2026-05-04 — D' 단계 종결: 5/6 = 100% (excluding D'-6 Phase 6.5 deferred)**. Phase 6 sub-PDCAs 5/13. 누적 D' 메트릭: 147→171 passed (+24 tests) + tsc 0 + alembic 0044+0045+0046 적용 + Prometheus docs + es 26 keys parity 100% + WCAG manual + 신규 endpoints (admin/me coupons + sponsor-settings + churn) + 5 locale × ~270 신규 i18n entries",
+      "D-prime-4_phase5-i18n-cleanup": "completed_2026-05-04 (es.json artist.* 26 keys 추가 (Phase 5 pre-existing 해소) + 5 locale common.close + post.editor.scheduledLabel 동기화. AuctionShareCard aria-label 외재화 (B-1 carry-over). EditorWorkspace toLocaleString(locale) locale-aware + scheduledLabel i18n (D-1 carry-over). i18n-a11y-audit-v0.2.md 신규. 5 locale parity 100% (598 keys). tsc 0. heading hierarchy PASS. color contrast 7/10 PASS (text.muted 3.8:1 + border 1.4:1 carry-over Phase 6.5). VoiceOver/NVDA + axe-core CI 통합 carry-over)",
+      "D-prime-5_prometheus-deployment": "completed_2026-05-04 (docs-first 코드 변경 0. grafana/domo-dashboard.json 신규 7 panels + alerts.yml 신규 126L 5 alerts (CronWorkerError/Stalled/ShareCardCacheLow/DBConnectionFailure/NotificationDispatchHigh) + metrics-security.md 신규 ~160L (Bearer token rotation + AWS SSM/Vault 통합) + observability.md v0.1→v0.2 274L §8 Production Deployment Checklist 12 items. pyproject.toml prometheus-client>=0.21 기존 확인. carry-over: /metrics 별도 포트 분리 + label 형식 확인 + nginx rate limit)",
+      "D-prime-6_stripe-webhook-extension": "deferred (Phase 6.5)",
+      "A-1_analytics-foundation": "completed_2026-05-04 (Frontend: posthog-js + PostHogClientProvider GDPR-safe (opt_out_capturing_by_default + Mock 모드 console.log). lib/analytics/events.ts 14 discriminated union + capture.ts (captureEvent/identifyUser/resetIdentity PII redact) + featureFlags.ts (A-3 A/B 선결). 7 integration points (LoginModal+Sidebar logout+BluebirdModal Step 1+5+CancelSubscriptionModal+explore+search+PostCard source prop). CookieConsent + /me/settings/privacy GDPR Article 7. 5 locale × 14 keys = 70 entries. tsc 0 errors. v1/docs/operations/analytics/funnels.md 4 funnels (Onboarding 7d / Sponsorship / Retention Cohort / Search→Follow) + KPI baseline 30/90d. carry-over: backend posthog Python SDK Phase 6.5, Jest 별도)",
+      "A-2_onboarding-funnel": "completed_2026-05-04 (Frontend: 8 신규 + 5 수정. useOnboarding hook (first-session localStorage + state machine). 3-step wizard (Step1 추천작가 5명 grid + Step2 BluebirdModal 통합 + Step3 Explore preview) + OnboardingProgress dots. AppShell 통합 + Sidebar indicator + Feed empty CTA. events.ts +4 events. fetchRecommendedArtists graceful empty fallback. 5 locale × 25 keys = 125 entries. tsc 0. B-1 회귀 0. carry-over: backend /onboarding/recommended-artists endpoint 미구현)",
+      "A-3_feed-algorithm-v1": "completed_2026-05-04 (Backend: feed_scoring.py 신규 (followed 0.5 + recency 0.3 + engagement 0.15 + trending 0.05). _personalized_feed_v1 SQL+Python hybrid (Pool A 팔로잉 + Pool B 트렌딩 N+1 zero + cursor IEEE 754 hex). home_feed_posts ?algo=default|v1 backward compat. 6 unit + 4 integration tests (1 skip over-mocked). **191 passed (+20)**. carry-over: post_engagement_cache → inline subquery. Frontend: feed/page.tsx algo toggle + cursor pagination. FeedAlgorithmToggle + RecommendedReasonBadge. events.ts +1 feed_algorithm_view. 5 locale × 10 keys = 50 entries. tsc 0)",
+      "A-4_explore-revamp": "completed_2026-05-04 (Frontend: 7 신규 + 4 수정. app/explore/page.tsx 전면 재작성 + ExploreTabs (5 tabs Trending/New/Region/Genre/Pricing) + ExploreFilters (7 regions + 5 genres + Pricing hint) + ExploreHeroCard (A-6 top-3 daily rotation date-seed) + ArtistIndexPreview (top-5 horizontal scroll → /artists/index) + PostsGrid + useExploreState (URL sync + localStorage). lib/api.ts +fetchExplorePosts. events.ts +2 신규 (explore_hero_view + artist_index_preview_click) + A-7/A-8 types 통합. 5 locale × 29 keys = 145 entries. tsc 0 errors. A-3/A-6 회귀 0. carry-over: PostHog flag server-side trending integration)",
+      "A-5_search-enhancement": "completed_2026-05-04 (Backend: alembic 0049_search_history (linter rename — A-8 0048 선점 감지, chain 0047→0048→0049). SearchHistory 모델 (id/user_id FK CASCADE/query 200/result_count/searched_at/deleted_at soft) + 2 indexes (user_id+searched_at WHERE deleted_at IS NULL + searched_at WHERE deleted_at IS NULL). GET /search filter (price_min/max/region/active) + sort (relevance/latest/popular) + type 4 + cursor pagination. /me/search/history 4 endpoints (GET 10/min + DELETE 단건 + DELETE 전체 + 자동 기록 50개 cap). GET /search/popular (24h GROUP BY query). 9 unit tests (sanitize/like_escape/resolve_viewer/serialization). 직접 실행 시 9 passed (전체 207+1=208 변동 없음 — 기존 search 테스트와 일부 중복). Frontend: app/search/page.tsx 보강 (Filter sidebar artists/artworks/posts 별 + History dropdown + Popular). useSearchHistory 신규. lib/api.ts +searchV2 + 4 history client fns + 5 types. events.ts +3 (search_filter_applied/history_click/popular_click). 5 locale × 19 keys = 95 entries (search.v2.*). tsc 0. carry-over: pg_trgm fuzzy match Phase 7+, price filter 단위 통일, 인기 검색어 Redis 캐싱)",
+      "A-6_artist-index-v1": "completed_2026-05-04 (Backend: alembic 0047_artist_index (17ch) + User +4 컬럼 (artist_index_score/rank/rank_region/calculated_at) + 2 partial indexes. artist_index_scoring.py (가중치 fix 0.5+0.25+0.15+0.10 = 1.0, log10 sales, tier badge top_10/100/1000). artist_index_jobs.py 1h cron (R-5 격리) + Prometheus domo_artist_index_calc_duration_seconds + artists_total{status='ranked'}. 2 endpoints (GET /artists/index region+genre+cursor 60min anon/120min auth + GET /artists/{id}/index). 6 unit + 4 integration tests (test_weights_sum_to_one fix + http_status→status_code fix). Frontend: app/artists/index/page.tsx + ArtistIndexClient + Top 3 RankingHero + RankingCard + RegionFilter (21 regions) + GenreFilter (8) + TierBadge gold/silver/bronze + useArtistIndex cursor pagination. users/[id] ranking badge 통합 + Sidebar nav.artistIndex link + TrophyIcon. 5 locale × 25 keys = 125 entries (artist.index.* + nav.artistIndex). tsc 0. carry-over: SEO meta + OG image, region별 별도 ranking, Featured Artist A-7)",
+      "A-7_storytelling-hub": "completed_2026-05-04 (Frontend: 7 신규 + 7 수정. /stories hub 3 sections + /users/[id]/timeline 자동 milestones 6종. useArtistTimeline (4 endpoint 합성). MilestoneCard + ArtistTimeline. +BookOpenIcon + Sidebar nav.stories + events.ts story_view. 5 locale × 27 keys = 135 entries. tsc 0. A-6 회귀 0. carry-over: dynamic OG / admin Featured / backend endpoints Phase 7+)",
+      "A-8_retention-loop-enhancement": "completed_2026-05-04 (Backend: alembic 0048_subscription_expiry_notif + Subscription +expiry_notified_at. subscription_expiry_jobs.py 1h cron R-5 격리 + idempotent. Prometheus 2 metrics. 7 신규 unit tests (1 fix days_left flexible). **207 passed**. carry-over: POST renew Phase 7+. Frontend: useExpiryBanner SSR-safe + ExpiryBanner + WinbackBanner cancellation_reason booster. events.ts +5. SubscriptionView +cancellation_reason. me/sponsorships 통합. 5 locale × 6 keys = 30 entries. tsc 0. B-3/B-5 회귀 0)"
+    },
+    "rationale": "Phase 5 = 후원 인프라 완성. Phase 6 = README 비전 그로스해킹 깔때기 + 신진작가 인덱스 + 스토리텔링 hub 본격 시작. D' 1~2주 부채 청산 후 A 6~10주 사용자 유입+발견 흐름 강화",
+    "phase6-complete": "**2026-05-04 — Phase 6 12/13 sub-PDCAs 100% (D' 5/6 + A 8/8, D'-6 deferred Phase 7+)**. 누적 메트릭: 147→207 passed (+60 tests) + 1 skipped (A-3 over-mocked) + tsc 0 errors + alembic 0044~0049 적용 (6 신규 마이그레이션) + ~1100+ 신규 i18n entries × 5 locales + 16 신규+보강 endpoints (sponsor_settings + churn + 5 coupons + onboarding/recommended-artists + feed?algo=v1 + artist_index 2 + search/history 4 + search/popular + payment/setup-intent + tier_benefits 4) + 4 신규 services (i18n + tier_benefits + feed_scoring + artist_index_scoring + subscription_expiry_jobs + artist_index_jobs) + PostHog 통합 (14 events + GDPR opt-out + 4 funnels) + Prometheus 9+5 metrics + 13 신규 frontend pages/components 모듈 (onboarding 6 + patronage 6 + sponsorships 5 + tier-benefits 2 + admin coupons 2 + me coupons 1 + artists 4 + explore 5 + stories 4 + sponsorships expiry 1)"
+  },
+  "previousPrimaryFeature": "domo-phase7-roadmap (archived 2026-05-05, 15/15 sub-PDCAs 100%, G' 10/10 + C 5/5, D'-6 G'-1 흡수 — Phase 7 종결: Carry-over Consolidation + Press Kit & PR Automation. README 비전 마케팅 hub 직접 구현: AI 인터뷰 + Press Kit PDF + Multi-language + Media CMS + Newsletter)",
+  "phase5RoadmapStatus": {
+    "phase": "do",
+    "phaseStartedAt": "2026-05-04T08:45:00.000Z",
+    "currentStage": "D (Tech Debt Stabilization, 1~2주)",
+    "nextStage": "B (Blue Bird Patronage UI, 8~10주)",
+    "oqsResolved": "OQ-1=B(병렬) / OQ-2=B(D-7 Phase 5.5) / OQ-3=C(코드 그대로 + UI 'Blue Bird 후원') / OQ-4=C(일회+정기) / OQ-5=C(플랫폼 default + 작가 override) / OQ-6=A(alembic 0042 후 즉시) / OQ-7=A(P3-1 별도) / OQ-8=B(12 sub-PDCAs 100% archived)",
+    "subPdcas": {
+      "D-1_editor-i18n-cleanup-v3": "completed_2026-05-04 (5 i18n files (ko/en/ja/zh/es) + 5 components 수정. 7 신규 keys × 5 = 35 entries 추가 (post.auctionBadge/locationPrompt/genreLabel/buyNowPriceLabel + auction.shareCard.retry/errorUnauthorized 등) + share.* namespace 10 keys × 5 = 50 entries 제거 + dead key post.editor.media.uploading 0→1 usage. EditorWorkspace 5 hardcode + ProductFields 8 hardcode + PostPreviewCard 3 hardcode + EditorStepContent 2 hardcode → i18n keys 외재화. AuctionShareCard share.* → auction.shareCard.* 완전 전환. tsc 0 errors. carry-over: AuctionShareCard aria-label '닫기' (a11y common.close 키), EditorWorkspace 예약 배지 'ko-KR' locale + '예약' hardcode)",
+      "D-2_upload-retry-ui": "completed_2026-05-04 (lib/api.ts uploadMediaFileWithProgress + onAbortRef + xhr.onabort + httpStatus 보존. useMediaUploadQueue retryTask + cancelTask + abortMapRef XHR 인스턴스 관리 + UploadTask.errorHttpStatus. MediaUploadProgress 에러 row UI + Retry/Cancel button + HTTP status → i18n key 매핑. RefreshIcon + XCircleIcon 추가. EditorWorkspace/EditorMobileWizard/EditorStepContent/MediaPreviewList props +2 forward + posts/new/page.tsx 통합. 14 files 수정 + 5 i18n × 10 keys = 50 entries (post.editor.media.retry.* + cancel.* + 8 error.* keys). tsc 0 errors. R-FE-7 mitigation: retry 시 동일 task ID 재사용)",
+      "D-3_series-reorder-persistence": "completed_2026-05-04 (POST /v1/series/{id}/reorder + SeriesReorderRequest/Response + series_reorder rate_limit 30/min/user + 5 error codes (404/403/422 DUPLICATE_POST_IDS/422 POST_IDS_INCOMPLETE/422 POST_NOT_IN_SERIES). 7 integration tests + audit log SERIES_REORDER. order_index UNIQUE 미존재 → 직접 in-place UPDATE. 4 files: api/series.py + schemas/series.py + core/rate_limit.py + tests/integration/test_series_reorder.py 신규)",
+      "D-4_notifications-ux-audit": "completed_2026-05-04 (Backend: 기존 4 endpoints 유지 + 2 보강 GET /v1/notifications types CSV/category 필터 + POST /v1/notifications/mark-read-by-type. api/notifications.py +103L (207L total) + tests/integration/test_notifications_endpoints.py 신규 337L 12 tests (status_code attribute 수정 후 109 passed). Frontend: app/notifications/page.tsx 전면 재작성 254L (필터 탭 6개 + 모두 읽음 + empty state + type별 아이콘 + toast). NotificationBell timeAgo 중복 제거 → formatRelativeTime 공유. icons.tsx +5 (Heart/MessageCircle/Gavel/UserPlus/Info). lib/api.ts +22L (fetchNotificationsByFilter + markReadByType + NotificationFilter type). 5 i18n × 13 keys = 65 entries (notifications.center.title/markAllRead/empty.* /filter.* /markedAsRead + notification.type.{like,comment,follow,sponsor,system}). tsc 0. R-5 cron 격리 유지. carry-over: push/email/preferences/realtime/DB-grouping deferred)",
+      "D-5_server-side-notification-i18n": "completed_2026-05-04 (services/i18n.py 신규 - _TRANSLATIONS dict 4 keys × 5 locales × 2 fields = 40 strings + t() helper + ko fallback. auction_promotion_jobs.py _TITLE_MAP/_BODY_MAP 제거 + _get_user_language() + _make_notifs() seller_lang/winner_lang 시그니처 확장. user.language 기존 컬럼 String(10) default='ko' 활용 (alembic 불필요). 9 i18n unit tests + 3 auction promotion i18n tests. R-5 격리 유지 auction_jobs.py 무수정. _create_order_for_winner 한국어 hardcode 0 — D-5 범위 외)",
+      "D-6_observability-monitoring-baseline": "completed_2026-05-04 (Prometheus metrics 9개 - domo_cron_runs/errors/rows_processed/duration_seconds (4 worker labels) + share_card cache_hits/misses + generation_seconds + tier_release_cleared_rows + notification_dispatched_total. 4 cron worker metric 통합. /metrics endpoint METRICS_ENABLED+METRICS_TOKEN 토큰 보안 (default 503). app/api/health.py 신규 cron liveness check. scripts/check_query_plans.sh 8 핵심 쿼리 EXPLAIN ANALYZE 게이트 (+x 적용). v1/docs/operations/observability.md 215L. 13 files: 5 신규 + 8 수정. 114 passed (109 baseline + 5 new). carry-over: prometheus-client pip install, OpenTelemetry Phase 6+, Grafana dashboard JSON)",
+      "D-stage-complete": "**2026-05-04 — D 단계 6/6 sub-PDCAs 100% 완료**. Phase 5 sub-PDCAs 6/12 (50%). 누적: 77→114 passed (+37 tests) + tsc 0 errors + ~50 신규 i18n keys × 5 locales + Prometheus 9 metrics + 1 신규 endpoint (POST series/reorder) + 2 보강 endpoint (notifications filter + mark-read-by-type) + services/i18n.py + observability docs",
+      "B-1_bluebird-sponsor-flow": "completed_2026-05-04 (Backend: payments.py + schemas/payments.py + payments/base.py SetupIntent dataclass + 2 abstract methods + mock_stripe + stripe_real get_or_create_customer + create_setup_intent + payments_setup_intent rate_limit 10/min. POST /v1/payments/setup-intent endpoint. user.stripe_customer_id 기존 컬럼 활용. 9 신규 integration tests. **123 passed**. Frontend: BluebirdModal.tsx 5-step UX 전면 재작성 + Stripe Elements lazy import (mock 모드 fallback) + BluebirdButton.tsx 재사용 trigger + useBluebirdSponsor.ts state machine. 5 i18n × 27 keys = 135 entries. 9 frontend files + .env.local/.env.production. tsc 0 errors (lazy import 동적 cast 패턴으로 @ts-expect-error 제거 fix). carry-over: PostCard hover mini-button (B-5), support page redesign (B-3), Stripe webhook 확장)",
+      "B-2_artist-patronage-dashboard": "completed_2026-05-04 (Backend: app/api/me_patronage.py 신규 ~280L 4 endpoints (/summary artist 403/60min + /supporters 60min cursor+filter + /revenue 30min daily/monthly + /payout-request KYC gate stub). app/schemas/patronage.py 신규 ~75L Pydantic. rate_limit 3 scopes 추가. main.py router 등록. N+1 zero (각 endpoint 2~3 GROUP BY aggregate SQL). 14 신규 integration tests. **137 passed (123 baseline + 14 new)**. Frontend: app/me/patronage/page.tsx 5-section dashboard 신규 (Header / Summary 4-card / RevenueChart SVG 자체 구현 daily/monthly toggle / SupportersTable cursor+filter / PayoutRequestModal). 6 patronage components: SummaryCard / RevenueChart 165L SVG / SupportersTable 185L / TierDistribution 80L pie / PayoutRequestModal 120L / layout.tsx artist-only auth gate. usePatronageDashboard hook + lib/api.ts +90L 4 client fns + 7 types. Sidebar artist-only DashboardIcon 통합. 5 locale × ~22 keys = 110 entries (patronage.artist.*). tsc 0 errors. R-5 settlement_jobs 무수정. carry-over: payout-request settlement_jobs 통합 Phase 6+, recharts 등 외부 lib 0 (SVG 자체 구현))",
+      "B-3_supporter-dashboard": "completed_2026-05-04 (Frontend: app/me/sponsorships/page.tsx 5-section dashboard 신규 + 5 sponsorships components (SubscriptionCard / SponsorshipHistory / CancelSubscriptionModal z-[60] 4 사유+기간종료vs즉시 / TierBenefitsPanel collapsible / SupporterStats). useMySponsorships hook + icons.tsx HeartHandshakeIcon + Sidebar mySponsoring nav (needsAuth). app/support/page.tsx Blue Bird 랜딩 redesign (Hero + 3-col tier + FAQ + Contact). 5 locale × 27 keys = 135 entries (patronage.supporter.* + patronage.support.landing.* + nav.mySponsoring + B-2 sync nav.patronageDashboard). tsc 0. Backend 신규 0 (기존 3 endpoint 재사용). carry-over: artist display_name batch (B-4/B-5), cancel reason 백엔드 로깅 (B-5 churn), 구독 금액 변경 (B-5 retention))",
+      "B-4_tier-benefits-customization": "completed_2026-05-04 (Backend: alembic 0043_artist_tier_benefits.py 신규 (revision id 25ch ≤32). artist_tier_benefits 테이블 + UUID PK + JSONB benefits + welcome_message Text + uq_atb_artist_tier UNIQUE + ix_atb_artist. app/models/artist_tier_benefits.py + app/schemas/tier_benefits.py (TierBenefitsUpsert Pydantic v2 validators max 10 items + 200ch 각 + 500ch welcome + HTML strip). app/api/tier_benefits.py 4 endpoints (GET /me/tier-benefits 403 ARTIST_ONLY + PUT /me/tier-benefits/{tier} upsert + DELETE 204 idempotent + GET /users/{id}/tier-benefits public). rate_limit tier_benefits_write 30/min + tier_benefits_read 120/min. 10 신규 integration tests. **147 passed (137 baseline + 10 new)**. Frontend: app/me/tier-benefits/page.tsx artist-only settings 신규 + 2 신규 components (TierBenefitsEditor 단일 tier 편집 + ArtistTierBenefitsView read-only 3-tier with platform default fallback). useTierBenefits dual mode hook (own benefits 편집 vs public read-only). lib/api.ts +4 client fns + 3 types. B-3 TierBenefitsPanel artistId optional prop 보강 (B-3 booster). B-1 BluebirdModal Step 1 ArtistTierBenefitsView 통합 (B-1 booster). users/[id] 작가 프로필 통합. Sidebar artist-only 후원 혜택 설정 link. 5 locale × ~20 keys = 100 entries (tierBenefits.* namespace). tsc 0 errors. B-5 namespace 충돌 0. carry-over: alembic upgrade head 사용자 측 실행 필요)",
+      "B-5_patronage-retention-ux": "completed_2026-05-04 (Frontend 4 신규 + 7 수정. useWinbackBanner (7d localStorage SSR-safe) + useResubscribe + WinbackBanner + ChurnList graceful degrade. BluebirdModal Step 5 thank-you 강화 (플랫폼 default welcome + 다음 단계 3 link). CancelSubscriptionModal 2-step (reason → win-back conditional offer + feedback textarea). SubscriptionCard 다시 구독 button. PostCard hover mini BluebirdButton md:flex. users/[id] WinbackBanner 통합. me/patronage ChurnList 섹션. lib/api.ts cancelSubscription body 확장 (backward compat) + fetchChurnList. 5 locale × 26 keys = 130 entries retention.* namespace. tsc 0. B-1/B-3 회귀 0. carry-over: alembic 0045 (cancellation_reason+feedback 컬럼) backend 팀, Stripe coupon Phase 6+, DM messaging PDCA, 자동 win-back 캠페인 push/email PDCA)",
+      "B-6_patronage-i18n-a11y-audit": "completed_2026-05-04 (Part 1 i18n: 17 dead keys × 5 = 85 제거 + ja/zh artist 블록 추가 (20 × 2) + 5 신규 namespace (common_ui/bluebird_modal/cancel_modal/churn/post_card). PostCard/BluebirdModal/CancelSubscriptionModal/ChurnList Korean hardcode 외재화. Part 2 a11y WCAG 2.1 AA: PostCard hover button keyboard-accessible (group-focus-within + focus-visible:ring-2) + BluebirdModal/CancelSubscriptionModal ESC handler + SupportersTable th scope='col' + PayoutRequestModal role='dialog'+aria-modal + RevenueChart chartAriaLabel + radiogroup aria-label 외재화. 5 trailing comma fix (5 locale 모두 success step5 닫기 후 trailing comma → JSON invalid 였음). **5 locale JSON valid 100%** + tsc 0. ko=581 keys, es 26 missing (pre-existing artist.* — Phase 6 carry-over). carry-over: color contrast manual audit, VoiceOver/NVDA test, h1→h2→h3 hierarchy)",
+      "phase5-complete": "**2026-05-04 — Phase 5 12/12 sub-PDCAs 100% 완료**. D 6/6 + B 6/6. **누적 메트릭**: 77→147 passed (+70 tests) + tsc 0 errors + 5 locale JSON valid + ~750+ 신규 i18n entries + 9 신규 + 보강 endpoints + 2 신규 services (i18n + tier_benefits) + 9 Prometheus metrics + 1 alembic 0043 + 3 신규 dashboard pages (patronage/sponsorships/tier-benefits) + ~20 신규 components + observability docs 215L + Stripe SetupIntent 통합 (mock 모드 fallback) + retention UX 5종 (thank-you / win-back / WinbackBanner / PostCard hover / ChurnList)"
+    },
+    "rationale": "Phase 5 = 그로스해킹 깔때기 + 후원 차별화. D 단계 1~2주 부채 청산 + B 단계 Blue Bird Patronage UI 본격 구축 — 모두 완료"
+  },
+  "criticalPathNext": "**Phase 5 종결 (12/12 = 100%, archived 2026-05-04)**. 다음 옵션: (1) Phase 6 신규 로드맵 정의 — A. Discovery & Growth Funnel (피드 알고리즘 + Explore + Search + Onboarding 깔때기) 또는 C. Artist Index & Storytelling (글로벌 신진작가 ranking + 스토리 페이지). (2) Phase 5 carry-over 정리 PDCA: D-7 #10.1 (POST_TIER_RESTRICTED CTA + sponsor N일 + SQL-only filter), alembic 0045 cancellation_reason+feedback, Stripe coupon 실제 발행, es.json artist.* 26 keys (Phase 6 i18n sprint), WCAG manual audit, PostHog/Amplitude 도입, multi-currency, push/email, DM messaging, OpenTelemetry. (3) P3-1 커뮤니티 로드맵 (별도 P3 진행). (4) editor-video-studio (#6-video, ffmpeg 차단 해제 후)",
   "features": {
     "editor-media-ux": {
       "phase": "archived",
@@ -298,7 +423,7 @@
       "phaseNumber": 3,
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/main.py",
       "timestamps": {
-        "lastUpdated": "2026-05-04T02:40:08.062Z"
+        "lastUpdated": "2026-05-05T10:35:34.580Z"
       }
     },
     "core": {
@@ -310,9 +435,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:32:03.535Z",
-        "lastUpdated": "2026-05-04T02:40:13.935Z"
+        "lastUpdated": "2026-05-05T10:34:53.071Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/core/rate_limit.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/core/metrics.py"
     },
     "db": {
       "phase": "do",
@@ -336,9 +461,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:23.836Z",
-        "lastUpdated": "2026-05-04T09:50:14.050Z"
+        "lastUpdated": "2026-05-05T10:44:17.662Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/posts.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/admin_newsletter.py"
     },
     "schemas": {
       "phase": "do",
@@ -349,9 +474,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:30.319Z",
-        "lastUpdated": "2026-05-04T09:49:10.940Z"
+        "lastUpdated": "2026-05-05T10:33:36.971Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/post.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/newsletter.py"
     },
     "google_auth.py": {
       "phase": "do",
@@ -401,9 +526,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:35:13.871Z",
-        "lastUpdated": "2026-05-04T02:39:10.818Z"
+        "lastUpdated": "2026-05-05T10:31:38.926Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0042_auction_promotion.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0058_newsletter.py"
     },
     "frontend": {
       "phase": "do",
@@ -414,9 +539,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-05-04T07:04:20.925Z"
+        "lastUpdated": "2026-05-05T10:38:32.825Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/FeedItem.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/hooks/useMyNewsletterPreferences.ts"
     },
     "applications": {
       "phase": "do",
@@ -453,9 +578,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T09:22:43.092Z",
-        "lastUpdated": "2026-05-04T02:56:30.431Z"
+        "lastUpdated": "2026-05-05T07:57:13.962Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/scripts/smoke_test_auction_promotion.sh"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/scripts/seed.py"
     },
     "[id]": {
       "phase": "do",
@@ -466,9 +591,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T09:25:54.640Z",
-        "lastUpdated": "2026-05-04T07:02:24.720Z"
+        "lastUpdated": "2026-05-05T10:36:48.582Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/[id]/page.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/users/[id]/page.tsx"
     },
     "payments": {
       "phase": "do",
@@ -479,9 +604,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T10:31:16.590Z",
-        "lastUpdated": "2026-04-25T01:01:43.986Z"
+        "lastUpdated": "2026-05-05T07:48:14.329Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/payments/stripe_real.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/payments/webhook_handlers.py"
     },
     "settings.py": {
       "phase": "do",
@@ -505,7 +630,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:01:33.914Z",
-        "lastUpdated": "2026-04-11T11:15:20.535Z"
+        "lastUpdated": "2026-05-04T11:30:35.200Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/auction_jobs.py"
     },
@@ -609,7 +734,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:41:45.679Z",
-        "lastUpdated": "2026-05-04T00:42:13.225Z"
+        "lastUpdated": "2026-05-05T07:54:01.239Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/new/page.tsx"
     },
@@ -648,9 +773,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T13:09:09.994Z",
-        "lastUpdated": "2026-04-14T00:06:48.777Z"
+        "lastUpdated": "2026-05-04T14:52:57.896Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/legal/privacy/page.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/settings/privacy/page.tsx"
     },
     "terms": {
       "phase": "do",
@@ -752,9 +877,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T14:06:49.350Z",
-        "lastUpdated": "2026-04-18T12:04:47.705Z"
+        "lastUpdated": "2026-05-04T15:06:21.891Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/onboarding/page.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/onboarding/OnboardingStep1Follow.tsx"
     },
     "[token]": {
       "phase": "do",
@@ -778,7 +903,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-12T02:33:17.214Z",
-        "lastUpdated": "2026-04-18T04:20:13.414Z"
+        "lastUpdated": "2026-05-04T18:18:45.624Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/explore/page.tsx"
     },
@@ -791,7 +916,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-12T02:33:38.475Z",
-        "lastUpdated": "2026-04-30T00:31:15.849Z"
+        "lastUpdated": "2026-05-04T11:25:55.874Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/notifications/page.tsx"
     },
@@ -817,7 +942,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-12T08:29:36.203Z",
-        "lastUpdated": "2026-04-26T11:10:25.511Z"
+        "lastUpdated": "2026-05-05T07:54:28.514Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/search/page.tsx"
     },
@@ -830,7 +955,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T01:21:00.370Z",
-        "lastUpdated": "2026-04-13T01:21:00.370Z"
+        "lastUpdated": "2026-05-04T11:30:54.708Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/schedule_jobs.py"
     },
@@ -843,9 +968,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T01:31:08.565Z",
-        "lastUpdated": "2026-05-04T00:45:07.160Z"
+        "lastUpdated": "2026-05-05T07:54:49.595Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/EditorMobileWizard.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/PostPreviewCard.tsx"
     },
     "feed": {
       "phase": "do",
@@ -856,7 +981,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T12:26:23.967Z",
-        "lastUpdated": "2026-04-26T10:37:28.257Z"
+        "lastUpdated": "2026-05-04T15:13:59.636Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/feed/page.tsx"
     },
@@ -869,9 +994,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T20:50:53.213Z",
-        "lastUpdated": "2026-04-13T20:50:53.213Z"
+        "lastUpdated": "2026-05-05T10:36:22.851Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/admin/users/page.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/users/UserMediaCoverage.tsx"
     },
     "schools": {
       "phase": "do",
@@ -921,9 +1046,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T22:41:17.631Z",
-        "lastUpdated": "2026-04-26T10:44:31.891Z"
+        "lastUpdated": "2026-05-05T10:40:21.459Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/lib/api.ts"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/admin/NewsletterIssuesList.tsx"
     },
     "artist-apply": {
       "phase": "do",
@@ -1051,7 +1176,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-18T13:33:25.454Z",
-        "lastUpdated": "2026-04-18T13:33:25.454Z"
+        "lastUpdated": "2026-05-04T12:00:50.464Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/support/page.tsx"
     },
@@ -1225,7 +1350,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-01T02:01:35.488Z",
-        "lastUpdated": "2026-05-03T12:05:21.095Z"
+        "lastUpdated": "2026-05-04T11:25:12.688Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/wizard/EditorStepContent.tsx"
     },
@@ -1264,9 +1389,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T11:12:44.673Z",
-        "lastUpdated": "2026-05-04T09:50:42.041Z"
+        "lastUpdated": "2026-05-05T09:56:03.920Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/unit/test_active_auction_end_at.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/unit/test_llm_gateway_mock.py"
     },
     "integration": {
       "phase": "do",
@@ -1277,9 +1402,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T11:40:14.639Z",
-        "lastUpdated": "2026-05-04T09:51:08.554Z"
+        "lastUpdated": "2026-05-05T10:46:21.007Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/integration/test_active_auction_end_at_endpoint.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/integration/test_newsletter.py"
     },
     "image-editor": {
       "phase": "do",
@@ -1316,7 +1441,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T23:30:42.375Z",
-        "lastUpdated": "2026-05-03T23:30:42.375Z"
+        "lastUpdated": "2026-05-05T07:36:03.921Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/tier_release_jobs.py"
     },
@@ -1329,9 +1454,464 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-04T02:39:58.824Z",
-        "lastUpdated": "2026-05-04T03:08:59.241Z"
+        "lastUpdated": "2026-05-05T07:35:43.780Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/auction_promotion_jobs.py"
+    },
+    "i18n.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T11:12:21.096Z",
+        "lastUpdated": "2026-05-04T11:12:21.096Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/i18n.py"
+    },
+    "sponsorships": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T11:55:18.612Z",
+        "lastUpdated": "2026-05-05T07:52:21.565Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/sponsorships/CancelSubscriptionModal.tsx"
+    },
+    "patronage": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T11:57:16.809Z",
+        "lastUpdated": "2026-05-04T12:30:28.043Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/patronage/SupportersTable.tsx"
+    },
+    "tier-benefits": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T12:10:33.498Z",
+        "lastUpdated": "2026-05-04T12:11:21.365Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/tier-benefits/page.tsx"
+    },
+    "sponsor-validity": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T14:22:49.251Z",
+        "lastUpdated": "2026-05-04T14:22:49.251Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/settings/sponsor-validity/page.tsx"
+    },
+    "coupons": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T14:41:53.255Z",
+        "lastUpdated": "2026-05-04T14:42:10.103Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/coupons/page.tsx"
+    },
+    "analytics": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T14:51:33.138Z",
+        "lastUpdated": "2026-05-05T07:49:45.144Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/analytics/events.ts"
+    },
+    "feed_scoring.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T15:05:29.662Z",
+        "lastUpdated": "2026-05-05T07:53:47.999Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/feed_scoring.py"
+    },
+    "artist_index_scoring.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T15:06:06.287Z",
+        "lastUpdated": "2026-05-05T07:58:40.842Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/artist_index_scoring.py"
+    },
+    "artist_index_jobs.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T15:07:01.201Z",
+        "lastUpdated": "2026-05-05T07:49:52.110Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/artist_index_jobs.py"
+    },
+    "artists": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T15:15:41.427Z",
+        "lastUpdated": "2026-05-05T07:58:19.557Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/artists/RankingCard.tsx"
+    },
+    "index": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T15:16:37.306Z",
+        "lastUpdated": "2026-05-05T07:55:32.529Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/artists/index/ArtistIndexClient.tsx"
+    },
+    "stories": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T18:19:08.065Z",
+        "lastUpdated": "2026-05-05T10:36:04.498Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/stories/MediaCoverageGrid.tsx"
+    },
+    "subscription_expiry_jobs.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T18:19:17.463Z",
+        "lastUpdated": "2026-05-05T07:36:15.661Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/subscription_expiry_jobs.py"
+    },
+    "timeline": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-04T18:20:47.217Z",
+        "lastUpdated": "2026-05-05T10:00:48.319Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/users/[id]/timeline/page.tsx"
+    },
+    "analytics.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T07:33:58.663Z",
+        "lastUpdated": "2026-05-05T07:33:58.663Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/analytics.py"
+    },
+    "og": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T07:34:52.952Z",
+        "lastUpdated": "2026-05-05T07:34:52.952Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/og/utils.ts"
+    },
+    "__mocks__": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T07:49:56.811Z",
+        "lastUpdated": "2026-05-05T07:50:00.876Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/__mocks__/fileMock.js"
+    },
+    "featured-artists": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T07:52:30.077Z",
+        "lastUpdated": "2026-05-05T07:52:30.077Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/admin/featured-artists/page.tsx"
+    },
+    "post_engagement_jobs.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T07:52:45.845Z",
+        "lastUpdated": "2026-05-05T07:52:45.845Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/post_engagement_jobs.py"
+    },
+    "llm_gateway.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T09:52:32.239Z",
+        "lastUpdated": "2026-05-05T10:08:55.618Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/llm_gateway.py"
+    },
+    "interview_generator.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T09:53:14.527Z",
+        "lastUpdated": "2026-05-05T10:01:43.297Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/interview_generator.py"
+    },
+    "interviews": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T09:58:34.661Z",
+        "lastUpdated": "2026-05-05T10:00:07.131Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/interviews/page.tsx"
+    },
+    "artist-interviews": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T09:59:46.069Z",
+        "lastUpdated": "2026-05-05T09:59:46.069Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/admin/artist-interviews/page.tsx"
+    },
+    "[locale]": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T10:00:21.654Z",
+        "lastUpdated": "2026-05-05T10:00:21.654Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/users/[id]/interviews/[locale]/page.tsx"
+    },
+    "story_translator.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T10:09:26.876Z",
+        "lastUpdated": "2026-05-05T10:18:48.889Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/story_translator.py"
+    },
+    "press_kit_generator.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T10:09:30.082Z",
+        "lastUpdated": "2026-05-05T10:18:28.701Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/press_kit_generator.py"
+    },
+    "bio": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T10:15:06.424Z",
+        "lastUpdated": "2026-05-05T10:15:06.424Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/bio/page.tsx"
+    },
+    "press-kits": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T10:15:52.497Z",
+        "lastUpdated": "2026-05-05T10:15:52.497Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/admin/press-kits/page.tsx"
+    },
+    "press-kit": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T10:16:23.604Z",
+        "lastUpdated": "2026-05-05T10:17:24.678Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/press-kit/page.tsx"
+    },
+    "email_ses.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T10:31:56.368Z",
+        "lastUpdated": "2026-05-05T10:31:56.368Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/email_ses.py"
+    },
+    "newsletter_composer.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T10:32:57.565Z",
+        "lastUpdated": "2026-05-05T10:44:31.360Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/newsletter_composer.py"
+    },
+    "newsletter_jobs.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T10:33:26.265Z",
+        "lastUpdated": "2026-05-05T10:45:01.579Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/newsletter_jobs.py"
+    },
+    "newsletter": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T10:38:55.571Z",
+        "lastUpdated": "2026-05-05T10:39:13.962Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/newsletter/page.tsx"
+    },
+    "unsubscribe": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-05T10:39:38.229Z",
+        "lastUpdated": "2026-05-05T10:39:38.229Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/newsletter/unsubscribe/page.tsx"
     }
   },
   "pipeline": {
@@ -1342,7 +1922,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-05-04T09:51:08.554Z"
+    "lastActivity": "2026-05-05T10:46:21.007Z"
   },
   "history": [
     {
@@ -9465,6 +10045,4770 @@
     },
     {
       "timestamp": "2026-05-04T09:51:08.554Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:10:54.458Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:10:59.429Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:11:15.144Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:11:20.096Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:11:37.733Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:11:43.395Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:11:54.156Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:11:58.341Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:12:21.096Z",
+      "feature": "i18n.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:12:31.023Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:12:32.751Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:12:38.108Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:12:40.503Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:12:48.353Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:12:55.912Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:12:56.249Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:13:01.707Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:13:02.845Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:13:07.555Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:13:08.811Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:13:13.019Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:13:18.125Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:13:23.859Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:13:33.253Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:13:38.332Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:13:42.936Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:13:42.957Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:13:47.622Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:13:53.265Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:13:59.499Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:14:08.638Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:14:12.433Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:14:36.633Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:21:04.996Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:21:46.032Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:21:54.265Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:21:54.610Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:22:03.414Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:22:24.616Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:22:35.123Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:23:42.691Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:23:51.230Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:23:55.512Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:24:05.534Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:24:14.119Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:24:23.586Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:24:26.313Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:24:31.395Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:24:40.200Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:24:46.788Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:24:47.340Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:25:02.919Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:25:07.078Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:25:12.688Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:25:16.980Z",
+      "feature": "notifications",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:25:20.101Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:25:30.671Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:25:33.394Z",
+      "feature": "notifications",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:25:40.682Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:25:43.537Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:25:47.669Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:25:55.874Z",
+      "feature": "notifications",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:26:03.075Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:26:11.481Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:27:29.733Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:30:04.909Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:30:10.659Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:30:16.706Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:30:24.128Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:30:28.457Z",
+      "feature": "auction_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:30:35.200Z",
+      "feature": "auction_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:30:39.391Z",
+      "feature": "tier_release_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:30:45.464Z",
+      "feature": "tier_release_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:30:49.515Z",
+      "feature": "schedule_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:30:54.708Z",
+      "feature": "schedule_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:31:00.930Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:31:09.098Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:31:15.479Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:31:23.889Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:31:36.050Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:31:40.477Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:31:45.512Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:31:51.350Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:32:06.153Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:32:29.546Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:34:10.923Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:34:24.251Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:34:42.738Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:40:00.145Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:40:05.416Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:40:12.417Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:40:18.598Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:40:24.973Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:40:34.710Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:40:40.226Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:40:45.581Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:40:52.013Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:41:06.418Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:41:12.376Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:41:17.128Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:41:50.396Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:42:22.980Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:43:54.184Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:46:51.563Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:46:56.449Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:47:06.585Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:48:05.798Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:49:48.354Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:50:06.684Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:54:03.339Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:54:54.611Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:55:14.871Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:55:18.613Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:55:22.675Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:55:27.515Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:55:31.542Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:55:34.349Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:55:43.715Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:56:15.134Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:56:23.454Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:56:35.969Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:56:48.619Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:56:59.310Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:57:06.823Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:57:16.809Z",
+      "feature": "patronage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:57:32.499Z",
+      "feature": "patronage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:58:04.623Z",
+      "feature": "patronage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:58:39.256Z",
+      "feature": "patronage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:59:00.225Z",
+      "feature": "patronage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:59:07.885Z",
+      "feature": "patronage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:59:08.001Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:59:40.476Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:59:48.346Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T11:59:52.542Z",
+      "feature": "patronage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:00:13.969Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:00:50.464Z",
+      "feature": "support",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:02:53.144Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:06:55.493Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:07:05.211Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:07:09.041Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:07:13.330Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:07:24.185Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:07:53.236Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:08:00.819Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:08:05.803Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:08:07.496Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:08:10.140Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:08:17.930Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:08:32.784Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:08:51.446Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:08:52.851Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:09:01.754Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:09:07.625Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:09:13.954Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:09:22.201Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:09:37.613Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:09:57.252Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:10:04.127Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:10:11.137Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:10:15.195Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:10:23.140Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:10:28.997Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:10:33.498Z",
+      "feature": "tier-benefits",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:10:48.535Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:10:57.684Z",
+      "feature": "tier-benefits",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:11:18.665Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:11:21.365Z",
+      "feature": "tier-benefits",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:11:26.471Z",
+      "feature": "patronage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:11:31.604Z",
+      "feature": "patronage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:11:39.405Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:11:46.125Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:11:48.240Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:11:51.650Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:11:58.025Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:12:01.653Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:12:03.758Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:12:12.293Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:12:21.818Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:12:22.936Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:12:32.022Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:12:39.608Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:12:44.086Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:12:54.787Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:13:05.195Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:13:13.399Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:13:55.284Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:15:31.014Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:15:36.318Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:16:06.118Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:16:12.081Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:16:29.765Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:16:30.175Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:16:38.478Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:16:47.422Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:25:09.830Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:25:16.069Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:25:23.935Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:25:37.493Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:25:50.920Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:25:55.949Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:26:00.621Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:26:11.218Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:26:20.829Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:26:26.025Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:26:33.150Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:26:42.036Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:26:48.492Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:26:53.793Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:26:58.335Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:27:13.404Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:27:18.232Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:27:31.694Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:27:38.282Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:27:46.701Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:27:51.533Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:28:13.757Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:28:21.784Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:28:33.598Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:28:38.940Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:28:48.568Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:29:31.081Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:30:01.675Z",
+      "feature": "patronage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:30:07.008Z",
+      "feature": "patronage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:30:13.424Z",
+      "feature": "patronage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T12:30:28.043Z",
+      "feature": "patronage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:17:03.475Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:17:10.539Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:17:22.085Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:17:28.964Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:17:40.242Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:17:44.580Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:17:45.601Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:17:51.294Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:17:56.024Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:18:03.507Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:18:07.075Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:18:15.052Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:18:26.324Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:18:29.047Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:18:36.078Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:18:43.114Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:18:44.788Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:18:51.130Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:18:54.521Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:19:06.154Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:19:13.986Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:19:18.248Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:19:21.685Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:19:21.925Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:19:26.842Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:19:58.369Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:20:08.314Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:20:40.207Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:20:48.752Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:20:58.992Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:21:08.384Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:21:15.472Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:21:34.131Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:22:02.382Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:22:14.810Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:22:29.580Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:22:42.366Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:22:49.251Z",
+      "feature": "sponsor-validity",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:23:00.857Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:23:08.060Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:23:09.356Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:23:56.320Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:24:00.781Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:24:52.521Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:28:26.952Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:30:29.437Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:31:06.591Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:35:20.703Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:35:29.893Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:35:34.289Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:35:40.062Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:36:12.664Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:36:22.961Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:36:28.674Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:36:43.058Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:37:03.289Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:37:22.738Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:37:29.701Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:37:34.695Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:37:39.830Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:38:26.738Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:39:27.394Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:39:39.785Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:39:53.957Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:41:27.303Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:41:40.183Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:41:53.255Z",
+      "feature": "coupons",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:42:10.103Z",
+      "feature": "coupons",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:42:19.508Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:42:25.422Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:42:30.123Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:42:40.017Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:43:00.624Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:43:32.451Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:43:42.351Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:47:05.164Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:51:33.139Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:51:48.748Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:51:57.850Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:52:12.564Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:52:17.874Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:52:23.308Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:52:39.990Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:52:57.896Z",
+      "feature": "privacy",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:53:16.869Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:53:22.775Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:53:49.567Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:53:58.959Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:54:04.473Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:54:10.208Z",
+      "feature": "explore",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:54:17.711Z",
+      "feature": "explore",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:54:28.753Z",
+      "feature": "search",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:54:34.499Z",
+      "feature": "search",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:54:46.689Z",
+      "feature": "search",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:55:13.601Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:55:21.184Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:55:25.738Z",
+      "feature": "explore",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:55:32.858Z",
+      "feature": "search",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:55:39.884Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:55:53.897Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:55:59.464Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:56:17.350Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:56:22.386Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:58:17.647Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T14:58:25.924Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:03:55.560Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:04:12.415Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:04:33.656Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:04:44.903Z",
+      "feature": "onboarding",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:05:19.428Z",
+      "feature": "onboarding",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:05:29.662Z",
+      "feature": "feed_scoring.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:05:42.513Z",
+      "feature": "onboarding",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:05:43.233Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:05:43.801Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:06:06.287Z",
+      "feature": "artist_index_scoring.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:06:06.444Z",
+      "feature": "onboarding",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:06:09.293Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:06:15.479Z",
+      "feature": "onboarding",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:06:17.404Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:06:21.891Z",
+      "feature": "onboarding",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:06:43.241Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:07:01.068Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:07:01.201Z",
+      "feature": "artist_index_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:07:08.023Z",
+      "feature": "feed",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:07:08.935Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:07:14.961Z",
+      "feature": "feed",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:07:17.015Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:07:18.358Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:07:27.009Z",
+      "feature": "feed",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:07:40.592Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:07:45.371Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:07:49.206Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:07:53.890Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:07:58.708Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:08:02.776Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:08:03.261Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:08:05.202Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:08:10.182Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:08:20.047Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:08:20.278Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:08:38.278Z",
+      "feature": "feed",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:08:52.110Z",
+      "feature": "feed",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:08:56.046Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:09:01.087Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:09:07.815Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:09:24.722Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:10:08.982Z",
+      "feature": "feed",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:10:31.171Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:12:38.050Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:12:46.875Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:12:55.996Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:13:02.614Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:13:10.490Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:13:16.469Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:13:25.613Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:13:32.510Z",
+      "feature": "feed",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:13:39.527Z",
+      "feature": "feed",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:13:48.790Z",
+      "feature": "feed",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:13:51.242Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:13:59.636Z",
+      "feature": "feed",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:14:12.945Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:15:17.300Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:15:29.207Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:15:41.427Z",
+      "feature": "artists",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:15:53.594Z",
+      "feature": "artists",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:16:01.125Z",
+      "feature": "artists",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:16:18.546Z",
+      "feature": "artists",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:16:30.534Z",
+      "feature": "artists",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:16:37.306Z",
+      "feature": "index",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:16:53.430Z",
+      "feature": "index",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:17:11.074Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:17:25.752Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:17:39.583Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:17:52.786Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:18:01.886Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:18:11.247Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:18:22.369Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:18:55.488Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:23:08.366Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:23:21.187Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:23:44.748Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:23:49.347Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T15:24:00.751Z",
+      "feature": "artist_index_scoring.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:12:24.252Z",
+      "feature": "artist_index_scoring.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:12:37.000Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:13:32.817Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:16:45.362Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:16:51.097Z",
+      "feature": "explore",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:17:02.348Z",
+      "feature": "explore",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:17:25.433Z",
+      "feature": "explore",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:17:37.402Z",
+      "feature": "explore",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:17:47.378Z",
+      "feature": "explore",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:17:50.639Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:17:54.668Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:17:58.803Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:18:05.802Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:18:06.331Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:18:09.551Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:18:13.209Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:18:20.554Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:18:21.531Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:18:27.657Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:18:45.624Z",
+      "feature": "explore",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:18:50.327Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:18:53.039Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:18:58.916Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:19:08.065Z",
+      "feature": "stories",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:19:17.463Z",
+      "feature": "subscription_expiry_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:19:19.255Z",
+      "feature": "stories",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:19:23.775Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:19:24.026Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:19:28.520Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:19:34.772Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:19:38.116Z",
+      "feature": "stories",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:19:41.036Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:19:45.460Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:19:52.440Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:19:58.084Z",
+      "feature": "stories",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:20:01.061Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:20:02.758Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:20:10.331Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:20:17.754Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:20:24.047Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:20:26.249Z",
+      "feature": "stories",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:20:29.027Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:20:31.951Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:20:32.008Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:20:47.217Z",
+      "feature": "timeline",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:20:49.747Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:20:57.704Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:21:04.843Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:21:08.885Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:21:10.551Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:21:18.120Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:21:19.503Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:21:20.846Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:21:22.453Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:21:24.080Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:21:43.827Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:21:46.462Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:21:49.725Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:21:52.788Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:21:53.655Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:21:58.870Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:22:04.341Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:22:52.237Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:22:58.089Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:23:03.745Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:23:16.221Z",
+      "feature": "subscription_expiry_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:23:23.337Z",
+      "feature": "search",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:23:29.132Z",
+      "feature": "search",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:24:56.880Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:25:20.216Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:25:24.533Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:25:28.651Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:25:31.476Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:26:06.020Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-04T18:26:37.050Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:32:12.562Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:32:55.743Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:33:25.095Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:33:28.616Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:33:28.645Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:33:36.316Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:33:58.663Z",
+      "feature": "analytics.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:03.325Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:08.474Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:15.130Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:20.653Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:23.681Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:28.131Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:33.940Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:38.013Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:38.091Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:41.558Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:42.778Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:47.614Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:50.584Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:52.952Z",
+      "feature": "og",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:53.548Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:54.800Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:34:57.774Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:35:00.877Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:35:04.177Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:35:08.181Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:35:19.903Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:35:29.837Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:35:36.150Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:35:42.889Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:35:43.780Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:35:53.083Z",
+      "feature": "tier_release_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:35:54.174Z",
+      "feature": "timeline",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:36:03.921Z",
+      "feature": "tier_release_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:36:09.990Z",
+      "feature": "subscription_expiry_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:36:14.911Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:36:15.661Z",
+      "feature": "subscription_expiry_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:36:18.368Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:36:25.735Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:36:40.740Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:36:46.644Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:37:12.632Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:37:22.703Z",
+      "feature": "timeline",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:37:30.845Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:42:48.281Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:46:43.556Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:46:51.275Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:46:54.359Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:47:09.209Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:47:20.711Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:47:28.765Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:47:49.776Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:47:50.009Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:47:58.671Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:48:10.766Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:48:14.329Z",
+      "feature": "payments",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:48:36.062Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:48:50.119Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:48:54.978Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:48:57.322Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:05.566Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:06.203Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:11.119Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:12.351Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:13.232Z",
+      "feature": "artist_index_scoring.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:17.338Z",
+      "feature": "artist_index_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:19.961Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:25.266Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:25.818Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:27.653Z",
+      "feature": "artist_index_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:29.863Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:37.723Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:45.144Z",
+      "feature": "analytics",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:49.817Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:52.110Z",
+      "feature": "artist_index_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:56.811Z",
+      "feature": "__mocks__",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:49:57.927Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:00.876Z",
+      "feature": "__mocks__",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:06.037Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:06.164Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:08.816Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:14.070Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:16.736Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:18.333Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:27.197Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:31.339Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:33.090Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:39.570Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:45.835Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:46.306Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:47.161Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:50:58.781Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:51:03.785Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:51:06.639Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:51:06.735Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:51:11.445Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:51:25.021Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:51:34.945Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:51:37.937Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:51:40.774Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:51:45.497Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:51:47.882Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:51:47.971Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:51:51.473Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:00.822Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:02.575Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:03.465Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:10.842Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:15.347Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:21.565Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:25.974Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:30.077Z",
+      "feature": "featured-artists",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:34.570Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:36.628Z",
+      "feature": "stories",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:39.136Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:41.834Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:43.483Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:45.845Z",
+      "feature": "post_engagement_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:47.066Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:48.510Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:51.130Z",
+      "feature": "stories",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:52.665Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:52:59.721Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:53:01.057Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:53:04.348Z",
+      "feature": "stories",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:53:08.636Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:53:10.345Z",
+      "feature": "feed_scoring.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:53:15.473Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:53:27.336Z",
+      "feature": "stories",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:53:32.775Z",
+      "feature": "feed_scoring.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:53:32.989Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:53:41.867Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:53:47.999Z",
+      "feature": "feed_scoring.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:53:51.461Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:54:00.046Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:54:01.239Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:54:05.825Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:54:12.559Z",
+      "feature": "search",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:54:28.514Z",
+      "feature": "search",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:54:39.471Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:54:43.973Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:54:49.595Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:55:08.778Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:55:26.893Z",
+      "feature": "artists",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:55:27.267Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:55:32.529Z",
+      "feature": "index",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:55:50.486Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:56:06.391Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:56:14.317Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:56:39.531Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:56:49.025Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:56:56.054Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:56:59.394Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:57:02.775Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:57:13.962Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:57:15.749Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:57:27.376Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:57:30.524Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:57:37.121Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:57:42.893Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:58:13.221Z",
+      "feature": "artists",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:58:19.557Z",
+      "feature": "artists",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T07:58:40.842Z",
+      "feature": "artist_index_scoring.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:45:28.658Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:46:59.698Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:47:06.457Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:51:41.879Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:51:52.885Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:51:56.741Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:52:00.279Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:52:10.342Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:52:32.239Z",
+      "feature": "llm_gateway.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:53:14.527Z",
+      "feature": "interview_generator.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:53:23.618Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:53:49.617Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:54:06.821Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:54:27.564Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:54:35.801Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:54:43.411Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:54:47.794Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:54:51.872Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:55:45.446Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:56:03.920Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:57:54.466Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:58:09.013Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:58:17.836Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:58:34.661Z",
+      "feature": "interviews",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:58:53.498Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:59:17.182Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:59:28.812Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T09:59:46.069Z",
+      "feature": "artist-interviews",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:00:07.131Z",
+      "feature": "interviews",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:00:21.654Z",
+      "feature": "[locale]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:00:29.284Z",
+      "feature": "timeline",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:00:36.194Z",
+      "feature": "timeline",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:00:48.319Z",
+      "feature": "timeline",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:01:36.567Z",
+      "feature": "interview_generator.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:01:43.297Z",
+      "feature": "interview_generator.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:02:20.637Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:03:23.059Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:07:31.252Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:07:43.942Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:07:51.195Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:08:26.789Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:08:36.167Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:08:40.417Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:08:44.221Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:08:55.618Z",
+      "feature": "llm_gateway.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:09:26.876Z",
+      "feature": "story_translator.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:09:30.082Z",
+      "feature": "press_kit_generator.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:09:34.296Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:09:50.596Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:09:52.797Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:10:00.212Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:10:10.801Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:10:18.713Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:10:20.375Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:10:25.849Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:10:31.240Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:10:33.956Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:10:41.995Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:10:47.333Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:10:51.310Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:11:06.574Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:11:07.577Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:11:12.731Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:11:19.171Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:11:25.639Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:11:43.895Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:12:02.691Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:12:11.664Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:13:56.829Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:14:23.382Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:14:35.651Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:14:37.995Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:14:47.808Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:15:06.424Z",
+      "feature": "bio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:15:16.410Z",
+      "feature": "stories",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:15:16.736Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:15:22.985Z",
+      "feature": "stories",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:15:33.842Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:15:41.546Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:15:50.611Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:15:52.497Z",
+      "feature": "press-kits",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:16:00.995Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:16:07.288Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:16:16.496Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:16:23.604Z",
+      "feature": "press-kit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:16:43.892Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:16:52.785Z",
+      "feature": "press-kit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:16:55.033Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:17:09.384Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:17:15.327Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:17:22.094Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:17:24.678Z",
+      "feature": "press-kit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:18:04.014Z",
+      "feature": "press_kit_generator.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:18:21.531Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:18:23.657Z",
+      "feature": "press_kit_generator.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:18:27.327Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:18:28.701Z",
+      "feature": "press_kit_generator.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:18:44.124Z",
+      "feature": "story_translator.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:18:48.889Z",
+      "feature": "story_translator.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:19:51.258Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:26:51.887Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:30:48.945Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:30:57.645Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:31:02.425Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:31:04.576Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:31:09.642Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:31:14.982Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:31:19.460Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:31:19.593Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:31:38.926Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:31:56.368Z",
+      "feature": "email_ses.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:32:08.291Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:32:47.796Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:32:57.565Z",
+      "feature": "newsletter_composer.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:33:10.301Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:33:26.265Z",
+      "feature": "newsletter_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:33:36.971Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:34:07.242Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:34:27.576Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:34:39.839Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:34:45.462Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:34:53.071Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:34:59.914Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:35:34.580Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:36:04.498Z",
+      "feature": "stories",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:36:22.851Z",
+      "feature": "users",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:36:31.449Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:36:39.273Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:36:45.851Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:36:48.582Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:38:01.867Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:38:16.928Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:38:32.825Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:38:55.571Z",
+      "feature": "newsletter",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:39:13.962Z",
+      "feature": "newsletter",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:39:38.229Z",
+      "feature": "unsubscribe",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:40:01.574Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:40:21.459Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:43:20.812Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:43:50.803Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:44:08.956Z",
+      "feature": "newsletter_composer.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:44:12.869Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:44:17.662Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:44:31.360Z",
+      "feature": "newsletter_composer.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:45:01.579Z",
+      "feature": "newsletter_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:45:40.612Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-05T10:46:21.007Z",
       "feature": "integration",
       "phase": "do",
       "action": "updated"

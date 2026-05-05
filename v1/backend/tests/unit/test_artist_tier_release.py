@@ -26,11 +26,18 @@ from app.schemas.series import PostPublishRequest
 def _make_scalar_result(value) -> MagicMock:
     r = MagicMock()
     r.scalar.return_value = value
+    r.scalar_one_or_none.return_value = None  # default lifetime for sponsor_validity_days
     return r
 
 
 def _make_db_with_scalar(value: bool) -> AsyncMock:
-    """DB mock: execute() returns a result whose .scalar() returns value."""
+    """DB mock: execute() returns a result whose .scalar() returns value.
+
+    For sponsor/follower tier checks, the implementation makes 2 db.execute calls:
+      1. select(User.sponsor_validity_days) — needs .scalar_one_or_none() → None (lifetime)
+      2. select(EXISTS(...)) — needs .scalar() → True/False
+    The same result mock supports both methods (lifetime fallback for tests).
+    """
     db = AsyncMock()
     db.execute = AsyncMock(return_value=_make_scalar_result(value))
     return db

@@ -15,6 +15,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
 from app.core.errors import ApiError
+from app.core.metrics import (
+    share_card_cache_hits_total,
+    share_card_cache_misses_total,
+    share_card_generation_seconds,
+)
 from app.core.rate_limit import rate_limit
 from app.db.session import get_db
 from app.services.kyc import require_kyc_verified
@@ -460,6 +465,7 @@ async def create_share_card(
         and auction.share_card_generated_at
         and (now - auction.share_card_generated_at).total_seconds() < 3600
     ):
+        share_card_cache_hits_total.inc()
         return {
             "data": ShareCardResponse(
                 auction_id=auction.id,
@@ -468,6 +474,8 @@ async def create_share_card(
                 cached=True,
             ).model_dump(mode="json")
         }
+
+    share_card_cache_misses_total.inc()
 
     # Step 6: generate
     # 작가명 조회
@@ -488,6 +496,8 @@ async def create_share_card(
 
     # Pillow synthesis via run_in_executor (OQ-D-4=A)
     loop = asyncio.get_event_loop()
+    import time as _time
+    _gen_start = _time.perf_counter()
     card_bytes = await loop.run_in_executor(
         None,
         partial(
@@ -499,6 +509,7 @@ async def create_share_card(
             end_at=auction.end_at,
         ),
     )
+    share_card_generation_seconds.observe(_time.perf_counter() - _gen_start)
 
     # Storage put
     storage = get_storage_provider()

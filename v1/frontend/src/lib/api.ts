@@ -338,7 +338,8 @@ export type MediaAssetView = {
 export type ProductPostView = {
   is_auction: boolean;
   is_buy_now: boolean;
-  buy_now_price: string | null;
+  // G'-10: cents integer (e.g. 5000 = $50.00 / ₩5000). Use formatPriceCents() to display.
+  buy_now_price: number | null;
   currency: string;
   dimensions: string | null;
   medium: string | null;
@@ -403,14 +404,123 @@ export async function fetchExplore(params?: {
   return apiFetch<PostView[]>(`/posts/explore?${qs.toString()}`, { auth: false });
 }
 
-export async function fetchHomeFeed(limit = 20): Promise<PostView[]> {
-  return apiFetch<PostView[]>(`/posts/feed?limit=${limit}`);
+/**
+ * A-4 Explore Revamp — unified tab-aware explore endpoint.
+ *
+ * Tabs:
+ *  - trending: like/comment count DESC 24h (PostHog flag 'feed-algorithm-v2'
+ *              activates algo=v1 personalized re-rank on the server side)
+ *  - new:      created_at DESC
+ *  - region:   user-region filter (country group)
+ *  - genre:    genre filter
+ *  - pricing:  auction active OR buy_now_available
+ *
+ * Falls back to the existing /posts/explore endpoint with appropriate params
+ * until a dedicated /v1/explore endpoint is introduced in a later phase.
+ */
+export async function fetchExplorePosts(params: {
+  tab: "trending" | "new" | "region" | "genre" | "pricing";
+  region?: string;
+  genre?: string;
+  cursor?: string;
+  limit?: number;
+}): Promise<PostView[]> {
+  const qs = new URLSearchParams();
+  qs.set("limit", String(params.limit ?? 20));
+
+  switch (params.tab) {
+    case "trending":
+      qs.set("sort", "popular");
+      break;
+    case "new":
+      qs.set("sort", "latest");
+      break;
+    case "region":
+      qs.set("sort", "latest");
+      if (params.region) qs.set("region", params.region);
+      break;
+    case "genre":
+      qs.set("sort", "latest");
+      if (params.genre) qs.set("genre", params.genre);
+      break;
+    case "pricing":
+      qs.set("sort", "latest");
+      qs.set("type", "product");
+      break;
+  }
+
+  if (params.cursor) qs.set("cursor", params.cursor);
+
+  return apiFetch<PostView[]>(`/posts/explore?${qs.toString()}`, { auth: false });
+}
+
+export type FeedAlgo = "default" | "v1";
+
+export type FeedPagination = {
+  next_cursor: string | null;
+  has_more: boolean;
+};
+
+export type FeedResponse = {
+  data: PostView[];
+  pagination: FeedPagination;
+};
+
+/**
+ * Fetch personalized home feed.
+ *
+ * Backend response shape: { "data": PostView[], "pagination": FeedPagination }
+ * apiFetch<T> extracts .data from { "data": T }, so we use a raw fetch here
+ * to preserve both data + pagination from the top-level response object.
+ *
+ * @param algo  "default" = legacy chronological mix (70% following + 30% trending).
+ *              "v1"      = A-3 personalized (score-ranked, cursor pagination).
+ *              Controlled by PostHog feature flag 'feed-algorithm-v2'.
+ * @param limit Number of posts per page (1–100).
+ * @param cursor Opaque pagination cursor from previous response.pagination.next_cursor.
+ */
+export async function fetchHomeFeed(
+  limit = 20,
+  algo: FeedAlgo = "default",
+  cursor?: string,
+): Promise<FeedResponse> {
+  const qs = new URLSearchParams({ limit: String(limit), algo });
+  if (cursor) qs.set("cursor", cursor);
+
+  const token = tokenStore.get();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE}/posts/feed?${qs.toString()}`, { headers });
+
+  // Auto-refresh on 401
+  if (res.status === 401 && token) {
+    const ok = await tryRefreshAccessToken();
+    if (ok) {
+      const newToken = tokenStore.get();
+      if (newToken) headers["Authorization"] = `Bearer ${newToken}`;
+      const retried = await fetch(`${API_BASE}/posts/feed?${qs.toString()}`, { headers });
+      const json = await retried.json() as { data?: PostView[]; pagination?: FeedPagination };
+      return {
+        data: json.data ?? [],
+        pagination: json.pagination ?? { next_cursor: null, has_more: false },
+      };
+    }
+  }
+
+  const json = await res.json() as { data?: PostView[]; pagination?: FeedPagination };
+  return {
+    data: json.data ?? [],
+    pagination: json.pagination ?? { next_cursor: null, has_more: false },
+  };
 }
 
 export async function fetchFollowingFeed(limit = 20): Promise<PostView[]> {
-  return apiFetch<PostView[]>(
+  const res = await apiFetch<FeedResponse | PostView[]>(
     `/posts/feed?limit=${limit}&following_only=true`
   );
+  if (Array.isArray(res)) return res;
+  return (res as FeedResponse).data;
 }
 
 // ─── Search ─────────────────────────────────────────────────────
@@ -440,6 +550,9 @@ export async function searchPosts(
     type?: string;
     genre?: string;
     sort?: "latest" | "popular" | "ending_soon";
+    // G'-10: cents integer (matching backend price_min/price_max query params)
+    price_min?: number;
+    price_max?: number;
     limit?: number;
   }
 ): Promise<PostView[]> {
@@ -447,8 +560,104 @@ export async function searchPosts(
   if (opts?.type) qs.set("type", opts.type);
   if (opts?.genre) qs.set("genre", opts.genre);
   if (opts?.sort) qs.set("sort", opts.sort);
+  if (opts?.price_min != null) qs.set("price_min", String(opts.price_min));
+  if (opts?.price_max != null) qs.set("price_max", String(opts.price_max));
   qs.set("limit", String(opts?.limit ?? 20));
   return apiFetch<PostView[]>(`/posts/search?${qs}`, { auth: false });
+}
+
+// ─── Search v2 (A-5) ────────────────────────────────────────────────────────
+
+export type SearchV2Filters = {
+  type?: "artists" | "artworks" | "posts" | "all";
+  sort?: "relevance" | "latest" | "popular";
+  price_min?: number;
+  price_max?: number;
+  region?: string;
+  tier_only?: boolean;
+  active?: boolean;
+  cursor?: string;
+  limit?: number;
+};
+
+export type SearchV2ArtistResult = {
+  type: "artist";
+  id: string;
+  display_name: string;
+  avatar_url: string | null;
+  bio: string | null;
+  role: string;
+  country: string | null;
+  follower_count: number;
+};
+
+export type SearchV2Results = {
+  artists: SearchV2ArtistResult[];
+  artworks: PostView[];
+  posts: PostView[];
+};
+
+export type SearchV2Response = {
+  data: SearchV2Results;
+  pagination: { next_cursor: string | null; has_more: boolean };
+};
+
+export async function searchV2(
+  q: string,
+  opts?: SearchV2Filters
+): Promise<SearchV2Response> {
+  const qs = new URLSearchParams({ q });
+  if (opts?.type) qs.set("type", opts.type);
+  if (opts?.sort) qs.set("sort", opts.sort);
+  if (opts?.price_min != null) qs.set("price_min", String(opts.price_min));
+  if (opts?.price_max != null) qs.set("price_max", String(opts.price_max));
+  if (opts?.region) qs.set("region", opts.region);
+  if (opts?.tier_only) qs.set("tier_only", "true");
+  if (opts?.active) qs.set("active", "true");
+  if (opts?.cursor) qs.set("cursor", opts.cursor);
+  qs.set("limit", String(opts?.limit ?? 20));
+  return apiFetch<SearchV2Response>(`/search?${qs}`, { auth: false });
+}
+
+// ─── Search History (A-5) ────────────────────────────────────────────────────
+
+export type SearchHistoryEntry = {
+  id: string;
+  query: string;
+  result_count: number;
+  searched_at: string;
+};
+
+export type PopularSearchItem = {
+  query: string;
+  count: number;
+};
+
+export async function fetchSearchHistory(
+  limit = 10
+): Promise<SearchHistoryEntry[]> {
+  const res = await apiFetch<{ data: SearchHistoryEntry[] }>(
+    `/me/search/history?limit=${limit}`
+  );
+  return res.data;
+}
+
+export async function deleteSearchHistoryEntry(id: string): Promise<void> {
+  await apiFetch(`/me/search/history/${id}`, { method: "DELETE" });
+}
+
+export async function clearSearchHistory(): Promise<void> {
+  await apiFetch("/me/search/history", { method: "DELETE" });
+}
+
+export async function fetchPopularSearches(
+  limit = 10
+): Promise<PopularSearchItem[]> {
+  const res = await apiFetch<{ data: PopularSearchItem[] }>(
+    `/search/popular?limit=${limit}`,
+    { auth: false }
+  );
+  return res.data;
 }
 
 // ─── Activity Tracking ──────────────────────────────────────────────────
@@ -593,6 +802,8 @@ export type SubscriptionView = {
   cancel_at_period_end: boolean;
   current_period_end: string | null;
   cancelled_at: string | null;
+  // D'-2 / A-8 booster: cancellation reason for conditional WinbackBanner message
+  cancellation_reason?: "too_expensive" | "changed_mind" | "not_satisfied" | "other" | null;
   created_at: string;
 };
 
@@ -606,14 +817,72 @@ export async function createSubscription(input: {
   });
 }
 
-export async function cancelSubscription(id: string) {
+// B-5: cancel reason + feedback body (backward-compat — reason optional)
+export type CancelSubscriptionInput = {
+  reason?: "too_expensive" | "changed_mind" | "not_satisfied" | "other";
+  feedback?: string;
+  immediate?: boolean;
+};
+
+export async function cancelSubscription(
+  id: string,
+  input?: CancelSubscriptionInput
+) {
   return apiFetch<SubscriptionView>(`/subscriptions/${id}`, {
     method: "DELETE",
+    body: input ? JSON.stringify(input) : undefined,
   });
 }
 
 export async function fetchMySubscriptions() {
   return apiFetch<SubscriptionView[]>("/subscriptions/mine");
+}
+
+// ─── B-5 + D'-2: Churn list (artist dashboard) ──────────────────────────────
+
+export type CancellationReason =
+  | "too_expensive"
+  | "changed_mind"
+  | "not_satisfied"
+  | "other";
+
+export type ChurnItem = {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  cancelled_at: string; // ISO8601
+  cancellation_reason: CancellationReason | null;
+  cancellation_feedback_preview: string | null; // max 100 chars
+  tier: "subscriber" | "sponsor";
+  lifetime_amount_cents: number;
+};
+
+export type ChurnListResponse = {
+  data: ChurnItem[];
+};
+
+export async function fetchChurnList(limit = 20): Promise<ChurnItem[]> {
+  const res = await apiFetch<ChurnListResponse>(
+    `/me/patronage/churn?limit=${limit}`
+  );
+  return res.data ?? [];
+}
+
+// ─── Payments (B-1 Blue Bird SetupIntent) ────────────────────────────────
+
+export type SetupIntentResponse = {
+  client_secret: string;
+  customer_id: string;
+  setup_intent_id: string;
+};
+
+export async function createSetupIntent(
+  metadata?: Record<string, string>
+): Promise<SetupIntentResponse> {
+  return apiFetch<SetupIntentResponse>("/payments/setup-intent", {
+    method: "POST",
+    body: JSON.stringify({ metadata: metadata ?? null }),
+  });
 }
 
 // ─── Auctions (Phase 2 Week 9) ───────────────────────────────────────────
@@ -907,10 +1176,26 @@ export type NotificationView = {
   created_at: string | null;
 };
 
+export type NotificationFilter = "all" | "unread" | "auction" | "sponsorship" | "engagement" | "system";
+
 export async function fetchNotifications(unreadOnly = false, limit = 30) {
   const qs = new URLSearchParams();
   if (unreadOnly) qs.set("unread_only", "true");
   qs.set("limit", String(limit));
+  return apiFetch<NotificationView[]>(`/notifications?${qs.toString()}`);
+}
+
+export async function fetchNotificationsByFilter(
+  filter: NotificationFilter,
+  limit = 50
+) {
+  const qs = new URLSearchParams();
+  qs.set("limit", String(limit));
+  if (filter === "unread") {
+    qs.set("unread_only", "true");
+  } else if (filter !== "all") {
+    qs.set("types", filter);
+  }
   return apiFetch<NotificationView[]>(`/notifications?${qs.toString()}`);
 }
 
@@ -928,6 +1213,14 @@ export async function markAllNotificationsRead() {
   return apiFetch<{ updated: number }>("/notifications/read-all", {
     method: "POST",
   });
+}
+
+export async function markReadByType(types: string) {
+  const qs = new URLSearchParams({ types });
+  return apiFetch<{ updated: number; types: string[] }>(
+    `/notifications/mark-read-by-type?${qs.toString()}`,
+    { method: "POST" }
+  );
 }
 
 // ─── Received sponsorships (GAP-S1) ──────────────────────────────────────
@@ -1137,11 +1430,15 @@ export interface UploadProgressEvent {
  * refresh-on-401 should use the `apiFetch`-based path. In practice, upload
  * endpoints are called immediately after a user action where the access
  * token is fresh, so this simplification is acceptable for MVP.
+ *
+ * upload-retry-ui (D-2): `onAbortRef` receives the `xhr.abort` method so the
+ * caller can cancel mid-flight without holding a reference to the XHR itself.
  */
 export async function uploadMediaFileWithProgress(
   file: File,
   isMakingVideo = false,
-  onProgress?: (e: UploadProgressEvent) => void
+  onProgress?: (e: UploadProgressEvent) => void,
+  onAbortRef?: (abortFn: () => void) => void
 ): Promise<UploadedMedia> {
   const token = tokenStore.get();
   if (!token) throw new ApiClientError("UNAUTHORIZED", "Login required");
@@ -1154,6 +1451,11 @@ export async function uploadMediaFileWithProgress(
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${API_BASE}/media/upload`);
     xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+
+    // Expose abort so the caller can cancel the upload (upload-retry-ui D-2).
+    if (onAbortRef) {
+      onAbortRef(() => xhr.abort());
+    }
 
     if (onProgress) {
       xhr.upload.onprogress = (e) => {
@@ -1183,13 +1485,18 @@ export async function uploadMediaFileWithProgress(
         "error" in obj
           ? (obj.error as { code: string; message: string; details?: Record<string, unknown> })
           : { code: "UNKNOWN", message: xhr.statusText || `HTTP ${xhr.status}` };
-      reject(new ApiClientError(err.code, err.message, err.details));
+      // Attach the HTTP status so error-message mappers can branch on it.
+      const clientErr = new ApiClientError(err.code, err.message, err.details);
+      (clientErr as ApiClientError & { httpStatus?: number }).httpStatus = xhr.status;
+      reject(clientErr);
     };
 
     xhr.onerror = () =>
       reject(new ApiClientError("NETWORK_ERROR", "네트워크 오류"));
     xhr.ontimeout = () =>
       reject(new ApiClientError("UPLOAD_TIMEOUT", "업로드 시간 초과"));
+    xhr.onabort = () =>
+      reject(new ApiClientError("UPLOAD_CANCELLED", "업로드 취소됨"));
 
     xhr.send(form);
   });
@@ -1410,6 +1717,8 @@ export type CreatePostInput = {
   product?: {
     is_auction?: boolean;
     is_buy_now?: boolean;
+    // G'-10: send dollar float (e.g. 50.0); backend ProductPostIn.dollars_to_cents
+    // validator converts to cents before persistence.
     buy_now_price?: number;
     currency?: string;
     dimensions?: string;
@@ -1437,7 +1746,8 @@ export type DraftMedia = CreatePostMedia & {
 export type DraftProduct = {
   is_auction?: boolean;
   is_buy_now?: boolean;
-  buy_now_price?: number | string | null;
+  // G'-10: draft product stores cents integer from DB. UI shows dollars.
+  buy_now_price?: number | null;
   currency?: string;
   dimensions?: string | null;
   medium?: string | null;
@@ -1591,6 +1901,27 @@ export interface PostPublishRequest {
   early_access_tier?: EarlyAccessTier | null;
 }
 
+// ─── D'-1 sponsor validity settings ──────────────────────────────────────
+
+export type SponsorValidityDays = 1 | 7 | 30 | 90 | 365 | null;
+
+export interface SponsorSettingsView {
+  sponsor_validity_days: SponsorValidityDays;
+}
+
+export async function fetchSponsorSettings(): Promise<SponsorSettingsView> {
+  return apiFetch<SponsorSettingsView>("/me/sponsor-settings");
+}
+
+export async function patchSponsorSettings(
+  sponsor_validity_days: SponsorValidityDays
+): Promise<SponsorSettingsView> {
+  return apiFetch<SponsorSettingsView>("/me/sponsor-settings", {
+    method: "PATCH",
+    body: JSON.stringify({ sponsor_validity_days }),
+  });
+}
+
 export interface PostPublishResponse {
   id: string;
   status: "published" | "scheduled" | "pending_review";
@@ -1653,5 +1984,968 @@ export async function publishPost(
   return apiFetch<PostPublishResponse>(
     `/posts/${encodeURIComponent(postId)}/publish`,
     { method: "POST", body: JSON.stringify(body) }
+  );
+}
+
+// ─── Artist patronage dashboard (B-2) ────────────────────────────────────────
+
+export type TierDistribution = {
+  subscriber: number;
+  sponsor: number;
+  follower: number;
+};
+
+export type PatronageSummary = {
+  total_supporters: number;
+  total_sponsors: number;
+  total_subscribers: number;
+  lifetime_revenue_usd_cents: number;
+  current_month_revenue_usd_cents: number;
+  previous_month_revenue_usd_cents: number;
+  active_subscriptions: number;
+  churned_last_30d: number;
+  tier_distribution: TierDistribution;
+  currency: string;
+};
+
+export type SupporterItem = {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  tier: "sponsor" | "subscriber" | "follower";
+  since: string;
+  lifetime_amount_cents: number;
+  monthly_amount_cents: number;
+  subscription_status: "active" | "cancelled" | "past_due" | null;
+};
+
+export type SupportersResponse = {
+  data: SupporterItem[];
+  next_cursor: string | null;
+  has_more: boolean;
+};
+
+export type RevenueDataPoint = {
+  date: string;
+  amount_cents: number;
+  currency: string;
+};
+
+export type RevenueResponse = {
+  data: RevenueDataPoint[];
+  from_date: string;
+  to_date: string;
+  granularity: "daily" | "monthly";
+};
+
+export type PayoutRequestInput = {
+  amount_cents: number;
+  currency: string;
+  method: "bank_transfer" | "stripe";
+};
+
+export type PayoutRequestResult = {
+  id: string;
+  amount_cents: number;
+  currency: string;
+  method: string;
+  status: string;
+  created_at: string;
+};
+
+export async function fetchPatronageSummary(): Promise<PatronageSummary> {
+  return apiFetch<PatronageSummary>("/me/patronage/summary");
+}
+
+export async function fetchSupporters(params?: {
+  cursor?: string;
+  limit?: number;
+  filter?: "active" | "churned" | "all";
+}): Promise<SupportersResponse> {
+  const qs = new URLSearchParams();
+  if (params?.cursor) qs.set("cursor", params.cursor);
+  if (params?.limit) qs.set("limit", String(params.limit));
+  if (params?.filter) qs.set("filter", params.filter);
+  return apiFetch<SupportersResponse>(`/me/patronage/supporters?${qs.toString()}`);
+}
+
+export async function fetchPatronageRevenue(params?: {
+  from?: string;
+  to?: string;
+  granularity?: "daily" | "monthly";
+}): Promise<RevenueResponse> {
+  const qs = new URLSearchParams();
+  if (params?.from) qs.set("from", params.from);
+  if (params?.to) qs.set("to", params.to);
+  if (params?.granularity) qs.set("granularity", params.granularity);
+  return apiFetch<RevenueResponse>(`/me/patronage/revenue?${qs.toString()}`);
+}
+
+export async function requestPayout(
+  input: PayoutRequestInput
+): Promise<PayoutRequestResult> {
+  return apiFetch<PayoutRequestResult>("/me/patronage/payout-request", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+// ─── Tier benefits (B-4) ──────────────────────────────────────────────────
+
+export type TierBenefitsItem = {
+  tier: "subscriber" | "sponsor" | "follower";
+  benefits: string[];
+  welcome_message: string | null;
+  is_platform_default: boolean;
+  /** i18n key for platform default text — only present when is_platform_default=true */
+  platform_default_key: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type AllTierBenefits = {
+  subscriber: TierBenefitsItem;
+  sponsor: TierBenefitsItem;
+  follower: TierBenefitsItem;
+};
+
+export type TierBenefitsUpsertInput = {
+  benefits: string[];
+  welcome_message?: string | null;
+};
+
+/** Fetch the authenticated artist's tier benefits for all 3 tiers. */
+export async function fetchMyTierBenefits(): Promise<AllTierBenefits> {
+  return apiFetch<AllTierBenefits>("/me/tier-benefits");
+}
+
+/** Upsert benefits for a specific tier (artist only). */
+export async function putMyTierBenefits(
+  tier: "subscriber" | "sponsor" | "follower",
+  input: TierBenefitsUpsertInput
+): Promise<TierBenefitsItem> {
+  return apiFetch<TierBenefitsItem>(`/me/tier-benefits/${tier}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+/** Remove artist override for a tier — reverts to platform default. */
+export async function deleteMyTierBenefits(
+  tier: "subscriber" | "sponsor" | "follower"
+): Promise<void> {
+  await apiFetch<void>(`/me/tier-benefits/${tier}`, { method: "DELETE" });
+}
+
+/** Fetch any artist's tier benefits (public, no auth required). */
+export async function fetchUserTierBenefits(
+  userId: string
+): Promise<AllTierBenefits> {
+  return apiFetch<AllTierBenefits>(`/users/${encodeURIComponent(userId)}/tier-benefits`, {
+    auth: false,
+  });
+}
+
+// ─── D'-3 Coupon types + API ──────────────────────────────────────────────
+
+export type CouponDiscountType = "percent" | "amount";
+export type CouponDuration = "once" | "forever" | "repeating";
+
+/** Coupon descriptor returned by admin endpoints (mirrors backend CouponOut). */
+export type CouponView = {
+  id: string;
+  code: string | null;
+  discount_type: CouponDiscountType;
+  discount_value: number;
+  duration: CouponDuration;
+  duration_in_months: number | null;
+  valid_until: string | null; // ISO8601
+  max_redemptions: number | null;
+  times_redeemed: number;
+  active: boolean;
+};
+
+/** Applied coupon row (mirrors backend AppliedCouponOut). */
+export type AppliedCouponView = {
+  id: string;
+  user_id: string;
+  subscription_id: string | null;
+  stripe_coupon_id: string;
+  coupon_code: string | null;
+  discount_type: CouponDiscountType;
+  discount_value: number;
+  duration: CouponDuration;
+  duration_in_months: number | null;
+  valid_until: string | null;
+  applied_at: string;
+  redeemed_at: string | null;
+};
+
+export type AdminCreateCouponInput = {
+  code: string;
+  discount_type: CouponDiscountType;
+  discount_value: number;
+  duration: CouponDuration;
+  duration_in_months?: number | null;
+  valid_until?: string | null; // ISO8601 or null
+  max_redemptions?: number | null;
+};
+
+// Admin: create coupon
+export async function adminCreateCoupon(
+  input: AdminCreateCouponInput
+): Promise<CouponView> {
+  return apiFetch<CouponView>("/admin/coupons", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+// Admin: list coupons
+export async function adminListCoupons(params?: {
+  limit?: number;
+  starting_after?: string;
+}): Promise<CouponView[]> {
+  const qs = new URLSearchParams();
+  if (params?.limit) qs.set("limit", String(params.limit));
+  if (params?.starting_after) qs.set("starting_after", params.starting_after);
+  return apiFetch<CouponView[]>(`/admin/coupons?${qs.toString()}`);
+}
+
+// Admin: delete coupon
+export async function adminDeleteCoupon(couponId: string): Promise<void> {
+  await apiFetch<void>(`/admin/coupons/${encodeURIComponent(couponId)}`, {
+    method: "DELETE",
+  });
+}
+
+// User: apply coupon to own subscription
+export async function applyMyCoupon(input: {
+  coupon_code: string;
+  subscription_id?: string | null;
+}): Promise<AppliedCouponView> {
+  return apiFetch<AppliedCouponView>("/me/coupons/apply", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+// User: list own applied coupons
+export async function fetchMyCoupons(limit = 20): Promise<AppliedCouponView[]> {
+  return apiFetch<AppliedCouponView[]>(`/me/coupons?limit=${limit}`);
+}
+
+// ─── G'-2: winback coupon ────────────────────────────────────────────────────
+
+export type WinbackReason =
+  | "too_expensive"
+  | "changed_mind"
+  | "not_satisfied"
+  | "other";
+
+export type WinbackCouponResponse = {
+  coupon_applied: boolean;
+  cancel_reverted: boolean;
+  dm_link: string | null;
+  applied_coupon: AppliedCouponView;
+};
+
+/**
+ * POST /v1/subscriptions/{id}/winback-coupon
+ *
+ * Applies a reason-based winback coupon to the subscription and reverts
+ * any pending cancellation (cancel_at_period_end → false).
+ *
+ * Rate limit: 1/day/subscription enforced by backend.
+ */
+export async function applyWinbackCoupon(
+  subscriptionId: string,
+  reason: WinbackReason,
+  feedback?: string
+): Promise<WinbackCouponResponse> {
+  return apiFetch<WinbackCouponResponse>(
+    `/subscriptions/${subscriptionId}/winback-coupon`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        reason,
+        ...(feedback ? { feedback } : {}),
+      }),
+    }
+  );
+}
+
+// ─── Onboarding — A-2 recommended artists ───────────────────────────────
+
+/** Slim artist card returned by GET /onboarding/recommended-artists. */
+export type RecommendedArtist = {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  bio_short: string | null;
+  tier_default: string;
+  recent_works_count: number;
+};
+
+/**
+ * Fetch recommended artists for the growth-funnel onboarding wizard.
+ * Backend selects top artists by follower count; result is shuffled per
+ * request to provide visual variety across sessions.
+ * Auth is optional — endpoint accepts anonymous requests as well.
+ */
+export async function fetchRecommendedArtists(
+  limit = 5
+): Promise<RecommendedArtist[]> {
+  return apiFetch<RecommendedArtist[]>(
+    `/onboarding/recommended-artists?limit=${limit}`,
+    { auth: false }
+  );
+}
+
+/**
+ * Follow an artist by user_id.
+ * Returns void on 200/204.
+ */
+export async function followArtist(artistUserId: string): Promise<void> {
+  await apiFetch<void>(`/users/${encodeURIComponent(artistUserId)}/follow`, {
+    method: "POST",
+  });
+}
+
+/**
+ * Unfollow an artist.
+ */
+export async function unfollowArtist(artistUserId: string): Promise<void> {
+  await apiFetch<void>(`/users/${encodeURIComponent(artistUserId)}/follow`, {
+    method: "DELETE",
+  });
+}
+
+// ─── Artist Index (A-6) ─────────────────────────────────────────────────────
+
+/** Single entry in the global artist ranking list. */
+export type ArtistIndexEntry = {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  country: string | null;
+  primary_genre: string | null;
+  score: number;
+  rank: number;
+  tier_badge: "top_10" | "top_100" | "top_1000" | null;
+  // G'-8: region/genre sub-rankings
+  rank_region: number | null;
+  rank_genre: number | null;
+};
+
+/** Response from GET /v1/artists/index */
+export type ArtistIndexListResponse = {
+  data: ArtistIndexEntry[];
+  next_cursor: string | null;
+  total: number | null;
+};
+
+/** Response from GET /v1/artists/{user_id}/index */
+export type ArtistRankingResponse = {
+  score: number;
+  rank: number;
+  rank_region: number | null;
+  rank_genre: number | null;
+  primary_genre: string | null;
+  tier_badge: "top_10" | "top_100" | "top_1000" | null;
+  last_calculated_at: string | null;
+};
+
+/**
+ * Fetch the global artist ranking list (public, no auth required).
+ * Supports region/genre filters and cursor pagination.
+ *
+ * The backend returns a double-wrapped envelope:
+ *   { "data": { "data": [entries...], "next_cursor": "...", "total": null } }
+ * apiFetch<T> unwraps one level ("data" key), yielding ArtistIndexListResponse
+ * which itself has { data: ArtistIndexEntry[], next_cursor: string|null, total: number|null }.
+ */
+export async function fetchArtistIndex(params?: {
+  region?: string;
+  genre?: string;
+  limit?: number;
+  cursor?: string;
+}): Promise<ArtistIndexListResponse> {
+  const qs = new URLSearchParams();
+  if (params?.region) qs.set("region", params.region);
+  if (params?.genre) qs.set("genre", params.genre);
+  if (params?.limit) qs.set("limit", String(params.limit));
+  if (params?.cursor) qs.set("cursor", params.cursor);
+  return apiFetch<ArtistIndexListResponse>(
+    `/artists/index?${qs.toString()}`,
+    { auth: false }
+  );
+}
+
+// ─── G'-7 Featured Artist ────────────────────────────────────────────────────
+
+/** Public view of the current featured artist (from /featured/artist/current). */
+export type ArtistFeaturedView = {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  bio: string | null;
+  country: string | null;
+  primary_genre: string | null;
+  tier_badge: "top_10" | "top_100" | "top_1000" | null;
+  rank: number | null;
+  score: number | null;
+  curation_note: string | null;
+  month: string; // "YYYY-MM"
+  is_curated: boolean;
+};
+
+/** Admin: serialized featured artist row. */
+export type FeaturedArtistOut = {
+  id: string;
+  artist_id: string;
+  month: string; // "YYYY-MM-DD" (always first of month)
+  curation_note: string | null;
+  is_active: boolean;
+  created_at: string;
+  created_by_admin_id: string;
+};
+
+/** Fetch the current month's featured artist (public, graceful 404 → null). */
+export async function fetchFeaturedArtist(): Promise<ArtistFeaturedView | null> {
+  try {
+    return await apiFetch<ArtistFeaturedView>("/featured/artist/current", {
+      auth: false,
+    });
+  } catch (e) {
+    if (e instanceof ApiClientError && e.code === "NO_FEATURED_ARTIST") {
+      return null;
+    }
+    throw e;
+  }
+}
+
+/** Admin: create or replace the featured artist for a month. */
+export async function adminCreateFeaturedArtist(body: {
+  artist_id: string;
+  month: string; // "YYYY-MM-01"
+  curation_note?: string;
+}): Promise<FeaturedArtistOut> {
+  return apiFetch<FeaturedArtistOut>("/admin/featured-artists", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+/** Admin: list featured artist history. */
+export async function adminListFeaturedArtists(params?: {
+  month?: string; // "YYYY-MM"
+  limit?: number;
+}): Promise<FeaturedArtistOut[]> {
+  const qs = new URLSearchParams();
+  if (params?.month) qs.set("month", params.month);
+  if (params?.limit) qs.set("limit", String(params.limit));
+  return apiFetch<FeaturedArtistOut[]>(
+    `/admin/featured-artists?${qs.toString()}`
+  );
+}
+
+/** Admin: soft-delete (deactivate) a featured artist entry. */
+export async function adminDeleteFeaturedArtist(id: string): Promise<void> {
+  return apiFetch<void>(`/admin/featured-artists/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+/**
+ * Fetch ranking data for a single artist by user_id.
+ * Returns null if the artist hasn't been ranked yet (404).
+ */
+export async function fetchArtistRanking(userId: string): Promise<ArtistRankingResponse | null> {
+  try {
+    return await apiFetch<ArtistRankingResponse>(`/artists/${encodeURIComponent(userId)}/index`, {
+      auth: false,
+    });
+  } catch (e) {
+    if (e instanceof ApiClientError && (e.code === "NOT_FOUND" || e.code === "NOT_RANKED")) {
+      return null;
+    }
+    throw e;
+  }
+}
+
+// ─── C-1: Artist Interviews ───────────────────────────────────────────────────
+
+export type ArtistInterviewOut = {
+  id: string;
+  artist_id: string;
+  locale: string;
+  title: string;
+  body_markdown: string;
+  status: string;
+  llm_model: string | null;
+  reviewed_by_admin_id: string | null;
+  reviewed_at: string | null;
+  review_note: string | null;
+  artist_consent_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ArtistInterviewPublicOut = {
+  id: string;
+  artist_id: string;
+  locale: string;
+  title: string;
+  body_markdown: string;
+  published_at: string;
+};
+
+/** Admin: trigger LLM interview generation for an artist. */
+export async function adminGenerateInterview(body: {
+  artist_id: string;
+  locale: string;
+}): Promise<ArtistInterviewOut> {
+  return apiFetch<ArtistInterviewOut>("/admin/artist-interviews/generate", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+/** Admin: list interviews with optional status/artist filter. */
+export async function adminListInterviews(params?: {
+  status?: string;
+  artist_id?: string;
+  limit?: number;
+}): Promise<ArtistInterviewOut[]> {
+  const qs = new URLSearchParams();
+  if (params?.status) qs.set("status", params.status);
+  if (params?.artist_id) qs.set("artist_id", params.artist_id);
+  if (params?.limit) qs.set("limit", String(params.limit));
+  return apiFetch<ArtistInterviewOut[]>(
+    `/admin/artist-interviews?${qs.toString()}`
+  );
+}
+
+/** Admin: approve or reject an interview + optional edits. */
+export async function adminPatchInterview(
+  id: string,
+  body: {
+    status?: "approved" | "rejected";
+    title?: string;
+    body_markdown?: string;
+    review_note?: string;
+  }
+): Promise<ArtistInterviewOut> {
+  return apiFetch<ArtistInterviewOut>(
+    `/admin/artist-interviews/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }
+  );
+}
+
+/** Admin: publish an approved + consented interview. */
+export async function adminPublishInterview(
+  id: string
+): Promise<ArtistInterviewOut> {
+  return apiFetch<ArtistInterviewOut>(
+    `/admin/artist-interviews/${encodeURIComponent(id)}/publish`,
+    { method: "POST" }
+  );
+}
+
+/** Artist (me): list own interviews. */
+export async function fetchMyInterviews(): Promise<ArtistInterviewOut[]> {
+  return apiFetch<ArtistInterviewOut[]>("/me/interviews");
+}
+
+/** Artist (me): provide GDPR consent for interview publication. */
+export async function consentInterview(
+  id: string
+): Promise<ArtistInterviewOut> {
+  return apiFetch<ArtistInterviewOut>(
+    `/me/interviews/${encodeURIComponent(id)}/consent`,
+    { method: "POST" }
+  );
+}
+
+/** Artist (me): reject interview publication. */
+export async function rejectInterviewPublication(
+  id: string
+): Promise<ArtistInterviewOut> {
+  return apiFetch<ArtistInterviewOut>(
+    `/me/interviews/${encodeURIComponent(id)}/reject`,
+    { method: "POST" }
+  );
+}
+
+/** Public: fetch published interviews for an artist. */
+export async function fetchArtistInterviews(
+  userId: string,
+  locale?: string
+): Promise<ArtistInterviewPublicOut[]> {
+  const qs = locale ? `?locale=${encodeURIComponent(locale)}` : "";
+  return apiFetch<ArtistInterviewPublicOut[]>(
+    `/users/${encodeURIComponent(userId)}/interviews${qs}`,
+    { auth: false }
+  );
+}
+
+// ─── C-3: Bio multi-language ──────────────────────────────────────────────────
+
+export type BioTranslationOut = {
+  user_id: string;
+  locale: string;
+  bio: string;
+  is_machine_translated: boolean;
+  last_edited_at: string;
+  last_translated_at: string | null;
+};
+
+export type BioTranslateResponse = {
+  translations: Record<string, string>; // locale → translated text
+};
+
+/** Artist (me): get all locale bios. */
+export async function fetchMyBioTranslations(): Promise<BioTranslationOut[]> {
+  return apiFetch<BioTranslationOut[]>("/me/bio");
+}
+
+/** Artist (me): trigger LLM auto-translate bio to all 5 locales. */
+export async function translateMyBio(
+  sourceLocale: string = "ko"
+): Promise<BioTranslateResponse> {
+  return apiFetch<BioTranslateResponse>(
+    `/me/bio/translate?source_locale=${encodeURIComponent(sourceLocale)}`,
+    { method: "POST" }
+  );
+}
+
+/** Artist (me): manually edit bio for one locale. */
+export async function patchMyBioLocale(
+  locale: string,
+  bio: string
+): Promise<BioTranslationOut> {
+  return apiFetch<BioTranslationOut>(`/me/bio/${encodeURIComponent(locale)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ bio }),
+  });
+}
+
+/** Public: fetch artist bio for a specific locale (falls back to ko). */
+export async function fetchUserBio(
+  userId: string,
+  locale?: string
+): Promise<{ user_id: string; locale: string; bio: string | null; is_machine_translated: boolean }> {
+  const qs = locale ? `?locale=${encodeURIComponent(locale)}` : "";
+  return apiFetch<{ user_id: string; locale: string; bio: string | null; is_machine_translated: boolean }>(
+    `/users/${encodeURIComponent(userId)}/bio${qs}`,
+    { auth: false }
+  );
+}
+
+// ─── C-2: Press kit ──────────────────────────────────────────────────────────
+
+export type PressKitOut = {
+  id: string;
+  artist_id: string;
+  locale: string;
+  storage_key: string;
+  download_url: string;
+  file_size_bytes: number;
+  page_count: number;
+  interview_id: string | null;
+  is_public: boolean;
+  expires_at: string;
+  created_at: string;
+};
+
+/** Admin: trigger press kit PDF generation for an artist. */
+export async function adminGeneratePressKit(params: {
+  user_id: string;
+  locale?: string;
+  force?: boolean;
+}): Promise<PressKitOut> {
+  const qs = new URLSearchParams();
+  if (params.locale) qs.set("locale", params.locale);
+  if (params.force) qs.set("force", "true");
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  return apiFetch<PressKitOut>(
+    `/admin/artists/${encodeURIComponent(params.user_id)}/press-kit/generate${query}`,
+    { method: "POST" }
+  );
+}
+
+/** Admin: list press kit generation history for an artist. */
+export async function adminListPressKits(params: {
+  user_id: string;
+  limit?: number;
+}): Promise<PressKitOut[]> {
+  const qs = params.limit ? `?limit=${params.limit}` : "";
+  return apiFetch<PressKitOut[]>(
+    `/admin/artists/${encodeURIComponent(params.user_id)}/press-kit/history${qs}`
+  );
+}
+
+/** Public: fetch artist's public press kit (is_public=true, not expired). */
+export async function fetchUserPressKit(
+  userId: string,
+  locale?: string
+): Promise<PressKitOut> {
+  const qs = locale ? `?locale=${encodeURIComponent(locale)}` : "";
+  return apiFetch<PressKitOut>(
+    `/users/${encodeURIComponent(userId)}/press-kit${qs}`,
+    { auth: false }
+  );
+}
+
+/** Artist (me): fetch own press kit info. */
+export async function fetchMyPressKit(locale?: string): Promise<PressKitOut> {
+  const qs = locale ? `?locale=${encodeURIComponent(locale)}` : "";
+  return apiFetch<PressKitOut>(`/me/press-kit${qs}`);
+}
+
+// ─── C-4 Media Coverage ───────────────────────────────────────────────────────
+
+export type CoverageType = "article" | "youtube" | "radio" | "podcast" | "tv";
+
+export type MediaCoverageOut = {
+  id: string;
+  title: string;
+  coverage_type: CoverageType;
+  source_name: string;
+  external_url: string;
+  thumbnail_url: string | null;
+  published_at: string; // ISO date "YYYY-MM-DD"
+  artist_id: string | null;
+  description: string | null;
+  locale: string;
+  is_published: boolean;
+  is_featured: boolean;
+  created_by_admin_id: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AdminCreateMediaCoverageBody = {
+  title: string;
+  coverage_type: CoverageType;
+  source_name: string;
+  external_url: string;
+  thumbnail_url?: string | null;
+  published_at: string; // "YYYY-MM-DD"
+  artist_id?: string | null;
+  description?: string | null;
+  locale: string;
+  is_published?: boolean;
+  is_featured?: boolean;
+};
+
+export type AdminPatchMediaCoverageBody = Partial<{
+  title: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  is_published: boolean;
+  is_featured: boolean;
+  source_name: string;
+  coverage_type: CoverageType;
+  external_url: string;
+  published_at: string;
+  locale: string;
+  artist_id: string | null;
+}>;
+
+export type MediaCoverageListResponse = {
+  data: MediaCoverageOut[];
+  next_cursor: string | null;
+};
+
+/** Admin: create a new media coverage entry. */
+export async function adminCreateMediaCoverage(
+  body: AdminCreateMediaCoverageBody
+): Promise<MediaCoverageOut> {
+  return apiFetch<MediaCoverageOut>("/admin/media-coverage", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+/** Admin: list media coverage entries. */
+export async function adminListMediaCoverage(params?: {
+  type?: string;
+  locale?: string;
+  is_published?: boolean;
+  limit?: number;
+  cursor?: string;
+}): Promise<MediaCoverageListResponse> {
+  const qs = new URLSearchParams();
+  if (params?.type) qs.set("type", params.type);
+  if (params?.locale) qs.set("locale", params.locale);
+  if (params?.is_published !== undefined)
+    qs.set("is_published", String(params.is_published));
+  if (params?.limit) qs.set("limit", String(params.limit));
+  if (params?.cursor) qs.set("cursor", params.cursor);
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  return apiFetch<MediaCoverageListResponse>(`/admin/media-coverage${query}`);
+}
+
+/** Admin: update a media coverage entry. */
+export async function adminPatchMediaCoverage(
+  id: string,
+  body: AdminPatchMediaCoverageBody
+): Promise<MediaCoverageOut> {
+  return apiFetch<MediaCoverageOut>(`/admin/media-coverage/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+/** Admin: delete a media coverage entry. */
+export async function adminDeleteMediaCoverage(id: string): Promise<void> {
+  return apiFetch<void>(`/admin/media-coverage/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+/** Public: list published media coverage. */
+export async function fetchMediaCoverage(params?: {
+  type?: string;
+  locale?: string;
+  artist_id?: string;
+  limit?: number;
+  cursor?: string;
+}): Promise<MediaCoverageListResponse> {
+  const qs = new URLSearchParams();
+  if (params?.type) qs.set("type", params.type);
+  if (params?.locale) qs.set("locale", params.locale);
+  if (params?.artist_id) qs.set("artist_id", params.artist_id);
+  if (params?.limit) qs.set("limit", String(params.limit));
+  if (params?.cursor) qs.set("cursor", params.cursor);
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  return apiFetch<MediaCoverageListResponse>(`/media-coverage${query}`, {
+    auth: false,
+  });
+}
+
+/** Public: fetch featured media coverage (storyhub hero grid). */
+export async function fetchFeaturedMediaCoverage(
+  locale: string = "ko",
+  limit: number = 3
+): Promise<MediaCoverageOut[]> {
+  const qs = new URLSearchParams({ locale, limit: String(limit) });
+  return apiFetch<MediaCoverageOut[]>(`/media-coverage/featured?${qs.toString()}`, {
+    auth: false,
+  });
+}
+
+// ─── C-5 Newsletter ───────────────────────────────────────────────────────────
+
+export type NewsletterIssueOut = {
+  id: string;
+  issue_date: string; // "YYYY-MM-DD"
+  subject: string;
+  body_markdown: string;
+  body_html: string;
+  locale: string;
+  featured_artist_id: string | null;
+  new_top_artists: string[];
+  new_posts_highlight: string[];
+  media_coverage_ids: string[];
+  status: "draft" | "sending" | "sent" | "failed";
+  sent_count: number;
+  failed_count: number;
+  sent_at: string | null;
+  created_by_admin_id: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type NewsletterPreferencesOut = {
+  user_id: string;
+  is_subscribed: boolean;
+  frequency: "weekly" | "biweekly" | "monthly" | "never";
+  preferred_locale: string;
+  last_sent_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** Admin: auto-compose a newsletter draft from live data. */
+export async function adminComposeNewsletterIssue(params: {
+  issue_date: string; // "YYYY-MM-DD"
+  locale: string;
+}): Promise<NewsletterIssueOut> {
+  const qs = new URLSearchParams({
+    issue_date: params.issue_date,
+    locale: params.locale,
+  });
+  return apiFetch<NewsletterIssueOut>(
+    `/admin/newsletter/issues/compose?${qs.toString()}`,
+    { method: "POST" }
+  );
+}
+
+/** Admin: list newsletter issues. */
+export async function adminListNewsletterIssues(params?: {
+  status?: string;
+  locale?: string;
+  limit?: number;
+}): Promise<NewsletterIssueOut[]> {
+  const qs = new URLSearchParams();
+  if (params?.status) qs.set("status", params.status);
+  if (params?.locale) qs.set("locale", params.locale);
+  if (params?.limit) qs.set("limit", String(params.limit));
+  return apiFetch<NewsletterIssueOut[]>(
+    `/admin/newsletter/issues?${qs.toString()}`
+  );
+}
+
+/** Admin: edit a newsletter issue body/subject/status. */
+export async function adminPatchNewsletterIssue(
+  id: string,
+  body: { subject?: string; body_markdown?: string; status?: string }
+): Promise<NewsletterIssueOut> {
+  return apiFetch<NewsletterIssueOut>(
+    `/admin/newsletter/issues/${encodeURIComponent(id)}`,
+    { method: "PATCH", body: JSON.stringify(body) }
+  );
+}
+
+/** Admin: transition a draft newsletter issue to sending. */
+export async function adminSendNewsletterIssue(
+  id: string
+): Promise<NewsletterIssueOut> {
+  return apiFetch<NewsletterIssueOut>(
+    `/admin/newsletter/issues/${encodeURIComponent(id)}/send`,
+    { method: "POST" }
+  );
+}
+
+/** User (me): fetch own newsletter preferences. */
+export async function fetchMyNewsletterPreferences(): Promise<NewsletterPreferencesOut> {
+  return apiFetch<NewsletterPreferencesOut>("/me/newsletter/preferences");
+}
+
+/** User (me): update newsletter preferences (opt-in/out, frequency, locale). */
+export async function patchMyNewsletterPreferences(body: {
+  is_subscribed?: boolean;
+  frequency?: "weekly" | "biweekly" | "monthly" | "never";
+  preferred_locale?: string;
+}): Promise<NewsletterPreferencesOut> {
+  return apiFetch<NewsletterPreferencesOut>("/me/newsletter/preferences", {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+/** Public: 1-click unsubscribe via token from email link (no auth). */
+export async function newsletterUnsubscribe(
+  token: string
+): Promise<{ unsubscribed: boolean; user_id: string }> {
+  return apiFetch<{ unsubscribed: boolean; user_id: string }>(
+    `/newsletter/unsubscribe?token=${encodeURIComponent(token)}`,
+    { auth: false }
   );
 }

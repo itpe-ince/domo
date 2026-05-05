@@ -18,6 +18,8 @@
  * Pattern source: design §4.1 (ProductFields).
  */
 
+import { useI18n } from "@/i18n";
+
 const GENRES = [
   "painting",
   "drawing",
@@ -59,12 +61,13 @@ export function ProductFields({
   buyNowPrice,
   onBuyNowPriceChange,
 }: ProductFieldsProps) {
+  const { t } = useI18n();
   return (
     <div className="card p-4 space-y-4">
-      <h3 className="font-semibold text-sm">상품 정보</h3>
+      <h3 className="font-semibold text-sm">{t("post.productInfo")}</h3>
 
       <div>
-        <label className="block text-xs text-text-secondary mb-1">장르</label>
+        <label className="block text-xs text-text-secondary mb-1">{t("post.genre")}</label>
         <select
           value={genre}
           onChange={(e) => onGenreChange(e.target.value)}
@@ -80,7 +83,7 @@ export function ProductFields({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-text-secondary mb-1">크기</label>
+          <label className="block text-xs text-text-secondary mb-1">{t("post.dimensions")}</label>
           <input
             type="text"
             placeholder="50x70cm"
@@ -90,7 +93,7 @@ export function ProductFields({
           />
         </div>
         <div>
-          <label className="block text-xs text-text-secondary mb-1">매체</label>
+          <label className="block text-xs text-text-secondary mb-1">{t("post.medium")}</label>
           <input
             type="text"
             placeholder="Oil on canvas"
@@ -100,7 +103,7 @@ export function ProductFields({
           />
         </div>
         <div>
-          <label className="block text-xs text-text-secondary mb-1">제작 연도</label>
+          <label className="block text-xs text-text-secondary mb-1">{t("post.year")}</label>
           <input
             type="number"
             value={year}
@@ -118,7 +121,7 @@ export function ProductFields({
             onChange={(e) => onIsAuctionChange(e.target.checked)}
             className="accent-primary"
           />
-          경매로 판매
+          {t("post.auctionSell")}
         </label>
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -127,12 +130,12 @@ export function ProductFields({
             onChange={(e) => onIsBuyNowChange(e.target.checked)}
             className="accent-primary"
           />
-          즉시구매 가능
+          {t("post.buyNow")}
         </label>
         {isBuyNow && (
           <div>
             <label className="block text-xs text-text-secondary mb-1">
-              즉시구매가 (USD)
+              {t("post.buyNowPrice")}
             </label>
             <input
               type="number"

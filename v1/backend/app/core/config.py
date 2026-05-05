@@ -87,6 +87,35 @@ class Settings(BaseSettings):
     webauthn_rp_name: str = "Domo Admin"
     webauthn_rp_origin: str = "http://localhost:3800"
 
+    # Observability / Prometheus
+    # Set METRICS_ENABLED=true and METRICS_TOKEN=<secret> to expose /metrics.
+    # Without METRICS_ENABLED=true the endpoint returns 503.
+    # When enabled, Authorization: Bearer <METRICS_TOKEN> is required.
+    metrics_enabled: bool = False
+    metrics_token: str = ""
+
+    # Analytics — PostHog (G'-4 backend-posthog-integration)
+    # Server-side key (different from NEXT_PUBLIC_POSTHOG_KEY used by frontend).
+    # Leave empty to enable Mock mode (console log only, no SDK calls).
+    posthog_api_key: str = ""
+    posthog_host: str = "https://us.i.posthog.com"
+
+    # LLM Gateway — C-1 ai-artist-interview-generation (tuzigroup)
+    # Leave llm_gateway_api_key empty to enable Mock mode (returns placeholder interview).
+    # backend .env: set LLM_GATEWAY_URL, LLM_GATEWAY_API_KEY, LLM_MODEL_NAME
+    llm_gateway_url: str = "https://llm.tuzigroup.com/v1"
+    llm_gateway_api_key: str = ""  # gw-qrCBDLsiz0IN5_QVksHuptT8Vg6kDKrPdQwQz6L-ZaU
+    llm_model_name: str = "gemma4-e4b"
+
+    # AWS SES — C-5 newsletter-digest
+    # Leave aws_ses_access_key_id empty to enable Mock mode (logs email, no AWS calls).
+    # NOTE: aws_access_key_id / aws_secret_access_key (without ses_ prefix) are used
+    # for S3 storage.  SES uses dedicated credentials for least-privilege separation.
+    aws_ses_region: str = "us-east-1"
+    aws_ses_access_key_id: str = ""
+    aws_ses_secret_access_key: str = ""
+    aws_ses_from_address: str = "noreply@domo.art"
+
 
 @lru_cache
 def get_settings() -> Settings:

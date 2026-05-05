@@ -96,6 +96,9 @@ export interface EditorWorkspaceProps {
   uploadQueue: UploadTask[];
   // editor-image-studio PDCA #6-image — Step 6 props drilling
   onEditMedia?: (id: string) => void;
+  // upload-retry-ui (D-2) — retry / cancel upload tasks
+  onRetryUpload?: (taskId: string) => void;
+  onCancelUpload?: (taskId: string) => void;
   // publish-controls PDCA #8
   visibility: Visibility;
   setVisibility: (v: Visibility) => void;
@@ -114,7 +117,7 @@ export interface EditorWorkspaceProps {
 }
 
 export function EditorWorkspace(props: EditorWorkspaceProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const {
     type,
     title,
@@ -156,6 +159,8 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
     onCaptionChange,
     uploadQueue,
     onEditMedia,
+    onRetryUpload,
+    onCancelUpload,
     visibility,
     setVisibility,
     commentsEnabled,
@@ -263,7 +268,7 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
             type="text"
             value={title}
             onChange={(e) => setters.setTitle(e.target.value)}
-            placeholder="제목"
+            placeholder={t("post.title")}
             className="w-full bg-transparent text-xl font-bold text-text-primary placeholder:text-text-muted outline-none border-none"
           />
 
@@ -299,6 +304,8 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
             onCaptionChange={onCaptionChange}
             uploadQueue={uploadQueue}
             onEditMedia={onEditMedia}
+            onRetryUpload={onRetryUpload}
+            onCancelUpload={onCancelUpload}
           />
           {/* Note: legacy "uploading..." inline status is replaced by
               MediaUploadProgress badge inside MediaPreviewList (OQ-7=A). */}
@@ -308,7 +315,7 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
             <div className="flex flex-wrap gap-2">
               {scheduledAt && (
                 <span className="flex items-center gap-1.5 bg-surface rounded-full px-3 py-1 text-xs text-primary">
-                  ⏰ {new Date(scheduledAt).toLocaleString("ko-KR")} 예약
+                  ⏰ {new Date(scheduledAt).toLocaleString(locale)} {t("post.editor.scheduledLabel")}
                   <button
                     onClick={() => setters.setScheduledAt("")}
                     className="text-text-muted hover:text-danger"
@@ -343,7 +350,7 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
               onChange={(e) => setters.setIsMakingVideo(e.target.checked)}
               className="accent-primary"
             />
-            다음 업로드를 메이킹/타임랩스 영상으로 표시
+            {t("post.makingVideoLabel")}
           </label>
 
           {/* Media Toolbar */}
@@ -354,7 +361,7 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
               onEmojiInsert={onEmojiInsert}
               onEmbedAdd={onEmbedAdd}
               onLocationClick={() => {
-                const name = prompt("장소명을 입력하세요 (예: 서울시립미술관)");
+                const name = prompt(t("post.locationPrompt"));
                 if (name) {
                   setters.setLocationName(name);
                   setters.setLocationLat(37.5665);
@@ -372,7 +379,7 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
 
           {/* Tags */}
           <div ref={tagRef as React.Ref<HTMLDivElement>}>
-            <label className="block text-sm text-text-secondary mb-1">태그</label>
+            <label className="block text-sm text-text-secondary mb-1">{t("post.tags")}</label>
             <TagAutocomplete tags={tags} onTagsChange={setters.setTags} />
           </div>
 
@@ -397,7 +404,7 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
           )}
 
           <p className="text-text-muted text-xs">
-            ※ 이미지/영상 포함 시 디지털 아트 판독 큐에 진입합니다 (관리자 승인 필요).
+            {t("post.artCheckNote")}
           </p>
 
           {/* publish-controls PDCA #8 — PublishOptionsPanel (desktop inline) */}

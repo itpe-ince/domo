@@ -26,6 +26,7 @@ from app.core.config import get_settings
 from app.services.payments.base import (
     PaymentIntent,
     PaymentProvider,
+    SetupIntent,
     SubscriptionResult,
 )
 
@@ -58,6 +59,59 @@ class StripeProvider(PaymentProvider):
         stripe.api_key = self.secret_key
         # Hold a reference so test code can monkey-patch if needed
         self._stripe = stripe
+
+    # ─── Customer ───────────────────────────────────────────────────────
+
+    async def get_or_create_customer(
+        self,
+        user_id: str,
+        email: str | None = None,
+    ) -> str:
+        """Find or create a Stripe Customer for the given user_id.
+
+        Does NOT interact with the DB — caller is responsible for caching
+        the returned customer_id on User.stripe_customer_id.
+        """
+        stripe = self._stripe
+
+        def _find_or_create() -> str:
+            # Search by metadata.user_id (idempotent on repeated calls)
+            results = stripe.Customer.list(limit=1, metadata={"user_id": user_id})
+            if results.data:
+                return results.data[0].id
+            params: dict = {"metadata": {"user_id": user_id}}
+            if email:
+                params["email"] = email
+            customer = stripe.Customer.create(**params)
+            return customer.id
+
+        return await asyncio.to_thread(_find_or_create)
+
+    # ─── SetupIntent ────────────────────────────────────────────────────
+
+    async def create_setup_intent(
+        self,
+        customer_id: str,
+        metadata: dict | None = None,
+    ) -> SetupIntent:
+        """Create a Stripe SetupIntent for off-session payment method collection."""
+        stripe = self._stripe
+
+        def _create():
+            return stripe.SetupIntent.create(
+                customer=customer_id,
+                payment_method_types=["card"],
+                usage="off_session",
+                metadata=metadata or {},
+            )
+
+        si = await asyncio.to_thread(_create)
+        return SetupIntent(
+            id=si.id,
+            client_secret=si.client_secret or "",
+            customer_id=customer_id,
+            status=si.status,
+        )
 
     # ─── Payment Intents ────────────────────────────────────────────────
 

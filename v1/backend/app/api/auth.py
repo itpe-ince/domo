@@ -23,6 +23,7 @@ from app.services.auth_tokens import (
     rotate_tokens,
 )
 from app.services.google_auth import verify_google_id_token
+from app.services.analytics import capture_event
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -79,7 +80,8 @@ async def google_login(
             await db.refresh(user)
 
     # 3) Create brand new user
-    if not user:
+    is_new_user = not user
+    if is_new_user:
         user = User(
             email=email,
             sns_provider="google",
@@ -98,6 +100,14 @@ async def google_login(
         db, user, user_agent=ua, ip_address=ip
     )
     await db.commit()
+
+    # G'-4: server-side signup event (new users only)
+    if is_new_user:
+        capture_event(
+            str(user.id),
+            "user_signup_confirmed",
+            {"method": "google", "language": getattr(user, "language", None)},
+        )
 
     return {
         "data": {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { AppShell } from "@/components/AppShell";
 import { CookieConsent } from "@/components/CookieConsent";
+import { PostHogClientProvider } from "@/components/PostHogProvider";
 import { I18nProvider } from "@/i18n";
 import "@/styles/globals.css";
 
@@ -32,8 +33,10 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <body>
         <I18nProvider>
-          <AppShell>{children}</AppShell>
-          <CookieConsent />
+          <PostHogClientProvider>
+            <AppShell>{children}</AppShell>
+            <CookieConsent />
+          </PostHogClientProvider>
         </I18nProvider>
         {/* Google Identity Services — required by LoginModal */}
         <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />

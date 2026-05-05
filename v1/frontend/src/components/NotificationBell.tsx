@@ -9,21 +9,9 @@ import {
   NotificationView,
   tokenStore,
 } from "@/lib/api";
+import { formatRelativeTime as timeAgo } from "@/lib/formatRelativeTime";
 
 const POLL_MS = 30000;
-
-function timeAgo(iso: string | null): string {
-  if (!iso) return "";
-  const diff = Date.now() - new Date(iso).getTime();
-  const sec = Math.floor(diff / 1000);
-  if (sec < 60) return `${sec}초 전`;
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}분 전`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}시간 전`;
-  const days = Math.floor(hr / 24);
-  return `${days}일 전`;
-}
 
 export function NotificationBell() {
   const [count, setCount] = useState(0);

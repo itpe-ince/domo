@@ -16,6 +16,7 @@
 import { useI18n } from "@/i18n";
 import { type ApiUser, type CreatePostMedia, type OEmbedData } from "@/lib/api";
 import type { PostType } from "@/components/post-editor/PostTypeSelector";
+import { parsePriceToCents, formatPriceCents } from "@/lib/format";
 
 export interface PostPreviewCardProps {
   type: PostType;
@@ -165,12 +166,15 @@ export function PostPreviewCard(props: PostPreviewCardProps) {
       {/* Product meta */}
       {showProductMeta && (
         <footer className="border-t border-border pt-3 text-xs text-text-secondary space-y-1">
-          {genre && <div>장르: {genre}</div>}
+          {genre && <div>{t("post.genreLabel", { value: genre })}</div>}
           <div className="flex items-center gap-3">
-            {isAuction && <span className="badge-primary">경매</span>}
+            {isAuction && <span className="badge-primary">{t("post.auctionBadge")}</span>}
             {isBuyNow && typeof buyNowPrice === "number" && (
               <span className="text-text-primary">
-                즉시구매가: ${buyNowPrice}
+                {/* G'-10: buyNowPrice is dollar input from UI editor; convert to cents for display. */}
+                {t("post.buyNowPriceLabel", {
+                  price: formatPriceCents(parsePriceToCents(String(buyNowPrice)) ?? 0, "KRW"),
+                })}
               </span>
             )}
           </div>

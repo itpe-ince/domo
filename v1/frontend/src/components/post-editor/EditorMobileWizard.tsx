@@ -93,6 +93,9 @@ export interface EditorMobileWizardProps {
   uploadQueue: UploadTask[];
   // editor-image-studio PDCA #6-image — Step 6 props drilling
   onEditMedia?: (id: string) => void;
+  // upload-retry-ui (D-2) — retry / cancel upload tasks
+  onRetryUpload?: (taskId: string) => void;
+  onCancelUpload?: (taskId: string) => void;
   // publish-controls PDCA #8
   visibility: Visibility;
   setVisibility: (v: Visibility) => void;
@@ -151,6 +154,8 @@ export function EditorMobileWizard(props: EditorMobileWizardProps) {
     onCaptionChange,
     uploadQueue,
     onEditMedia,
+    onRetryUpload,
+    onCancelUpload,
     visibility,
     setVisibility,
     commentsEnabled,
@@ -253,6 +258,8 @@ export function EditorMobileWizard(props: EditorMobileWizardProps) {
               onCaptionChange={onCaptionChange}
               uploadQueue={uploadQueue}
               onEditMedia={onEditMedia}
+              onRetryUpload={onRetryUpload}
+              onCancelUpload={onCancelUpload}
             />
           )}
           {wizard.step === "product_meta" && (

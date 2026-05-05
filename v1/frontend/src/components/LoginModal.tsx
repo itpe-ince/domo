@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/i18n";
 import { ApiClientError, loginWithGoogleIdToken } from "@/lib/api";
+import { captureEvent, identifyUser } from "@/lib/analytics/capture";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
@@ -123,7 +124,9 @@ export function LoginModal({
     setBusy(true);
     setError(null);
     try {
-      await loginWithGoogleIdToken(resp.credential);
+      const user = await loginWithGoogleIdToken(resp.credential);
+      identifyUser(user.id, { role: user.role });
+      captureEvent({ type: "login", method: "google" });
       onClose();
       if (redirectTo) router.push(redirectTo);
     } catch (e) {

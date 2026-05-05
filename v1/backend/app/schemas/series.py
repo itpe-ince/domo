@@ -129,3 +129,24 @@ class PostSeriesUpdateIn(BaseModel):
     """Body for POST /v1/posts/{id}/series — replace full series membership list."""
 
     series_ids: list[uuid.UUID] = Field(...)
+
+
+# ─── Series Reorder (D-3 carry-over) ────────────────────────────────────────
+
+
+class SeriesReorderRequest(BaseModel):
+    """Body for POST /v1/series/{id}/reorder.
+
+    post_ids: new order as array of post UUIDs belonging to this series.
+    - Must match exactly the set of current PostSeriesMembership rows (no extras, no missing).
+    - No duplicates allowed.
+    - Empty array not allowed.
+    """
+
+    post_ids: list[uuid.UUID] = Field(..., min_length=1)
+
+
+class SeriesReorderResponse(BaseModel):
+    series_id: uuid.UUID
+    ordered_post_ids: list[uuid.UUID]
+    updated_at: datetime

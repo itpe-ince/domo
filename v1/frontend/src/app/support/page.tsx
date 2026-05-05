@@ -1,12 +1,29 @@
 "use client";
 
+/**
+ * /support — Blue Bird 후원 랜딩 페이지 (B-1 carry-over redesign)
+ *
+ * Sections:
+ *   1. Hero — Blue Bird 브랜드 소개
+ *   2. Tier benefits overview (platform default)
+ *   3. CTA links — "내 후원 내역" + "작가 탐색"
+ *   4. FAQ accordion
+ *   5. Contact form (preserved from original)
+ */
+
 import { useState } from "react";
+import Link from "next/link";
 import { useI18n } from "@/i18n";
+import { useMe } from "@/lib/useMe";
 
 const FAQ = [
   {
     q: { ko: "블루버드란 무엇인가요?", en: "What is a Bluebird?", ja: "ブルーバードとは？", zh: "什麼是藍鳥？", es: "¿Qué es un Bluebird?" },
     a: { ko: "블루버드는 $1 단위의 후원 화폐입니다. 좋아하는 작가에게 블루버드를 보내 응원할 수 있습니다.", en: "A Bluebird is a $1 sponsorship unit. Send Bluebirds to support your favorite artists.", ja: "ブルーバードは$1単位の支援通貨です。好きなアーティストに送って応援できます。", zh: "藍鳥是$1為單位的贊助貨幣，可以送給喜歡的藝術家。", es: "Un Bluebird es una unidad de patrocinio de $1. Envía Bluebirds para apoyar a tus artistas favoritos." },
+  },
+  {
+    q: { ko: "구독과 일회 후원의 차이는 무엇인가요?", en: "What is the difference between a subscription and a one-time sponsorship?", ja: "サブスクリプションと一回限りの支援の違いは？", zh: "訂閱和一次性贊助有什麼區別？", es: "¿Cuál es la diferencia entre una suscripción y un patrocinio único?" },
+    a: { ko: "일회 후원은 단발성으로 블루버드를 보내는 방식이며, 구독은 매월 정해진 금액을 자동으로 후원하는 방식입니다. 구독 시 더 높은 등급 혜택을 지속적으로 받을 수 있습니다.", en: "A one-time sponsorship sends Bluebirds as a single payment. A subscription automatically sends a fixed amount every month, giving you ongoing tier benefits.", ja: "一回限りの支援は単発でブルーバードを送る方法で、サブスクリプションは毎月決まった金額を自動的に支援します。", zh: "一次性贊助是單次送出藍鳥，訂閱則是每月自動支付固定金額，持續獲得等級權益。", es: "Un patrocinio único envía Bluebirds como un pago único. Una suscripción envía automáticamente una cantidad fija cada mes." },
   },
   {
     q: { ko: "작가가 되려면 어떻게 해야 하나요?", en: "How do I become an artist?", ja: "アーティストになるには？", zh: "如何成為藝術家？", es: "¿Cómo me convierto en artista?" },
@@ -26,8 +43,51 @@ const FAQ = [
   },
 ];
 
+const TIER_INFO = [
+  {
+    tier: "follower",
+    icon: "🕊",
+    color: "border-green-200 bg-green-50 text-green-700",
+    threshold: { ko: "$1~$2/월", en: "$1–$2/mo", ja: "$1〜$2/月", zh: "$1~$2/月", es: "$1–$2/mes" },
+    benefits: {
+      ko: "팔로워 뱃지, 댓글 우선 노출",
+      en: "Follower badge, priority comment visibility",
+      ja: "フォロワーバッジ、コメント優先表示",
+      zh: "追蹤者徽章、留言優先顯示",
+      es: "Insignia de seguidor, prioridad en comentarios",
+    },
+  },
+  {
+    tier: "subscriber",
+    icon: "🌟",
+    color: "border-amber-200 bg-amber-50 text-amber-700",
+    threshold: { ko: "$3~$9/월", en: "$3–$9/mo", ja: "$3〜$9/月", zh: "$3~$9/月", es: "$3–$9/mes" },
+    benefits: {
+      ko: "새 게시물 선공개, 독점 콘텐츠 피드, 구독자 전용 메시지",
+      en: "Early post access, exclusive content feed, subscriber-only messages",
+      ja: "先行公開、限定コンテンツフィード、限定メッセージ",
+      zh: "搶先看新貼文、獨家內容頻道、訂閱者限定訊息",
+      es: "Acceso anticipado, feed exclusivo, mensajes para suscriptores",
+    },
+  },
+  {
+    tier: "sponsor",
+    icon: "🦋",
+    color: "border-blue-200 bg-blue-50 text-blue-700",
+    threshold: { ko: "$10+/월", en: "$10+/mo", ja: "$10+/月", zh: "$10+/月", es: "$10+/mes" },
+    benefits: {
+      ko: "구독자 혜택 전부 + Q&A 우선 참여, 스폰서 뱃지",
+      en: "All subscriber benefits + Q&A priority, sponsor badge",
+      ja: "全サブスクライバー特典＋Q&A優先、スポンサーバッジ",
+      zh: "所有訂閱者權益＋Q&A優先、贊助者徽章",
+      es: "Todos los beneficios de suscriptor + Q&A prioritario, insignia de patrocinador",
+    },
+  },
+];
+
 export default function SupportPage() {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
+  const { me } = useMe();
   const [openIdx, setOpenIdx] = useState<number | null>(null);
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
@@ -37,13 +97,59 @@ export default function SupportPage() {
   const lang = locale as keyof (typeof FAQ)[0]["q"];
 
   return (
-    <main className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8">
-      <h1 className="text-2xl font-bold mb-6">
-        {locale === "ko" ? "고객 지원" : locale === "ja" ? "サポート" : locale === "zh" ? "客戶支援" : locale === "es" ? "Soporte" : "Support"}
-      </h1>
+    <main className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8 space-y-12">
 
-      {/* FAQ */}
-      <section className="mb-10">
+      {/* ── Hero section ── */}
+      <section className="text-center space-y-4 py-6">
+        <div className="text-5xl">🦋</div>
+        <h1 className="text-3xl font-bold text-text-primary">Blue Bird</h1>
+        <p className="text-text-secondary max-w-lg mx-auto leading-relaxed">
+          {t("patronage.support.landing.blueBirdAbout")}
+        </p>
+
+        <div className="flex flex-wrap gap-3 justify-center pt-2">
+          <Link href="/explore" className="btn-primary px-6 py-2.5">
+            {t("patronage.support.landing.exploreArtists")}
+          </Link>
+          {me ? (
+            <Link href="/me/sponsorships" className="btn-ghost border border-border px-6 py-2.5">
+              {t("patronage.support.landing.myHistory")}
+            </Link>
+          ) : null}
+        </div>
+      </section>
+
+      {/* ── Tier benefits ── */}
+      <section>
+        <h2 className="text-lg font-semibold mb-4 text-text-primary">
+          {t("patronage.support.landing.tierBenefits")}
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {TIER_INFO.map((info) => (
+            <div
+              key={info.tier}
+              className={`rounded-xl border p-5 space-y-2 ${info.color}`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{info.icon}</span>
+                <span className="font-bold capitalize">{info.tier}</span>
+              </div>
+              <div className="text-xs font-medium opacity-75">
+                {info.threshold[lang] || info.threshold.en}
+              </div>
+              <p className="text-xs leading-relaxed opacity-90">
+                {info.benefits[lang] || info.benefits.en}
+              </p>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-text-muted mt-3 text-center">
+          {t("patronage.supporter.tier.benefits.detailsLink")}
+        </p>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section>
         <h2 className="text-lg font-semibold mb-4">FAQ</h2>
         <div className="space-y-2">
           {FAQ.map((item, i) => (
@@ -51,9 +157,10 @@ export default function SupportPage() {
               <button
                 onClick={() => setOpenIdx(openIdx === i ? null : i)}
                 className="w-full text-left px-4 py-3 flex items-center justify-between hover:bg-surface-hover/30 transition-colors"
+                aria-expanded={openIdx === i}
               >
                 <span className="font-medium text-sm">{item.q[lang] || item.q.en}</span>
-                <span className="text-text-muted">{openIdx === i ? "−" : "+"}</span>
+                <span className="text-text-muted ml-3 flex-shrink-0">{openIdx === i ? "−" : "+"}</span>
               </button>
               {openIdx === i && (
                 <div className="px-4 pb-4 text-sm text-text-secondary">
@@ -65,10 +172,10 @@ export default function SupportPage() {
         </div>
       </section>
 
-      {/* Contact Form */}
+      {/* ── Contact Form ── */}
       <section>
         <h2 className="text-lg font-semibold mb-4">
-          {locale === "ko" ? "문의하기" : locale === "ja" ? "お問い合わせ" : "Contact Us"}
+          {locale === "ko" ? "문의하기" : locale === "ja" ? "お問い合わせ" : locale === "zh" ? "聯絡我們" : locale === "es" ? "Contacto" : "Contact Us"}
         </h2>
         {sent ? (
           <div className="card p-6 text-center">

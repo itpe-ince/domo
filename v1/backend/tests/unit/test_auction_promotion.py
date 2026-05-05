@@ -116,17 +116,21 @@ async def test_dispatch_idempotent():
     result_second = MagicMock()
     result_second.scalars.return_value = scalars_second
 
-    # Alternate per slot (3 slots × 2 sweeps = 6 select calls + 3 update calls first sweep)
-    # We test 24h slot only; mock execute to return first/second alternately for select,
-    # and a generic mock for update (execute_options returns self)
+    # D-5 carry-over: _get_user_language() calls db.execute once per unique recipient.
+    # For the 24h slot (1 auction, seller only): select Auction → user-lang query → update.
+    # Slots 6h and 1h return empty so no user-lang queries.
+    seller_user_result = MagicMock()
+    seller_user_result.scalar_one_or_none.return_value = None  # None → ko fallback in i18n
+
     execute_results = [
-        result_first,   # slot 24h sweep 1
-        MagicMock(),    # update for slot 24h sweep 1
-        result_second,  # slot 6h sweep 1
-        result_second,  # slot 1h sweep 1
-        result_second,  # slot 24h sweep 2
-        result_second,  # slot 6h sweep 2
-        result_second,  # slot 1h sweep 2
+        result_first,        # slot 24h sweep 1: select Auction
+        seller_user_result,  # slot 24h sweep 1: _get_user_language(seller)
+        MagicMock(),         # slot 24h sweep 1: update Auction
+        result_second,       # slot 6h sweep 1
+        result_second,       # slot 1h sweep 1
+        result_second,       # slot 24h sweep 2
+        result_second,       # slot 6h sweep 2
+        result_second,       # slot 1h sweep 2
     ]
 
     db = AsyncMock()

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useI18n } from "@/i18n";
 
 interface SchedulePickerProps {
   open: boolean;
@@ -10,6 +11,7 @@ interface SchedulePickerProps {
 }
 
 export function SchedulePicker({ open, onClose, value, onChange }: SchedulePickerProps) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,8 +38,8 @@ export function SchedulePicker({ open, onClose, value, onChange }: SchedulePicke
       ref={ref}
       className="absolute bottom-full mb-2 left-0 card p-4 z-40 shadow-xl w-72 space-y-3"
     >
-      <h4 className="text-sm font-semibold">예약 게시</h4>
-      <p className="text-xs text-text-muted">설정한 시간에 자동으로 공개됩니다.</p>
+      <p role="heading" aria-level={2} className="text-sm font-semibold">{t("post.editor.schedulePicker.title")}</p>
+      <p className="text-xs text-text-muted">{t("post.editor.schedulePicker.hint")}</p>
 
       <input
         type="datetime-local"
@@ -61,7 +63,7 @@ export function SchedulePicker({ open, onClose, value, onChange }: SchedulePicke
           }}
           className="text-xs text-danger hover:underline"
         >
-          예약 취소
+          {t("post.editor.schedulePicker.cancel")}
         </button>
       )}
     </div>

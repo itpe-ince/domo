@@ -5,16 +5,20 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useI18n, LOCALE_LABELS, Locale } from "@/i18n";
 import { logout } from "@/lib/api";
+import { captureEvent, resetIdentity } from "@/lib/analytics/capture";
 import { useMe } from "@/lib/useMe";
 import { useUnreadCount } from "@/lib/useUnreadCount";
+import { useOnboarding } from "@/lib/hooks/useOnboarding";
 import { LoginModal } from "./LoginModal";
 import { SearchBar } from "./SearchBar";
 import {
   BellIcon,
   BluebirdIcon,
+  BookOpenIcon,
   DashboardIcon,
   DraftIcon,
   ExploreIcon,
+  HeartHandshakeIcon,
   HomeIcon,
   LayersIcon,
   LogoutIcon,
@@ -23,6 +27,7 @@ import {
   ReceiptIcon,
   SettingsIcon,
   ShieldAlertIcon,
+  TrophyIcon,
   UserIcon,
   UsersIcon,
 } from "./icons";
@@ -43,8 +48,11 @@ export function Sidebar() {
   const [loginRedirect, setLoginRedirect] = useState<string | undefined>();
   const unread = useUnreadCount();
   const { t, locale, setLocale } = useI18n();
+  const { isFirstSession, reopenWizard } = useOnboarding();
 
   async function handleLogout() {
+    captureEvent({ type: "logout" });
+    resetIdentity();
     await logout();
   }
 
@@ -68,6 +76,10 @@ export function Sidebar() {
   ];
 
   const secondary: NavItem[] = [
+    // A-7 storytelling-hub — public (no auth required)
+    { href: "/stories", label: t("nav.stories"), Icon: BookOpenIcon },
+    // A-6 artist-index-v1 — global ranking page (public, no auth required)
+    { href: "/artists/index", label: t("nav.artistIndex"), Icon: TrophyIcon },
     { href: "/communities", label: t("nav.communities"), Icon: UsersIcon },
     {
       href: "/subscriptions",
@@ -75,6 +87,29 @@ export function Sidebar() {
       Icon: BluebirdIcon,
       needsAuth: true,
     },
+    {
+      href: "/me/sponsorships",
+      label: t("nav.mySponsoring"),
+      Icon: HeartHandshakeIcon,
+      needsAuth: true,
+    },
+    // artist-patronage-dashboard B-2 + tier-benefits B-4 — 작가 본인만 표시
+    ...(me?.role === "artist"
+      ? [
+          {
+            href: "/me/patronage",
+            label: t("nav.patronageDashboard"),
+            Icon: DashboardIcon,
+            needsAuth: true,
+          } as NavItem,
+          {
+            href: "/me/tier-benefits",
+            label: t("nav.tierBenefits"),
+            Icon: HeartHandshakeIcon,
+            needsAuth: true,
+          } as NavItem,
+        ]
+      : []),
     { href: "/orders", label: t("nav.orders"), Icon: ReceiptIcon, needsAuth: true },
     {
       href: "/warnings",
@@ -176,6 +211,29 @@ export function Sidebar() {
                 <DashboardIcon />
                 <span className="hidden xl:inline text-lg font-medium">{t("nav.admin")}</span>
               </a>
+            </>
+          )}
+
+          {/* A-2: Onboarding indicator for first-session authenticated users */}
+          {me && isFirstSession && (
+            <>
+              <div className="border-t border-border my-2" />
+              <button
+                type="button"
+                onClick={reopenWizard}
+                className="group flex items-center justify-center xl:justify-start gap-3 rounded-xl px-3 py-2.5 w-full bg-primary/10 hover:bg-primary/15 transition-colors text-left"
+                aria-label={t("onboarding.sidebar.indicator")}
+              >
+                <span className="text-primary text-lg flex-shrink-0" aria-hidden="true">🎨</span>
+                <span className="hidden xl:flex flex-col flex-1 min-w-0">
+                  <span className="text-xs font-semibold text-primary truncate">
+                    {t("onboarding.sidebar.title")}
+                  </span>
+                  <span className="text-[10px] text-text-muted truncate">
+                    {t("onboarding.sidebar.hint")}
+                  </span>
+                </span>
+              </button>
             </>
           )}
 

@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from app.core.metrics import cron_rows_processed_total, record_cron_run
 from app.db.session import AsyncSessionLocal
 from app.models.post import Post
 
@@ -43,10 +44,12 @@ async def schedule_cron_loop(interval_seconds: int = 60) -> None:
     log.info("schedule_cron_loop started (interval=%ss)", interval_seconds)
     while True:
         try:
-            async with AsyncSessionLocal() as db:
-                count = await publish_scheduled_posts_once(db)
+            with record_cron_run("schedule"):
+                async with AsyncSessionLocal() as db:
+                    count = await publish_scheduled_posts_once(db)
                 if count:
                     log.info("Published %d scheduled posts", count)
+                    cron_rows_processed_total.labels(worker="schedule").inc(count)
         except Exception as e:
             log.exception("schedule cron sweep failed: %s", e)
         await asyncio.sleep(interval_seconds)

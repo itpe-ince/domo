@@ -80,11 +80,8 @@ def _serialize_draft(post: Post) -> dict:
             {
                 "is_auction": post.product.is_auction,
                 "is_buy_now": post.product.is_buy_now,
-                "buy_now_price": (
-                    str(post.product.buy_now_price)
-                    if post.product.buy_now_price is not None
-                    else None
-                ),
+                # G'-10: cents integer (BigInteger) — no str() conversion needed.
+                "buy_now_price": post.product.buy_now_price,  # int | None
                 "currency": post.product.currency,
                 "dimensions": post.product.dimensions,
                 "medium": post.product.medium,

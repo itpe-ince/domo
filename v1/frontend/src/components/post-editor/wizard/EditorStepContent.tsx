@@ -47,6 +47,9 @@ export interface EditorStepContentProps {
   uploadQueue: UploadTask[];
   // editor-image-studio PDCA #6-image — Step 6 props drilling
   onEditMedia?: (id: string) => void;
+  // upload-retry-ui (D-2) — retry / cancel upload tasks
+  onRetryUpload?: (taskId: string) => void;
+  onCancelUpload?: (taskId: string) => void;
 }
 
 export function EditorStepContent(props: EditorStepContentProps) {
@@ -79,6 +82,8 @@ export function EditorStepContent(props: EditorStepContentProps) {
     onCaptionChange,
     uploadQueue,
     onEditMedia,
+    onRetryUpload,
+    onCancelUpload,
   } = props;
 
   return (
@@ -107,6 +112,8 @@ export function EditorStepContent(props: EditorStepContentProps) {
         onCaptionChange={onCaptionChange}
         uploadQueue={uploadQueue}
         onEditMedia={onEditMedia}
+        onRetryUpload={onRetryUpload}
+        onCancelUpload={onCancelUpload}
         onRemoveMedia={(i) => onMediaChange((prev) => prev.filter((_, j) => j !== i))}
         onRemoveEmbed={(i) => {
           onEmbedsChange((prev) => prev.filter((_, j) => j !== i));
@@ -122,7 +129,7 @@ export function EditorStepContent(props: EditorStepContentProps) {
       />
 
       {uploading && (
-        <div className="text-text-muted text-xs animate-pulse">업로드 중...</div>
+        <div className="text-text-muted text-xs animate-pulse">{t("post.editor.media.uploading")}</div>
       )}
 
       <label className="flex items-center gap-2 text-xs text-text-secondary cursor-pointer">
@@ -142,7 +149,7 @@ export function EditorStepContent(props: EditorStepContentProps) {
           onEmojiInsert={onEmojiInsert}
           onEmbedAdd={onEmbedAdd}
           onLocationClick={() => {
-            const name = prompt("장소명을 입력하세요 (예: 서울시립미술관)");
+            const name = prompt(t("post.locationPrompt"));
             if (name) onLocationManualEntry(name);
           }}
           scheduledAt={scheduledAt}

@@ -1,14 +1,13 @@
 import uuid
 from datetime import datetime
-from decimal import Decimal
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     DateTime,
     Float,
     ForeignKey,
     Integer,
-    Numeric,
     String,
     Text,
     func,
@@ -158,9 +157,9 @@ class ProductPost(Base):
     )
     is_auction: Mapped[bool] = mapped_column(Boolean, default=False)
     is_buy_now: Mapped[bool] = mapped_column(Boolean, default=False)
-    buy_now_price: Mapped[Decimal | None] = mapped_column(
-        Numeric(12, 2), nullable=True
-    )
+    # G'-10 price-unit-consistency: cents (BigInteger) — was Numeric(12,2) dollars.
+    # API accepts dollars from UI, backend converts to cents before persistence.
+    buy_now_price: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     currency: Mapped[str] = mapped_column(String(3), default="KRW")
     dimensions: Mapped[str | None] = mapped_column(String(100), nullable=True)
     medium: Mapped[str | None] = mapped_column(String(100), nullable=True)

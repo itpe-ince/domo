@@ -1,1 +1,1 @@
-- [domo editor-revamp-roadmap 진행 상태](project_editor_revamp.md) — #1~#4,#6,#8 완료 아카이브. #10 plan 완료(OQ-10개 대기). Critical Path 거의 완주
+- [domo Phase 4 종결 + Phase 5 로드맵 상태](project_editor_revamp.md) — Phase 4 11/11 완료. Phase 5 D(6)+B(6)=12 sub-PDCA 계획, OQ-8개 권장 default 제시

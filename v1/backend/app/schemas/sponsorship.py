@@ -1,5 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -42,6 +43,20 @@ class SubscriptionCreate(BaseModel):
     monthly_bluebird: int = Field(..., ge=1, le=10000)
 
 
+class SubscriptionCancelRequest(BaseModel):
+    """Optional body for DELETE /subscriptions/{id}.
+
+    All fields are optional for backward compatibility — existing callers
+    that send no body continue to work.
+    """
+
+    reason: (
+        Literal["too_expensive", "changed_mind", "not_satisfied", "other"] | None
+    ) = None
+    feedback: str | None = Field(default=None, max_length=500)
+    immediate: bool = False
+
+
 class SubscriptionOut(BaseModel):
     id: UUID
     sponsor_id: UUID
@@ -53,6 +68,8 @@ class SubscriptionOut(BaseModel):
     cancel_at_period_end: bool
     current_period_end: datetime | None
     cancelled_at: datetime | None
+    cancellation_reason: str | None = None
+    cancellation_feedback: str | None = None
     created_at: datetime
 
     class Config:

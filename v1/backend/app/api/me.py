@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
+from app.schemas.user import UserSponsorSettingsRequest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -702,6 +703,62 @@ async def get_signature(
     provider = get_storage_provider()
     url = provider.public_url(user.signature_storage_key)
     return {"data": SignatureResponse(signature_url=url).model_dump(mode="json")}
+
+
+# ─── Sponsor Validity Settings (D'-1 carry-over) ─────────────────────────
+
+
+@router.get("/sponsor-settings")
+async def get_sponsor_settings(
+    user: User = Depends(get_current_user),
+):
+    """Return the current artist's sponsor_validity_days setting.
+
+    Any authenticated user can read their own setting; the value is only
+    meaningful for artists (user.role == 'artist').
+    """
+    from app.schemas.user import UserSponsorSettingsOut
+
+    return {
+        "data": UserSponsorSettingsOut(
+            sponsor_validity_days=user.sponsor_validity_days
+        ).model_dump()
+    }
+
+
+@router.patch("/sponsor-settings")
+async def patch_sponsor_settings(
+    body: UserSponsorSettingsRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("me_sponsor_settings"),
+):
+    """Update the artist's sponsor_validity_days setting.
+
+    POST body: { "sponsor_validity_days": 30 | null }
+
+    null  = lifetime (any completed Sponsorship qualifies forever)
+    1/7/30/90/365 = Sponsorship.completed_at must be within N days.
+
+    Artist-only effective; all authenticated users may PATCH their own row.
+    """
+    from app.schemas.user import UserSponsorSettingsOut
+
+    user.sponsor_validity_days = body.sponsor_validity_days
+    await db.commit()
+    log.info(
+        "sponsor_settings.updated",
+        extra={
+            "event": "sponsor_settings.updated",
+            "user_id": str(user.id),
+            "sponsor_validity_days": body.sponsor_validity_days,
+        },
+    )
+    return {
+        "data": UserSponsorSettingsOut(
+            sponsor_validity_days=user.sponsor_validity_days
+        ).model_dump()
+    }
 
 
 @router.delete("/signature", status_code=204)

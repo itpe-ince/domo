@@ -1,8 +1,7 @@
 from datetime import datetime
-from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.schemas.media_transform import CropMetaSchema
 
@@ -45,16 +44,49 @@ class MediaPatchRequest(BaseModel):
 
 
 class ProductPostIn(BaseModel):
+    """Input schema for product post fields.
+
+    G'-10: buy_now_price is accepted as a float/int dollar amount from the UI
+    and stored as cents (BigInteger) in the DB. The validator converts on ingest.
+    Frontend sends dollars (e.g. 50.00); DB stores 5000 cents.
+    """
+
     is_auction: bool = False
     is_buy_now: bool = False
-    buy_now_price: Decimal | None = None
+    # UI sends dollar amount; we convert to cents on validation.
+    buy_now_price: float | int | None = None
     currency: str = "KRW"
     dimensions: str | None = None
     medium: str | None = None
     year: int | None = None
 
+    @field_validator("buy_now_price", mode="before")
+    @classmethod
+    def dollars_to_cents(cls, v: object) -> int | None:
+        """Convert dollar input (float) to cents (int) for DB storage."""
+        if v is None:
+            return None
+        try:
+            return round(float(v) * 100)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("buy_now_price must be a numeric dollar amount") from exc
 
-class ProductPostOut(ProductPostIn):
+
+class ProductPostOut(BaseModel):
+    """Output schema — buy_now_price exposed as cents integer.
+
+    G'-10: API response uses price_cents semantics.
+    Frontend uses formatPriceCents() to render display value.
+    """
+
+    is_auction: bool
+    is_buy_now: bool
+    # Cents integer (e.g. 5000 = $50.00 / ₩5000)
+    buy_now_price: int | None = None
+    currency: str
+    dimensions: str | None = None
+    medium: str | None = None
+    year: int | None = None
     is_sold: bool
 
     class Config:

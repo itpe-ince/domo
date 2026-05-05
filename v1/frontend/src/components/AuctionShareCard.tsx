@@ -73,22 +73,22 @@ export function AuctionShareCard({
       if (e instanceof ApiClientError) {
         switch (e.code) {
           case "UNAUTHORIZED":
-            setError(t("share.errorUnauthorized") || "로그인이 필요합니다.");
+            setError(t("auction.shareCard.errorUnauthorized") || "로그인이 필요합니다.");
             break;
           case "FORBIDDEN":
-            setError(t("share.errorOwnerOnly"));
+            setError(t("auction.shareCard.errorOwnerOnly"));
             break;
           case "AUCTION_NOT_ACTIVE":
-            setError(t("share.errorActiveOnly"));
+            setError(t("auction.shareCard.errorActiveOnly"));
             break;
           case "RATE_LIMITED":
-            setError(t("share.errorRateLimit"));
+            setError(t("auction.shareCard.errorRateLimit"));
             break;
           default:
-            setError(t("share.errorGenerate"));
+            setError(t("auction.shareCard.errorGenerate"));
         }
       } else {
-        setError(t("share.errorGenerate"));
+        setError(t("auction.shareCard.errorGenerate"));
       }
     } finally {
       setLoading(false);
@@ -105,7 +105,7 @@ export function AuctionShareCard({
       setCardUrl(busted);
       setGeneratedAt(result.generated_at);
     } catch (e) {
-      setError(e instanceof ApiClientError ? e.message : t("share.errorGenerate"));
+      setError(e instanceof ApiClientError ? e.message : t("auction.shareCard.errorGenerate"));
     } finally {
       setLoading(false);
     }
@@ -170,7 +170,7 @@ export function AuctionShareCard({
         aria-haspopup="dialog"
       >
         <ShareIcon size={16} />
-        {t("share.generate")}
+        {t("auction.shareCard.generate")}
       </button>
 
       {/* Modal */}
@@ -178,7 +178,7 @@ export function AuctionShareCard({
         <div
           role="dialog"
           aria-modal="true"
-          aria-label={t("share.title")}
+          aria-label={t("auction.shareCard.title")}
           className="fixed inset-0 z-[60] flex items-center justify-center p-4"
         >
           {/* Backdrop */}
@@ -193,14 +193,14 @@ export function AuctionShareCard({
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h2 className="font-semibold text-text-primary">
-                {t("share.title")}
+                {t("auction.shareCard.title")}
               </h2>
               <button
                 ref={closeBtnRef}
                 onClick={handleClose}
                 disabled={loading}
                 className="text-text-muted hover:text-text-primary disabled:opacity-50 transition-colors"
-                aria-label="닫기"
+                aria-label={t("common.close")}
               >
                 ✕
               </button>
@@ -213,7 +213,7 @@ export function AuctionShareCard({
                 <div className="flex flex-col items-center justify-center py-12 gap-3">
                   <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                   <p className="text-text-muted text-sm animate-pulse">
-                    {t("share.loading")}
+                    {t("auction.shareCard.loading")}
                   </p>
                 </div>
               )}
@@ -230,7 +230,7 @@ export function AuctionShareCard({
                 <div className="rounded-lg overflow-hidden border border-border">
                   <img
                     src={cardUrl}
-                    alt={t("share.title")}
+                    alt={t("auction.shareCard.title")}
                     className="w-full object-cover max-h-[315px]"
                     style={{ aspectRatio: "1200/630" }}
                   />
@@ -246,7 +246,7 @@ export function AuctionShareCard({
                     download={`domo-auction-${auctionId}.png`}
                     className="btn-primary text-sm text-center"
                   >
-                    {t("share.download")}
+                    {t("auction.shareCard.download")}
                   </a>
 
                   {/* Copy link */}
@@ -255,7 +255,7 @@ export function AuctionShareCard({
                     onClick={handleCopyLink}
                     className="btn-secondary text-sm"
                   >
-                    {copied ? t("share.copied") : t("share.copyLink")}
+                    {copied ? t("auction.shareCard.copied") : t("auction.shareCard.copyLink")}
                   </button>
 
                   {/* Regenerate */}
@@ -264,7 +264,7 @@ export function AuctionShareCard({
                     onClick={handleRegenerate}
                     className="text-xs text-text-muted hover:text-text-secondary transition-colors"
                   >
-                    ↺ 공유 카드 새로 만들기
+                    ↺ {t("auction.shareCard.regenerate")}
                   </button>
                 </div>
               )}
@@ -276,7 +276,7 @@ export function AuctionShareCard({
                   onClick={handleRegenerate}
                   className="btn-secondary text-sm w-full"
                 >
-                  다시 시도
+                  {t("auction.shareCard.retry")}
                 </button>
               )}
             </div>

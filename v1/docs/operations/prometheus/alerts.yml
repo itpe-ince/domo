@@ -1,0 +1,125 @@
+---
+# Domo Backend — Prometheus Alerting Rules
+# Format: Prometheus Alertmanager rule groups (YAML)
+# Import: copy to your Prometheus rules directory and reference in prometheus.yml
+#
+# prometheus.yml 참조 예시:
+#   rule_files:
+#     - "rules/domo-alerts.yml"
+#
+# 버전: Phase 6 D'-5 (2026-05-04)
+
+groups:
+  - name: domo_cron_workers
+    interval: 30s
+    rules:
+
+      # 1. CronWorkerError
+      # 어떤 cron worker든 5분 window 내 에러 발생률이 임계치 초과 시 critical alert.
+      # expr: rate() 사용 — 단발성 오류도 탐지 (increase > 0 보다 민감).
+      - alert: CronWorkerError
+        expr: rate(domo_cron_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Cron worker {{ $labels.worker }} error rate high"
+          description: >
+            Worker '{{ $labels.worker }}' is generating errors at
+            {{ printf "%.3f" $value }} errors/sec over the last 5 minutes.
+            Check application logs: docker logs domo-api | grep "cron"
+          runbook: "https://github.com/domo-app/runbooks/blob/main/cron-worker-error.md"
+
+      # 2. CronWorkerStalled
+      # Worker가 10분간 한 번도 실행되지 않으면 critical — 프로세스 hang 또는 배포 실패 의심.
+      # 주의: 배포 직후 false positive 가능 → for: 10m 으로 완충.
+      - alert: CronWorkerStalled
+        expr: rate(domo_cron_runs_total[10m]) == 0
+        for: 10m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Cron worker {{ $labels.worker }} has stalled"
+          description: >
+            Worker '{{ $labels.worker }}' has not executed a single sweep in
+            the last 10 minutes. The process may be hung or crashed.
+            Check: docker ps | grep domo-api
+          runbook: "https://github.com/domo-app/runbooks/blob/main/cron-worker-stalled.md"
+
+  - name: domo_share_card
+    interval: 60s
+    rules:
+
+      # 3. ShareCardCacheLow
+      # 1시간 캐시 히트율이 30% 미만으로 1시간 지속 → warning.
+      # 히트율 저하 원인: 캐시 무효화 버그, 메모리 압박, 인스턴스 재시작 반복.
+      - alert: ShareCardCacheLow
+        expr: |
+          (
+            rate(domo_share_card_cache_hits_total[10m])
+            /
+            (
+              rate(domo_share_card_cache_hits_total[10m])
+              + rate(domo_share_card_cache_misses_total[10m])
+            )
+          ) < 0.30
+        for: 1h
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Share card cache hit rate below 30%"
+          description: >
+            Current cache hit rate is {{ printf "%.1f" (mul $value 100) }}%.
+            Sustained low hit rate means every share-card request re-runs Pillow synthesis,
+            increasing CPU usage and response latency.
+            Investigate: 1h TTL effectiveness, memory limits, or instance restarts.
+
+  - name: domo_http
+    interval: 30s
+    rules:
+
+      # 4. DBConnectionFailure (indirect — via 5xx rate)
+      # HTTP 500 응답 비율이 5분간 5% 초과 → critical.
+      # 직접적인 DB 연결 메트릭 대신 HTTP 상태 코드로 간접 탐지.
+      # prometheus-fastapi-instrumentator 사용 시 http_requests_total{status="5xx"} 생성됨.
+      - alert: DBConnectionFailure
+        expr: |
+          rate(http_requests_total{status=~"5.."}[5m])
+          /
+          rate(http_requests_total[5m])
+          > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "High HTTP 5xx error rate (possible DB failure)"
+          description: >
+            {{ printf "%.1f" (mul $value 100) }}% of requests are returning 5xx status codes
+            over the last 5 minutes. This may indicate a database connection failure,
+            OOM condition, or downstream service unavailability.
+            Check /v1/health/ready endpoint and application logs.
+
+  - name: domo_notifications
+    interval: 60s
+    rules:
+
+      # 5. NotificationDispatchHigh
+      # 알림 발송 속도가 5분 window에서 분당 100건 초과 10분 지속 → info.
+      # 정상 피크: 경매 종료 임박 시 burst. 비정상: DDoS 또는 루프 버그.
+      - alert: NotificationDispatchHigh
+        expr: rate(domo_notification_dispatched_total[5m]) * 60 > 100
+        for: 10m
+        labels:
+          severity: info
+          team: backend
+        annotations:
+          summary: "High notification dispatch rate ({{ $labels.type }})"
+          description: >
+            Notification type '{{ $labels.type }}' is being dispatched at
+            {{ printf "%.0f" (mul $value 60) }} per minute for the past 10 minutes.
+            Investigate whether this is a legitimate traffic spike (auction ending)
+            or a dispatch loop bug.

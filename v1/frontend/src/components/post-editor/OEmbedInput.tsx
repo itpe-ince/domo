@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { fetchOEmbed, OEmbedData } from "@/lib/api";
+import { useI18n } from "@/i18n";
 
 interface OEmbedInputProps {
   open: boolean;
@@ -10,6 +11,7 @@ interface OEmbedInputProps {
 }
 
 export function OEmbedInput({ open, onClose, onAdd }: OEmbedInputProps) {
+  const { t } = useI18n();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<OEmbedData | null>(null);
@@ -54,7 +56,7 @@ export function OEmbedInput({ open, onClose, onAdd }: OEmbedInputProps) {
       ref={ref}
       className="absolute bottom-full mb-2 left-0 card p-4 z-40 shadow-xl w-80 space-y-3"
     >
-      <h4 className="text-sm font-semibold">외부 미디어 임베드</h4>
+      <p role="heading" aria-level={2} className="text-sm font-semibold">{t("post.editor.oembed.title")}</p>
       <p className="text-xs text-text-muted">YouTube, Instagram, TikTok, X URL을 붙여넣으세요.</p>
 
       <div className="flex gap-2">

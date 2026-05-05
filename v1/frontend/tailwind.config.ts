@@ -14,7 +14,7 @@ const config: Config = {
           DEFAULT: "#2A2018",
           hover: "#352821",
         },
-        border: "#3D2F24",
+        border: "#6B5440",
         primary: {
           DEFAULT: "#A8D76E",
           hover: "#BDE284",
@@ -23,7 +23,7 @@ const config: Config = {
         text: {
           primary: "#F5EFE4",
           secondary: "#B5A99A",
-          muted: "#7A6F60",
+          muted: "#998F82",
         },
         danger: "#E85D5D",
         warning: "#F0B14A",

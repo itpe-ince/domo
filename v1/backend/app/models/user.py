@@ -76,6 +76,47 @@ class User(Base):
         String(100), nullable=True, index=True
     )
 
+    # D'-1 artist-tier-release carry-over — sponsor_validity_days.
+    # NULL = lifetime (any completed Sponsorship qualifies forever).
+    # 1 / 7 / 30 / 90 / 365 = Sponsorship.completed_at must be within N days.
+    # Artist-only setting; ignored for subscriber / follower tier checks.
+    sponsor_validity_days: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
+
+    # A-6 artist-index-v1 — global ranking columns (alembic 0047)
+    # score 0-100 (weighted composite), rank/rank_region 1=1위, calc timestamp.
+    # Updated hourly by artist_index_cron_loop. NULL = not yet ranked.
+    artist_index_score: Mapped[float | None] = mapped_column(
+        nullable=True
+    )
+    artist_index_rank: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
+    artist_index_rank_region: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
+    artist_index_calculated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    # G'-8 artist-index-region-genre — region/genre ranking columns (alembic 0051)
+    # Region rank: 1-indexed within same country_code group.
+    # Genre rank: 1-indexed within same primary_genre group.
+    # primary_genre: most-posted genre tag (cron-computed from posts.genre_tags).
+    artist_index_score_region: Mapped[float | None] = mapped_column(
+        nullable=True
+    )
+    artist_index_rank_genre: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
+    artist_index_score_genre: Mapped[float | None] = mapped_column(
+        nullable=True
+    )
+    artist_index_primary_genre: Mapped[str | None] = mapped_column(
+        String(100), nullable=True
+    )
+
     # M3 GDPR fields (Phase 4)
     deleted_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True

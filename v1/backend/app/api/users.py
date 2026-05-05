@@ -11,10 +11,14 @@ from app.core.errors import ApiError
 from app.core.rate_limit import rate_limit
 from app.core.security import decode_token
 from app.db.session import get_db
+from app.models.artist_interview import ArtistInterview
 from app.models.post import Follow
+from app.models.press_kit import PressKit
 from app.models.search_log import SearchLog
 from app.models.sponsorship import Sponsorship
 from app.models.user import ArtistProfile, User
+from app.services.press_kit_generator import press_kit_to_out
+from app.services.story_translator import get_bio_for_locale
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -295,3 +299,131 @@ async def get_received_sponsorships(
             }
         )
     return {"data": out}
+
+
+# ─── C-1: Public artist interviews ───────────────────────────────────────────
+
+
+@router.get("/{user_id}/interviews")
+async def get_artist_interviews(
+    user_id: UUID,
+    locale: str | None = Query(None, pattern="^(ko|en|ja|zh|es)$"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Public endpoint — returns published interviews for an artist.
+
+    Auth: optional. Only 'published' interviews are returned.
+    Optionally filtered by ?locale=ko|en|ja|zh|es.
+    """
+    stmt = (
+        select(ArtistInterview)
+        .where(
+            ArtistInterview.artist_id == user_id,
+            ArtistInterview.status == "published",
+        )
+        .order_by(ArtistInterview.created_at.desc())
+    )
+    if locale:
+        stmt = stmt.where(ArtistInterview.locale == locale)
+
+    result = await db.execute(stmt)
+    rows = result.scalars().all()
+
+    data = [
+        {
+            "id": str(r.id),
+            "artist_id": str(r.artist_id),
+            "locale": r.locale,
+            "title": r.title,
+            "body_markdown": r.body_markdown,
+            "published_at": r.created_at.isoformat(),
+        }
+        for r in rows
+    ]
+    return {"data": data}
+
+
+# ─── C-3: Public artist bio by locale ────────────────────────────────────────
+
+
+@router.get("/{user_id}/bio")
+async def get_artist_bio_by_locale(
+    user_id: UUID,
+    locale: str | None = Query(None, pattern="^(ko|en|ja|zh|es)$"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return artist bio for a specific locale.
+
+    Fallback chain: requested locale → ko (default) → User.bio plain text.
+    Returns 404 if user not found.
+    Returns null bio if no translation exists for that locale.
+    """
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise ApiError("NOT_FOUND", "User not found", http_status=404)
+
+    requested_locale = locale or "ko"
+    bio = await get_bio_for_locale(
+        db=db,
+        user_id=user_id,
+        locale=requested_locale,
+        fallback_locale="ko",
+    )
+
+    # Final fallback: User.bio (raw, source language)
+    if bio is None:
+        bio = user.bio
+
+    return {
+        "data": {
+            "user_id": str(user_id),
+            "locale": requested_locale,
+            "bio": bio,
+            "is_machine_translated": bio is not None and bio != user.bio,
+        }
+    }
+
+
+# ─── C-2: Public press kit download ──────────────────────────────────────────
+
+
+@router.get("/{user_id}/press-kit")
+async def get_user_press_kit(
+    user_id: UUID,
+    locale: str = Query("ko", pattern="^(ko|en|ja|zh|es)$"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Public press kit download endpoint.
+
+    Returns the most recent non-expired press kit for the artist+locale pair,
+    but only if the artist has enabled public download (is_public=true).
+
+    Auth: optional. Artists must explicitly enable public download via
+    POST /me/press-kit/public-toggle (or admin sets is_public=true).
+
+    Returns 404 if no public press kit is available.
+    Response: { data: PressKitOut } — frontend redirects to download_url.
+    """
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc)
+    result = await db.execute(
+        select(PressKit)
+        .where(
+            PressKit.artist_id == user_id,
+            PressKit.locale == locale,
+            PressKit.is_public.is_(True),
+            PressKit.expires_at > now,
+        )
+        .order_by(PressKit.created_at.desc())
+        .limit(1)
+    )
+    press_kit = result.scalar_one_or_none()
+    if press_kit is None:
+        raise ApiError(
+            "NOT_FOUND",
+            "No public press kit available for this artist and locale.",
+            http_status=404,
+        )
+    return {"data": press_kit_to_out(press_kit).model_dump(mode="json")}

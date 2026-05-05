@@ -57,6 +57,9 @@ interface MediaPreviewListProps {
   uploadQueue: UploadTask[];
   // editor-image-studio PDCA #6-image — Step 6 props drilling
   onEditMedia?: (id: string) => void;
+  // upload-retry-ui (D-2) — retry / cancel upload tasks
+  onRetryUpload?: (taskId: string) => void;
+  onCancelUpload?: (taskId: string) => void;
 }
 
 /**
@@ -80,6 +83,8 @@ export function MediaPreviewList({
   onCaptionChange,
   uploadQueue,
   onEditMedia,
+  onRetryUpload,
+  onCancelUpload,
 }: MediaPreviewListProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -126,7 +131,11 @@ export function MediaPreviewList({
 
   return (
     <div className="space-y-3">
-      <MediaUploadProgress queue={uploadQueue} />
+      <MediaUploadProgress
+        queue={uploadQueue}
+        onRetry={onRetryUpload}
+        onCancel={onCancelUpload}
+      />
 
       {media.length > 0 && (
         <DndContext

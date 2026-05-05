@@ -1,233 +1,188 @@
-"""Payment webhook handler (Phase 4 M1 — Stripe ready).
+"""Stripe webhook handler (G'-1).
 
-Handles both mock and real Stripe events via the PaymentProvider
-abstraction. Uses the webhook_events table for idempotency so that
-Stripe retries don't double-process an event.
+POST /v1/webhooks/stripe — primary endpoint for all Stripe webhook events.
+POST /v1/webhooks/payments — legacy alias kept for backward compatibility.
 
-Mock provider payload shape:
-  { "type": "<event_type>", "data": { ... } }
+Security:
+- No Bearer auth (Stripe calls this, not the user).
+- Signature verified via stripe.Webhook.construct_event using
+  STRIPE_WEBHOOK_SECRET (whsec_...).
+- Raw request body must be read before any parsing.
 
-Real Stripe payload shape (after verify_webhook_signature → dict):
-  { "id": "evt_...", "type": "...", "data": { "object": { ... } } }
+Idempotency:
+- WebhookEvent table stores processed event IDs.
+- Duplicate event_id → 200 immediately (no reprocessing).
 
-We handle both shapes by checking the presence of the "id" and
-"data.object" fields.
+Error contract (Stripe retry behavior):
+- 400 → Stripe does NOT retry (permanent client error).
+- 500 → Stripe retries with exponential backoff.
+- 200 → Stripe marks event delivered.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any
+import logging
+import time
 
 from fastapi import APIRouter, Depends, Header, Request
-from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import logging
-
+from app.core.config import get_settings
 from app.core.errors import ApiError
+from app.core.metrics import (
+    webhook_duration_seconds,
+    webhook_idempotent_skip_total,
+    webhook_received_total,
+)
 from app.db.session import get_db
-from app.models.auction import Order
-from app.models.notification import Notification
-from app.models.sponsorship import Sponsorship, Subscription
-from app.models.user import User
 from app.models.webhook_event import WebhookEvent
-from app.services.email import get_email_provider
-from app.services.email.templates import payment_receipt as payment_receipt_tpl
-from app.services.payments import get_payment_provider
+from app.services.payments.webhook_handlers import HANDLERS
 
 log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 
 
-def _extract_object(event: dict, key: str) -> Any:
-    """Extract a field from either mock or Stripe payload shapes."""
-    data = event.get("data", {})
-    # Stripe shape: data.object.<key>
-    obj = data.get("object") if isinstance(data, dict) else None
-    if obj and key in obj:
-        return obj[key]
-    # Mock shape: data.<key>
-    return data.get(key) if isinstance(data, dict) else None
+# ─── Signature verification ───────────────────────────────────────────────────
 
+def _verify_stripe_signature(payload: bytes, sig_header: str | None) -> dict:
+    """Verify Stripe-Signature and return the parsed event dict.
 
-async def _handle_payment_succeeded(db: AsyncSession, event: dict) -> None:
-    intent_id = _extract_object(event, "intent_id") or _extract_object(event, "id")
-    if not intent_id:
-        return
+    Raises ApiError 400 on missing/invalid signature.
+    Falls back to JSON-only parsing when PAYMENT_PROVIDER=mock_stripe
+    so that integration tests don't need a real webhook secret.
+    """
+    settings = get_settings()
 
-    # Sponsorship
-    spo_result = await db.execute(
-        select(Sponsorship).where(Sponsorship.payment_intent_id == intent_id)
-    )
-    sponsorship = spo_result.scalar_one_or_none()
-    if sponsorship and sponsorship.status != "completed":
-        sponsorship.status = "completed"
-
-    # Order (auction settlement or buy-now)
-    order_result = await db.execute(
-        select(Order).where(Order.payment_intent_id == intent_id)
-    )
-    order = order_result.scalar_one_or_none()
-    if order and order.status == "pending_payment":
-        order.status = "paid"
-        order.paid_at = datetime.now(timezone.utc)
-
-        # Send payment receipt email to buyer
+    if settings.payment_provider == "stripe":
+        if not sig_header:
+            raise ApiError(
+                "MISSING_SIGNATURE",
+                "Stripe-Signature header is required",
+                http_status=400,
+            )
         try:
-            buyer_result = await db.execute(select(User).where(User.id == order.buyer_id))
-            buyer = buyer_result.scalar_one_or_none()
-            if buyer:
-                msg = payment_receipt_tpl.render(
-                    buyer_email=buyer.email,
-                    buyer_name=buyer.display_name,
-                    order_id=str(order.id),
-                    amount=str(order.amount),
-                    currency=order.currency,
-                    artist_name="",  # seller name lookup omitted for brevity
-                    artwork_title=str(order.product_post_id),
-                    paid_at=order.paid_at.isoformat(),
-                )
-                await get_email_provider().send(msg)
+            import stripe  # noqa: PLC0415  lazy import
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, settings.stripe_webhook_secret
+            )
+            return dict(event)
+        except Exception as exc:
+            raise ApiError(
+                "INVALID_SIGNATURE",
+                f"Stripe signature verification failed: {exc}",
+                http_status=400,
+            ) from exc
+    else:
+        # Mock / dev mode — parse raw JSON without signature check
+        import json
+        try:
+            return json.loads(payload)
+        except Exception as exc:
+            raise ApiError(
+                "INVALID_PAYLOAD",
+                f"Could not parse webhook payload: {exc}",
+                http_status=400,
+            ) from exc
+
+
+# ─── Core processing logic ────────────────────────────────────────────────────
+
+async def _process_event(db: AsyncSession, event: dict) -> dict:
+    """Idempotency guard + dispatch to event handler.
+
+    Returns a dict describing what happened.
+    """
+    event_id: str = event.get("id") or f"mock_{event.get('type', 'unknown')}_{time.time()}"
+    event_type: str = event.get("type") or "unknown"
+    start = time.perf_counter()
+
+    # Idempotency: attempt to insert — conflict means already processed.
+    try:
+        db.add(WebhookEvent(
+            id=event_id[:100],
+            type=event_type[:100],
+            payload=event,
+        ))
+        await db.flush()
+    except IntegrityError:
+        await db.rollback()
+        webhook_idempotent_skip_total.labels(event_type=event_type).inc()
+        log.debug("webhook idempotent skip event_id=%s type=%s", event_id, event_type)
+        return {"received": True, "duplicate": True, "type": event_type}
+
+    # Dispatch to handler
+    handler = HANDLERS.get(event_type)
+    if handler:
+        try:
+            await handler(db, event)
         except Exception as exc:  # noqa: BLE001
-            log.warning("payment receipt email failed: %s", exc)
-
-
-async def _handle_payment_failed(db: AsyncSession, event: dict) -> None:
-    intent_id = _extract_object(event, "intent_id") or _extract_object(event, "id")
-    if not intent_id:
-        return
-    spo_result = await db.execute(
-        select(Sponsorship).where(Sponsorship.payment_intent_id == intent_id)
-    )
-    sponsorship = spo_result.scalar_one_or_none()
-    if sponsorship:
-        sponsorship.status = "failed"
-        db.add(
-            Notification(
-                user_id=sponsorship.sponsor_id,
-                type="payment_failed",
-                title="결제 실패",
-                body="블루버드 후원 결제가 실패했습니다. 카드 정보를 확인해주세요.",
+            await db.rollback()
+            elapsed = time.perf_counter() - start
+            webhook_received_total.labels(event_type=event_type, result="error").inc()
+            webhook_duration_seconds.labels(event_type=event_type).observe(elapsed)
+            log.exception(
+                "webhook handler error event_id=%s type=%s: %s",
+                event_id,
+                event_type,
+                exc,
             )
-        )
+            # Re-raise so Stripe gets a 500 and retries
+            raise
+    else:
+        log.debug("webhook unhandled event_type=%s event_id=%s", event_type, event_id)
 
-
-async def _handle_subscription_deleted(db: AsyncSession, event: dict) -> None:
-    sub_id = _extract_object(event, "subscription_id") or _extract_object(event, "id")
-    if not sub_id:
-        return
-    result = await db.execute(
-        select(Subscription).where(Subscription.provider_subscription_id == sub_id)
+    await db.commit()
+    elapsed = time.perf_counter() - start
+    webhook_received_total.labels(event_type=event_type, result="success").inc()
+    webhook_duration_seconds.labels(event_type=event_type).observe(elapsed)
+    log.info(
+        "AUDIT action=WEBHOOK_PROCESSED event_type=%r event_id=%r result='success'",
+        event_type,
+        event_id,
     )
-    sub = result.scalar_one_or_none()
-    if sub and sub.status == "active":
-        sub.status = "cancelled"
-        sub.cancelled_at = datetime.now(timezone.utc)
+
+    # G'-4 placeholder: after G'-1 merges, extract user_id from handler result and fire:
+    # from app.services.analytics import capture_event
+    # capture_event(user_id, "webhook_processed_server", {"event_type": event_type, "result": "success"})
+
+    return {"received": True, "type": event_type}
 
 
-async def _handle_subscription_updated(db: AsyncSession, event: dict) -> None:
-    sub_id = _extract_object(event, "id") or _extract_object(event, "subscription_id")
-    if not sub_id:
-        return
-    result = await db.execute(
-        select(Subscription).where(Subscription.provider_subscription_id == sub_id)
-    )
-    sub = result.scalar_one_or_none()
-    if not sub:
-        return
-    cancel_at_period_end = _extract_object(event, "cancel_at_period_end")
-    if cancel_at_period_end is not None:
-        sub.cancel_at_period_end = bool(cancel_at_period_end)
+# ─── Endpoints ────────────────────────────────────────────────────────────────
 
+@router.post("/stripe")
+async def stripe_webhook(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    stripe_signature: str | None = Header(default=None, alias="stripe-signature"),
+):
+    """Primary Stripe webhook endpoint.
 
-async def _handle_invoice_payment_failed(db: AsyncSession, event: dict) -> None:
-    sub_id = _extract_object(event, "subscription")
-    if not sub_id:
-        return
-    result = await db.execute(
-        select(Subscription).where(Subscription.provider_subscription_id == sub_id)
-    )
-    sub = result.scalar_one_or_none()
-    if sub:
-        sub.status = "past_due"
-        db.add(
-            Notification(
-                user_id=sub.sponsor_id,
-                type="subscription_past_due",
-                title="정기 후원 결제 실패",
-                body="정기 후원 결제가 실패했습니다. 카드 정보를 업데이트해주세요.",
-            )
-        )
+    Stripe delivers events here. No user auth — signature-verified only.
+    Returns 200 for all valid events (including already-processed duplicates).
+    Returns 400 for signature/parsing errors (Stripe will NOT retry).
+    Returns 500 for DB/handler errors (Stripe WILL retry).
+    """
+    payload = await request.body()
 
-
-async def _handle_charge_refunded(db: AsyncSession, event: dict) -> None:
-    intent_id = _extract_object(event, "payment_intent") or _extract_object(event, "intent_id")
-    if not intent_id:
-        return
-    order_result = await db.execute(
-        select(Order).where(Order.payment_intent_id == intent_id)
-    )
-    order = order_result.scalar_one_or_none()
-    if order and order.status == "paid":
-        order.status = "refunded"
-        db.add(
-            Notification(
-                user_id=order.buyer_id,
-                type="order_refunded",
-                title="환불 완료",
-                body=f"주문 ₩{int(order.amount):,}이 환불되었습니다.",
-                link=f"/orders",
-            )
-        )
-
-
-# Event type → handler
-HANDLERS = {
-    "payment_intent.succeeded": _handle_payment_succeeded,
-    "payment_intent.payment_failed": _handle_payment_failed,
-    "customer.subscription.deleted": _handle_subscription_deleted,
-    "customer.subscription.updated": _handle_subscription_updated,
-    "invoice.payment_failed": _handle_invoice_payment_failed,
-    "charge.refunded": _handle_charge_refunded,
-}
+    event = _verify_stripe_signature(payload, stripe_signature)
+    result = await _process_event(db, event)
+    return {"data": result}
 
 
 @router.post("/payments")
 async def payments_webhook(
     request: Request,
-    stripe_signature: str | None = Header(default=None),
     db: AsyncSession = Depends(get_db),
+    stripe_signature: str | None = Header(default=None, alias="stripe-signature"),
 ):
+    """Legacy alias for /webhooks/payments → delegates to /webhooks/stripe logic.
+
+    Kept for backward compatibility with existing Stripe webhook configuration
+    from Phase 4. New deployments should use /v1/webhooks/stripe.
+    """
     payload = await request.body()
-    provider = get_payment_provider()
-
-    try:
-        event = await provider.verify_webhook_signature(payload, stripe_signature)
-    except ValueError as e:
-        raise ApiError("INVALID_REQUEST", str(e), http_status=400) from e
-
-    event_type = event.get("type")
-    event_id = event.get("id") or f"mock_{event_type}_{datetime.now(timezone.utc).timestamp()}"
-
-    # Idempotency: reject duplicate event IDs
-    try:
-        db.add(
-            WebhookEvent(
-                id=event_id[:100],
-                type=event_type[:100] if event_type else "unknown",
-                payload=event,
-            )
-        )
-        await db.flush()
-    except IntegrityError:
-        await db.rollback()
-        return {"data": {"received": True, "duplicate": True, "type": event_type}}
-
-    handler = HANDLERS.get(event_type)
-    if handler:
-        await handler(db, event)
-
-    await db.commit()
-    return {"data": {"received": True, "type": event_type}}
+    event = _verify_stripe_signature(payload, stripe_signature)
+    result = await _process_event(db, event)
+    return {"data": result}

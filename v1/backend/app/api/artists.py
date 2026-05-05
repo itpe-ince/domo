@@ -1,5 +1,6 @@
 import random
 import string
+import uuid as _uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Query
@@ -9,11 +10,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
 from app.core.errors import ApiError
+from app.core.rate_limit import rate_limit
 from app.db.session import get_db
 from app.models.notification import Notification
 from app.models.school import School
-from app.models.user import ArtistApplication, User
+from app.models.user import ArtistApplication, ArtistProfile, User
 from app.schemas.artist import ArtistApplicationCreate, ArtistApplicationOut
+from app.schemas.artist_index import ArtistIndexEntry, ArtistRankingResponse
+from app.services.artist_index_scoring import derive_tier_badge
 from app.services.kyc import require_kyc_verified
 
 # In-memory store for dev (Redis in production)
@@ -196,6 +200,186 @@ async def confirm_edu_verification(
     del _edu_verification_codes[email]
     await db.commit()
     return {"data": {"verified": True, "edu_email": email}}
+
+
+# ─── Artist Index endpoints (A-6) ─────────────────────────────────────────────
+
+
+@router.get("/index")
+async def get_artist_index(
+    region: str | None = Query(None, description="Filter by country_code (ISO 3166-1 alpha-2)"),
+    genre: str | None = Query(None, description="Filter by primary genre tag"),
+    limit: int = Query(50, ge=1, le=100),
+    cursor: str | None = Query(None, description="Opaque cursor: base10 rank offset"),
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("artist_index_read"),
+):
+    """GET /v1/artists/index — Public global ranking list.
+
+    Returns ranked artists ordered by artist_index_rank ASC.
+    Anonymous access allowed (no auth required).
+    Rate limit: artist_index_read (60/min anon, 120/min logged-in).
+
+    Filters:
+      - region: country_code (e.g. "KR", "PE", "US")
+      - genre: artist_profiles.genre_tags contains this value
+    """
+    # Cursor is a rank offset (integer)
+    rank_offset = 0
+    if cursor:
+        try:
+            rank_offset = int(cursor)
+        except ValueError:
+            rank_offset = 0
+
+    # Build query with optional filters.
+    # G'-8: when region= filter active → sort by rank_region;
+    #        when genre= filter active → sort by rank_genre;
+    #        both → sort by region rank (primary) then genre rank (secondary);
+    #        neither → sort by global rank (original behaviour).
+    stmt = (
+        select(User, ArtistProfile)
+        .join(ArtistProfile, ArtistProfile.user_id == User.id, isouter=True)
+        .where(
+            User.role == "artist",
+            User.status == "active",
+            User.deleted_at.is_(None),
+            User.artist_index_rank.is_not(None),
+        )
+    )
+
+    if region:
+        stmt = stmt.where(User.country_code == region.upper())
+
+    if genre:
+        # Match against artist_index_primary_genre (cron-computed) OR genre_tags contains
+        from sqlalchemy import or_
+        from sqlalchemy.dialects.postgresql import ARRAY
+        from sqlalchemy import Text, cast
+        stmt = stmt.where(
+            or_(
+                User.artist_index_primary_genre == genre,
+                ArtistProfile.genre_tags.contains(cast([genre], ARRAY(Text))),
+            )
+        )
+
+    # Ordering: prefer region/genre rank columns when filters are active
+    if region and not genre:
+        if rank_offset > 0:
+            stmt = stmt.where(User.artist_index_rank_region > rank_offset)
+        stmt = stmt.order_by(User.artist_index_rank_region.asc()).limit(limit + 1)
+    elif genre and not region:
+        if rank_offset > 0:
+            stmt = stmt.where(User.artist_index_rank_genre > rank_offset)
+        stmt = stmt.order_by(User.artist_index_rank_genre.asc()).limit(limit + 1)
+    elif region and genre:
+        if rank_offset > 0:
+            stmt = stmt.where(User.artist_index_rank_region > rank_offset)
+        stmt = stmt.order_by(
+            User.artist_index_rank_region.asc(),
+            User.artist_index_rank_genre.asc(),
+        ).limit(limit + 1)
+    else:
+        if rank_offset > 0:
+            stmt = stmt.where(User.artist_index_rank > rank_offset)
+        stmt = stmt.order_by(User.artist_index_rank.asc()).limit(limit + 1)
+
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    has_more = len(rows) > limit
+    rows = rows[:limit]
+
+    entries = []
+    for user_row, profile_row in rows:
+        # Primary genre: prefer cron-computed artist_index_primary_genre,
+        # fall back to first tag from artist_profiles.genre_tags.
+        primary_genre = user_row.artist_index_primary_genre
+        if not primary_genre and profile_row and profile_row.genre_tags:
+            primary_genre = profile_row.genre_tags[0]
+
+        entries.append(
+            ArtistIndexEntry(
+                user_id=str(user_row.id),
+                username=user_row.display_name,
+                avatar_url=user_row.avatar_url,
+                country=user_row.country_code,
+                primary_genre=primary_genre,
+                score=user_row.artist_index_score or 0.0,
+                rank=user_row.artist_index_rank,
+                tier_badge=derive_tier_badge(user_row.artist_index_rank),
+                rank_region=user_row.artist_index_rank_region,
+                rank_genre=user_row.artist_index_rank_genre,
+            )
+        )
+
+    next_cursor = None
+    if has_more and entries:
+        # Use region/genre rank as cursor when those filters are active
+        if region and not genre:
+            next_cursor = str(entries[-1].rank_region) if entries[-1].rank_region else str(entries[-1].rank)
+        elif genre and not region:
+            next_cursor = str(entries[-1].rank_genre) if entries[-1].rank_genre else str(entries[-1].rank)
+        else:
+            next_cursor = str(entries[-1].rank)
+
+    # Double-wrap: apiFetch<ArtistIndexListResponse> unwraps json.data → ArtistIndexListResponse
+    # So the envelope must be {"data": {"data": [...], "next_cursor": ..., "total": ...}}
+    return {
+        "data": {
+            "data": [e.model_dump() for e in entries],
+            "next_cursor": next_cursor,
+            "total": None,  # Full count expensive — omitted; use has_more pattern
+        }
+    }
+
+
+@router.get("/{user_id}/index")
+async def get_artist_ranking(
+    user_id: str,
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("artist_index_read"),
+):
+    """GET /v1/artists/{user_id}/index — Individual artist ranking.
+
+    Returns score, rank, tier_badge, and last_calculated_at for one artist.
+    Used by public artist profile page badge display.
+    """
+    try:
+        uid = _uuid.UUID(user_id)
+    except ValueError:
+        raise ApiError("NOT_FOUND", "Artist not found", http_status=404)
+
+    result = await db.execute(
+        select(User).where(
+            User.id == uid,
+            User.role == "artist",
+            User.status == "active",
+            User.deleted_at.is_(None),
+        )
+    )
+    user = result.scalar_one_or_none()
+    if not user:
+        raise ApiError("NOT_FOUND", "Artist not found", http_status=404)
+
+    if user.artist_index_rank is None:
+        raise ApiError(
+            "NOT_RANKED",
+            "This artist has not been ranked yet. Rankings are calculated hourly.",
+            http_status=404,
+        )
+
+    return {
+        "data": ArtistRankingResponse(
+            score=user.artist_index_score or 0.0,
+            rank=user.artist_index_rank,
+            rank_region=user.artist_index_rank_region,
+            rank_genre=user.artist_index_rank_genre,
+            primary_genre=user.artist_index_primary_genre,
+            tier_badge=derive_tier_badge(user.artist_index_rank),
+            last_calculated_at=user.artist_index_calculated_at,
+        ).model_dump(mode="json")
+    }
 
 
 @router.get("/schools/search")

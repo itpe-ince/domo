@@ -21,7 +21,8 @@
     "following": "팔로잉",
     "followers": "팔로워",
     "likes": "좋아요",
-    "comments": "댓글"
+    "comments": "댓글",
+    "close": "닫기"
   },
   "nav": {
     "home": "홈",
@@ -37,7 +38,12 @@
     "settings": "설정",
     "admin": "관리자",
     "communities": "커뮤니티",
-    "draftsList": "임시저장 목록"
+    "draftsList": "임시저장 목록",
+    "mySponsoring": "내 후원 내역",
+    "patronageDashboard": "후원 대시보드",
+    "tierBenefits": "후원 혜택 설정",
+    "artistIndex": "신진작가 인덱스",
+    "stories": "스토리 허브"
   },
   "home": {
     "title": "Domo Lounge",
@@ -50,10 +56,24 @@
   },
   "feed": {
     "title": "피드",
+    "titlePersonalized": "맞춤 피드",
     "subtitleAuth": "팔로우한 작가와 인기 작품을 섞어 보여드려요.",
+    "subtitlePersonalized": "팔로잉 + 추천 + 인기 작품을 섞어 보여드립니다.",
     "subtitleGuest": "지금 인기 있는 신진 작가들의 작품이에요.",
     "noPosts": "표시할 포스트가 없습니다.",
-    "loadError": "피드를 불러오지 못했습니다"
+    "loadError": "피드를 불러오지 못했습니다",
+    "loadMore": "더 보기",
+    "emptyTitle": "팔로우할 작가를 발견해 보세요",
+    "emptySubtitle": "아직 팔로우한 작가가 없습니다. 추천 작가를 팔로우하고 피드를 채워보세요.",
+    "emptyCtaFollow": "추천 작가 보기",
+    "emptyCtaSponsor": "Blue Bird 알아보기",
+    "algoToggleLabel": "피드 정렬 방식",
+    "algoDefault": "최신순",
+    "algoPersonalized": "맞춤 추천",
+    "reasonFollowing": "팔로잉",
+    "reasonTrending": "인기",
+    "reasonSimilarGenre": "비슷한 장르",
+    "reasonLabel": "추천 이유: {{reason}}"
   },
   "followingPage": {
     "title": "팔로잉",
@@ -69,7 +89,44 @@
     "all": "전체",
     "allPosts": "모든 포스트",
     "products": "판매/경매 작품",
-    "general": "일반 게시물"
+    "general": "일반 게시물",
+    "noPosts": "표시할 포스트가 없습니다.",
+    "tabs": {
+      "ariaLabel": "탐색 탭",
+      "trending": "인기",
+      "new": "최신",
+      "region": "지역",
+      "genre": "장르",
+      "pricing": "판매/경매"
+    },
+    "filters": {
+      "regionLabel": "지역",
+      "regionAll": "전체 지역",
+      "regionSEA": "동남아시아",
+      "regionLATAM": "남미",
+      "regionEEU": "동유럽",
+      "regionEAS": "동아시아",
+      "regionNAM": "북미",
+      "regionWEU": "서유럽",
+      "genreLabel": "장르",
+      "genreAll": "전체 장르",
+      "genreWatercolor": "수채화",
+      "genreOil": "유화",
+      "genreDigital": "디지털",
+      "genreSculpture": "조각",
+      "genreMixed": "혼합매체",
+      "pricingHint": "경매 또는 즉시구매 가능한 작품을 표시합니다."
+    },
+    "hero": {
+      "ariaLabel": "오늘의 작가",
+      "badge": "오늘의 작가",
+      "viewProfile": "프로필 보기"
+    },
+    "rankingPreview": {
+      "ariaLabel": "신진작가 인덱스 미리보기",
+      "title": "신진작가 인덱스",
+      "viewAll": "더 많은 신진작가 보기"
+    }
   },
   "search": {
     "placeholder": "검색어를 입력하세요",
@@ -86,14 +143,51 @@
     "sortLatest": "최신순",
     "sortPopular": "인기순",
     "sortEnding": "마감임박",
-    "searchHint": "검색어를 입력해 작가, 작품, 포스트를 찾아보세요."
+    "searchHint": "검색어를 입력해 작가, 작품, 포스트를 찾아보세요.",
+    "v2": {
+      "recentHistory": "최근 검색 기록",
+      "popular": "인기 검색어",
+      "clearHistory": "기록 삭제",
+      "priceMin": "최소 가격",
+      "priceMax": "최대 가격",
+      "regionPlaceholder": "지역 (예: KR,US)",
+      "activeOnly": "활성만",
+      "filterPrice": "가격",
+      "filterRegion": "지역",
+      "filterActive": "활성",
+      "sortRelevance": "관련도",
+      "typeAll": "전체",
+      "typeArtists": "작가",
+      "typeArtworks": "작품",
+      "typePosts": "포스트",
+      "noHistory": "최근 검색 기록이 없습니다",
+      "noPopular": "인기 검색어가 없습니다",
+      "historyCleared": "검색 기록이 삭제되었습니다"
+    }
   },
   "notifications": {
     "title": "알림",
     "markAllRead": "모두 읽음",
     "loginRequired": "로그인 후 알림을 확인할 수 있습니다.",
     "loginHint": "좌측 사이드바의 로그인 버튼을 눌러주세요.",
-    "empty": "알림이 없습니다."
+    "empty": "알림이 없습니다.",
+    "center": {
+      "title": "알림",
+      "markAllRead": "모두 읽음 처리",
+      "empty": {
+        "all": "알림이 없습니다",
+        "unread": "읽지 않은 알림이 없습니다"
+      },
+      "filter": {
+        "all": "전체",
+        "unread": "미확인",
+        "auction": "옥션",
+        "sponsorship": "후원",
+        "engagement": "좋아요/댓글",
+        "system": "시스템"
+      },
+      "markedAsRead": "{{count}}개 알림 읽음 처리됨"
+    }
   },
   "post": {
     "untitled": "무제",
@@ -116,8 +210,12 @@
     "medium": "매체",
     "year": "제작 연도",
     "auctionSell": "경매로 판매",
+    "auctionBadge": "경매",
     "buyNow": "즉시구매 가능",
     "buyNowPrice": "즉시구매가 (USD)",
+    "locationPrompt": "장소명을 입력하세요 (예: 서울시립미술관)",
+    "genreLabel": "장르: {{value}}",
+    "buyNowPriceLabel": "즉시구매가: ${{price}}",
     "type": {
       "product": {
         "disabledTitle": "상품 포스트는 작가만 작성 가능",
@@ -194,6 +292,22 @@
           "complete": "업로드 완료",
           "failed": "{{n}}개 업로드 실패"
         },
+        "retry": {
+          "button": "다시 시도"
+        },
+        "cancel": {
+          "button": "취소"
+        },
+        "error": {
+          "tooLarge": "파일 크기 초과 (50MB 이하)",
+          "unsupportedType": "지원하지 않는 파일 형식",
+          "authExpired": "인증 만료. 다시 로그인하세요",
+          "rateLimit": "잠시 후 다시 시도하세요",
+          "serverError": "서버 오류. 다시 시도하세요",
+          "networkError": "네트워크 오류",
+          "cancelled": "취소됨",
+          "unknown": "업로드 실패"
+        },
         "uploading": "업로드 중...",
         "studio": {
           "image": {
@@ -267,6 +381,15 @@
           }
         }
       },
+      "oembed": {
+        "title": "외부 미디어 임베드"
+      },
+      "schedulePicker": {
+        "title": "예약 게시",
+        "hint": "설정한 시간에 자동으로 공개됩니다.",
+        "cancel": "예약 취소"
+      },
+      "scheduledLabel": "예약",
       "publishOptions": {
         "title": "발행 옵션",
         "visibility": {
@@ -396,12 +519,73 @@
       }
     },
     "detail": {
-      "tierRestricted": "이 포스트는 특정 구독자/후원자만 볼 수 있습니다"
+      "tierRestricted": "이 포스트는 특정 구독자/후원자만 볼 수 있습니다",
+      "tierRestrictedTitle": "우선 공개 중인 포스트입니다",
+      "tierRestrictedHint": "{{artistName}} 작가의 구독자/후원자에게 먼저 공개되고 있습니다.",
+      "tierRestrictedSponsorCta": "이 작가 후원하기",
+      "tierRestrictedSubscribeCta": "정기 구독하기",
+      "tierRestrictedHistoryCta": "내 후원 내역"
+    },
+    "tierLocked": {
+      "badge": "후원자 우선",
+      "hint": "후원하면 즉시 볼 수 있습니다"
+    }
+  },
+  "me": {
+    "settings": {
+      "sponsorValidity": {
+        "title": "후원 유효 기간",
+        "hint": "완료된 일회 후원이 tier 자격으로 인정되는 기간입니다.",
+        "lifetime": "무제한",
+        "days": "{{n}}일",
+        "save": "저장",
+        "saved": "저장됨"
+      }
     }
   },
   "bluebird": {
-    "unitLabel": "블루버드",
-    "perUnit": "$1 / 1 블루버드"
+    "button": {
+      "label": "Blue Bird 후원"
+    },
+    "modal": {
+      "title": "Blue Bird 후원",
+      "subtitle": "{{artistName}}님을 응원하세요"
+    },
+    "intro": "블루버드 1개 = $1. 작가를 직접 응원할 수 있는 가장 쉬운 방법입니다.",
+    "type": {
+      "oneTime": "일회 후원",
+      "subscription": "정기 후원 (월간)"
+    },
+    "amount": {
+      "label": "금액 선택",
+      "custom": "직접 입력",
+      "customPlaceholder": "직접 입력 (최소 $1)",
+      "total": "합계: ${{amount}}",
+      "totalMonthly": "월 ${{amount}}"
+    },
+    "payment": {
+      "title": "결제 수단",
+      "hint": "카드 정보는 Stripe가 안전하게 처리합니다.",
+      "mockHint": "개발 모드 (실제 결제 없음)"
+    },
+    "confirm": {
+      "button": "{{amount}} 후원하기",
+      "buttonMonthly": "매월 {{amount}} 정기 후원",
+      "processing": "결제 처리 중...",
+      "summary": {
+        "artist": "작가",
+        "amount": "금액",
+        "type": "후원 유형"
+      }
+    },
+    "success": {
+      "title": "후원 완료!",
+      "message": "{{artistName}}님께 Blue Bird를 보냈습니다.",
+      "messageMonthly": "매월 {{artistName}}님을 정기 후원합니다.",
+      "tier": "{{tier}} 등급이 활성화되었습니다",
+      "tierHint": "작가 한정 콘텐츠에 우선 액세스할 수 있습니다.",
+      "close": "닫기"
+    }
   },
   "artist": {
     "applyTitle": "작가 심사 신청",
@@ -473,27 +657,17 @@
       "generate": "공유 카드 생성",
       "generating": "공유 카드 생성 중...",
       "regenerate": "공유 카드 다시 만들기",
+      "retry": "다시 시도",
       "download": "이미지 다운로드",
       "copyLink": "링크 복사",
       "copied": "링크가 복사되었습니다",
+      "errorUnauthorized": "로그인이 필요합니다",
       "errorOwnerOnly": "작가만 생성할 수 있습니다",
       "errorActiveOnly": "진행 중인 경매만 가능합니다",
       "errorRateLimit": "잠시 후 다시 시도해주세요",
       "errorGenerate": "공유 카드 생성에 실패했습니다",
       "loading": "공유 카드 생성 중..."
     }
-  },
-  "share": {
-    "title": "공유 카드",
-    "generate": "공유 카드 생성",
-    "download": "이미지 다운로드",
-    "copyLink": "링크 복사",
-    "copied": "링크가 복사되었습니다",
-    "errorOwnerOnly": "작가만 생성할 수 있습니다",
-    "errorActiveOnly": "진행 중인 경매만 가능합니다",
-    "errorRateLimit": "잠시 후 다시 시도해주세요",
-    "errorGenerate": "공유 카드 생성에 실패했습니다",
-    "loading": "공유 카드 생성 중..."
   },
   "notification": {
     "type": {
@@ -504,7 +678,797 @@
           "1h": "경매 종료 1시간 전"
         },
         "ended": "경매 종료"
+      },
+      "like": "좋아요",
+      "comment": "댓글",
+      "follow": "팔로우",
+      "sponsor": "후원",
+      "system": "시스템 알림"
+    }
+  },
+  "patronage": {
+    "supporter": {
+      "title": "내 후원 내역",
+      "subtitle": "후원 내역을 확인하고 구독을 관리하세요",
+      "loginRequired": "후원 내역을 보려면 로그인하세요.",
+      "summary": {
+        "artistsCount": "응원 중인 작가",
+        "lifetimeAmount": "누적 후원 금액",
+        "activeSubscriptions": "활성 구독"
+      },
+      "subscriptions": {
+        "title": "정기 구독",
+        "cancel": "구독 취소",
+        "cancelAtEnd": "기간 종료 후 취소",
+        "since": "시작일",
+        "benefits": "등급 혜택",
+        "changeAmount": "금액 변경 (준비 중)",
+        "empty": "아직 응원하는 작가가 없습니다.",
+        "pastLabel": "지난 구독"
+      },
+      "history": {
+        "title": "일회 후원 내역",
+        "empty": "아직 일회 후원 내역이 없습니다.",
+        "showMore": "더 보기",
+        "status": {
+          "succeeded": "완료",
+          "completed": "완료",
+          "failed": "실패",
+          "refunded": "환불",
+          "pending": "처리 중"
+        }
+      },
+      "cancel": {
+        "modal": {
+          "title": "구독 취소",
+          "reason": {
+            "too_expensive": "금액이 부담됩니다",
+            "changed_mind": "마음이 바뀌었습니다",
+            "not_satisfied": "혜택이 만족스럽지 않습니다",
+            "other": "기타"
+          },
+          "confirmEnd": "정기 결제 기간 종료 후 취소",
+          "confirmImmediate": "즉시 취소",
+          "cta": "취소 확인"
+        }
+      },
+      "tier": {
+        "benefits": {
+          "title": "등급 혜택",
+          "subscriber": "새 게시물 선공개(공개 1~24시간 전 열람), 독점 콘텐츠 피드, 구독자 전용 메시지",
+          "sponsor": "구독자 혜택 전부 + 작가 Q&A 우선 참여, 프로필 스폰서 뱃지",
+          "follower": "팔로워 뱃지, 댓글 우선 노출",
+          "detailsLink": "혜택은 플랫폼 기본값입니다. 작가별로 커스터마이즈할 수 있습니다."
+        }
+      },
+      "empty": {
+        "title": "아직 후원 내역이 없습니다",
+        "exploreCta": "작가 발견하기"
       }
+    },
+    "support": {
+      "landing": {
+        "intro": "블루버드 후원 알아보기",
+        "blueBirdAbout": "블루버드는 $1 단위의 마이크로 후원으로 좋아하는 작가를 직접 응원할 수 있습니다.",
+        "tierBenefits": "등급 혜택",
+        "myHistory": "내 후원 내역",
+        "exploreArtists": "작가 탐색하기"
+      }
+    },
+    "artist": {
+      "title": "후원 대시보드",
+      "summary": {
+        "supporters": "총 후원자",
+        "monthlyRevenue": "이번 달 수익",
+        "subscribers": "활성 구독",
+        "tierDistribution": "등급 분포"
+      },
+      "tier": {
+        "subscriber": "정기 후원자",
+        "sponsor": "일시 후원자",
+        "follower": "팔로워"
+      },
+      "chart": {
+        "daily": "수익 (최근 30일)",
+        "monthly": "수익 (최근 12개월)",
+        "toggle": {
+          "daily": "일별",
+          "monthly": "월별"
+        }
+      },
+      "supporters": {
+        "table": {
+          "title": "후원자 목록"
+        },
+        "filter": {
+          "active": "활성",
+          "churned": "이탈",
+          "all": "전체"
+        },
+        "col": {
+          "username": "닉네임",
+          "tier": "등급",
+          "since": "후원 시작",
+          "lifetime": "누적 금액",
+          "status": "상태"
+        },
+        "empty": "아직 후원자가 없습니다.",
+        "loadMore": "더 보기"
+      },
+      "payout": {
+        "request": "송금 요청",
+        "balance": "출금 가능 잔액",
+        "balanceHint": "누적 수익 (Phase 6에서 실제 정산 연동 예정)",
+        "modalTitle": "송금 요청",
+        "amountLabel": "금액 (USD 센트)",
+        "amountPlaceholder": "예: 5000 (= $50)",
+        "methodLabel": "방법",
+        "methodBank": "은행 송금",
+        "methodStripe": "Stripe",
+        "success": "송금 요청이 접수되었습니다."
+      },
+      "empty": {
+        "title": "아직 후원자가 없습니다",
+        "cta": "Blue Bird 후원 활성화 안내 보기"
+      }
+    },
+    "churn": {
+      "feedback": {
+        "preview": "피드백 미리보기"
+      },
+      "empty": {
+        "celebrated": "최근 30일 이탈 후원자가 없습니다 ✨"
+      }
+    }
+  },
+  "tierBenefits": {
+    "editor": {
+      "title": "후원 등급 혜택 설정",
+      "subtitle": "각 등급별 혜택을 직접 정의하세요. 설정하지 않은 등급은 플랫폼 기본 혜택이 표시됩니다."
+    },
+    "tier": {
+      "subscriber": "구독자",
+      "sponsor": "후원자",
+      "follower": "팔로워"
+    },
+    "benefit": {
+      "add": "추가",
+      "remove": "삭제",
+      "placeholder": "새 혜택을 입력하세요 (최대 200자)",
+      "maxLength": "혜택은 최대 200자까지 입력 가능합니다.",
+      "maxCount": "혜택은 최대 {max}개까지 설정 가능합니다.",
+      "emptyHint": "아직 설정된 혜택이 없습니다. 아래에서 추가해보세요."
+    },
+    "welcomeMessage": {
+      "label": "환영 메시지 (선택)",
+      "placeholder": "후원자에게 보내는 감사 인사를 입력하세요 (최대 500자)",
+      "maxLength": "환영 메시지는 최대 500자까지 입력 가능합니다."
+    },
+    "action": {
+      "save": "저장",
+      "reset": "기본값 사용",
+      "resetConfirm": "이 등급의 혜택을 플랫폼 기본값으로 초기화하시겠습니까?",
+      "saving": "저장 중...",
+      "saved": "저장됨"
+    },
+    "preview": {
+      "title": "미리보기"
+    },
+    "profile": {
+      "title": "이 작가의 후원 혜택"
+    },
+    "empty": {
+      "platformDefault": "{tier}의 기본 혜택"
+    },
+    "error": {
+      "tooLong": "혜택은 최대 200자까지 입력 가능합니다.",
+      "tooMany": "혜택은 최대 10개까지 설정 가능합니다.",
+      "saveError": "저장에 실패했습니다. 다시 시도해주세요."
+    }
+  },
+  "common_ui": {
+    "comingSoon": "준비 중",
+    "optional": "선택",
+    "perMonth": "/월",
+    "auctionBadge": "경매",
+    "buyNowBadge": "즉시구매"
+  },
+  "bluebird_modal": {
+    "closeAriaLabel": "닫기",
+    "typeSelectAriaLabel": "후원 유형 선택",
+    "amountSelectAriaLabel": "금액 선택",
+    "cardInputAriaLabel": "카드 정보 입력",
+    "mockDevBanner": "개발 모드 — 실제 결제 없음 (Stripe 미연결)",
+    "mockCardPlaceholder": "테스트 카드: 4242 4242 4242 4242",
+    "mockCardAriaLabel": "테스트 카드 번호",
+    "messageLabel": "메시지 (선택)",
+    "messagePlaceholder": "작가에게 짧은 응원 메시지를 남겨보세요",
+    "messageAriaLabel": "응원 메시지",
+    "visibilityLabel": "공개 범위",
+    "visibilityAriaLabel": "공개 범위",
+    "visibilityPublic": "전체 공개",
+    "visibilityArtistOnly": "작가에게만",
+    "visibilityPrivate": "비공개",
+    "anonymousLabel": "익명으로 후원",
+    "nextStepsLabel": "다음 단계",
+    "minAmountError": "최소 $1 이상 입력해주세요.",
+    "cardInfoRequiredError": "카드 정보를 모두 입력해주세요.",
+    "setupInitError": "결제 수단 초기화에 실패했습니다.",
+    "unknownError": "알 수 없는 오류",
+    "stripeError": {
+      "cardDeclined": "카드가 거절되었습니다. 다른 카드를 시도해보세요.",
+      "insufficientFunds": "잔액이 부족합니다.",
+      "authRequired": "카드 인증에 실패했습니다. 다시 시도해주세요.",
+      "unknown": "결제 오류가 발생했습니다. 다시 시도해주세요."
+    }
+  },
+  "cancel_modal": {
+    "discountComingSoonNote": "Stripe coupon 연동은 Phase 6+에서 지원 예정입니다.",
+    "pauseComingSoonNote": "구독 일시 중지 기능은 Phase 6+에서 지원 예정입니다.",
+    "feedbackPlaceholder": "작가에게 어떤 점이 아쉬웠는지 알려주세요...",
+    "feedbackAriaLabel": "피드백 입력",
+    "otherFeedbackPlaceholder": "자유롭게 의견을 남겨주세요...",
+    "otherFeedbackAriaLabel": "기타 피드백",
+    "optionalSuffix": "(선택)"
+  },
+  "churn": {
+    "last30DaysSuffix": "(최근 30일)",
+    "comingSoonSuffix": "(준비 중)"
+  },
+  "post_card": {
+    "bluebirdAriaLabel": "Blue Bird 후원",
+    "bluebirdLabel": "후원"
+  },
+  "retention": {
+    "thankyou": {
+      "title": "감사합니다!",
+      "welcomeMessageDefault": "{{artistName}} 작가님의 작품을 응원해 주셔서 감사합니다.",
+      "nextSteps": {
+        "seeWorks": "{{artistName}} 작가의 다른 작품 보기",
+        "exploreSimilar": "비슷한 작가 발견하기",
+        "seeHistory": "내 후원 내역 보기"
+      }
+    },
+    "cancel": {
+      "winback": {
+        "title": "잠깐, 다시 생각해 보실래요?",
+        "offer": {
+          "discount": "첫 달 50% 할인 제공",
+          "pause": "1개월 일시 중지 옵션",
+          "message": "작가에게 직접 피드백을 남겨주세요.",
+          "feedback": "피드백 (선택)"
+        },
+        "confirmCancel": "그래도 취소",
+        "reconsider": "다시 생각해 볼게요"
+      }
+    },
+    "winback": {
+      "success": {
+        "title": "쿠폰이 적용되었습니다!",
+        "discountApplied": "{{discount}} 할인 적용됨",
+        "durationOnce": "이번 결제에 1회 적용",
+        "durationMonths": "{{months}}개월간 할인 유지",
+        "cancelReverted": "구독이 취소 없이 계속됩니다. 응원해 주셔서 감사합니다!",
+        "cta": "확인"
+      },
+      "offer": {
+        "discount50": "월 50% 할인 1개월 적용",
+        "discount50Desc": "이번 달 결제금액의 50%를 절약하세요. 1개월 적용 후 정상 금액으로 전환됩니다.",
+        "discount30": "30% 할인 1개월 적용",
+        "discount30Desc": "이번 달 결제금액의 30%를 절약하세요. 1개월 적용 후 정상 금액으로 전환됩니다.",
+        "discount20": "20% 할인 1개월 적용",
+        "discount20Desc": "이번 달 결제금액의 20%를 절약하세요. 1개월 적용 후 정상 금액으로 전환됩니다.",
+        "discount10": "10% 할인 1회 적용",
+        "discount10Desc": "다음 결제에서 10% 할인이 적용됩니다.",
+        "dmComingSoon": "작가 직접 메시지 기능은 곧 제공될 예정입니다."
+      },
+      "banner": {
+        "title": "예전에 응원하던 작가입니다",
+        "subtitle": "{{artistName}} 작가를 다시 후원하시겠어요?",
+        "resubscribeCta": "다시 구독하기",
+        "dismiss": "나중에"
+      },
+      "conditional": {
+        "tooExpensive": "{{artistName}} — 지금 할인 코드 적용 가능합니다. 다시 응원해 보세요!",
+        "notSatisfied": "{{artistName}} 작가가 새로운 시리즈를 시작했어요. 한번 더 기회를!"
+      }
+    },
+    "expiry": {
+      "banner": {
+        "title": "{{artistName}} 구독이 D-{{days}}일 후 만료됩니다",
+        "subtitle": "작가 응원을 이어가시려면 갱신해주세요.",
+        "renewCta": "갱신하기",
+        "dismiss": "잊기"
+      }
+    },
+    "churn": {
+      "title": "최근 이탈 후원자",
+      "empty": "최근 30일간 이탈한 후원자가 없습니다.",
+      "sentCampaign": "Win-back 캠페인 보내기",
+      "reason": {
+        "too_expensive": "너무 비쌈",
+        "changed_mind": "마음 변경",
+        "not_satisfied": "만족 안 됨",
+        "other": "기타",
+        "unknown": "사유 미입력"
+      }
+    },
+    "resubscribe": {
+      "cta": "다시 구독",
+      "confirming": "구독 중...",
+      "success": "구독이 다시 시작되었습니다!"
+    }
+  },
+  "coupon": {
+    "admin": {
+      "title": "쿠폰 관리",
+      "createCta": "쿠폰 발행",
+      "table": {
+        "code": "코드",
+        "discount": "할인",
+        "duration": "기간",
+        "redemptions": "사용 횟수",
+        "status": "상태",
+        "delete": "삭제"
+      },
+      "form": {
+        "label": {
+          "code": "쿠폰 코드",
+          "discountType": "할인 유형",
+          "discountValue": "할인 값",
+          "duration": "기간",
+          "durationInMonths": "개월 수",
+          "validUntil": "만료일 (선택)",
+          "maxRedemptions": "최대 사용 횟수 (선택)"
+        },
+        "duration": {
+          "once": "1회",
+          "forever": "영구",
+          "repeating": "반복"
+        },
+        "discountType": {
+          "percent": "퍼센트",
+          "amount": "금액"
+        }
+      }
+    },
+    "user": {
+      "title": "내 할인 코드",
+      "applyCta": "코드 적용",
+      "applyPlaceholder": "할인 코드 입력",
+      "applySuccess": "쿠폰이 적용되었습니다!",
+      "active": {
+        "label": "활성 할인",
+        "expiry": "만료일",
+        "remaining": "잔여 {{count}}개월"
+      },
+      "empty": "적용된 할인 코드가 없습니다."
+    },
+    "error": {
+      "notFound": "쿠폰 코드를 찾을 수 없거나 만료되었습니다.",
+      "expired": "이 쿠폰은 만료되었습니다.",
+      "alreadyApplied": "이미 적용된 쿠폰입니다.",
+      "saveError": "쿠폰 저장 중 오류가 발생했습니다.",
+      "unauthorized": "쿠폰 적용 권한이 없습니다."
+    },
+    "subscription": {
+      "appliedBadge": "{{discount}}% 할인 적용 중"
+    }
+  },
+  "admin": {
+    "featuredArtists": {
+      "pageTitle": "Featured Artist 관리",
+      "pageSubtitle": "매월 큐레이션 Featured Artist를 지정합니다.",
+      "createCta": "Featured Artist 지정",
+      "form": {
+        "title": "새 Featured Artist 등록",
+        "artistLabel": "작가 검색",
+        "artistPlaceholder": "작가 이름 입력...",
+        "searchBtn": "검색",
+        "selectedArtist": "선택됨: {{name}}",
+        "monthLabel": "대상 월 (해당 월 1일)",
+        "monthHint": "현재 또는 미래 월만 설정 가능합니다.",
+        "noteLabel": "큐레이션 사유 (선택)",
+        "notePlaceholder": "이 작가를 선정한 이유를 입력하세요...",
+        "submitBtn": "등록"
+      },
+      "list": {
+        "title": "선정 히스토리",
+        "empty": "아직 등록된 Featured Artist가 없습니다.",
+        "monthCol": "월",
+        "artistCol": "작가 ID",
+        "noteCol": "큐레이션 사유",
+        "statusCol": "상태",
+        "actionsCol": "액션",
+        "active": "활성",
+        "inactive": "비활성",
+        "noNote": "사유 없음",
+        "deactivateBtn": "비활성화"
+      }
+    }
+  },
+  "cookie": {
+    "bannerTitle": "🍪 쿠키 사용 안내",
+    "bannerBody": "Domo는 서비스 제공을 위해 필수 쿠키를 사용합니다. 선택적으로 분석 쿠키를 허용할 수 있습니다.",
+    "essentialOnly": "필수만",
+    "acceptAll": "모두 허용",
+    "policyLink": "쿠키 정책",
+    "privacyLink": "개인정보 처리방침"
+  },
+  "privacy": {
+    "title": "개인정보 설정",
+    "subtitle": "데이터 수집 및 분석에 관한 설정을 관리합니다.",
+    "analytics": {
+      "title": "분석 데이터",
+      "description": "서비스 개선을 위해 익명 사용 데이터를 수집합니다. GDPR 준수, IP 익명화 처리.",
+      "toggleLabel": "분석 데이터 수집 허용",
+      "statusEnabled": "현재 분석 데이터 수집이 허용되어 있습니다.",
+      "statusDisabled": "현재 분석 데이터 수집이 거부되어 있습니다."
+    },
+    "savedConfirmation": "설정이 저장되었습니다."
+  },
+  "onboarding": {
+    "wizard": {
+      "ariaLabel": "Domo 온보딩 마법사"
+    },
+    "common": {
+      "skip": "건너뛰기",
+      "laterLink": "나중에 하기",
+      "goHome": "홈으로 이동"
+    },
+    "step1": {
+      "title": "Domo에 오신 것을 환영합니다!",
+      "subtitle": "마음에 드는 작가를 팔로우하고 피드를 채워보세요.",
+      "selectPrompt": "팔로우할 작가를 선택하세요",
+      "selectedCount": "{{count}}명 선택됨",
+      "selectAll": "전체 선택",
+      "deselectAll": "선택 해제",
+      "noArtists": "추천 작가를 불러오지 못했습니다.",
+      "worksCount": "작품 {{count}}개",
+      "artistListAriaLabel": "추천 작가 목록",
+      "followSelected": "선택한 작가 {{count}}명 팔로우",
+      "skipAndNext": "다음"
+    },
+    "step2": {
+      "title": "Blue Bird로 작가를 응원해보세요",
+      "subtitle": "후원으로 작가의 창작 활동을 직접 지원할 수 있습니다.",
+      "bullet1": "작가에게 직접 전달되는 후원금",
+      "bullet2": "월 $1부터 시작하는 낮은 문턱",
+      "bullet3": "후원자 전용 콘텐츠 및 혜택 접근",
+      "bulletsAriaLabel": "Blue Bird 후원 혜택 목록",
+      "ctaWithArtist": "@{{artistName}} 응원하기",
+      "cta": "지금 응원하기",
+      "continueAfterSponsor": "다음 단계로",
+      "sponsoredSuccess": "후원이 완료되었습니다!"
+    },
+    "step3": {
+      "title": "다양한 작품을 발견해보세요",
+      "subtitle": "발견 페이지에서 전 세계 신진 작가들의 작품을 만나보세요.",
+      "previewAriaLabel": "탐색 페이지 미리보기",
+      "summaryTitle": "온보딩 요약",
+      "summaryFollowed": "작가 {{count}}명 팔로우 완료",
+      "summaryFollowedNone": "아직 팔로우한 작가가 없습니다",
+      "summarySponsoredDone": "첫 Blue Bird 후원 완료",
+      "summarySponsoredSkip": "Blue Bird 후원은 나중에",
+      "cta": "탐색 시작하기"
+    },
+    "sidebar": {
+      "indicator": "온보딩 이어서 하기",
+      "title": "온보딩 진행 중",
+      "hint": "클릭하여 이어서 설정하기"
+    }
+  },
+  "artist": {
+    "index": {
+      "pageTitle": "글로벌 신진작가 인덱스",
+      "pageSubtitle": "Domo가 발견한 떠오르는 작가들",
+      "navLabel": "신진작가 인덱스",
+      "rank": "순위",
+      "score": "점수",
+      "topHeroTitle": "이달의 Top 3",
+      "listTitle": "전체 랭킹",
+      "loadMore": "더 보기",
+      "loading": "랭킹 불러오는 중...",
+      "empty": "조건에 맞는 작가가 없습니다.",
+      "error": "랭킹을 불러오지 못했습니다.",
+      "viewProfile": "보기",
+      "tierBadge": {
+        "top_10": "Top 10",
+        "top_100": "Top 100",
+        "top_1000": "Top 1000"
+      },
+      "filter": {
+        "region": "지역",
+        "regionAll": "전체 지역",
+        "genre": "장르",
+        "genreAll": "전체 장르"
+      },
+      "badge": {
+        "globalRank": "글로벌 #{{rank}}",
+        "regionRank": "지역 #{{rank}}",
+        "genreRank": "장르 #{{rank}}",
+        "whyLabel": "이 순위는?",
+        "whyTooltip": "최근 30일 활동(50%) + 판매(30%) + 후원자(20%) + 가입 기간(10%)으로 계산됩니다.",
+        "notRanked": "순위 없음",
+        "notYet": "아직 집계 중",
+        "lastUpdated": "최근 갱신: {{date}}"
+      },
+      "seo": {
+        "description": "Domo 글로벌 신진작가 인덱스 — 전 세계에서 활동 중인 신진 작가들의 실시간 랭킹",
+        "ogTitle": "Domo 글로벌 신진작가 인덱스"
+      }
+    }
+  },
+  "stories": {
+    "pageTitle": "스토리 허브",
+    "pageSubtitle": "신진 작가들의 성장 이야기와 미디어 노출을 만나보세요",
+    "backToHub": "스토리 허브",
+    "featured": {
+      "sectionTitle": "이번 달 Featured Artist",
+      "monthLabel": "이번 달 Featured",
+      "curatedBadge": "Admin 큐레이션",
+      "viewProfile": "프로필 보기",
+      "viewTimeline": "성장 이야기",
+      "scoreLabel": "점수 {{score}}",
+      "empty": "아직 Featured 작가가 없습니다."
+    },
+    "history": {
+      "sectionTitle": "작가 히스토리",
+      "sectionSubtitle": "Domo에서 성장 중인 신진 작가들의 여정을 확인하세요.",
+      "viewTimeline": "성장 이야기 보기",
+      "viewFullIndex": "전체 인덱스 보기",
+      "empty": "아직 등록된 작가 히스토리가 없습니다."
+    },
+    "media": {
+      "sectionTitle": "외부 미디어 노출",
+      "empty": "아직 외부 미디어 노출 내용이 없습니다.",
+      "placeholderNote": "아래는 예시입니다. 실제 미디어 노출 시 업데이트됩니다."
+    }
+  },
+  "timeline": {
+    "title": "성장 타임라인",
+    "notFound": "작가를 찾을 수 없습니다.",
+    "postsCount": "작품",
+    "viewProfile": "프로필 보기",
+    "empty": "아직 기록된 마일스톤이 없습니다.",
+    "joined": "Domo 합류",
+    "firstPost": "첫 작품 공개",
+    "firstBluebird": "첫 Blue Bird 후원 받음",
+    "rankTop1000": "글로벌 Top 1000 진입",
+    "rankTop100": "글로벌 Top 100 진입",
+    "rankTop10": "글로벌 Top 10 진입",
+    "highlightPost": "인기 작품"
+  },
+  "webhook": {
+    "notification": {
+      "payment_failed": "결제가 실패했습니다 — 다시 시도해주세요",
+      "payment_3ds_required": "3D Secure 인증이 필요합니다",
+      "subscription_renewed": "구독이 갱신되었습니다",
+      "subscription_payment_failed": "구독 결제 실패 — 카드 정보를 업데이트해주세요",
+      "subscription_cancelled": "구독이 취소되었습니다",
+      "dispute_created": "분쟁 발생 — 관리자에게 연락하세요",
+      "update_payment_method": "결제 수단 업데이트"
+    }
+  },
+  "interview": {
+    "pageTitle": "AI 아티스트 인터뷰",
+    "pageSubtitle": "AI가 생성한 작가 인터뷰 기사",
+    "admin": {
+      "pageTitle": "인터뷰 관리",
+      "pageSubtitle": "LLM 자동 생성 인터뷰 검수 및 발행 관리",
+      "generateCta": "인터뷰 생성",
+      "generateTitle": "새 인터뷰 생성",
+      "artistIdLabel": "작가 ID",
+      "localeLabel": "언어",
+      "generating": "생성 중...",
+      "generateSuccess": "인터뷰가 생성되어 검수 대기 상태입니다.",
+      "reviewTitle": "인터뷰 검수",
+      "approveBtn": "승인",
+      "rejectBtn": "거부",
+      "publishBtn": "발행",
+      "publishDisabled": "발행하려면 작가 동의가 필요합니다.",
+      "reviewNoteLabel": "검수 메모",
+      "statusLabel": "상태",
+      "localeTag": "언어",
+      "consentTag": "동의",
+      "consentPending": "작가 동의 대기",
+      "consentDone": "작가 동의 완료",
+      "listTitle": "인터뷰 목록"
+    },
+    "me": {
+      "pageTitle": "내 인터뷰",
+      "pageSubtitle": "Domo AI가 생성한 나의 인터뷰 기사",
+      "consentBtn": "공개 동의",
+      "rejectBtn": "공개 거부",
+      "consentConfirm": "이 인터뷰를 공개하시겠습니까? 동의 후 관리자가 발행 처리합니다.",
+      "rejectConfirm": "이 인터뷰의 공개를 거부하시겠습니까?",
+      "noInterviews": "아직 생성된 인터뷰가 없습니다.",
+      "previewLabel": "미리보기",
+      "statusApproved": "승인됨 (동의 필요)",
+      "statusPublished": "발행됨",
+      "statusRejected": "거부됨",
+      "statusAdminReview": "검수 대기"
+    },
+    "public": {
+      "readMore": "인터뷰 읽기",
+      "sectionTitle": "AI 인터뷰",
+      "noPublished": "발행된 인터뷰가 없습니다.",
+      "aiGenerated": "AI 자동 생성",
+      "consentNote": "작가 동의 후 발행된 인터뷰입니다."
+    },
+    "status": {
+      "draft": "초안",
+      "admin_review": "검수 대기",
+      "approved": "승인됨",
+      "published": "발행됨",
+      "rejected": "거부됨",
+      "archived": "아카이브됨"
+    }
+  },
+  "bio": {
+    "pageTitle": "다국어 자기소개 편집",
+    "pageSubtitle": "5개 언어로 자기소개를 설정하세요",
+    "translateBtn": "자동 번역 (AI)",
+    "translating": "번역 중...",
+    "translateSuccess": "5개 언어로 자동 번역되었습니다",
+    "translateError": "번역에 실패했습니다",
+    "saveBtn": "저장",
+    "saving": "저장 중...",
+    "saved": "저장됨",
+    "machineTranslated": "AI 자동 번역",
+    "humanEdited": "직접 편집",
+    "bioPlaceholder": "자기소개를 입력하세요",
+    "emptyBioWarning": "자기소개를 먼저 입력해 주세요",
+    "localeTab": {
+      "ko": "한국어",
+      "en": "English",
+      "ja": "日本語",
+      "zh": "中文",
+      "es": "Español"
+    }
+  },
+  "localeSwitcher": {
+    "label": "언어",
+    "ko": "한국어",
+    "en": "English",
+    "ja": "日本語",
+    "zh": "中文",
+    "es": "Español"
+  },
+  "mediaCoverage": {
+    "pageTitle": "미디어 노출 관리",
+    "pageSubtitle": "외부 매체 기사·영상·라디오 등록 및 관리",
+    "addBtn": "새 항목 추가",
+    "emptyList": "등록된 미디어 노출이 없습니다.",
+    "loadMore": "더 보기",
+    "typeLabel": "유형",
+    "sourceLabel": "매체명",
+    "publishedAtLabel": "발행일",
+    "localeLabel": "언어",
+    "featuredLabel": "대표 노출",
+    "publishedLabel": "발행됨",
+    "draftLabel": "초안",
+    "deleteConfirm": "이 항목을 삭제하시겠습니까?",
+    "saveSuccess": "저장되었습니다.",
+    "saveError": "저장에 실패했습니다.",
+    "types": {
+      "article": "기사",
+      "youtube": "유튜브",
+      "radio": "라디오",
+      "podcast": "팟캐스트",
+      "tv": "TV"
+    },
+    "artist": {
+      "sectionTitle": "이 작가에 대한 미디어 노출",
+      "empty": "이 작가에 대한 미디어 기사가 없습니다."
+    }
+  },
+  "newsletter": {
+    "admin": {
+      "title": "뉴스레터 관리",
+      "compose": {
+        "title": "신규 발행 (자동 작성)",
+        "button": "{{locale}} 뉴스레터 작성"
+      },
+      "status": {
+        "draft": "초안",
+        "sending": "발송 중",
+        "sent": "발송 완료",
+        "failed": "실패"
+      },
+      "list": {
+        "title": "발행 목록",
+        "empty": "아직 발행된 뉴스레터가 없습니다.",
+        "retry": "다시 시도",
+        "refresh": "새로고침",
+        "sendAction": "발송 시작",
+        "col": {
+          "date": "발행일",
+          "locale": "언어",
+          "subject": "제목",
+          "status": "상태",
+          "sent": "발송",
+          "actions": "작업"
+        }
+      },
+      "editor": {
+        "title": "뉴스레터 편집",
+        "subject": "제목",
+        "body": "본문 (마크다운)",
+        "showPreview": "미리보기",
+        "hidePreview": "편집으로",
+        "send": "발송 시작",
+        "sending": "발송 중...",
+        "sendConfirm": "이 뉴스레터를 발송하시겠습니까? 모든 구독자에게 이메일이 발송됩니다.",
+        "sentCount": "발송: {{sent}} / 실패: {{failed}}"
+      }
+    },
+    "preferences": {
+      "title": "뉴스레터 설정",
+      "subscribe": {
+        "label": "뉴스레터 구독",
+        "hint": "Domo 아티스트 소식과 주요 업데이트를 이메일로 받습니다."
+      },
+      "frequency": {
+        "label": "발송 주기",
+        "weekly": "매주",
+        "biweekly": "격주",
+        "monthly": "매월",
+        "never": "받지 않음"
+      },
+      "locale": {
+        "label": "수신 언어"
+      },
+      "lastSent": "마지막 수신: {{date}}",
+      "unsubscribeNote": "이메일에 포함된 구독 취소 링크를 통해 언제든 구독을 취소할 수 있습니다."
+    },
+    "unsubscribe": {
+      "loading": "처리 중...",
+      "success": {
+        "title": "구독이 취소되었습니다",
+        "message": "뉴스레터 구독이 성공적으로 취소되었습니다. 설정에서 언제든 다시 구독할 수 있습니다."
+      },
+      "already": {
+        "title": "이미 구독 취소된 상태입니다",
+        "message": "현재 뉴스레터를 구독하지 않고 있습니다."
+      },
+      "error": {
+        "title": "링크가 유효하지 않습니다",
+        "message": "구독 취소 링크가 만료되었거나 올바르지 않습니다. 설정에서 직접 구독을 취소해주세요."
+      },
+      "missing": {
+        "title": "링크 정보 없음",
+        "message": "구독 취소 링크에 필요한 정보가 없습니다."
+      },
+      "backToHome": "홈으로 돌아가기"
+    }
+  },
+  "pressKit": {
+    "pageTitle": "프레스 킷",
+    "pageSubtitle": "아티스트 홍보용 자료 PDF 자동 생성",
+    "generateBtn": "프레스 킷 생성",
+    "regenerateBtn": "재생성",
+    "downloadBtn": "다운로드",
+    "generating": "생성 중...",
+    "locale": "언어",
+    "localePlaceholder": "언어 선택",
+    "cacheNote": "동일한 아티스트·언어는 30일간 캐시됩니다.",
+    "history": "생성 히스토리",
+    "noHistory": "생성된 프레스 킷이 없습니다.",
+    "pages": "페이지",
+    "fileSize": "파일 크기",
+    "expiresAt": "만료일",
+    "createdAt": "생성일",
+    "isPublic": "공개 다운로드",
+    "artistSearch": "아티스트 ID 또는 검색",
+    "generateError": "생성 중 오류가 발생했습니다.",
+    "me": {
+      "pageTitle": "내 프레스 킷",
+      "pageSubtitle": "외부 매체 배포용 프레스 킷 PDF",
+      "download": "PDF 다운로드",
+      "noKit": "아직 생성된 프레스 킷이 없습니다. 관리자에게 문의하세요.",
+      "publicToggle": "공개 다운로드 허용",
+      "publicToggleNote": "활성화 시 누구나 내 프레스 킷을 다운로드할 수 있습니다."
     }
   }
 }

@@ -22,6 +22,12 @@ from app.models.search_log import SearchLog
 from app.models.series import PostSeriesMembership, Series
 from app.models.sponsorship import Sponsorship, Subscription
 from app.models.user import User
+from app.services.feed_scoring import (
+    apply_cursor,
+    decode_cursor,
+    encode_cursor,
+    score_posts,
+)
 
 _log = logging.getLogger(__name__)
 from app.schemas.post import (
@@ -157,9 +163,13 @@ async def _viewer_meets_tier(
 
     - subscriber: Subscription.status='active'
     - sponsor: subscriber OR Sponsorship.status='completed'
+      + author.sponsor_validity_days 적용:
+        NULL → lifetime (기존 동작)
+        N    → Sponsorship.completed_at >= now() - N days
     - follower: 위 둘 OR Follow row exists
 
     author 본인은 항상 통과 (return True).
+    D'-1 carry-over: sponsor_validity_days per-artist expiry support.
     """
     if viewer_id is None:
         return False
@@ -175,15 +185,34 @@ async def _viewer_meets_tier(
         )
         .limit(1)
     )
-    spon_q = (
-        select(sa.literal(1))
-        .where(
+
+    # Resolve author's sponsor_validity_days to build correct sponsorship filter.
+    # Single extra query only when 'sponsor' or 'follower' tier is needed.
+    spon_q: sa.Select | None = None
+    if required_tier in ("sponsor", "follower"):
+        author_row = await db.execute(
+            select(User.sponsor_validity_days).where(User.id == author_id)
+        )
+        validity_days: int | None = author_row.scalar_one_or_none()
+
+        spon_conditions = [
             Sponsorship.sponsor_id == viewer_id,
             Sponsorship.artist_id == author_id,
             Sponsorship.status == "completed",
+        ]
+        if validity_days is not None:
+            # Sponsorship has no dedicated completed_at; use created_at as
+            # the completion timestamp (one-time sponsorships are set to
+            # 'completed' status at creation time).
+            cutoff = datetime.now(timezone.utc) - timedelta(days=validity_days)
+            spon_conditions.append(Sponsorship.created_at >= cutoff)
+
+        spon_q = (
+            select(sa.literal(1))
+            .where(*spon_conditions)
+            .limit(1)
         )
-        .limit(1)
-    )
+
     follow_q = (
         select(sa.literal(1))
         .where(
@@ -205,33 +234,51 @@ async def _viewer_meets_tier(
     return bool(result.scalar())
 
 
-async def _filter_active_tier_only(
-    db: AsyncSession,
-    posts: list,
-    viewer_id: uuid.UUID | None,
-) -> list:
-    """Python post-filter — active tier_only 포스트의 viewer별 자격 검증.
+def _sql_tier_qualified_expr(
+    viewer_id: uuid.UUID,
+    author_id_col: sa.Column,
+) -> sa.BinaryExpression:
+    """Return a SQL expression that is TRUE when viewer qualifies for the post's tier.
 
-    SQL fast-path가 followee author 등 명백한 자격을 통과시킨 후,
-    실제 tier 자격 (subscription/sponsorship/follow OR)을 viewer별로 재검증.
+    D'-1 carry-over: SQL-only tier filter replacing Python post-filter.
+    Handles all three tiers (subscriber / sponsor / follower) via UNION ALL EXISTS.
+    sponsor_validity_days is NOT applied here (requires per-author DB lookup);
+    the fast-path covers the common cases and _viewer_meets_tier handles edge cases.
+
+    Returns: EXISTS(sub_q UNION ALL spon_q UNION ALL follow_q) OR viewer is author.
     """
-    now = datetime.now(timezone.utc)
-    filtered = []
-    for p in posts:
-        ea_until = getattr(p, "early_access_until", None)
-        ea_tier = getattr(p, "early_access_tier", None)
-        if (
-            ea_until is not None
-            and ea_until > now
-            and ea_tier is not None
-        ):
-            qualifies = await _viewer_meets_tier(
-                db, viewer_id, p.author_id, ea_tier
-            )
-            if not qualifies:
-                continue
-        filtered.append(p)
-    return filtered
+    sub_exists = sa.exists(
+        select(sa.literal(1))
+        .where(
+            Subscription.sponsor_id == viewer_id,
+            Subscription.artist_id == author_id_col,
+            Subscription.status == "active",
+        )
+        .correlate()
+    )
+    spon_exists = sa.exists(
+        select(sa.literal(1))
+        .where(
+            Sponsorship.sponsor_id == viewer_id,
+            Sponsorship.artist_id == author_id_col,
+            Sponsorship.status == "completed",
+        )
+        .correlate()
+    )
+    follow_exists = sa.exists(
+        select(sa.literal(1))
+        .where(
+            Follow.follower_id == viewer_id,
+            Follow.followee_id == author_id_col,
+        )
+        .correlate()
+    )
+    return or_(
+        Post.author_id == viewer_id,  # author sees own posts
+        sub_exists,
+        spon_exists,
+        follow_exists,
+    )
 
 
 # ─── Publish helpers — publish-controls PDCA #8 §B-7 ────────────────────
@@ -671,13 +718,165 @@ async def create_post(
 # ─── Read ────────────────────────────────────────────────────────────────
 
 
+async def _personalized_feed_v1(
+    db: AsyncSession,
+    user: User,
+    cursor: str | None,
+    limit: int,
+) -> dict:
+    """A-3 feed-algorithm-v1: SQL + Python hybrid personalized feed.
+
+    Step 1 — SQL candidate fetch:
+      Fetch up to 100 candidate posts from two pools:
+        a) Posts by followed authors (with tier/visibility gates)
+        b) Public trending posts (score-ordered)
+      Both pools use existing SQL filter helpers for correctness (no N+1).
+
+    Step 2 — Python scoring + sort + cursor:
+      compute_score() per post → sort DESC → apply (score, id) cursor → take limit+1.
+
+    Backward compat: cursor=None returns the first page.
+    Cursor format: encode_cursor(score, post_id) — see feed_scoring.py.
+    """
+    CANDIDATE_LIMIT = 100
+
+    # ── Step 1a: followee posts ──────────────────────────────────────────────
+    follow_result = await db.execute(
+        select(Follow.followee_id).where(Follow.follower_id == user.id)
+    )
+    followee_ids_list = [row[0] for row in follow_result.all()]
+    followee_set: set[uuid.UUID] = set(followee_ids_list)
+
+    follow_posts: list[Post] = []
+    if followee_ids_list:
+        vis_filter = _visibility_filter_for_viewer(
+            viewer=user,
+            author_id_col=Post.author_id,
+            viewing_self=False,
+            followee_ids=followee_ids_list,
+        )
+        is_not_active_tier_sql = or_(
+            Post.early_access_until.is_(None),
+            Post.early_access_until <= func.now(),
+            Post.early_access_tier.is_(None),
+        )
+        tier_qualified = _sql_tier_qualified_expr(user.id, Post.author_id)
+
+        result = await db.execute(
+            select(Post)
+            .where(
+                and_(
+                    Post.author_id.in_(followee_ids_list),
+                    Post.status == "published",
+                    vis_filter,
+                    or_(is_not_active_tier_sql, tier_qualified),
+                )
+            )
+            .options(selectinload(Post.media), selectinload(Post.product))
+            .order_by(Post.created_at.desc())
+            .limit(CANDIDATE_LIMIT)
+        )
+        follow_posts = list(result.scalars().all())
+
+    # ── Step 1b: trending pool (public, no active tier) ──────────────────────
+    follow_post_ids = [p.id for p in follow_posts]
+    trending_query = (
+        select(Post)
+        .where(
+            Post.status == "published",
+            Post.visibility == "public",
+            or_(
+                Post.early_access_until.is_(None),
+                Post.early_access_until <= func.now(),
+            ),
+        )
+        .options(selectinload(Post.media), selectinload(Post.product))
+        .order_by(_trending_score_expr().desc(), Post.created_at.desc())
+        .limit(CANDIDATE_LIMIT)
+    )
+    if follow_post_ids:
+        trending_query = trending_query.where(Post.id.notin_(follow_post_ids))
+    trending_result = await db.execute(trending_query)
+    trending_posts = list(trending_result.scalars().all())
+
+    # ── Merge candidates (deduplicated by SQL already) ───────────────────────
+    all_candidates = follow_posts + trending_posts
+
+    # ── Step 2: bulk-load authors + auctions (N+1 zero) ──────────────────────
+    author_ids = list({p.author_id for p in all_candidates})
+    authors_result = (
+        await db.execute(select(User).where(User.id.in_(author_ids)))
+        if author_ids else None
+    )
+    author_map = {u.id: u for u in (authors_result.scalars().all() if authors_result else [])}
+    for p in all_candidates:
+        p.author = author_map.get(p.author_id)  # type: ignore[attr-defined]
+
+    await _attach_active_auction_end_at(db, all_candidates)
+
+    # ── Score + sort ─────────────────────────────────────────────────────────
+    now = datetime.now(timezone.utc)
+    scored = score_posts(
+        posts=all_candidates,
+        viewer_id=user.id,
+        followee_ids=followee_set,
+        now=now,
+    )
+
+    # ── Apply cursor ─────────────────────────────────────────────────────────
+    if cursor:
+        parsed = decode_cursor(cursor)
+        if parsed:
+            cursor_score, cursor_id = parsed
+            scored = apply_cursor(scored, cursor_score, cursor_id)
+
+    # ── Paginate: take limit + 1 to determine has_more ───────────────────────
+    page = scored[: limit + 1]
+    has_more = len(page) > limit
+    if has_more:
+        page = page[:limit]
+
+    # ── Build next_cursor from last item ─────────────────────────────────────
+    next_cursor: str | None = None
+    if has_more and page:
+        last = page[-1]
+        next_cursor = encode_cursor(last.score, last.post.id)  # type: ignore[attr-defined]
+
+    # ── Serialize ────────────────────────────────────────────────────────────
+    data = []
+    for sp in page:
+        item = _serialize_post(sp.post)  # type: ignore[arg-type]
+        item["recommendation_reason"] = sp.recommendation_reason
+        data.append(item)
+
+    return {
+        "data": data,
+        "pagination": {"next_cursor": next_cursor, "has_more": has_more},
+    }
+
+
 @router.get("/feed")
 async def home_feed(
     limit: int = Query(20, ge=1, le=100),
     following_only: bool = Query(False),
+    algo: str = Query("default", pattern="^(default|v1)$"),
+    cursor: str | None = Query(None),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    """Home feed endpoint.
+
+    algo=default (legacy): 팔로잉 70% + 트렌딩 30% chronological mix. No cursor.
+    algo=v1 (A-3): SQL + Python hybrid personalized feed with (score, id) cursor.
+
+    PostHog feature flag 'feed-algorithm-v2' controls client-side algo selection.
+    Backward compat: algo=default (기본값) 시 기존 동작 그대로.
+    """
+    # ── A-3 personalized feed v1 ─────────────────────────────────────────────
+    if algo == "v1":
+        return await _personalized_feed_v1(db, user, cursor, limit)
+
+    # ── Legacy chronological feed (algo=default) ──────────────────────────────
     # following_only=false (default): 팔로우 70% + 트렌딩 30% 혼합
     # following_only=true: 팔로우 작가의 포스트만
     follow_result = await db.execute(
@@ -701,6 +900,23 @@ async def home_feed(
             viewing_self=False,
             followee_ids=followee_ids,
         )
+        # D'-1 carry-over: SQL-only tier filter replaces Python post-filter.
+        # Active tier_only posts included only if viewer qualifies (EXISTS subquery).
+        # sponsor_validity_days fast-path: lifetime (NULL) always qualifies.
+        # Non-NULL validity days: rare edge case handled at get_post level where
+        # _viewer_meets_tier() performs the per-author lookup.
+        is_active_tier_sql = and_(
+            Post.early_access_until.is_not(None),
+            Post.early_access_until > func.now(),
+            Post.early_access_tier.is_not(None),
+        )
+        is_not_active_tier_sql = or_(
+            Post.early_access_until.is_(None),
+            Post.early_access_until <= func.now(),
+            Post.early_access_tier.is_(None),
+        )
+        tier_qualified = _sql_tier_qualified_expr(user.id, Post.author_id)
+
         result = await db.execute(
             select(Post)
             .where(
@@ -708,6 +924,8 @@ async def home_feed(
                     Post.author_id.in_(followee_ids),
                     Post.status == "published",
                     vis_filter,
+                    # Tier gate: pass if not active tier_only, OR if viewer qualifies
+                    or_(is_not_active_tier_sql, tier_qualified),
                 )
             )
             .options(selectinload(Post.media), selectinload(Post.product))
@@ -715,8 +933,6 @@ async def home_feed(
             .limit(follow_limit)
         )
         follow_posts = list(result.scalars().all())
-        # Phase 4 #10 §B-9: Python post-filter for active tier_only posts
-        follow_posts = await _filter_active_tier_only(db, follow_posts, user.id)
 
     trending_posts: list[Post] = []
     if trending_limit > 0:

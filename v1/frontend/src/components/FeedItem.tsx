@@ -5,8 +5,17 @@ import { useI18n } from "@/i18n";
 import { PostView } from "@/lib/api";
 import { usePostTranslation } from "@/lib/useTranslation";
 import { AuctionCountdown } from "@/components/AuctionCountdown";
+import { formatPriceCents } from "@/lib/format";
 
-export function FeedItem({ post }: { post: PostView }) {
+export function FeedItem({
+  post,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  source,
+}: {
+  post: PostView;
+  /** Context where the post is rendered — for analytics (A-1/A-3). */
+  source?: "feed" | "explore" | "search" | "profile";
+}) {
   const { t } = useI18n();
   const heroMedia = post.media[0];
   const { title: translatedTitle, content: translatedContent, isTranslated } = usePostTranslation(
@@ -140,9 +149,9 @@ export function FeedItem({ post }: { post: PostView }) {
         <span className="flex items-center gap-1.5 hover:text-primary cursor-pointer transition-colors">
           🕊 {post.bluebird_count}
         </span>
-        {post.product && post.product.buy_now_price && (
+        {post.product && post.product.buy_now_price != null && post.product.buy_now_price > 0 && (
           <span className="ml-auto text-primary font-semibold text-xs">
-            ${Number(post.product.buy_now_price).toLocaleString()}
+            {formatPriceCents(post.product.buy_now_price, post.product.currency || "KRW")}
           </span>
         )}
       </div>

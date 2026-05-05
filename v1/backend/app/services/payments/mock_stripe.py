@@ -13,6 +13,7 @@ from decimal import Decimal
 from app.services.payments.base import (
     PaymentIntent,
     PaymentProvider,
+    SetupIntent,
     SubscriptionResult,
 )
 
@@ -27,6 +28,27 @@ def _new_id(prefix: str) -> str:
 
 class MockStripeProvider(PaymentProvider):
     name = "mock_stripe"
+
+    async def get_or_create_customer(
+        self,
+        user_id: str,
+        email: str | None = None,
+    ) -> str:
+        """Return a stable mock customer ID for this user_id."""
+        return f"cus_mock_{user_id[:8]}"
+
+    async def create_setup_intent(
+        self,
+        customer_id: str,
+        metadata: dict | None = None,
+    ) -> SetupIntent:
+        si_id = _new_id("seti")
+        return SetupIntent(
+            id=si_id,
+            client_secret=f"{si_id}_secret_{secrets.token_hex(8)}",
+            customer_id=customer_id,
+            status="requires_payment_method",
+        )
 
     async def create_payment_intent(
         self,

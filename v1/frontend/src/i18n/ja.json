@@ -21,7 +21,8 @@
     "following": "フォロー中",
     "followers": "フォロワー",
     "likes": "いいね",
-    "comments": "コメント"
+    "comments": "コメント",
+    "close": "閉じる"
   },
   "nav": {
     "home": "ホーム",
@@ -37,7 +38,12 @@
     "settings": "設定",
     "admin": "管理者",
     "communities": "コミュニティ",
-    "draftsList": "下書き"
+    "draftsList": "下書き",
+    "mySponsoring": "マイ支援履歴",
+    "patronageDashboard": "パトロネージュダッシュボード",
+    "tierBenefits": "ティア特典設定",
+    "artistIndex": "アーティストインデックス",
+    "stories": "ストーリーハブ"
   },
   "home": {
     "title": "Domo Lounge",
@@ -50,10 +56,24 @@
   },
   "feed": {
     "title": "フィード",
+    "titlePersonalized": "あなたへのおすすめ",
     "subtitleAuth": "フォロー中のアーティストと人気作品をミックス。",
+    "subtitlePersonalized": "フォロー中・おすすめ・トレンド作品をミックスして表示します。",
     "subtitleGuest": "今人気の新進アーティストの作品。",
     "noPosts": "表示する投稿がありません。",
-    "loadError": "フィードの読み込みに失敗しました"
+    "loadError": "フィードの読み込みに失敗しました",
+    "loadMore": "もっと見る",
+    "emptyTitle": "フォローするアーティストを見つけよう",
+    "emptySubtitle": "まだフォロー中のアーティストがいません。おすすめのアーティストをフォローしてフィードを充実させましょう。",
+    "emptyCtaFollow": "おすすめアーティストを見る",
+    "emptyCtaSponsor": "Blue Bird について知る",
+    "algoToggleLabel": "フィードの並び順",
+    "algoDefault": "新着順",
+    "algoPersonalized": "おすすめ",
+    "reasonFollowing": "フォロー中",
+    "reasonTrending": "トレンド",
+    "reasonSimilarGenre": "似たジャンル",
+    "reasonLabel": "おすすめ理由: {{reason}}"
   },
   "followingPage": {
     "title": "フォロー中",
@@ -69,7 +89,44 @@
     "all": "すべて",
     "allPosts": "すべての投稿",
     "products": "販売/オークション作品",
-    "general": "一般投稿"
+    "general": "一般投稿",
+    "noPosts": "表示できる投稿はありません。",
+    "tabs": {
+      "ariaLabel": "探索タブ",
+      "trending": "トレンド",
+      "new": "新着",
+      "region": "地域",
+      "genre": "ジャンル",
+      "pricing": "販売中"
+    },
+    "filters": {
+      "regionLabel": "地域",
+      "regionAll": "全地域",
+      "regionSEA": "東南アジア",
+      "regionLATAM": "ラテンアメリカ",
+      "regionEEU": "東ヨーロッパ",
+      "regionEAS": "東アジア",
+      "regionNAM": "北米",
+      "regionWEU": "西ヨーロッパ",
+      "genreLabel": "ジャンル",
+      "genreAll": "全ジャンル",
+      "genreWatercolor": "水彩画",
+      "genreOil": "油絵",
+      "genreDigital": "デジタルアート",
+      "genreSculpture": "彫刻",
+      "genreMixed": "ミクストメディア",
+      "pricingHint": "オークションまたは即時購入可能な作品を表示しています。"
+    },
+    "hero": {
+      "ariaLabel": "注目のアーティスト",
+      "badge": "本日のアーティスト",
+      "viewProfile": "プロフィールを見る"
+    },
+    "rankingPreview": {
+      "ariaLabel": "新進アーティストインデックスのプレビュー",
+      "title": "新進アーティストインデックス",
+      "viewAll": "もっと新進アーティストを見る"
+    }
   },
   "search": {
     "placeholder": "検索...",
@@ -86,14 +143,51 @@
     "sortLatest": "最新順",
     "sortPopular": "人気順",
     "sortEnding": "終了間近",
-    "searchHint": "アーティスト、作品、投稿を検索。"
+    "searchHint": "アーティスト、作品、投稿を検索。",
+    "v2": {
+      "recentHistory": "最近の検索履歴",
+      "popular": "人気の検索ワード",
+      "clearHistory": "履歴を削除",
+      "priceMin": "最低価格",
+      "priceMax": "最高価格",
+      "regionPlaceholder": "地域 (例: JP,US)",
+      "activeOnly": "アクティブのみ",
+      "filterPrice": "価格",
+      "filterRegion": "地域",
+      "filterActive": "アクティブ",
+      "sortRelevance": "関連度",
+      "typeAll": "すべて",
+      "typeArtists": "アーティスト",
+      "typeArtworks": "作品",
+      "typePosts": "投稿",
+      "noHistory": "最近の検索履歴はありません",
+      "noPopular": "人気の検索ワードはありません",
+      "historyCleared": "検索履歴を削除しました"
+    }
   },
   "notifications": {
     "title": "通知",
     "markAllRead": "すべて既読",
     "loginRequired": "通知を確認するにはログインが必要です。",
     "loginHint": "サイドバーのログインボタンを押してください。",
-    "empty": "通知はありません。"
+    "empty": "通知はありません。",
+    "center": {
+      "title": "通知",
+      "markAllRead": "すべて既読にする",
+      "empty": {
+        "all": "通知はありません",
+        "unread": "未読の通知はありません"
+      },
+      "filter": {
+        "all": "すべて",
+        "unread": "未読",
+        "auction": "オークション",
+        "sponsorship": "スポンサー",
+        "engagement": "いいね/コメント",
+        "system": "システム"
+      },
+      "markedAsRead": "{{count}}件の通知を既読にしました"
+    }
   },
   "post": {
     "untitled": "無題",
@@ -116,8 +210,12 @@
     "medium": "素材",
     "year": "制作年",
     "auctionSell": "オークションで販売",
+    "auctionBadge": "オークション",
     "buyNow": "即購入可能",
     "buyNowPrice": "即購入価格 (USD)",
+    "locationPrompt": "場所名を入力してください (例: 東京都現代美術館)",
+    "genreLabel": "ジャンル: {{value}}",
+    "buyNowPriceLabel": "即購入価格: ${{price}}",
     "type": {
       "product": {
         "disabledTitle": "商品投稿はアーティスト限定",
@@ -193,6 +291,22 @@
           "progress": "{{done}}/{{total}} アップロード中",
           "complete": "アップロード完了",
           "failed": "{{n}}件のアップロード失敗"
+        },
+        "retry": {
+          "button": "再試行"
+        },
+        "cancel": {
+          "button": "キャンセル"
+        },
+        "error": {
+          "tooLarge": "ファイルが大きすぎます（50MB以下）",
+          "unsupportedType": "サポートされていないファイル形式",
+          "authExpired": "認証期限切れ。再度ログインしてください",
+          "rateLimit": "しばらくしてからもう一度お試しください",
+          "serverError": "サーバーエラー。もう一度お試しください",
+          "networkError": "ネットワークエラー",
+          "cancelled": "キャンセル済み",
+          "unknown": "アップロード失敗"
         },
         "uploading": "アップロード中...",
         "studio": {
@@ -292,6 +406,15 @@
           "empty": "予約公開と位置情報は前のステップのツールバーから追加できます。"
         }
       },
+      "oembed": {
+        "title": "外部メディアを埋め込む"
+      },
+      "schedulePicker": {
+        "title": "予約投稿",
+        "hint": "設定した時刻に自動的に公開されます。",
+        "cancel": "予約をキャンセル"
+      },
+      "scheduledLabel": "予約",
       "publishOptions": {
         "title": "公開オプション",
         "visibility": {
@@ -396,12 +519,101 @@
       }
     },
     "detail": {
-      "tierRestricted": "この投稿は特定のサブスク会員またはスポンサーのみ閲覧できます"
+      "tierRestricted": "この投稿は特定のサブスク会員またはスポンサーのみ閲覧できます",
+      "tierRestrictedTitle": "先行公開中の投稿です",
+      "tierRestrictedHint": "{{artistName}}さんのサポーターに先行公開しています。",
+      "tierRestrictedSponsorCta": "このアーティストを支援する",
+      "tierRestrictedSubscribeCta": "月額サブスクを始める",
+      "tierRestrictedHistoryCta": "支援履歴を見る"
+    },
+    "tierLocked": {
+      "badge": "スポンサー先行",
+      "hint": "支援すればすぐ見られます"
+    }
+  },
+  "me": {
+    "settings": {
+      "sponsorValidity": {
+        "title": "スポンサー有効期間",
+        "hint": "完了した一回限りの支援がtierアクセス権として認められる期間です。",
+        "lifetime": "無制限",
+        "days": "{{n}}日間",
+        "save": "保存",
+        "saved": "保存済み"
+      }
     }
   },
   "bluebird": {
-    "unitLabel": "ブルーバード",
-    "perUnit": "$1 / 1 ブルーバード"
+    "button": {
+      "label": "ブルーバード支援"
+    },
+    "modal": {
+      "title": "ブルーバード支援",
+      "subtitle": "{{artistName}}さんを応援しよう"
+    },
+    "intro": "1ブルーバード = $1。好きなアーティストを直接応援できる最もシンプルな方法です。",
+    "type": {
+      "oneTime": "一回限り",
+      "subscription": "月額サブスクリプション"
+    },
+    "amount": {
+      "label": "金額を選択",
+      "custom": "カスタム",
+      "customPlaceholder": "金額を入力（最低$1）",
+      "total": "合計: ${{amount}}",
+      "totalMonthly": "${{amount}}/月"
+    },
+    "payment": {
+      "title": "お支払い方法",
+      "hint": "カード情報はStripeが安全に処理します。",
+      "mockHint": "開発モード（実際の決済なし）"
+    },
+    "confirm": {
+      "button": "${{amount}} 支援する",
+      "buttonMonthly": "月額 ${{amount}} サブスクリプション",
+      "processing": "決済処理中...",
+      "summary": {
+        "artist": "アーティスト",
+        "amount": "金額",
+        "type": "種類"
+      }
+    },
+    "success": {
+      "title": "ありがとうございます！",
+      "message": "{{artistName}}さんにブルーバードを送りました。",
+      "messageMonthly": "{{artistName}}さんの月額サポーターになりました。",
+      "tier": "{{tier}} ティアが有効になりました",
+      "tierHint": "アーティスト限定コンテンツへの優先アクセス権が付与されました。",
+      "close": "閉じる"
+    }
+  },
+  "artist": {
+    "applyTitle": "アーティスト審査申請",
+    "step1": "基本情報",
+    "step2": "代表作品",
+    "step3": "ポートフォリオ",
+    "step4": "経歴",
+    "school": "所属学校",
+    "department": "学科",
+    "gradYear": "卒業（予定）年",
+    "enrolled": "在学中",
+    "genreTags": "ジャンル/スタイルタグ",
+    "eduEmail": "学校メール認証",
+    "eduEmailHint": "登録された学校のメールで認証すると「🎓 学校認証アーティスト」バッジが付与されます。",
+    "sendCode": "認証コード送信",
+    "resendCode": "再送信",
+    "verified": "認証済み",
+    "statement": "自己紹介",
+    "enrollmentProof": "在籍/卒業証明",
+    "portfolioUrls": "ポートフォリオURL",
+    "introVideo": "紹介動画URL",
+    "exhibitions": "展示歴",
+    "awards": "受賞歴",
+    "submitApply": "審査申請",
+    "applySuccess": "審査申請完了",
+    "applySuccessHint": "管理者の確認後、結果を通知します。",
+    "alreadyArtist": "すでにアーティストです",
+    "representativeWorks": "代表作品"
   },
   "recommendation": {
     "following": "フォロー中",
@@ -445,27 +657,17 @@
       "generate": "シェアカードを生成",
       "generating": "シェアカード生成中...",
       "regenerate": "シェアカードを再生成",
+      "retry": "もう一度試す",
       "download": "画像をダウンロード",
       "copyLink": "リンクをコピー",
       "copied": "リンクをコピーしました",
+      "errorUnauthorized": "ログインが必要です",
       "errorOwnerOnly": "アーティストのみ生成できます",
       "errorActiveOnly": "進行中のオークションのみ可能です",
       "errorRateLimit": "しばらくしてからお試しください",
       "errorGenerate": "シェアカードの生成に失敗しました",
       "loading": "シェアカード生成中..."
     }
-  },
-  "share": {
-    "title": "シェアカード",
-    "generate": "シェアカードを生成",
-    "download": "画像をダウンロード",
-    "copyLink": "リンクをコピー",
-    "copied": "リンクをコピーしました",
-    "errorOwnerOnly": "アーティストのみ生成できます",
-    "errorActiveOnly": "進行中のオークションのみ可能です",
-    "errorRateLimit": "しばらくしてからお試しください",
-    "errorGenerate": "シェアカードの生成に失敗しました",
-    "loading": "シェアカード生成中..."
   },
   "notification": {
     "type": {
@@ -476,7 +678,797 @@
           "1h": "オークション終了1時間前"
         },
         "ended": "オークション終了"
+      },
+      "like": "いいね",
+      "comment": "コメント",
+      "follow": "フォロー",
+      "sponsor": "スポンサー",
+      "system": "システム通知"
+    }
+  },
+  "patronage": {
+    "supporter": {
+      "title": "マイスポンサー履歴",
+      "subtitle": "支援履歴を確認してサブスクリプションを管理",
+      "loginRequired": "支援履歴を見るにはログインしてください。",
+      "summary": {
+        "artistsCount": "支援中のアーティスト",
+        "lifetimeAmount": "累計支援額",
+        "activeSubscriptions": "有効なサブスクリプション"
+      },
+      "subscriptions": {
+        "title": "定期サブスクリプション",
+        "cancel": "サブスクリプションをキャンセル",
+        "cancelAtEnd": "期間終了後にキャンセル",
+        "since": "開始日",
+        "benefits": "ティア特典",
+        "changeAmount": "金額変更（準備中）",
+        "empty": "まだ支援しているアーティストがいません。",
+        "pastLabel": "過去のサブスクリプション"
+      },
+      "history": {
+        "title": "一回限りの支援履歴",
+        "empty": "まだ一回限りの支援履歴がありません。",
+        "showMore": "もっと見る",
+        "status": {
+          "succeeded": "完了",
+          "completed": "完了",
+          "failed": "失敗",
+          "refunded": "返金",
+          "pending": "処理中"
+        }
+      },
+      "cancel": {
+        "modal": {
+          "title": "サブスクリプションキャンセル",
+          "reason": {
+            "too_expensive": "料金が高い",
+            "changed_mind": "気が変わった",
+            "not_satisfied": "特典に満足していない",
+            "other": "その他"
+          },
+          "confirmEnd": "請求期間終了後にキャンセル",
+          "confirmImmediate": "即時キャンセル",
+          "cta": "キャンセルを確認"
+        }
+      },
+      "tier": {
+        "benefits": {
+          "title": "ティア特典",
+          "subscriber": "新規投稿の先行公開（公開1〜24時間前）、限定コンテンツフィード、サブスクライバー限定メッセージ",
+          "sponsor": "サブスクライバー特典すべて＋アーティストQ&A優先参加、プロフィールスポンサーバッジ",
+          "follower": "フォロワーバッジ、コメント優先表示",
+          "detailsLink": "特典はプラットフォームのデフォルト値です。アーティストが独自にカスタマイズできます。"
+        }
+      },
+      "empty": {
+        "title": "まだ支援履歴がありません",
+        "exploreCta": "アーティストを発見する"
       }
+    },
+    "support": {
+      "landing": {
+        "intro": "ブルーバード支援について",
+        "blueBirdAbout": "ブルーバードは$1単位のマイクロパトロネージュで、好きなアーティストを直接応援できます。",
+        "tierBenefits": "ティア特典",
+        "myHistory": "マイ支援履歴",
+        "exploreArtists": "アーティストを探す"
+      }
+    },
+    "artist": {
+      "title": "パトロネージュダッシュボード",
+      "summary": {
+        "supporters": "総支援者数",
+        "monthlyRevenue": "今月の収益",
+        "subscribers": "アクティブなサブスクリプション",
+        "tierDistribution": "ティア分布"
+      },
+      "tier": {
+        "subscriber": "定期支援者",
+        "sponsor": "一時支援者",
+        "follower": "フォロワー"
+      },
+      "chart": {
+        "daily": "収益（直近30日）",
+        "monthly": "収益（直近12ヶ月）",
+        "toggle": {
+          "daily": "日次",
+          "monthly": "月次"
+        }
+      },
+      "supporters": {
+        "table": {
+          "title": "支援者一覧"
+        },
+        "filter": {
+          "active": "アクティブ",
+          "churned": "離脱",
+          "all": "全て"
+        },
+        "col": {
+          "username": "ユーザー名",
+          "tier": "ティア",
+          "since": "支援開始",
+          "lifetime": "累計金額",
+          "status": "ステータス"
+        },
+        "empty": "まだ支援者がいません。",
+        "loadMore": "もっと見る"
+      },
+      "payout": {
+        "request": "送金申請",
+        "balance": "出金可能残高",
+        "balanceHint": "累計収益（Phase 6で精算連携予定）",
+        "modalTitle": "送金申請",
+        "amountLabel": "金額（USDセント）",
+        "amountPlaceholder": "例: 5000 (= $50)",
+        "methodLabel": "方法",
+        "methodBank": "銀行振込",
+        "methodStripe": "Stripe",
+        "success": "送金申請が受け付けられました。"
+      },
+      "empty": {
+        "title": "まだ支援者がいません",
+        "cta": "ブルーバード支援の有効化について"
+      }
+    },
+    "churn": {
+      "feedback": {
+        "preview": "フィードバックプレビュー"
+      },
+      "empty": {
+        "celebrated": "過去30日間に離脱した支援者はいません ✨"
+      }
+    }
+  },
+  "tierBenefits": {
+    "editor": {
+      "title": "ティア特典設定",
+      "subtitle": "各ティアのカスタム特典を定義できます。未設定のティアにはプラットフォームのデフォルト特典が表示されます。"
+    },
+    "tier": {
+      "subscriber": "サブスクライバー",
+      "sponsor": "スポンサー",
+      "follower": "フォロワー"
+    },
+    "benefit": {
+      "add": "追加",
+      "remove": "削除",
+      "placeholder": "特典を入力してください（最大200文字）",
+      "maxLength": "特典は200文字以内で入力してください。",
+      "maxCount": "特典は最大{max}個まで設定できます。",
+      "emptyHint": "まだ特典が設定されていません。下から追加してください。"
+    },
+    "welcomeMessage": {
+      "label": "ウェルカムメッセージ（任意）",
+      "placeholder": "支援者へのメッセージを入力してください（最大500文字）",
+      "maxLength": "ウェルカムメッセージは500文字以内で入力してください。"
+    },
+    "action": {
+      "save": "保存",
+      "reset": "デフォルトに戻す",
+      "resetConfirm": "このティアの特典をプラットフォームのデフォルトにリセットしますか？",
+      "saving": "保存中...",
+      "saved": "保存済み"
+    },
+    "preview": {
+      "title": "プレビュー"
+    },
+    "profile": {
+      "title": "支援特典"
+    },
+    "empty": {
+      "platformDefault": "{tier}のデフォルト特典"
+    },
+    "error": {
+      "tooLong": "特典は200文字以内で入力してください。",
+      "tooMany": "特典は最大10個まで設定できます。",
+      "saveError": "保存に失敗しました。もう一度お試しください。"
+    }
+  },
+  "common_ui": {
+    "comingSoon": "準備中",
+    "optional": "任意",
+    "perMonth": "/月",
+    "auctionBadge": "オークション",
+    "buyNowBadge": "即購入"
+  },
+  "bluebird_modal": {
+    "closeAriaLabel": "閉じる",
+    "typeSelectAriaLabel": "支援タイプを選択",
+    "amountSelectAriaLabel": "金額を選択",
+    "cardInputAriaLabel": "カード情報",
+    "mockDevBanner": "開発モード — 実際の決済なし (Stripe未接続)",
+    "mockCardPlaceholder": "テストカード: 4242 4242 4242 4242",
+    "mockCardAriaLabel": "テストカード番号",
+    "messageLabel": "メッセージ（任意）",
+    "messagePlaceholder": "アーティストへの短い応援メッセージを残してください",
+    "messageAriaLabel": "応援メッセージ",
+    "visibilityLabel": "公開設定",
+    "visibilityAriaLabel": "公開設定",
+    "visibilityPublic": "全体公開",
+    "visibilityArtistOnly": "アーティストのみ",
+    "visibilityPrivate": "非公開",
+    "anonymousLabel": "匿名で支援",
+    "nextStepsLabel": "次のステップ",
+    "minAmountError": "最低$1以上を入力してください。",
+    "cardInfoRequiredError": "カード情報をすべて入力してください。",
+    "setupInitError": "決済手段の初期化に失敗しました。",
+    "unknownError": "不明なエラーが発生しました",
+    "stripeError": {
+      "cardDeclined": "カードが拒否されました。別のカードをお試しください。",
+      "insufficientFunds": "残高が不足しています。",
+      "authRequired": "カード認証に失敗しました。再試行してください。",
+      "unknown": "決済エラーが発生しました。再試行してください。"
+    }
+  },
+  "cancel_modal": {
+    "discountComingSoonNote": "Stripeクーポン連携はPhase 6+で対応予定です。",
+    "pauseComingSoonNote": "サブスクリプション一時停止機能はPhase 6+で対応予定です。",
+    "feedbackPlaceholder": "アーティストに改善してほしい点をお伝えください...",
+    "feedbackAriaLabel": "フィードバック入力",
+    "otherFeedbackPlaceholder": "自由にご意見をお聞かせください...",
+    "otherFeedbackAriaLabel": "その他のフィードバック",
+    "optionalSuffix": "（任意）"
+  },
+  "churn": {
+    "last30DaysSuffix": "（直近30日）",
+    "comingSoonSuffix": "（準備中）"
+  },
+  "post_card": {
+    "bluebirdAriaLabel": "ブルーバード支援",
+    "bluebirdLabel": "応援"
+  },
+  "retention": {
+    "thankyou": {
+      "title": "ありがとうございます！",
+      "welcomeMessageDefault": "{{artistName}}さんの作品を応援してくださり、ありがとうございます。",
+      "nextSteps": {
+        "seeWorks": "{{artistName}}さんの他の作品を見る",
+        "exploreSimilar": "似たようなアーティストを発見する",
+        "seeHistory": "後援履歴を確認する"
+      }
+    },
+    "cancel": {
+      "winback": {
+        "title": "少し考え直してみませんか？",
+        "offer": {
+          "discount": "初月50%割引のご提案",
+          "pause": "1ヶ月間一時停止オプション",
+          "message": "アーティストに直接フィードバックを送る",
+          "feedback": "フィードバック（任意）"
+        },
+        "confirmCancel": "やはりキャンセルする",
+        "reconsider": "考え直します"
+      }
+    },
+    "winback": {
+      "success": {
+        "title": "クーポンが適用されました！",
+        "discountApplied": "{{discount}}割引が適用されました",
+        "durationOnce": "次回の決済に1回適用",
+        "durationMonths": "{{months}}ヶ月間割引が続きます",
+        "cancelReverted": "サブスクリプションはキャンセルされず続行されます。ありがとうございます！",
+        "cta": "確認"
+      },
+      "offer": {
+        "discount50": "1ヶ月間50%割引を適用",
+        "discount50Desc": "今月の決済額を50%節約できます。1ヶ月後に通常料金に戻ります。",
+        "discount30": "1ヶ月間30%割引を適用",
+        "discount30Desc": "今月の決済額を30%節約できます。1ヶ月後に通常料金に戻ります。",
+        "discount20": "1ヶ月間20%割引を適用",
+        "discount20Desc": "今月の決済額を20%節約できます。1ヶ月後に通常料金に戻ります。",
+        "discount10": "10%割引を1回適用",
+        "discount10Desc": "次回の決済に10%割引が適用されます。",
+        "dmComingSoon": "アーティストへのダイレクトメッセージ機能は近日公開予定です。"
+      },
+      "banner": {
+        "title": "以前に応援していたアーティストです",
+        "subtitle": "{{artistName}}さんをもう一度応援しませんか？",
+        "resubscribeCta": "再購読する",
+        "dismiss": "後で"
+      },
+      "conditional": {
+        "tooExpensive": "{{artistName}} — 割引コードが利用できます。もう一度応援してみませんか！",
+        "notSatisfied": "{{artistName}}が新しいシリーズを始めました。もう一度チャンスを！"
+      }
+    },
+    "expiry": {
+      "banner": {
+        "title": "{{artistName}}へのサポートがD-{{days}}日後に終了します",
+        "subtitle": "引き続き応援するには更新してください。",
+        "renewCta": "更新する",
+        "dismiss": "閉じる"
+      }
+    },
+    "churn": {
+      "title": "最近離脱した支援者",
+      "empty": "過去30日間に離脱した支援者はいません。",
+      "sentCampaign": "再獲得キャンペーンを送る",
+      "reason": {
+        "too_expensive": "高すぎる",
+        "changed_mind": "気が変わった",
+        "not_satisfied": "満足できなかった",
+        "other": "その他",
+        "unknown": "理由未記入"
+      }
+    },
+    "resubscribe": {
+      "cta": "再購読",
+      "confirming": "購読中...",
+      "success": "購読が再開されました！"
+    }
+  },
+  "coupon": {
+    "admin": {
+      "title": "クーポン管理",
+      "createCta": "クーポン発行",
+      "table": {
+        "code": "コード",
+        "discount": "割引",
+        "duration": "期間",
+        "redemptions": "使用回数",
+        "status": "ステータス",
+        "delete": "削除"
+      },
+      "form": {
+        "label": {
+          "code": "クーポンコード",
+          "discountType": "割引タイプ",
+          "discountValue": "割引値",
+          "duration": "期間",
+          "durationInMonths": "月数",
+          "validUntil": "有効期限（任意）",
+          "maxRedemptions": "最大使用回数（任意）"
+        },
+        "duration": {
+          "once": "1回",
+          "forever": "永久",
+          "repeating": "繰り返し"
+        },
+        "discountType": {
+          "percent": "パーセント",
+          "amount": "金額"
+        }
+      }
+    },
+    "user": {
+      "title": "マイ割引コード",
+      "applyCta": "コードを適用",
+      "applyPlaceholder": "クーポンコードを入力",
+      "applySuccess": "クーポンが適用されました！",
+      "active": {
+        "label": "有効な割引",
+        "expiry": "有効期限",
+        "remaining": "残り{{count}}ヶ月"
+      },
+      "empty": "適用済みの割引コードはありません。"
+    },
+    "error": {
+      "notFound": "クーポンコードが見つかりません。または有効期限切れです。",
+      "expired": "このクーポンは期限切れです。",
+      "alreadyApplied": "このクーポンはすでに適用されています。",
+      "saveError": "クーポンの保存中にエラーが発生しました。",
+      "unauthorized": "このクーポンを適用する権限がありません。"
+    },
+    "subscription": {
+      "appliedBadge": "{{discount}}% 割引適用中"
+    }
+  },
+  "admin": {
+    "featuredArtists": {
+      "pageTitle": "Featured Artist 管理",
+      "pageSubtitle": "毎月のFeatured Artistをキュレーションします。",
+      "createCta": "Featured Artist を設定",
+      "form": {
+        "title": "新しいFeatured Artist 登録",
+        "artistLabel": "アーティスト検索",
+        "artistPlaceholder": "アーティスト名を入力...",
+        "searchBtn": "検索",
+        "selectedArtist": "選択済み: {{name}}",
+        "monthLabel": "対象月（月初日）",
+        "monthHint": "現在または未来の月のみ設定できます。",
+        "noteLabel": "キュレーション理由（任意）",
+        "notePlaceholder": "このアーティストを選んだ理由を入力してください...",
+        "submitBtn": "登録"
+      },
+      "list": {
+        "title": "選定履歴",
+        "empty": "まだ登録されたFeatured Artistはいません。",
+        "monthCol": "月",
+        "artistCol": "アーティストID",
+        "noteCol": "キュレーション理由",
+        "statusCol": "ステータス",
+        "actionsCol": "アクション",
+        "active": "有効",
+        "inactive": "無効",
+        "noNote": "理由なし",
+        "deactivateBtn": "無効化"
+      }
+    }
+  },
+  "cookie": {
+    "bannerTitle": "🍪 クッキーのご案内",
+    "bannerBody": "Domoはサービス提供のため必須クッキーを使用します。任意で分析クッキーを許可できます。",
+    "essentialOnly": "必須のみ",
+    "acceptAll": "すべて許可",
+    "policyLink": "クッキーポリシー",
+    "privacyLink": "プライバシーポリシー"
+  },
+  "privacy": {
+    "title": "プライバシー設定",
+    "subtitle": "データ収集と分析に関する設定を管理します。",
+    "analytics": {
+      "title": "分析データ",
+      "description": "サービス改善のため匿名の使用データを収集します。GDPR準拠、IP匿名化処理済み。",
+      "toggleLabel": "分析データ収集を許可する",
+      "statusEnabled": "分析データ収集が許可されています。",
+      "statusDisabled": "分析データ収集が拒否されています。"
+    },
+    "savedConfirmation": "設定が保存されました。"
+  },
+  "onboarding": {
+    "wizard": {
+      "ariaLabel": "Domoオンボーディングウィザード"
+    },
+    "common": {
+      "skip": "スキップ",
+      "laterLink": "後でする",
+      "goHome": "ホームへ"
+    },
+    "step1": {
+      "title": "Domoへようこそ！",
+      "subtitle": "好きなアーティストをフォローしてフィードを埋めましょう。",
+      "selectPrompt": "フォローするアーティストを選択",
+      "selectedCount": "{{count}}人選択中",
+      "selectAll": "すべて選択",
+      "deselectAll": "選択解除",
+      "noArtists": "おすすめアーティストを読み込めませんでした。",
+      "worksCount": "作品{{count}}点",
+      "artistListAriaLabel": "おすすめアーティスト一覧",
+      "followSelected": "{{count}}人のアーティストをフォロー",
+      "skipAndNext": "次へ"
+    },
+    "step2": {
+      "title": "Blue Birdでアーティストを応援しよう",
+      "subtitle": "スポンサーシップでアーティストの創作活動を直接支援できます。",
+      "bullet1": "支援金は100%アーティストに届きます",
+      "bullet2": "月額$1から始められる低い敷居",
+      "bullet3": "サポーター限定コンテンツと特典へのアクセス",
+      "bulletsAriaLabel": "Blue Birdスポンサーシップの特典",
+      "ctaWithArtist": "@{{artistName}}を応援する",
+      "cta": "今すぐ応援する",
+      "continueAfterSponsor": "次のステップへ",
+      "sponsoredSuccess": "応援が完了しました！"
+    },
+    "step3": {
+      "title": "多様な作品を発見しよう",
+      "subtitle": "発見ページで世界中の新進アーティストの作品に出会いましょう。",
+      "previewAriaLabel": "発見ページのプレビュー",
+      "summaryTitle": "オンボーディングのまとめ",
+      "summaryFollowed": "{{count}}人のアーティストをフォロー完了",
+      "summaryFollowedNone": "まだフォローしていません",
+      "summarySponsoredDone": "初めてのBlue Bird応援完了",
+      "summarySponsoredSkip": "Blue Bird応援は後で",
+      "cta": "探索を始める"
+    },
+    "sidebar": {
+      "indicator": "オンボーディングを続ける",
+      "title": "オンボーディング進行中",
+      "hint": "クリックして設定を続ける"
+    }
+  },
+  "artist": {
+    "index": {
+      "pageTitle": "グローバル新進アーティストインデックス",
+      "pageSubtitle": "Domoが発見した注目のアーティスト",
+      "navLabel": "アーティストインデックス",
+      "rank": "ランク",
+      "score": "スコア",
+      "topHeroTitle": "今月のTop 3",
+      "listTitle": "全ランキング",
+      "loadMore": "もっと見る",
+      "loading": "ランキング読み込み中...",
+      "empty": "条件に合うアーティストがいません。",
+      "error": "ランキングを読み込めませんでした。",
+      "viewProfile": "見る",
+      "tierBadge": {
+        "top_10": "Top 10",
+        "top_100": "Top 100",
+        "top_1000": "Top 1000"
+      },
+      "filter": {
+        "region": "地域",
+        "regionAll": "全地域",
+        "genre": "ジャンル",
+        "genreAll": "全ジャンル"
+      },
+      "badge": {
+        "globalRank": "グローバル #{{rank}}",
+        "regionRank": "地域 #{{rank}}",
+        "genreRank": "ジャンル #{{rank}}",
+        "whyLabel": "このランクは？",
+        "whyTooltip": "最近の活動(50%) + 売上(30%) + サポーター(20%) + 在籍期間(10%)で算出されます。",
+        "notRanked": "ランクなし",
+        "notYet": "集計中",
+        "lastUpdated": "最終更新: {{date}}"
+      },
+      "seo": {
+        "description": "Domo グローバル新進アーティストインデックス — 世界中のアーティストのリアルタイムランキング",
+        "ogTitle": "Domo グローバル新進アーティストインデックス"
+      }
+    }
+  },
+  "stories": {
+    "pageTitle": "ストーリーハブ",
+    "pageSubtitle": "新進アーティストの成長ストーリーとメディア露出をご覧ください。",
+    "backToHub": "ストーリーハブ",
+    "featured": {
+      "sectionTitle": "今月のFeaturedアーティスト",
+      "monthLabel": "今月のFeatured",
+      "curatedBadge": "Admin キュレーション",
+      "viewProfile": "プロフィールを見る",
+      "viewTimeline": "成長ストーリー",
+      "scoreLabel": "スコア {{score}}",
+      "empty": "まだFeaturedアーティストはいません。"
+    },
+    "history": {
+      "sectionTitle": "アーティストヒストリー",
+      "sectionSubtitle": "Domoで成長中の新進アーティストの軌跡をご確認ください。",
+      "viewTimeline": "成長ストーリーを見る",
+      "viewFullIndex": "全インデックスを見る",
+      "empty": "まだアーティストヒストリーがありません。"
+    },
+    "media": {
+      "sectionTitle": "外部メディア露出",
+      "empty": "まだ外部メディア露出はありません。",
+      "placeholderNote": "以下はサンプルです。実際のメディア露出時に更新されます。"
+    }
+  },
+  "timeline": {
+    "title": "成長タイムライン",
+    "notFound": "アーティストが見つかりません。",
+    "postsCount": "作品",
+    "viewProfile": "プロフィールを見る",
+    "empty": "まだマイルストーンが記録されていません。",
+    "joined": "Domo参加",
+    "firstPost": "初めての作品公開",
+    "firstBluebird": "初めてのBlue Bird受取",
+    "rankTop1000": "グローバルTop 1000入り",
+    "rankTop100": "グローバルTop 100入り",
+    "rankTop10": "グローバルTop 10入り",
+    "highlightPost": "人気作品"
+  },
+  "webhook": {
+    "notification": {
+      "payment_failed": "決済が失敗しました — もう一度お試しください",
+      "payment_3ds_required": "3Dセキュア認証が必要です",
+      "subscription_renewed": "サブスクリプションが更新されました",
+      "subscription_payment_failed": "サブスクリプション決済が失敗しました — 支払い方法を更新してください",
+      "subscription_cancelled": "サブスクリプションがキャンセルされました",
+      "dispute_created": "異議申し立てが発生しました — サポートにお問い合わせください",
+      "update_payment_method": "支払い方法を更新"
+    }
+  },
+  "interview": {
+    "pageTitle": "AIアーティストインタビュー",
+    "pageSubtitle": "AI生成アーティストインタビュー記事",
+    "admin": {
+      "pageTitle": "インタビュー管理",
+      "pageSubtitle": "LLM自動生成インタビューの審査と公開管理",
+      "generateCta": "インタビュー生成",
+      "generateTitle": "新規インタビュー生成",
+      "artistIdLabel": "アーティストID",
+      "localeLabel": "言語",
+      "generating": "生成中...",
+      "generateSuccess": "インタビューが生成され、審査待ちになりました。",
+      "reviewTitle": "インタビュー審査",
+      "approveBtn": "承認",
+      "rejectBtn": "却下",
+      "publishBtn": "公開",
+      "publishDisabled": "公開にはアーティストの同意が必要です。",
+      "reviewNoteLabel": "審査メモ",
+      "statusLabel": "ステータス",
+      "localeTag": "言語",
+      "consentTag": "同意",
+      "consentPending": "アーティストの同意待ち",
+      "consentDone": "アーティストの同意取得済み",
+      "listTitle": "インタビュー一覧"
+    },
+    "me": {
+      "pageTitle": "マイインタビュー",
+      "pageSubtitle": "Domo AIが生成した私についてのインタビュー記事",
+      "consentBtn": "公開に同意",
+      "rejectBtn": "公開を拒否",
+      "consentConfirm": "このインタビューの公開に同意しますか？同意後、管理者が公開処理を行います。",
+      "rejectConfirm": "このインタビューの公開を拒否しますか？",
+      "noInterviews": "まだインタビューが生成されていません。",
+      "previewLabel": "プレビュー",
+      "statusApproved": "承認済み（同意必要）",
+      "statusPublished": "公開済み",
+      "statusRejected": "拒否済み",
+      "statusAdminReview": "審査待ち"
+    },
+    "public": {
+      "readMore": "インタビューを読む",
+      "sectionTitle": "AIインタビュー",
+      "noPublished": "公開済みのインタビューはありません。",
+      "aiGenerated": "AI生成",
+      "consentNote": "アーティストの同意を得て公開されたインタビューです。"
+    },
+    "status": {
+      "draft": "下書き",
+      "admin_review": "審査待ち",
+      "approved": "承認済み",
+      "published": "公開済み",
+      "rejected": "却下",
+      "archived": "アーカイブ済み"
+    }
+  },
+  "bio": {
+    "pageTitle": "多言語プロフィール編集",
+    "pageSubtitle": "5つの言語でプロフィールを設定してください",
+    "translateBtn": "自動翻訳 (AI)",
+    "translating": "翻訳中...",
+    "translateSuccess": "5言語に翻訳されました",
+    "translateError": "翻訳に失敗しました",
+    "saveBtn": "保存",
+    "saving": "保存中...",
+    "saved": "保存済み",
+    "machineTranslated": "AI翻訳",
+    "humanEdited": "手動編集",
+    "bioPlaceholder": "プロフィールを入力してください",
+    "emptyBioWarning": "先にプロフィールを入力してください",
+    "localeTab": {
+      "ko": "한국어",
+      "en": "English",
+      "ja": "日本語",
+      "zh": "中文",
+      "es": "Español"
+    }
+  },
+  "localeSwitcher": {
+    "label": "言語",
+    "ko": "한국어",
+    "en": "English",
+    "ja": "日本語",
+    "zh": "中文",
+    "es": "Español"
+  },
+  "mediaCoverage": {
+    "pageTitle": "メディア掲載管理",
+    "pageSubtitle": "外部メディアの記事・動画・ラジオを登録・管理",
+    "addBtn": "新規追加",
+    "emptyList": "メディア掲載情報がありません。",
+    "loadMore": "さらに読み込む",
+    "typeLabel": "種類",
+    "sourceLabel": "媒体名",
+    "publishedAtLabel": "掲載日",
+    "localeLabel": "言語",
+    "featuredLabel": "注目掲載",
+    "publishedLabel": "公開済み",
+    "draftLabel": "下書き",
+    "deleteConfirm": "この項目を削除しますか？",
+    "saveSuccess": "保存しました。",
+    "saveError": "保存に失敗しました。",
+    "types": {
+      "article": "記事",
+      "youtube": "YouTube",
+      "radio": "ラジオ",
+      "podcast": "ポッドキャスト",
+      "tv": "テレビ"
+    },
+    "artist": {
+      "sectionTitle": "このアーティストに関するメディア掲載",
+      "empty": "このアーティストのメディア掲載がありません。"
+    }
+  },
+  "newsletter": {
+    "admin": {
+      "title": "ニュースレター管理",
+      "compose": {
+        "title": "新規発行（自動作成）",
+        "button": "{{locale}} ニュースレター作成"
+      },
+      "status": {
+        "draft": "下書き",
+        "sending": "送信中",
+        "sent": "送信完了",
+        "failed": "失敗"
+      },
+      "list": {
+        "title": "発行履歴",
+        "empty": "ニュースレターはまだありません。",
+        "retry": "再試行",
+        "refresh": "更新",
+        "sendAction": "送信開始",
+        "col": {
+          "date": "日付",
+          "locale": "言語",
+          "subject": "件名",
+          "status": "ステータス",
+          "sent": "送信数",
+          "actions": "操作"
+        }
+      },
+      "editor": {
+        "title": "ニュースレター編集",
+        "subject": "件名",
+        "body": "本文（Markdown）",
+        "showPreview": "プレビュー",
+        "hidePreview": "編集に戻る",
+        "send": "送信開始",
+        "sending": "送信中...",
+        "sendConfirm": "このニュースレターを送信しますか？すべての購読者にメールが届きます。",
+        "sentCount": "送信: {{sent}} / 失敗: {{failed}}"
+      }
+    },
+    "preferences": {
+      "title": "ニュースレター設定",
+      "subscribe": {
+        "label": "ニュースレターを購読",
+        "hint": "DomoのアーティストニュースをEメールで受け取ります。"
+      },
+      "frequency": {
+        "label": "配信頻度",
+        "weekly": "毎週",
+        "biweekly": "隔週",
+        "monthly": "毎月",
+        "never": "受け取らない"
+      },
+      "locale": {
+        "label": "受信言語"
+      },
+      "lastSent": "最終受信: {{date}}",
+      "unsubscribeNote": "メールのフッターにある配信停止リンクからいつでも解除できます。"
+    },
+    "unsubscribe": {
+      "loading": "処理中...",
+      "success": {
+        "title": "配信停止しました",
+        "message": "ニュースレターの配信を停止しました。設定からいつでも再購読できます。"
+      },
+      "already": {
+        "title": "すでに配信停止済みです",
+        "message": "現在ニュースレターを購読していません。"
+      },
+      "error": {
+        "title": "無効なリンク",
+        "message": "この配信停止リンクは無効または期限切れです。設定から直接配信停止してください。"
+      },
+      "missing": {
+        "title": "情報がありません",
+        "message": "配信停止リンクに必要な情報がありません。"
+      },
+      "backToHome": "ホームに戻る"
+    }
+  },
+  "pressKit": {
+    "pageTitle": "プレスキット",
+    "pageSubtitle": "アーティスト広報用PDF自動生成",
+    "generateBtn": "プレスキット生成",
+    "regenerateBtn": "再生成",
+    "downloadBtn": "ダウンロード",
+    "generating": "生成中...",
+    "locale": "言語",
+    "localePlaceholder": "言語を選択",
+    "cacheNote": "同じアーティスト・言語は30日間キャッシュされます。",
+    "history": "生成履歴",
+    "noHistory": "生成済みのプレスキットがありません。",
+    "pages": "ページ",
+    "fileSize": "ファイルサイズ",
+    "expiresAt": "有効期限",
+    "createdAt": "作成日",
+    "isPublic": "公開ダウンロード",
+    "artistSearch": "アーティストIDまたは検索",
+    "generateError": "生成中にエラーが発生しました。",
+    "me": {
+      "pageTitle": "マイプレスキット",
+      "pageSubtitle": "外部メディア配布用プレスキットPDF",
+      "download": "PDFダウンロード",
+      "noKit": "まだプレスキットが生成されていません。管理者にお問い合わせください。",
+      "publicToggle": "公開ダウンロードを許可",
+      "publicToggleNote": "有効にすると、誰でもあなたのプレスキットをダウンロードできます。"
     }
   }
 }

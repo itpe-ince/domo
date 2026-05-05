@@ -287,10 +287,13 @@ async def test_get_post_active_tier_non_qualifying_viewer():
     db = AsyncMock()
     post_result = MagicMock()
     post_result.scalar_one_or_none.return_value = post
+    # D'-1: sponsor_validity_days fetch → None (lifetime)
+    validity_result = MagicMock()
+    validity_result.scalar_one_or_none.return_value = None
     # _viewer_meets_tier EXISTS query → False
     tier_result = MagicMock()
     tier_result.scalar.return_value = False
-    db.execute = AsyncMock(side_effect=[post_result, tier_result])
+    db.execute = AsyncMock(side_effect=[post_result, validity_result, tier_result])
 
     with patch("app.api.posts._optional_viewer_id", new=AsyncMock(return_value=(viewer_id, "user"))):
         with pytest.raises(ApiError) as exc_info:

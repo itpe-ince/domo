@@ -18,7 +18,6 @@ import asyncio
 import random
 import uuid
 from datetime import datetime, timezone
-from decimal import Decimal
 
 from sqlalchemy import delete, select, text
 
@@ -236,7 +235,8 @@ async def seed() -> None:
                     post_id=post.id,
                     is_auction=is_auction,
                     is_buy_now=is_buy_now,
-                    buy_now_price=Decimal(str(buy_now_price)) if buy_now_price else None,
+                    # G'-10: buy_now_price is BigInteger (cents/integer KRW). No Decimal wrapper.
+                    buy_now_price=int(buy_now_price) if buy_now_price else None,
                     currency="KRW",
                     dimensions=random.choice(["50x70cm", "60x80cm", "30x40cm"]),
                     medium=random.choice(["Oil on canvas", "Watercolor on paper", "Mixed media"]),

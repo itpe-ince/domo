@@ -7,13 +7,15 @@ Endpoints:
   PATCH  /v1/series/{id}             update metadata (owner only)
   DELETE /v1/series/{id}             delete + cascade memberships (owner only) → 204
   POST   /v1/posts/{id}/series       replace post's full series membership list
+  POST   /v1/series/{id}/reorder     reorder posts within a series (D-3 carry-over)
 
 R-6 mitigation: _check_series_owner helper called in EVERY mutation.
 R-8 mitigation: POST /posts/{id}/series cross-checks BOTH post owner AND each series owner.
 OQ-D-5=A: GET /series/{id} returns only status='published' posts.
+D-3: reorder endpoint persists dnd-kit order to PostSeriesMembership.order_index.
 """
-import uuid
 import logging
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -32,6 +34,8 @@ from app.schemas.series import (
     SeriesCreate,
     SeriesOut,
     SeriesPatch,
+    SeriesReorderRequest,
+    SeriesReorderResponse,
 )
 
 router = APIRouter(tags=["series"])
@@ -264,6 +268,91 @@ async def delete_series(
     await db.commit()
     _log.info("series.deleted series_id=%s by=%s", series_id, user.id)
     # 204 No Content — no response body
+
+
+# ─── Reorder (D-3 carry-over) ────────────────────────────────────────────────
+
+
+@router.post("/series/{series_id}/reorder")
+async def reorder_series_posts(
+    series_id: UUID,
+    body: SeriesReorderRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("series_reorder"),
+):
+    """Persist drag-reorder order for posts within a series (D-3 carry-over).
+
+    Auth: owner only (R-6 mitigation via _check_series_owner).
+    Validation:
+      - post_ids must be non-empty (enforced by schema min_length=1).
+      - No duplicates allowed (422).
+      - post_ids must exactly match current series membership set (422).
+    Logic:
+      - All PostSeriesMembership.order_index updated within one transaction.
+      - Series.updated_at bumped via onupdate trigger (touch title to force it).
+    """
+    series = await _get_series_or_404(db, series_id)
+    await _check_series_owner(series, user)
+
+    # Validate: no duplicates
+    if len(body.post_ids) != len(set(body.post_ids)):
+        raise ApiError(
+            "DUPLICATE_POST_IDS",
+            "post_ids contains duplicate values",
+            http_status=422,
+        )
+
+    # Load current memberships
+    mem_result = await db.execute(
+        select(PostSeriesMembership).where(PostSeriesMembership.series_id == series_id)
+    )
+    memberships = list(mem_result.scalars().all())
+    existing_post_ids = {m.post_id for m in memberships}
+
+    # Validate: length must match
+    if len(body.post_ids) != len(existing_post_ids):
+        raise ApiError(
+            "POST_IDS_INCOMPLETE",
+            f"post_ids length {len(body.post_ids)} does not match series membership "
+            f"count {len(existing_post_ids)}. All member posts must be included.",
+            http_status=422,
+        )
+
+    # Validate: all post_ids must be current members
+    unknown = [str(pid) for pid in body.post_ids if pid not in existing_post_ids]
+    if unknown:
+        raise ApiError(
+            "POST_NOT_IN_SERIES",
+            f"post_ids contains posts not in this series: {unknown}",
+            http_status=422,
+        )
+
+    # Build lookup for quick update
+    membership_map = {m.post_id: m for m in memberships}
+
+    # Update order_index for each post in the new order
+    for idx, pid in enumerate(body.post_ids):
+        membership_map[pid].order_index = idx
+
+    # Touch series.updated_at so the response reflects the reorder time
+    series.updated_at = datetime.now(timezone.utc)
+
+    await db.commit()
+    await db.refresh(series)
+
+    _log.info(
+        "series.reordered series_id=%s count=%d by=%s",
+        series_id, len(body.post_ids), user.id,
+    )
+
+    return {
+        "data": SeriesReorderResponse(
+            series_id=series.id,
+            ordered_post_ids=list(body.post_ids),
+            updated_at=series.updated_at,
+        ).model_dump(mode="json")
+    }
 
 
 # ─── Post series membership (cross-ownership check) ───────────────────────────

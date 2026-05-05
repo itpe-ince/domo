@@ -25,6 +25,82 @@ import {
   unlikePost,
 } from "@/lib/api";
 import { useI18n } from "@/i18n";
+import { formatPriceCents } from "@/lib/format";
+
+// ─── POST_TIER_RESTRICTED CTA panel — D'-1 carry-over ────────────────────────
+
+interface TierRestrictedPanelProps {
+  artistId: string;
+  artistName: string;
+  onClose: () => void;
+}
+
+function TierRestrictedPanel({ artistId, artistName, onClose }: TierRestrictedPanelProps) {
+  const { t } = useI18n();
+  const [showBluebird, setShowBluebird] = useState(false);
+  const [bluebirdMode, setBluebirdMode] = useState<"oneTime" | "subscription">("oneTime");
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-6">
+      <div className="card max-w-md w-full p-8 space-y-5 text-center">
+        <div className="text-4xl">🔒</div>
+        <h2 className="text-xl font-bold">{t("post.detail.tierRestrictedTitle")}</h2>
+        <p className="text-text-secondary text-sm">
+          {t("post.detail.tierRestrictedHint").replace("{{artistName}}", artistName)}
+        </p>
+
+        <div className="space-y-3 pt-2">
+          <button
+            className="btn-primary w-full text-sm"
+            onClick={() => {
+              setBluebirdMode("oneTime");
+              setShowBluebird(true);
+            }}
+          >
+            🕊 {t("post.detail.tierRestrictedSponsorCta")}
+          </button>
+
+          <button
+            className="btn-secondary w-full text-sm"
+            onClick={() => {
+              setBluebirdMode("subscription");
+              setShowBluebird(true);
+            }}
+          >
+            📅 {t("post.detail.tierRestrictedSubscribeCta")}
+          </button>
+
+          <Link
+            href="/me/sponsorships"
+            className="block text-text-secondary text-sm hover:text-primary underline"
+          >
+            {t("post.detail.tierRestrictedHistoryCta")}
+          </Link>
+        </div>
+
+        <button
+          onClick={onClose}
+          className="text-text-muted text-xs hover:text-text-secondary"
+        >
+          ← 뒤로
+        </button>
+      </div>
+
+      {showBluebird && (
+        <BluebirdModal
+          artistId={artistId}
+          artistName={artistName}
+          onClose={() => setShowBluebird(false)}
+          onSuccess={() => {
+            setShowBluebird(false);
+            // Reload post after sponsoring — may now qualify
+            window.location.reload();
+          }}
+        />
+      )}
+    </div>
+  );
+}
 
 export default function PostDetailPage({
   params,
@@ -38,6 +114,7 @@ export default function PostDetailPage({
   const [me, setMe] = useState<ApiUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [tierRestrictedArtist, setTierRestrictedArtist] = useState<{ id: string; name: string } | null>(null);
   const [commentDraft, setCommentDraft] = useState("");
   const [posting, setPosting] = useState(false);
   const [liked, setLiked] = useState(false);
@@ -84,8 +161,15 @@ export default function PostDetailPage({
       }
     } catch (e) {
       if (e instanceof ApiClientError && e.code === "POST_TIER_RESTRICTED") {
-        // artist-tier-release PDCA #10 — viewer does not qualify for early access
-        setError(t("post.detail.tierRestricted"));
+        // D'-1 carry-over: show rich CTA panel with BluebirdModal integration
+        // We may have a partial post from fetchPost before the 403; try to extract author.
+        // If post is already set in state from a previous load, use that; else use placeholder.
+        setTierRestrictedArtist(
+          post
+            ? { id: post.author.id, name: post.author.display_name }
+            : { id: "", name: "이 작가" }
+        );
+        setError("POST_TIER_RESTRICTED");
       } else if (e instanceof ApiClientError && e.code === "NOT_FOUND") {
         setError("존재하지 않는 포스트입니다.");
       } else {
@@ -141,6 +225,16 @@ export default function PostDetailPage({
       <main className="min-h-screen flex items-center justify-center text-text-muted">
         로딩 중...
       </main>
+    );
+  }
+
+  if (error === "POST_TIER_RESTRICTED" && tierRestrictedArtist) {
+    return (
+      <TierRestrictedPanel
+        artistId={tierRestrictedArtist.id}
+        artistName={tierRestrictedArtist.name}
+        onClose={() => router.push("/")}
+      />
     );
   }
 
@@ -251,11 +345,11 @@ export default function PostDetailPage({
                   <dd>{product.year}</dd>
                 </>
               )}
-              {product.buy_now_price && (
+              {product.buy_now_price != null && product.buy_now_price > 0 && (
                 <>
                   <dt className="text-text-muted">즉시구매가</dt>
                   <dd className="text-primary font-medium">
-                    ₩ {Number(product.buy_now_price).toLocaleString()}
+                    {formatPriceCents(product.buy_now_price, product.currency || "KRW")}
                   </dd>
                 </>
               )}
@@ -323,11 +417,7 @@ export default function PostDetailPage({
               >
                 {buyingNow
                   ? "처리 중..."
-                  : `💳 즉시구매 ₩${
-                      product.buy_now_price
-                        ? Number(product.buy_now_price).toLocaleString()
-                        : "—"
-                    }`}
+                  : `💳 즉시구매 ${formatPriceCents(product.buy_now_price, product.currency || "KRW")}`}
               </button>
             )}
             {isProduct && product?.is_sold && (

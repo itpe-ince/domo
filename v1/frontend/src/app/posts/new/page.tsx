@@ -16,6 +16,7 @@ import {
 } from "@/lib/api";
 import { useI18n } from "@/i18n";
 import { useMe } from "@/lib/useMe";
+import { centsToDollarsString } from "@/lib/format";
 import {
   readLocalStorageDraft,
   useDraftAutosave,
@@ -133,10 +134,13 @@ function CreatePostPageInner() {
   });
 
   // editor-media-ux PDCA #4 — parallel upload queue with real progress
+  // upload-retry-ui (D-2) — retryTask + cancelTask now exposed
   const {
     queue: uploadQueue,
     enqueue: enqueueUploads,
     enqueueGif: enqueueGifUpload,
+    retryTask: retryUpload,
+    cancelTask: cancelUpload,
   } = useMediaUploadQueue();
 
   // publish-controls PDCA #8 — series list + create modal
@@ -569,6 +573,8 @@ function CreatePostPageInner() {
           onCaptionChange={handleCaptionChange}
           uploadQueue={uploadQueue}
           onEditMedia={handleEditMedia}
+          onRetryUpload={retryUpload}
+          onCancelUpload={cancelUpload}
           visibility={visibility}
           setVisibility={setVisibility}
           commentsEnabled={commentsEnabled}
@@ -630,6 +636,8 @@ function CreatePostPageInner() {
             onCaptionChange={handleCaptionChange}
             uploadQueue={uploadQueue}
             onEditMedia={handleEditMedia}
+            onRetryUpload={retryUpload}
+            onCancelUpload={cancelUpload}
             visibility={visibility}
             setVisibility={setVisibility}
             commentsEnabled={commentsEnabled}
@@ -731,12 +739,12 @@ function draftToFormState(d: Draft): DraftState {
     locationLng: d.location_lng ?? null,
     isAuction: product?.is_auction ?? true,
     isBuyNow: product?.is_buy_now ?? false,
+    // G'-10: buy_now_price from draft/DB is cents (int). UI shows dollars.
+    // centsToDollarsString converts to "50.00" for display; user edits in dollars.
     buyNowPrice:
-      typeof product?.buy_now_price === "number"
-        ? product.buy_now_price
-        : typeof product?.buy_now_price === "string"
-          ? Number(product.buy_now_price) || ""
-          : "",
+      product?.buy_now_price != null
+        ? Number(centsToDollarsString(product.buy_now_price))
+        : "",
     dimensions: product?.dimensions ?? "",
     medium: product?.medium ?? "",
     year: product?.year ?? 2026,

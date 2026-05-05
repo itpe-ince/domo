@@ -4,17 +4,29 @@ import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import {
   ApiUser,
+  ArtistRankingResponse,
+  fetchArtistRanking,
   fetchExplore,
   fetchMe,
+  fetchMySponsorships,
+  fetchMySubscriptions,
   fetchReceivedSponsorships,
   fetchUserProfile,
+  fetchUserBio,
   PostView,
   ReceivedSponsorshipView,
   tokenStore,
   UserProfileView,
 } from "@/lib/api";
+import { LocaleSwitcher, getStoredLocale, LOCALE_CHANGED_EVENT, type SupportedLocale } from "@/components/LocaleSwitcher";
+import { TierBadge } from "@/components/artists/TierBadge";
 import { PostCard } from "@/components/PostCard";
+import { BluebirdButton } from "@/components/BluebirdButton";
+import { WinbackBanner } from "@/components/sponsorships/WinbackBanner";
+import { ArtistTierBenefitsView } from "@/components/tier-benefits/ArtistTierBenefitsView";
+import { useWinbackBanner } from "@/lib/hooks/useWinbackBanner";
 import { useI18n } from "@/i18n";
+import { UserMediaCoverage } from "@/components/users/UserMediaCoverage";
 
 function fmt(n: string | number) {
   const v = typeof n === "string" ? Number(n) : n;
@@ -33,14 +45,43 @@ export default function UserProfilePage({
   const [sponsorships, setSponsorships] = useState<ReceivedSponsorshipView[]>(
     []
   );
+  // C-3: locale-aware bio
+  const [currentLocale, setCurrentLocale] = useState<SupportedLocale>("ko");
+  const [localeBio, setLocaleBio] = useState<string | null>(null);
   const [me, setMe] = useState<ApiUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // B-5: winback banner state — has current user previously sponsored this artist?
+  const [hasPastSponsorship, setHasPastSponsorship] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+
+  // A-6: artist index ranking badge
+  const [artistRanking, setArtistRanking] = useState<ArtistRankingResponse | null>(null);
+
   useEffect(() => {
+    const stored = getStoredLocale();
+    setCurrentLocale(stored);
     void load();
+    // C-3: react to locale switcher changes
+    function onLocaleChanged(e: Event) {
+      const locale = (e as CustomEvent<SupportedLocale>).detail;
+      setCurrentLocale(locale);
+      void loadLocaleBio(locale);
+    }
+    window.addEventListener(LOCALE_CHANGED_EVENT, onLocaleChanged);
+    return () => window.removeEventListener(LOCALE_CHANGED_EVENT, onLocaleChanged);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  async function loadLocaleBio(locale: SupportedLocale) {
+    try {
+      const bioData = await fetchUserBio(id, locale);
+      setLocaleBio(bioData.bio);
+    } catch {
+      setLocaleBio(null);
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -48,6 +89,11 @@ export default function UserProfilePage({
     try {
       const p = await fetchUserProfile(id);
       setProfile(p);
+      // C-3: load locale-aware bio (non-blocking)
+      const storedLocale = getStoredLocale();
+      void fetchUserBio(id, storedLocale)
+        .then((bioData) => setLocaleBio(bioData.bio))
+        .catch(() => setLocaleBio(null));
       // Posts by this user
       const explore = await fetchExplore({ limit: 30 });
       setPosts(explore.filter((post) => post.author.id === id));
@@ -55,10 +101,38 @@ export default function UserProfilePage({
       if (p.role === "artist") {
         const sp = await fetchReceivedSponsorships(id, 10);
         setSponsorships(sp);
+        // A-6: fetch artist index ranking (non-blocking — badge only)
+        try {
+          const ranking = await fetchArtistRanking(id);
+          setArtistRanking(ranking);
+        } catch {
+          // non-critical — badge just won't show
+        }
       }
       if (tokenStore.get()) {
         try {
-          setMe(await fetchMe());
+          const currentUser = await fetchMe();
+          setMe(currentUser);
+          // B-5: check if this visitor previously sponsored the artist (winback banner)
+          if (p.role === "artist" && currentUser.id !== id) {
+            try {
+              const [mySponsors, mySubs] = await Promise.all([
+                fetchMySponsorships(),
+                fetchMySubscriptions(),
+              ]);
+              const hasSponsor = mySponsors.some((s) => s.artist_id === id);
+              const hasSub = mySubs.some((s) => s.artist_id === id);
+              const activeNow = mySubs.some(
+                (s) =>
+                  s.artist_id === id &&
+                  (s.status === "active" || s.status === "past_due")
+              );
+              setHasPastSponsorship(hasSponsor || hasSub);
+              setHasActiveSubscription(activeNow);
+            } catch {
+              // non-critical — banner just won't show
+            }
+          }
         } catch {
           tokenStore.clear();
         }
@@ -69,6 +143,13 @@ export default function UserProfilePage({
       setLoading(false);
     }
   }
+
+  // B-5: winback banner hook (7-day cooldown localStorage)
+  const { shouldShow: showWinback, dismiss: dismissWinback } = useWinbackBanner({
+    artistId: id,
+    hasPastSponsorship,
+    isCurrentlyActive: hasActiveSubscription,
+  });
 
   if (loading) {
     return (
@@ -103,6 +184,21 @@ export default function UserProfilePage({
         ← 홈
       </Link>
 
+      {/* B-5: Win-back banner — shown to past supporters who churned (7d cooldown) */}
+      {showWinback && profile.role === "artist" && me && me.id !== profile.id && (
+        <div className="mb-6">
+          <WinbackBanner
+            artistId={profile.id}
+            artistName={profile.display_name}
+            onDismiss={dismissWinback}
+            onSuccess={() => {
+              // Reload subscription state after resubscribe
+              setHasActiveSubscription(true);
+            }}
+          />
+        </div>
+      )}
+
       <header className="card p-6 mb-8">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-4">
@@ -132,6 +228,22 @@ export default function UserProfilePage({
                   📍 {profile.country_code}
                 </div>
               )}
+
+              {/* A-6: Artist ranking badge */}
+              {profile.role === "artist" && artistRanking && (
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  <span className="text-xs font-semibold text-text-muted">
+                    {t("artist.index.badge.globalRank").replace("{{rank}}", String(artistRanking.rank))}
+                  </span>
+                  <TierBadge tier={artistRanking.tier_badge} />
+                  <span
+                    className="text-xs text-text-muted cursor-help underline decoration-dotted"
+                    title={t("artist.index.badge.whyTooltip")}
+                  >
+                    {t("artist.index.badge.whyLabel")}
+                  </span>
+                </div>
+              )}
               <div className="flex gap-4 mt-3 text-sm">
                 <span>
                   <strong>{profile.follower_count}</strong>{" "}
@@ -145,6 +257,13 @@ export default function UserProfilePage({
             </div>
           </div>
           <div className="flex flex-col gap-2 items-end">
+            {/* Blue Bird 후원 버튼 — 다른 작가 프로필에서만 표시 */}
+            {profile.role === "artist" && me?.id !== profile.id && (
+              <BluebirdButton
+                artistId={profile.id}
+                artistName={profile.display_name}
+              />
+            )}
             <Link
               href={`/users/${id}/series`}
               className="btn-secondary text-sm"
@@ -158,6 +277,15 @@ export default function UserProfilePage({
             )}
           </div>
         </div>
+
+        {/* C-3: Locale-aware bio display */}
+        {(localeBio ?? profile.bio) && (
+          <div className="mt-4">
+            <p className="text-text-secondary text-sm whitespace-pre-wrap">
+              {localeBio ?? profile.bio}
+            </p>
+          </div>
+        )}
 
         {profile.artist_profile && (
           <div className="mt-6 pt-6 border-t border-border space-y-2 text-sm">
@@ -178,6 +306,13 @@ export default function UserProfilePage({
           </div>
         )}
       </header>
+
+      {/* B-4: Artist tier benefits */}
+      {profile.role === "artist" && (
+        <section className="mb-8">
+          <ArtistTierBenefitsView artistId={profile.id} collapsible />
+        </section>
+      )}
 
       {/* Received sponsorships (artists only) */}
       {profile.role === "artist" && (
@@ -242,6 +377,13 @@ export default function UserProfilePage({
         </section>
       )}
 
+      {/* C-4: Media coverage section — artist profile only, graceful degrade */}
+      {profile.role === "artist" && (
+        <section className="mb-8">
+          <UserMediaCoverage artistId={profile.id} locale={currentLocale} limit={5} />
+        </section>
+      )}
+
       {/* Posts by this user */}
       <section>
         <h2 className="text-lg font-semibold mb-4">
@@ -254,7 +396,7 @@ export default function UserProfilePage({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {posts.map((p) => (
-              <PostCard key={p.id} post={p} />
+              <PostCard key={p.id} post={p} source="profile" />
             ))}
           </div>
         )}

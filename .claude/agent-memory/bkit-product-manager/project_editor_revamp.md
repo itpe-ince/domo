@@ -1,41 +1,48 @@
 ---
-name: domo editor-revamp-roadmap 진행 상태
-description: editor-revamp-roadmap의 11개 sub-PDCA 현황 및 실행 전략 (2026-05-03 기준)
+name: domo Phase 4 종결 + Phase 5 로드맵 상태
+description: editor-revamp-roadmap 11/11 완료 종결 + Phase 5 D/B 단계 로드맵 현황 (2026-05-04 기준)
 type: project
 ---
 
-에디터 전면 개편 로드맵이 확정되어 순차 실행 중.
+**Phase 4 완료 (2026-05-04 종결)**
 
-**Why:** 사용자가 Phase 1을 sequential로 (#1 → #2 → #3) 실행하기로 결정. 각 sub-PDCA는 별도 plan.md 문서로 본격 진입.
+editor-revamp-roadmap 11/11 sub-PDCA 모두 archived. Match Rate 평균 ~98%.
 
-**How to apply:** 로드맵 문서는 `/Users/sangincha/dev/domo/v1/docs/01-plan/features/editor-revamp-roadmap.plan.md`. 각 sub-PDCA plan은 같은 디렉토리에 `{feature}.plan.md`로 생성.
+완료 목록: #1 role-gating(98%), #2 draft-autosave, #3 responsive-redesign(96%), #4 media-ux(95%), #6-image media-studio(96%), #8 publish-controls(100%), #10 artist-tier-release, #11 auction-promotion-suite(97%)
 
-현재 진행:
-- #1 `editor-role-gating`: 완료 아카이브 (2026-04-30). Match Rate 98%. 아카이브: `docs/archive/2026-04/editor-role-gating/`
-- #2 `editor-draft-autosave`: 완료 아카이브 (2026-04-30). 아카이브: `docs/archive/2026-04/editor-draft-autosave/`
-- #3 `editor-responsive-redesign`: 완료 아카이브 (2026-05-01). Match Rate 96%. 아카이브: `docs/archive/2026-05/editor-responsive-redesign/`
-  - 산출물: 12 컴포넌트 + 3 hooks + 2 icons + 135 i18n entries. page.tsx 803→547 LOC
-  - 5개 통합 지점: useDraftAutosave / DraftRestoreDialog / 멀티탭 경고 / PostTypeSelector / useArtistGate 모두 회귀 0
-- #4 `editor-media-ux`: **완료 아카이브 (2026-05-02)**. Match Rate 95%.
-  - 아카이브: `docs/archive/2026-05/editor-media-ux/`
-  - 산출물: useMediaUploadQueue / MediaPreviewList(재작성) / SortableMediaCard(신규) / MediaUploadProgress(신규) / alembic 0036_media_caption / PATCH /v1/media/{id}
-  - 5개 통합 지점: 회귀 0 확인
-- #6-image `editor-image-studio`: **완료 아카이브 (2026-05-03)**. Match Rate 96%.
-  - 아카이브: `docs/archive/2026-05/editor-image-studio/`
-  - 산출물: ImageEditor 모달(Konva) + SortableMediaCard 편집 버튼 + POST /v1/media/{id}/transform + crop_meta jsonb + alembic 0037
-- #8 `publish-controls`: **완료 아카이브 (2026-05-03)**. Match Rate 100%.
-  - 아카이브: `docs/archive/2026-05/publish-controls/`
-  - 산출물: Post.visibility + Post.comments_enabled + Series 모델 + post_series_membership + alembic 0038~0040 + POST /v1/posts/{id}/publish + _visibility_filter_for_viewer + PublishOptionsPanel
-- #10 `artist-tier-release`: **Plan 완료 (2026-05-03)**. OQ 10개 사용자 결정 대기.
-  - 파일: `v1/docs/01-plan/features/artist-tier-release.plan.md`
-  - 핵심: M (4~5일). B-4 "후원자/단골 우선 공개". alembic 0041 (early_access_until + early_access_tier) + _visibility_filter_for_viewer 확장 + tier_release_jobs.py + TierReleasePicker
-  - OQ 10개 (권장 default 모두 제시) — 사용자 "권장대로 일괄 수락" 후 /pdca design 진입
+Deferred: #9 artist-pricing-assist (데이터 축적 부족, Phase 4.5)
 
-Critical Path: 1 ✅ → 2 ✅ → 3 ✅ → 4 ✅ → 6-image ✅ → 8 ✅ → **10 (plan 완료, OQ 대기)** → (완료)
-Deferred: #9 `artist-pricing-assist` (데이터 축적 부족)
+**Why:** Phase 4 Critical Path 완주. 에디터/발행 인프라 완성 → Phase 5로 전환.
 
-Lessons learned (#1~#3 기준, #4 이후 적용):
-- Plan 단계에서 scope 초과 판단 전 코드 사전 탐색 필수
-- OQ 권장 default 표 제시 → 사용자 일괄 수락 패턴 유효
-- 5개 통합 지점 체크리스트를 Do 단계 각 Step 완료 후 즉시 실행
-- backend 변경 포함 PDCA는 gap-detector 활용 권장 (frontend-only보다 검증 비용 큼)
+**How to apply:** Phase 5 로드맵 문서: `/Users/sangincha/dev/domo/v1/docs/01-plan/features/domo-phase5-roadmap.plan.md`
+
+---
+
+**Phase 5 계획 (2026-05-04 초안)**
+
+총 12 sub-PDCA (D 6 + B 6), 10~12주 예정.
+
+**D 단계 — Tech Debt Stabilization (1~2주)**
+- D-1 `editor-i18n-cleanup-v3` (Must, ~3일) — #3/#4/#11 carry-over 25곳 i18n + namespace 통합
+- D-2 `upload-retry-ui` (Should, ~3일) — #4 R-FE-7 carry-over (retry/cancel 버튼). plan 이미 존재
+- D-3 `series-reorder-persistence` (Must, ~2일) — #8 carry-over 서버 영속화
+- D-4 `notifications-ux-audit` (Must, ~3일) — #12 Phase 3 독립 → D로 편입
+- D-5 `server-side-notification-i18n` (Should, ~1일) — #11 m-2 서버사이드 i18n
+- D-6 `observability-monitoring-baseline` (Should, ~3일) — Prometheus + EXPLAIN ANALYZE 게이트
+- D-7 defer → Phase 5.5
+
+병렬 전략(OQ-1=B 권장): 그룹A(D-1+D-3+D-5) 동시 + 그룹B(D-2+D-4) 동시 → D-6 순차
+
+**B 단계 — Blue Bird Patronage UI (8~10주)**
+- B-1 `bluebird-sponsor-flow` (Must, ~10일) — Critical Path. Stripe SetupIntent + 일회/정기
+- B-2 `artist-patronage-dashboard` (Must, ~8일)
+- B-3 `supporter-dashboard` (Must, ~5일) — B-2와 병렬
+- B-4 `tier-benefits-customization` (Should, ~5일)
+- B-5 `patronage-retention-ux` (Should, ~5일) — B-4와 병렬
+- B-6 `patronage-i18n-a11y-audit` (Must, ~3일) — 마무리
+
+재사용 인프라: KYC(P3-2 ✅), 정산 배치(P3-3 ✅), artist-tier-release(#10 ✅), sponsorships 모델
+
+**Phase 5 OQ-1~OQ-8**: 권장 default 표 `/domo-phase5-roadmap.plan.md §3` 참조. "권장대로" 일괄 수락 시 즉시 D 단계 진입 가능.
+
+**Phase 4 lessons → Phase 5 적용**: cron 격리(R-5), computed effective state, idempotent dispatch, OQ 일괄 수락 패턴, Schema Sync Checklist, i18n Exhaustive Check

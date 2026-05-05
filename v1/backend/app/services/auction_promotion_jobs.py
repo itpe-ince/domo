@@ -18,9 +18,17 @@ import httpx
 from PIL import Image, ImageDraw, ImageFont
 from sqlalchemy import select, update
 
+from app.core.metrics import (
+    cron_rows_processed_total,
+    notification_dispatched_total,
+    record_cron_run,
+)
 from app.db.session import AsyncSessionLocal
 from app.models.auction import Auction
 from app.models.notification import Notification
+from app.models.user import User
+from app.services.analytics import capture_event
+from app.services.i18n import t as _t
 
 log = logging.getLogger(__name__)
 
@@ -32,35 +40,42 @@ _SLOTS = [
     ("notified_1h_at",  timedelta(hours=1),  "auction_ending_1h"),
 ]
 
-_TITLE_MAP: dict[str, str] = {
-    "auction_ending_24h": "경매 종료 24시간 전",
-    "auction_ending_6h":  "경매 종료 6시간 전",
-    "auction_ending_1h":  "경매 종료 1시간 전",
-}
-
-_BODY_MAP: dict[str, str] = {
-    "auction_ending_24h": "경매가 24시간 후에 종료됩니다. 지금 확인해보세요.",
-    "auction_ending_6h":  "경매가 6시간 후에 종료됩니다. 마지막 입찰 기회를 놓치지 마세요.",
-    "auction_ending_1h":  "경매가 1시간 후에 종료됩니다! 서두르세요.",
-}
+# _TITLE_MAP and _BODY_MAP removed in D-5 carry-over.
+# Notification text now resolved via app.services.i18n._t() keyed on user.language.
 
 
 def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def _make_notifs(auction: Auction, notif_type: str) -> list[Notification]:
-    """Create Notification rows for seller + winner (winner != seller, R-4)."""
-    title = _TITLE_MAP[notif_type]
-    body = _BODY_MAP[notif_type]
+async def _get_user_language(db, user_id) -> str | None:
+    """Fetch user.language for the given user_id. Returns None on miss (i18n fallback to ko)."""
+    if user_id is None:
+        return None
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    return user.language if user else None
+
+
+def _make_notifs(
+    auction: Auction,
+    notif_type: str,
+    seller_lang: str | None = None,
+    winner_lang: str | None = None,
+) -> list[Notification]:
+    """Create Notification rows for seller + winner (winner != seller, R-4).
+
+    D-5: title/body resolved via i18n service per recipient's user.language.
+    seller_lang / winner_lang: user.language values (None → "ko" fallback).
+    """
     link = f"/auctions/{auction.id}"
 
     notifs: list[Notification] = [
         Notification(
             user_id=auction.seller_id,
             type=notif_type,
-            title=title,
-            body=body,
+            title=_t(notif_type, "title", seller_lang),
+            body=_t(notif_type, "body", seller_lang),
             link=link,
         )
     ]
@@ -70,8 +85,8 @@ def _make_notifs(auction: Auction, notif_type: str) -> list[Notification]:
             Notification(
                 user_id=auction.current_winner,
                 type=notif_type,
-                title=title,
-                body=body,
+                title=_t(notif_type, "title", winner_lang),
+                body=_t(notif_type, "body", winner_lang),
                 link=link,
             )
         )
@@ -109,7 +124,14 @@ async def dispatch_pending_notifications_once(db) -> dict[str, int]:
         auctions = list(result.scalars().all())
 
         for auction in auctions:
-            for notif in _make_notifs(auction, notif_type):
+            # D-5: resolve per-recipient language for i18n
+            seller_lang = await _get_user_language(db, auction.seller_id)
+            winner_lang = (
+                await _get_user_language(db, auction.current_winner)
+                if auction.current_winner and auction.current_winner != auction.seller_id
+                else None
+            )
+            for notif in _make_notifs(auction, notif_type, seller_lang=seller_lang, winner_lang=winner_lang):
                 db.add(notif)
             await db.execute(
                 update(Auction)
@@ -121,9 +143,20 @@ async def dispatch_pending_notifications_once(db) -> dict[str, int]:
         if auctions:
             await db.commit()
             log.info("auction_promotion: dispatched %d %s notification(s)", len(auctions), notif_type)
+            notification_dispatched_total.labels(type=notif_type).inc(len(auctions))
+            # G'-4: server-side notification batch event (one event per slot, not per user)
+            for auction in auctions:
+                capture_event(
+                    str(auction.seller_id),
+                    "notification_sent_server",
+                    {"type": notif_type, "channel": "in_app"},
+                )
 
         summary[notif_type] = len(auctions)
 
+    # Count total rows (auctions processed across all slots) for cron_rows_processed_total.
+    # This is called from within record_cron_run context in the loop, so we expose summary
+    # for the caller to track externally.
     return summary
 
 
@@ -210,8 +243,12 @@ async def auction_promotion_cron_loop(interval_seconds: int = 60) -> None:
     log.info("auction_promotion_cron_loop started (interval=%ss)", interval_seconds)
     while True:
         try:
-            async with AsyncSessionLocal() as db:
-                await dispatch_pending_notifications_once(db)
+            with record_cron_run("auction_promotion"):
+                async with AsyncSessionLocal() as db:
+                    summary = await dispatch_pending_notifications_once(db)
+                total_rows = sum(summary.values())
+                if total_rows:
+                    cron_rows_processed_total.labels(worker="auction_promotion").inc(total_rows)
         except Exception:
             log.exception("auction_promotion cron sweep failed")
         await asyncio.sleep(interval_seconds)
