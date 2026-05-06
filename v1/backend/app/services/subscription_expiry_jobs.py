@@ -28,8 +28,12 @@ from app.db.session import AsyncSessionLocal
 from app.models.notification import Notification
 from app.models.sponsorship import Subscription
 from app.services.analytics import capture_event
+from app.services.otel_setup import get_tracer
+from app.services.push_notifier import push_notifier
 
 log = logging.getLogger(__name__)
+
+tracer = get_tracer(__name__)
 
 # Window ahead of period-end to trigger a notification
 _NOTIFY_WINDOW_DAYS = 7
@@ -97,6 +101,23 @@ async def notify_expiring_subscriptions_once(db) -> int:
             {"subscription_id": str(sub.id), "days_left": days_left},
         )
 
+        # B'-3: push notification (R-5: separate session to avoid premature commit)
+        try:
+            from app.db.session import AsyncSessionLocal as _ASL
+            async with _ASL() as push_db:
+                await push_notifier.notify_user(
+                    push_db,
+                    sub.sponsor_id,
+                    notification_type="subscription_expiring",
+                    title="구독 만료 알림",
+                    body=f"구독이 {days_left}일 후 만료됩니다.",
+                    data={"link": "/me/sponsorships"},
+                )
+        except Exception:
+            log.exception(
+                "subscription_expiry: push failed for sponsor_id=%s", sub.sponsor_id
+            )
+
         notifications_created += 1
         log.info(
             "subscription_expiry_notif created: subscription_id=%s sponsor_id=%s days_left=%d",
@@ -119,14 +140,16 @@ async def subscription_expiry_cron_loop(interval_seconds: int = 3600) -> None:
     )
     while True:
         try:
-            with record_cron_run("subscription_expiry"):
-                async with AsyncSessionLocal() as db:
-                    count = await notify_expiring_subscriptions_once(db)
-                if count:
-                    log.info("Created %d subscription expiry notifications", count)
-                    cron_rows_processed_total.labels(worker="subscription_expiry").inc(count)
-                else:
-                    subscription_expiry_notif_total.labels(result="skipped").inc(1)
+            with tracer.start_as_current_span("cron.subscription_expiry") as span:
+                with record_cron_run("subscription_expiry"):
+                    async with AsyncSessionLocal() as db:
+                        count = await notify_expiring_subscriptions_once(db)
+                    span.set_attribute("notifications_created", count)
+                    if count:
+                        log.info("Created %d subscription expiry notifications", count)
+                        cron_rows_processed_total.labels(worker="subscription_expiry").inc(count)
+                    else:
+                        subscription_expiry_notif_total.labels(result="skipped").inc(1)
         except Exception as e:
             log.exception("subscription_expiry cron sweep failed: %s", e)
         await asyncio.sleep(interval_seconds)

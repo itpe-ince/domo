@@ -35,7 +35,22 @@ import { EditorMobileWizard } from "@/components/post-editor/EditorMobileWizard"
 import { EditorWorkspace } from "@/components/post-editor/EditorWorkspace";
 import { PreviewPane } from "@/components/post-editor/PreviewPane";
 import { ImageEditorLazy } from "@/components/post-editor/ImageEditorLazy";
-import { SeriesCreateModal } from "@/components/post-editor/SeriesCreateModal";
+import nextDynamic from "next/dynamic";
+
+// SeriesCreateModal — 시리즈 생성 모달. 에디터 페이지에서만 필요하며
+// 열릴 때만 로드되도록 dynamic import 적용 (G''-6 번들 최종화)
+// 주의: 이 파일은 export const dynamic = "force-dynamic" 을 사용하므로
+//       next/dynamic의 default export를 nextDynamic으로 alias
+const SeriesCreateModal = nextDynamic(
+  () =>
+    import("@/components/post-editor/SeriesCreateModal").then(
+      (m) => ({ default: m.SeriesCreateModal })
+    ),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
 
 // Disable prerender — uses useSearchParams() which requires runtime
 export const dynamic = "force-dynamic";

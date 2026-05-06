@@ -10,9 +10,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/i18n";
 import { fetchMe } from "@/lib/api";
+import dynamic from "next/dynamic";
 import { useAdminPressKits } from "@/lib/hooks/useAdminPressKits";
-import { PressKitGenerator } from "@/components/admin/PressKitGenerator";
 import { PressKitsList } from "@/components/admin/PressKitsList";
+
+// PressKitGenerator includes artist-search logic — defer until page mounts
+const PressKitGenerator = dynamic(
+  () => import("@/components/admin/PressKitGenerator").then((m) => ({ default: m.PressKitGenerator })),
+  { ssr: false, loading: () => null }
+);
 
 export default function AdminPressKitsPage() {
   const { t } = useI18n();

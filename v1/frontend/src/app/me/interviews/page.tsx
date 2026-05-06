@@ -29,8 +29,8 @@ export default function MyInterviewsPage() {
 
   if (loading) {
     return (
-      <main className="flex-1 min-w-0 max-w-2xl mx-auto px-4 py-8">
-        <div className="space-y-3">
+      <main className="flex-1 min-w-0 max-w-2xl mx-auto px-4 py-8" aria-busy="true" aria-label={t("common.loading")}>
+        <div className="space-y-3" aria-hidden="true">
           {[1, 2].map((i) => (
             <div key={i} className="h-24 card animate-pulse" />
           ))}
@@ -40,7 +40,7 @@ export default function MyInterviewsPage() {
   }
 
   return (
-    <main className="flex-1 min-w-0 max-w-2xl mx-auto px-4 py-8">
+    <main className="flex-1 min-w-0 max-w-2xl mx-auto px-4 py-8" aria-label={t("interview.me.pageTitle")}>
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-text-primary">
           {t("interview.me.pageTitle")}
@@ -51,7 +51,7 @@ export default function MyInterviewsPage() {
       </header>
 
       {error && (
-        <div className="mb-4 text-sm text-danger">{error}</div>
+        <div className="mb-4 text-sm text-danger" role="alert">{error}</div>
       )}
 
       {interviews.length === 0 ? (
@@ -86,6 +86,8 @@ export default function MyInterviewsPage() {
                 <button
                   type="button"
                   className="text-xs text-primary hover:underline flex-shrink-0"
+                  aria-expanded={expandedId === interview.id}
+                  aria-controls={`interview-preview-${interview.id}`}
                   onClick={() =>
                     setExpandedId(expandedId === interview.id ? null : interview.id)
                   }
@@ -98,7 +100,7 @@ export default function MyInterviewsPage() {
 
               {/* Markdown preview */}
               {expandedId === interview.id && (
-                <div className="mb-4 p-3 rounded-lg bg-surface-hover">
+                <div id={`interview-preview-${interview.id}`} className="mb-4 p-3 rounded-lg bg-surface-hover">
                   <pre className="whitespace-pre-wrap text-xs text-text-secondary overflow-x-auto max-h-48">
                     {interview.body_markdown}
                   </pre>

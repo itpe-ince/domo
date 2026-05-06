@@ -105,6 +105,8 @@ DEFAULT_LIMITS: dict[str, dict] = {
     "admin_media_coverage_write": {"limit": 60, "window_sec": 60, "by": "user"},
     # C-4 public media coverage read — 60/min anon (IP), 120/min auth (falls back to user key)
     "media_coverage_read": {"limit": 60, "window_sec": 60, "by": "ip"},
+    # H'-4 click-tracking — 60/min/IP analytics hit endpoint
+    "media_coverage_click": {"limit": 60, "window_sec": 60, "by": "ip"},
     # C-5 newsletter-digest — admin issue management (compose/edit/send)
     "newsletter_admin_write": {"limit": 30, "window_sec": 60, "by": "user"},
     # C-5 newsletter-digest — admin issue listing
@@ -113,6 +115,28 @@ DEFAULT_LIMITS: dict[str, dict] = {
     "newsletter_me_read": {"limit": 60, "window_sec": 60, "by": "user"},
     # C-5 newsletter-digest — user preference writes (opt-in/out, frequency)
     "newsletter_me_write": {"limit": 10, "window_sec": 60, "by": "user"},
+    # B'-1 multi-currency-foundation — public exchange rates endpoint
+    # 60/min anon (IP); auth falls back to user key (120 effective)
+    "exchange_rates_read": {"limit": 60, "window_sec": 60, "by": "ip"},
+    # B'-1 — user currency preference update/read (low frequency)
+    "me_currency_preference": {"limit": 10, "window_sec": 60, "by": "user"},
+    # B'-2 dm-messaging — 60/min/user on message send (typing bursts expected)
+    "dm_send": {"limit": 60, "window_sec": 60, "by": "user"},
+    # L-C group dm — 5 msg/min/user/group (스팸 방지용 보수적 제한)
+    "group_msg_send": {"limit": 5, "window_sec": 60, "by": "user"},
+    # L-C group dm — 그룹 생성 10/hr/user
+    "group_create": {"limit": 10, "window_sec": 3600, "by": "user"},
+    # B'-4 stripe-billing-auto-renewal — manual renew (5/min/user, idempotent-safe)
+    "subscription_renew": {"limit": 5, "window_sec": 60, "by": "user"},
+    # K-3 ai-artwork-caption — 작가 수동 재생성 (LLM 비용 제한)
+    # CO-1 PR-2: 'post_caption_regenerate' 키 추가 — 3회/일/포스트
+    # Redis key: rl:post_caption_regenerate:{user_id}:{post_id} (post별 독립 카운터)
+    # window_sec=86400 (24시간), limit=3
+    "caption_regenerate": {"limit": 10, "window_sec": 3600, "by": "user"},
+    "post_caption_regenerate": {"limit": 3, "window_sec": 86400, "by": "user"},
+    # CO-1 PR-2: 'post_caption_override' 키 추가 — 10회/일/포스트 (user 기준)
+    # 수동 override는 재생성보다 빈도가 높을 수 있으나, 남용 방지를 위해 10회/일 제한
+    "post_caption_override": {"limit": 10, "window_sec": 86400, "by": "user"},
 }
 
 
@@ -141,24 +165,52 @@ async def check_rate_limit(
     limit: int,
     window_sec: int = 60,
 ) -> RateLimitResult:
-    """Increment counter and check if allowed."""
+    """Increment counter and check if allowed.
+
+    When Redis is disabled (REDIS_URL not set), falls back to in-memory
+    counting.  The in-memory store is per-process and not shared across
+    instances — suitable for development and CI only.
+    """
     now = int(time.time())
     window_start = (now // window_sec) * window_sec
     bucket = f"rl:{scope}:{key}:{window_start}"
     r = get_redis()
 
-    pipe = r.pipeline()
-    pipe.incr(bucket)
-    pipe.expire(bucket, window_sec + 5)
-    count, _ = await pipe.execute()
+    if r is not None:
+        # Redis backend (production / multi-instance safe)
+        pipe = r.pipeline()
+        pipe.incr(bucket)
+        pipe.expire(bucket, window_sec + 5)
+        count, _ = await pipe.execute()
+        count = int(count)
+    else:
+        # In-memory fallback (single-process dev / CI)
+        count = _incr_memory(bucket, window_sec)
 
-    allowed = int(count) <= limit
+    allowed = count <= limit
     return RateLimitResult(
         allowed=allowed,
         limit=limit,
-        remaining=max(0, limit - int(count)),
+        remaining=max(0, limit - count),
         reset_at=window_start + window_sec,
     )
+
+
+# ─── In-memory fallback store ─────────────────────────────────────────────────
+
+_memory_store: dict[str, tuple[int, int]] = {}  # bucket -> (count, expires_at)
+
+
+def _incr_memory(bucket: str, window_sec: int) -> int:
+    """Thread-unsafe in-process counter for dev/CI fallback."""
+    now = int(time.time())
+    entry = _memory_store.get(bucket)
+    if entry is None or entry[1] < now:
+        _memory_store[bucket] = (1, now + window_sec + 5)
+        return 1
+    count = entry[0] + 1
+    _memory_store[bucket] = (count, entry[1])
+    return count
 
 
 def rate_limit(scope: str):

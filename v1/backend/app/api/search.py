@@ -42,6 +42,7 @@ from app.schemas.search import (
     SearchHistoryOut,
     sanitize_query,
 )
+from app.services.cache import cache
 
 _log = logging.getLogger(__name__)
 
@@ -355,13 +356,27 @@ async def search_v2(
 # ─── GET /search/popular ─────────────────────────────────────────────────────
 
 
+_POPULAR_CACHE_TTL = 300  # 5 minutes
+
+
 @search_router.get("/popular")
 async def popular_searches(
     limit: int = Query(10, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
     _rl=rate_limit("search_popular"),
 ):
-    """Top queries in the last 24 hours (unauthenticated OK)."""
+    """Top queries in the last 24 hours (unauthenticated OK).
+
+    Cache key: search:popular:{limit}:24h  TTL: 5 min.
+    No user-specific data — global cache safe for all callers.
+    """
+    cache_key = f"search:popular:{limit}:24h"
+    cached = await cache.get_json(cache_key, prefix="search")
+    if cached is not None:
+        return PopularSearchesOut(
+            data=[PopularSearchItem(**item) for item in cached]
+        )
+
     since = datetime.now(timezone.utc) - timedelta(hours=24)
 
     # SearchHistory covers logged-in users; for broader coverage we also
@@ -378,9 +393,17 @@ async def popular_searches(
         .limit(limit)
     )
     rows = (await db.execute(stmt)).all()
-    return PopularSearchesOut(
-        data=[PopularSearchItem(query=r.query, count=r.cnt) for r in rows]
+    items = [PopularSearchItem(query=r.query, count=r.cnt) for r in rows]
+
+    # Populate cache
+    await cache.set_json(
+        cache_key,
+        [item.model_dump() for item in items],
+        _POPULAR_CACHE_TTL,
+        prefix="search",
     )
+
+    return PopularSearchesOut(data=items)
 
 
 # ─── GET /me/search/history ───────────────────────────────────────────────────

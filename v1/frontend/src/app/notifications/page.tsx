@@ -19,6 +19,7 @@ import {
   MessageCircleIcon,
   UserPlusIcon,
   InfoIcon,
+  SendIcon,
 } from "@/components/icons";
 
 // ─── Filter tab config ────────────────────────────────────────────────────
@@ -49,6 +50,8 @@ function NotifIcon({ type }: { type: string }) {
   if (type === "follow") return <UserPlusIcon className={cls} />;
   if (type === "sponsor_received" || type === "sponsor_milestone" || type.startsWith("subscription"))
     return <BluebirdIcon className={cls} />;
+  // B'-2 dm-messaging — dm_received notification
+  if (type === "dm_received") return <SendIcon className={cls} />;
   return <InfoIcon className={cls} />;
 }
 
@@ -153,12 +156,18 @@ export default function NotificationsPage() {
 
       {/* Filter tabs */}
       {me && !meLoading && (
-        <div className="flex gap-0 border-b border-border overflow-x-auto scrollbar-none">
+        <div
+          className="flex gap-0 border-b border-border overflow-x-auto scrollbar-none"
+          role="tablist"
+          aria-label={t("notifications.center.title")}
+        >
           {FILTER_TABS.map((tab) => {
             const isActive = activeFilter === tab.key;
             return (
               <button
                 key={tab.key}
+                role="tab"
+                aria-selected={isActive}
                 onClick={() => handleFilterChange(tab.key)}
                 className={`flex-shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   isActive
@@ -203,7 +212,7 @@ export default function NotificationsPage() {
           <p className="text-sm">{t(emptyKey)}</p>
         </div>
       ) : (
-        <ul>
+        <ul aria-label={t("notifications.center.title")} aria-live="polite">
           {items.map((n) => (
             <li
               key={n.id}
@@ -213,14 +222,15 @@ export default function NotificationsPage() {
             >
               <button
                 onClick={() => handleClick(n)}
+                aria-label={`${n.title ?? n.type}${!n.is_read ? " (unread)" : ""}`}
                 className="w-full text-left px-4 py-4 hover:bg-surface-hover transition-colors"
               >
                 <div className="flex items-start gap-3">
                   {/* Unread dot */}
                   {!n.is_read ? (
-                    <span className="mt-2 w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                    <span className="mt-2 w-2 h-2 rounded-full bg-primary flex-shrink-0" aria-hidden="true" />
                   ) : (
-                    <span className="mt-2 w-2 h-2 flex-shrink-0" />
+                    <span className="mt-2 w-2 h-2 flex-shrink-0" aria-hidden="true" />
                   )}
                   {/* Type icon */}
                   <span className={`text-text-muted ${!n.is_read ? "text-primary" : ""}`}>

@@ -111,14 +111,14 @@ export default function FeedPage() {
   const showToggle = Boolean(me) && flagEnabled;
 
   return (
-    <main className="flex-1 min-w-0 max-w-3xl mx-auto">
+    <main id="main-content" className="flex-1 min-w-0 max-w-3xl mx-auto" aria-label={t("feed.title")}>
       <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-xl font-bold">
               {algo === "v1" && me ? t("feed.titlePersonalized") : t("feed.title")}
             </h1>
-            <p className="text-xs text-text-muted mt-0.5">
+            <p className="text-xs text-text-subtle mt-0.5">
               {me
                 ? algo === "v1"
                   ? t("feed.subtitlePersonalized")
@@ -135,13 +135,15 @@ export default function FeedPage() {
       </div>
 
       {error && (
-        <div className="mx-4 mt-4 card border-danger p-4 text-danger text-sm">
+        <div className="mx-4 mt-4 card border-danger p-4 text-danger text-sm" role="alert">
           {error}
         </div>
       )}
 
       {loading && posts.length === 0 ? (
-        <FeedSkeleton />
+        <div aria-busy="true" aria-label={t("common.loading")}>
+          <FeedSkeleton />
+        </div>
       ) : posts.length === 0 && me ? (
         /* A-2: Empty feed CTA for authenticated users with no following */
         <div className="card p-10 m-4 text-center space-y-5">
@@ -168,15 +170,17 @@ export default function FeedPage() {
           </div>
         </div>
       ) : posts.length === 0 ? (
-        <div className="card p-12 m-4 text-center text-text-muted">
+        <div className="card p-12 m-4 text-center text-text-subtle">
           {t("feed.noPosts")}
         </div>
       ) : (
-        <div className="divide-y divide-border">
+        <ul className="divide-y divide-border" aria-label={t("feed.title")}>
           {posts.map((post) => (
-            <FeedItem key={post.id} post={post} source="feed" />
+            <li key={post.id}>
+              <FeedItem post={post} source="feed" />
+            </li>
           ))}
-        </div>
+        </ul>
       )}
 
       {/* A-3: Load more button for cursor pagination (algo=v1) */}
@@ -185,6 +189,8 @@ export default function FeedPage() {
           <button
             onClick={handleLoadMore}
             disabled={loading}
+            aria-busy={loading}
+            aria-label={loading ? t("common.loading") : t("feed.loadMore")}
             className="btn btn-secondary text-sm px-6"
           >
             {loading ? t("common.loading") : t("feed.loadMore")}

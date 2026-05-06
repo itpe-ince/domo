@@ -103,7 +103,9 @@ export function MediaCoverageGrid({ items, limit = 3 }: MediaCoverageGridProps) 
       type: "media_coverage_click",
       coverage_id: item.id,
       coverage_type: item.type,
-    } as Parameters<typeof captureEvent>[0]);
+      url: item.url,
+      source: item.source,
+    });
   }
 
   // Graceful degrade: nothing to show — render empty (no hardcoded placeholders)

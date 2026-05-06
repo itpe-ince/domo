@@ -7,10 +7,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "analyze": "ANALYZE=true next build",
+    "analyze:server": "BUNDLE_ANALYZE=server ANALYZE=true next build",
+    "analyze:browser": "BUNDLE_ANALYZE=browser ANALYZE=true next build",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --maxWorkers=2"
+    "test:ci": "jest --ci --coverage --maxWorkers=2",
+    "a11y:audit": "ts-node scripts/axe-aaa-audit.ts",
+    "a11y:audit:ci": "HEADLESS=true ts-node scripts/axe-aaa-audit.ts",
+    "lint:i18n": "bash scripts/i18n-key-audit.sh"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -24,6 +30,7 @@
   },
   "devDependencies": {
     "@axe-core/cli": "^4.10.2",
+    "@next/bundle-analyzer": "^15.0.3",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",

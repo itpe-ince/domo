@@ -82,6 +82,12 @@ def _make_post(
     p.location_lat = None
     p.location_lng = None
     p.created_at = datetime.now(timezone.utc)
+    # K-3 AI caption fields
+    p.ai_caption = None
+    p.ai_caption_locale_translations = {}
+    p.ai_caption_model_version = None
+    p.ai_caption_generated_at = None
+    p.caption_override = None
     p.author = None
     return p
 

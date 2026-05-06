@@ -14,7 +14,9 @@ Page structure (5-8 pages):
 
 Design constraints:
   - Domo brand colours: amber (#F59E0B) + dark (#1C1917)
-  - UTF-8 safe: reportlab Helvetica for ASCII; fallback label for CJK/non-ASCII
+  - CJK font support (H'-2): locale-driven font selection via font_registry.
+    ko → NotoSansKR, ja → NotoSansJP, zh → NotoSansSC, en/es → Helvetica.
+    Graceful fallback to Helvetica when font files are unavailable.
   - No external network calls during PDF generation (offline-safe)
 """
 from __future__ import annotations
@@ -35,9 +37,13 @@ from app.models.press_kit import PressKit
 from app.models.sponsorship import Sponsorship
 from app.models.user import ArtistProfile, User
 from app.schemas.press_kit import PressKitOut
+from app.services.font_registry import get_font_pair, is_cjk_locale
+from app.services.otel_setup import get_tracer
 from app.services.storage.factory import get_storage_provider
 
 log = logging.getLogger(__name__)
+
+tracer = get_tracer(__name__)
 
 # Brand colours (RGB 0-1 float for reportlab)
 _AMBER = (0.961, 0.620, 0.043)   # #F59E0B
@@ -65,6 +71,24 @@ async def generate_press_kit(
     Returns a PressKit ORM row. If a valid non-expired record exists for
     (artist_id, locale) and force=False, it is returned directly.
     """
+    with tracer.start_as_current_span("press_kit.generate") as span:
+        span.set_attribute("artist_id", str(artist_id))
+        span.set_attribute("locale", locale)
+        span.set_attribute("force_regenerate", force)
+        return await _generate_press_kit_inner(
+            db=db, artist_id=artist_id, locale=locale, admin_id=admin_id, force=force
+        )
+
+
+async def _generate_press_kit_inner(
+    *,
+    db: AsyncSession,
+    artist_id: uuid.UUID,
+    locale: str,
+    admin_id: uuid.UUID,
+    force: bool = False,
+) -> PressKit:
+    """Inner implementation — called from generate_press_kit with OTel span."""
     now = datetime.now(timezone.utc)
 
     # ── Cache check ─────────────────────────────────────────────────────────
@@ -237,10 +261,13 @@ def _build_pdf(
 ) -> tuple[bytes, int]:
     """Build PDF bytes and return (bytes, page_count).
 
-    Uses reportlab Platypus for layout. Fonts are limited to built-in
-    Helvetica family for ASCII safety; non-ASCII characters are
-    transliterated to their closest Latin equivalent or represented as
-    placeholders so the PDF renders on any reader without font embedding.
+    Uses reportlab Platypus for layout. Font selection is locale-driven:
+      - CJK locales (ko/ja/zh): Noto Sans CJK TTF via font_registry.
+      - en/es and unrecognised locales: built-in Helvetica.
+    When a CJK font file is unavailable, font_registry falls back to
+    Helvetica automatically, so PDF generation never fails.
+    Text is passed as-is to reportlab (UTF-8 safe with TTF embedding).
+    For Helvetica-only fallback, non-Latin-1 chars are replaced with '?'.
     """
     try:
         from reportlab.lib import colors
@@ -258,6 +285,11 @@ def _build_pdf(
     except ImportError as exc:
         raise RuntimeError("reportlab is required for press kit generation") from exc
 
+    # ── Font selection (H'-2) ─────────────────────────────────────────────────
+    font_regular, font_bold = get_font_pair(locale)
+    # Determine whether we have a real CJK font or are using Helvetica fallback
+    _cjk_active = font_regular not in ("Helvetica", "Helvetica-Bold")
+
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
         buf,
@@ -266,17 +298,17 @@ def _build_pdf(
         leftMargin=2 * cm,
         topMargin=2.5 * cm,
         bottomMargin=2.5 * cm,
-        title=f"Press Kit — {_safe_str(artist.display_name)}",
+        title=f"Press Kit — {_render_str(artist.display_name, font_regular)}",
         author="Domo",
     )
 
     styles = getSampleStyleSheet()
 
-    # Custom styles
+    # Custom styles — use locale-resolved fonts
     h1 = ParagraphStyle(
         "DH1",
         parent=styles["Heading1"],
-        fontName="Helvetica-Bold",
+        fontName=font_bold,
         fontSize=28,
         textColor=colors.Color(*_AMBER),
         spaceAfter=10,
@@ -284,7 +316,7 @@ def _build_pdf(
     h2 = ParagraphStyle(
         "DH2",
         parent=styles["Heading2"],
-        fontName="Helvetica-Bold",
+        fontName=font_bold,
         fontSize=16,
         textColor=colors.Color(*_AMBER),
         spaceBefore=12,
@@ -293,7 +325,7 @@ def _build_pdf(
     normal = ParagraphStyle(
         "DN",
         parent=styles["Normal"],
-        fontName="Helvetica",
+        fontName=font_regular,
         fontSize=10,
         textColor=colors.Color(*_DARK),
         spaceAfter=4,
@@ -301,14 +333,14 @@ def _build_pdf(
     small = ParagraphStyle(
         "DS",
         parent=styles["Normal"],
-        fontName="Helvetica",
+        fontName=font_regular,
         fontSize=8,
         textColor=colors.Color(*_GRAY),
     )
     cover_name = ParagraphStyle(
         "DCover",
         parent=styles["Normal"],
-        fontName="Helvetica-Bold",
+        fontName=font_bold,
         fontSize=36,
         textColor=colors.Color(*_WHITE),
         spaceAfter=8,
@@ -316,36 +348,42 @@ def _build_pdf(
 
     story: list = []
 
+    # Partial helper to encode text for the selected font
+    def _t(text: str | None) -> str:
+        return _render_str(text, font_regular)
+
     # ── Page 1: Cover ────────────────────────────────────────────────────────
-    story += _cover_page(artist, cover_name, h2, small)
+    story += _cover_page(artist, cover_name, h2, small, _t)
     story.append(PageBreak())
 
     # ── Page 2: Bio ─────────────────────────────────────────────────────────
-    story += _bio_page(artist, profile, h2, normal, small)
+    story += _bio_page(artist, profile, h2, normal, small, _t)
     story.append(PageBreak())
 
     # ── Page 3: Featured Works ───────────────────────────────────────────────
-    story += _works_page(posts, h2, normal, small)
+    story += _works_page(posts, h2, normal, small, _t)
     story.append(PageBreak())
 
     # ── Page 4: Interview (optional) ─────────────────────────────────────────
     if interview:
-        story += _interview_page(interview, h2, normal, small)
+        story += _interview_page(interview, h2, normal, small, _t)
         story.append(PageBreak())
 
     # ── Page 5: Achievements ─────────────────────────────────────────────────
-    story += _achievements_page(artist, profile, h2, normal, small)
+    story += _achievements_page(artist, profile, h2, normal, small, _t)
     story.append(PageBreak())
 
     # ── Page 6: Sponsor Stats (if any sponsors) ───────────────────────────────
     if sponsor_stats["count"] > 0:
-        story += _sponsor_stats_page(sponsor_stats, h2, normal, small)
+        story += _sponsor_stats_page(sponsor_stats, h2, normal, small, _t)
         story.append(PageBreak())
 
     # ── Page 7: Contact ───────────────────────────────────────────────────────
-    story += _contact_page(artist, h2, normal, small, locale)
+    story += _contact_page(artist, h2, normal, small, locale, _t)
 
-    doc.build(story, onFirstPage=_page_frame, onLaterPages=_page_frame)
+    # Pass font_regular for footer rendering in _page_frame
+    _frame = _make_page_frame(font_regular)
+    doc.build(story, onFirstPage=_frame, onLaterPages=_frame)
 
     pdf_bytes = buf.getvalue()
     # Rough page count from PDF structure: count "Page" occurrences
@@ -353,37 +391,42 @@ def _build_pdf(
     return pdf_bytes, page_count
 
 
-def _page_frame(canvas, doc):
-    """Draw header + footer on every page."""
-    try:
-        from reportlab.lib import colors
-        from reportlab.lib.units import cm
-    except ImportError:
-        return
+def _make_page_frame(font_regular: str):
+    """Return a page frame callback that uses the given font for footer text."""
 
-    w, h = doc.pagesize
-    canvas.saveState()
+    def _page_frame(canvas, doc):
+        """Draw header + footer on every page."""
+        try:
+            from reportlab.lib import colors
+            from reportlab.lib.units import cm
+        except ImportError:
+            return
 
-    # Header: thin amber line + artist label (if available)
-    canvas.setStrokeColor(colors.Color(*_AMBER))
-    canvas.setLineWidth(2)
-    canvas.line(2 * cm, h - 1.5 * cm, w - 2 * cm, h - 1.5 * cm)
+        w, h = doc.pagesize
+        canvas.saveState()
 
-    # Footer: page number + URL
-    canvas.setFont("Helvetica", 8)
-    canvas.setFillColor(colors.Color(*_GRAY))
-    canvas.drawString(2 * cm, 1 * cm, "domo.art")
-    canvas.drawRightString(
-        w - 2 * cm, 1 * cm, f"Page {canvas.getPageNumber()}"
-    )
+        # Header: thin amber line
+        canvas.setStrokeColor(colors.Color(*_AMBER))
+        canvas.setLineWidth(2)
+        canvas.line(2 * cm, h - 1.5 * cm, w - 2 * cm, h - 1.5 * cm)
 
-    canvas.restoreState()
+        # Footer: page number + URL — use locale font for proper rendering
+        canvas.setFont(font_regular, 8)
+        canvas.setFillColor(colors.Color(*_GRAY))
+        canvas.drawString(2 * cm, 1 * cm, "domo.art")
+        canvas.drawRightString(
+            w - 2 * cm, 1 * cm, f"Page {canvas.getPageNumber()}"
+        )
+
+        canvas.restoreState()
+
+    return _page_frame
 
 
 # ─── Page builders ────────────────────────────────────────────────────────────
 
 
-def _cover_page(artist, cover_name, h2, small) -> list:
+def _cover_page(artist, cover_name, h2, small, _t) -> list:
     try:
         from reportlab.lib import colors
         from reportlab.lib.units import cm
@@ -394,15 +437,15 @@ def _cover_page(artist, cover_name, h2, small) -> list:
     elements = []
 
     # Dark background box via a 1-cell table
-    name_text = _safe_str(artist.display_name)
-    country = _safe_str(artist.country_code or "")
+    name_text = _t(artist.display_name)
+    country = _t(artist.country_code or "")
     rank_text = ""
     rank = getattr(artist, "artist_index_rank", None)
     if rank:
         rank_text = f"Global Rank #{rank}"
 
     cover_data = [[
-        Paragraph(f"PRESS KIT", h2),
+        Paragraph("PRESS KIT", h2),
     ]]
     cover_table = Table(cover_data, colWidths=["100%"])
     cover_table.setStyle(TableStyle([
@@ -429,7 +472,7 @@ def _cover_page(artist, cover_name, h2, small) -> list:
     return elements
 
 
-def _bio_page(artist, profile, h2, normal, small) -> list:
+def _bio_page(artist, profile, h2, normal, small, _t) -> list:
     try:
         from reportlab.lib.units import cm
         from reportlab.platypus import Paragraph, Spacer
@@ -438,18 +481,18 @@ def _bio_page(artist, profile, h2, normal, small) -> list:
 
     elements = [Paragraph("Artist Bio", h2), Spacer(1, 0.3 * cm)]
 
-    name = _safe_str(artist.display_name)
+    name = _t(artist.display_name)
     elements.append(Paragraph(f"<b>Name:</b> {name}", normal))
 
     if artist.country_code:
         elements.append(
-            Paragraph(f"<b>Country:</b> {_safe_str(artist.country_code)}", normal)
+            Paragraph(f"<b>Country:</b> {_t(artist.country_code)}", normal)
         )
 
     if artist.bio:
         elements.append(Spacer(1, 0.3 * cm))
         elements.append(
-            Paragraph(f"<b>About:</b> {_safe_str(artist.bio)}", normal)
+            Paragraph(f"<b>About:</b> {_t(artist.bio)}", normal)
         )
 
     if profile and profile.portfolio_urls:
@@ -457,7 +500,7 @@ def _bio_page(artist, profile, h2, normal, small) -> list:
         if url:
             elements.append(
                 Paragraph(
-                    f"<b>Portfolio:</b> {_safe_str(url)}", normal
+                    f"<b>Portfolio:</b> {_t(url)}", normal
                 )
             )
 
@@ -476,7 +519,7 @@ def _bio_page(artist, profile, h2, normal, small) -> list:
     return elements
 
 
-def _works_page(posts, h2, normal, small) -> list:
+def _works_page(posts, h2, normal, small, _t) -> list:
     try:
         from reportlab.lib.units import cm
         from reportlab.platypus import Paragraph, Spacer
@@ -490,19 +533,19 @@ def _works_page(posts, h2, normal, small) -> list:
         return elements
 
     for i, post in enumerate(posts, 1):
-        title = _safe_str(post.title or f"Work #{i}")
+        title = _t(post.title or f"Work #{i}")
         elements.append(Paragraph(f"<b>{i}. {title}</b>", normal))
         if post.content:
-            excerpt = _safe_str(post.content[:200])
+            excerpt = _t(post.content[:200])
             elements.append(Paragraph(excerpt, small))
         if post.genre:
-            elements.append(Paragraph(f"Genre: {_safe_str(post.genre)}", small))
+            elements.append(Paragraph(f"Genre: {_t(post.genre)}", small))
         elements.append(Spacer(1, 0.3 * cm))
 
     return elements
 
 
-def _interview_page(interview, h2, normal, small) -> list:
+def _interview_page(interview, h2, normal, small, _t) -> list:
     """Page 4: C-1 ArtistInterview integration.
 
     Renders the published interview body_markdown as plain text (stripped of
@@ -520,12 +563,12 @@ def _interview_page(interview, h2, normal, small) -> list:
         Spacer(1, 0.3 * cm),
     ]
 
-    title = _safe_str(interview.title)
+    title = _t(interview.title)
     elements.append(Paragraph(f"<b>{title}</b>", normal))
     elements.append(Spacer(1, 0.2 * cm))
 
-    # Strip basic markdown for PDF readability
-    body = _strip_markdown(_safe_str(interview.body_markdown))
+    # Strip basic markdown for PDF readability; _t handles font encoding
+    body = _strip_markdown(_t(interview.body_markdown))
     # Split into paragraphs at double newlines
     for para in body.split("\n\n"):
         para = para.strip()
@@ -541,7 +584,7 @@ def _interview_page(interview, h2, normal, small) -> list:
     return elements
 
 
-def _achievements_page(artist, profile, h2, normal, small) -> list:
+def _achievements_page(artist, profile, h2, normal, small, _t) -> list:
     try:
         from reportlab.lib.units import cm
         from reportlab.platypus import Paragraph, Spacer
@@ -565,7 +608,7 @@ def _achievements_page(artist, profile, h2, normal, small) -> list:
         )
     if genre:
         elements.append(
-            Paragraph(f"<b>Primary Genre:</b> {_safe_str(genre)}", normal)
+            Paragraph(f"<b>Primary Genre:</b> {_t(genre)}", normal)
         )
 
     elements.append(Spacer(1, 0.5 * cm))
@@ -582,7 +625,7 @@ def _achievements_page(artist, profile, h2, normal, small) -> list:
     return elements
 
 
-def _sponsor_stats_page(sponsor_stats, h2, normal, small) -> list:
+def _sponsor_stats_page(sponsor_stats, h2, normal, small, _t) -> list:
     try:
         from reportlab.lib.units import cm
         from reportlab.platypus import Paragraph, Spacer
@@ -613,7 +656,7 @@ def _sponsor_stats_page(sponsor_stats, h2, normal, small) -> list:
     return elements
 
 
-def _contact_page(artist, h2, normal, small, locale) -> list:
+def _contact_page(artist, h2, normal, small, locale, _t) -> list:
     try:
         from reportlab.lib.units import cm
         from reportlab.platypus import Paragraph, Spacer
@@ -648,21 +691,35 @@ def _contact_page(artist, h2, normal, small, locale) -> list:
 # ─── Utility ──────────────────────────────────────────────────────────────────
 
 
-def _safe_str(text: str | None) -> str:
-    """Return ASCII-safe string for reportlab built-in fonts.
+def _render_str(text: str | None, font_name: str) -> str:
+    """Return text suitable for the given reportlab font.
 
-    reportlab's built-in Helvetica is a Type 1 font covering Latin-1.
-    Non-Latin characters (CJK, Arabic, etc.) cause a UnicodeEncodeError
-    when rendering. We replace non-Latin-1 characters with '?' to ensure
-    the PDF always renders.
+    - CJK fonts (NotoSansKR/JP/SC/TC): pass text as-is (UTF-8 safe with TTF
+      embedding — reportlab handles Unicode correctly when a TTFont is used).
+    - Helvetica fallback: encode to latin-1, replacing unmappable chars with '?'
+      to prevent UnicodeEncodeError in reportlab's built-in Type 1 fonts.
 
-    C-3 will add proper CID/TTF font embedding for full multi-language
-    support. For now, locale=ko/ja/zh content uses '?' as placeholder
-    for non-ASCII characters — acceptable for the press kit skeleton.
+    Args:
+        text: Input string (may contain CJK characters).
+        font_name: reportlab font name, e.g. "NotoSansKR" or "Helvetica".
     """
     if not text:
         return ""
-    # Encode to latin-1, replacing unmappable chars with '?'
+    if font_name.startswith("Helvetica"):
+        # Built-in Helvetica covers Latin-1 only
+        return text.encode("latin-1", errors="replace").decode("latin-1")
+    # TTF font — Unicode safe
+    return text
+
+
+def _safe_str(text: str | None) -> str:
+    """Legacy helper — latin-1 safe string for Helvetica-only contexts.
+
+    Kept for backward compatibility with any callers outside this module.
+    New code should use _render_str() with explicit font_name.
+    """
+    if not text:
+        return ""
     return text.encode("latin-1", errors="replace").decode("latin-1")
 
 

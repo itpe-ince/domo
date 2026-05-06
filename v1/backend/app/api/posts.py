@@ -1,10 +1,13 @@
-from typing import Annotated
+import os
+from typing import Annotated, Optional
 from uuid import UUID
 import uuid
 from datetime import datetime, timedelta, timezone
 
+from pydantic import BaseModel
+
 import sqlalchemy as sa
-from fastapi import APIRouter, Depends, Header, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, Query
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -22,15 +25,23 @@ from app.models.search_log import SearchLog
 from app.models.series import PostSeriesMembership, Series
 from app.models.sponsorship import Sponsorship, Subscription
 from app.models.user import User
+from app.services.cache import cache
 from app.services.feed_scoring import (
     apply_cursor,
     decode_cursor,
     encode_cursor,
     score_posts,
 )
+from app.services.otel_setup import get_tracer
+from app.services.artwork_caption_jobs import generate_for_post, get_effective_caption
+
+_tracer = get_tracer(__name__)
+
+_FEED_CACHE_TTL = 300  # 5 minutes per user+cursor page
 
 _log = logging.getLogger(__name__)
 from app.schemas.post import (
+    CaptionOverrideRequest,
     CommentIn,
     CommentOut,
     MediaAssetOut,
@@ -40,11 +51,23 @@ from app.schemas.post import (
     ProductPostOut,
 )
 from app.schemas.series import PostPublishRequest, PostPublishResponse
+from app.schemas.docent import (
+    DocentGenerateResponse,
+    DocentOptOutRequest,
+    DocentOptOutResponse,
+    DocentPatchRequest,
+    DocentPatchResponse,
+    DocentResponse,
+)
+from app.services.llm_docent import generate_docent
 
 router = APIRouter(prefix="/posts", tags=["posts"])
 
 
-def _serialize_post(post: Post) -> dict:
+def _serialize_post(post: Post, locale: str = "ko") -> dict:
+    # K-3: effective_caption 서버 계산 (caption_override > locale 번역 > ai_caption > "")
+    effective_caption = get_effective_caption(post, locale=locale)
+
     return PostOut(
         id=post.id,
         author=PostAuthor.model_validate(post.author) if hasattr(post, "author") and post.author else PostAuthor(
@@ -80,6 +103,12 @@ def _serialize_post(post: Post) -> dict:
         # Phase 4 #11 auction-promotion-suite — OQ-D-1=A
         # Populated by _attach_active_auction_end_at before serialization.
         active_auction_end_at=getattr(post, "_active_auction_end_at", None),
+        # K-3 ai-artwork-caption — 캡션 필드 (getattr fallback: 이전 캐시된 Post 객체 호환)
+        ai_caption=getattr(post, "ai_caption", None),
+        ai_caption_locale_translations=getattr(post, "ai_caption_locale_translations", {}) or {},
+        ai_caption_generated_at=getattr(post, "ai_caption_generated_at", None),
+        caption_override=getattr(post, "caption_override", None),
+        effective_caption=effective_caption,
     ).model_dump(mode="json")
 
 
@@ -90,6 +119,48 @@ async def _load_post_full(db: AsyncSession, post_id: UUID) -> Post | None:
         .options(selectinload(Post.media), selectinload(Post.product))
     )
     return result.scalar_one_or_none()
+
+
+async def _load_posts_by_ids(db: AsyncSession, post_ids: list[str]) -> list[Post]:
+    """포스트 ID 리스트로 Post ORM 객체 일괄 로드 (ML 피드 v2 전용).
+
+    K-1: get_recommendations() 반환 순서를 유지하며 Post 객체 반환.
+    author 정보도 일괄 로드 (N+1 방지).
+    """
+    if not post_ids:
+        return []
+
+    uuid_ids = []
+    for pid in post_ids:
+        try:
+            uuid_ids.append(UUID(pid))
+        except (ValueError, AttributeError):
+            pass
+
+    if not uuid_ids:
+        return []
+
+    result = await db.execute(
+        select(Post)
+        .where(Post.id.in_(uuid_ids))
+        .options(selectinload(Post.media), selectinload(Post.product))
+    )
+    posts_map = {p.id: p for p in result.scalars().all()}
+
+    # author 일괄 로드
+    author_ids = list({p.author_id for p in posts_map.values()})
+    if author_ids:
+        authors_result = await db.execute(select(User).where(User.id.in_(author_ids)))
+        author_map = {u.id: u for u in authors_result.scalars().all()}
+        for p in posts_map.values():
+            p.author = author_map.get(p.author_id)  # type: ignore[attr-defined]
+
+    # 원래 순서 유지 (ML 스코어 순서 보존)
+    ordered = []
+    for uuid_id in uuid_ids:
+        if uuid_id in posts_map:
+            ordered.append(posts_map[uuid_id])
+    return ordered
 
 
 async def _author_for(db: AsyncSession, user_id: UUID) -> PostAuthor:
@@ -612,6 +683,7 @@ async def suggest_tags(
 @router.post("")
 async def create_post(
     body: PostCreate,
+    background_tasks: BackgroundTasks,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -688,6 +760,7 @@ async def create_post(
                 is_auction=body.product.is_auction,
                 is_buy_now=body.product.is_buy_now,
                 buy_now_price=body.product.buy_now_price,
+                buy_now_currency=body.product.buy_now_currency,  # B'-1
                 currency=body.product.currency,
                 dimensions=body.product.dimensions,
                 medium=body.product.medium,
@@ -712,6 +785,22 @@ async def create_post(
     full_post = await _load_post_full(db, post.id)
     full_post.author = user  # type: ignore[attr-defined]
     await _attach_active_auction_end_at(db, [full_post])
+
+    # K-3: 이미지 포스트에 한해 비동기 캡션 생성 트리거 (API 응답 지연 없음)
+    has_image_media = any(m.type == "image" for m in body.media)
+    if has_image_media:
+        from app.db.session import AsyncSessionLocal
+
+        async def _caption_bg_task(post_id: UUID) -> None:
+            """백그라운드 캡션 생성 — 별도 DB 세션 사용."""
+            async with AsyncSessionLocal() as bg_db:
+                try:
+                    await generate_for_post(bg_db, post_id)
+                except Exception as exc:
+                    _log.warning("[ArtworkCaption] background task failed post_id=%s: %s", post_id, exc)
+
+        background_tasks.add_task(_caption_bg_task, full_post.id)
+
     return {"data": _serialize_post(full_post)}
 
 
@@ -737,7 +826,32 @@ async def _personalized_feed_v1(
 
     Backward compat: cursor=None returns the first page.
     Cursor format: encode_cursor(score, post_id) — see feed_scoring.py.
+
+    Cache: feed:v1:{user_id}:{cursor_hash}  TTL: 5 min.
+    Keyed per-user to avoid leaking private/tier-gated content across users.
     """
+    # ── Cache-aside (read) ────────────────────────────────────────────────────
+    _cursor_hash = cursor or "first"
+    feed_cache_key = f"feed:v1:{user.id}:{_cursor_hash}"
+    cached_feed = await cache.get_json(feed_cache_key, prefix="feed")
+    if cached_feed is not None:
+        return cached_feed
+
+    with _tracer.start_as_current_span("feed.personalized_v1") as _feed_span:
+        _feed_span.set_attribute("user_id", str(user.id))
+        _feed_span.set_attribute("has_cursor", cursor is not None)
+        _feed_span.set_attribute("limit", limit)
+        return await _personalized_feed_v1_compute(db=db, user=user, cursor=cursor, limit=limit, feed_cache_key=feed_cache_key)
+
+
+async def _personalized_feed_v1_compute(
+    db: AsyncSession,
+    user: User,
+    cursor: str | None,
+    limit: int,
+    feed_cache_key: str,
+) -> dict:
+    """Compute the personalized feed — called from _personalized_feed_v1 with OTel span."""
     CANDIDATE_LIMIT = 100
 
     # ── Step 1a: followee posts ──────────────────────────────────────────────
@@ -849,17 +963,148 @@ async def _personalized_feed_v1(
         item["recommendation_reason"] = sp.recommendation_reason
         data.append(item)
 
-    return {
+    feed_result = {
         "data": data,
         "pagination": {"next_cursor": next_cursor, "has_more": has_more},
     }
+
+    # ── Cache-aside (write) ───────────────────────────────────────────────────
+    await cache.set_json(feed_cache_key, feed_result, _FEED_CACHE_TTL, prefix="feed")
+
+    return feed_result
+
+
+def _resolve_ml_algo(algo: str, current_user: User | None) -> bool:
+    """algo 파라미터 → ML v2 사용 여부 결정 (K-1 레거시 호환, K-8 이전).
+
+    - v2: 항상 ML
+    - v1 / default: 항상 기존 룰 기반
+    - auto: ML_FEED_V2_ENABLED=true 이고 로그인 사용자인 경우만 v2
+    """
+    if algo == "v2":
+        return True
+    if algo in ("v1", "default"):
+        return False
+    # auto: 환경변수 + 로그인 사용자 조건
+    if current_user is None:
+        return False
+    return os.getenv("ML_FEED_V2_ENABLED", "false").lower() == "true"
+
+
+async def _resolve_ml_algo_with_experiment(
+    algo: str,
+    current_user: User | None,
+    db: AsyncSession,
+) -> tuple[bool, str | None]:
+    """algo 파라미터 → ML 사용 여부 + experiment_variant 결정 (K-8 A/B 테스트).
+
+    반환: (use_ml: bool, variant: str | None)
+    - algo=v2:      (True, 'v2')   — 직접 지정, 실험 미적용
+    - algo=v1:      (False, 'v1')  — 직접 지정, 실험 미적용
+    - algo=default: (False, 'v1')  — 레거시
+    - algo=auto:    ml_experiments 조회 → get_user_variant() 호출
+
+    기존 algo=v1|v2|default 직접 지정은 유지 (override).
+    """
+    if algo == "v2":
+        return True, "v2"
+    if algo in ("v1", "default"):
+        return False, "v1"
+    # auto: 실험 기반 분기
+    if current_user is None:
+        return False, None
+    try:
+        from app.services.ml_experiments import (  # noqa: PLC0415
+            _EXPERIMENT_NAME,
+            get_user_variant,
+        )
+        variant = await get_user_variant(db, _EXPERIMENT_NAME, str(current_user.id))
+        return variant == "v2", variant
+    except Exception as exc:  # noqa: BLE001
+        _log.warning(
+            "_resolve_ml_algo_with_experiment 실패 (%s) → v1 fallback", exc
+        )
+        return False, "v1"
+
+
+class FeedInteractionIn(BaseModel):
+    """POST /feed/interaction 요청 body — K-1 implicit feedback."""
+
+    post_id: str
+    interaction_type: str
+    weight: Optional[float] = None
+
+
+# interaction_type별 기본 weight (K-1 설계 §3 Interaction Weight 기준표)
+_INTERACTION_WEIGHTS: dict[str, float] = {
+    "view": 1.0,
+    "click": 1.5,
+    "like": 3.0,
+    "comment": 4.0,
+    "sponsor": 5.0,
+}
+
+
+@router.post("/feed/interaction", status_code=201)
+async def record_feed_interaction(
+    body: FeedInteractionIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("feed_interaction"),
+):
+    """implicit feedback 수집 — user_post_interactions INSERT.
+
+    Interaction Weight 기준표:
+      view (≥3초) = 1.0, click = 1.5, like = 3.0, comment = 4.0, sponsor = 5.0
+    """
+    from sqlalchemy import text
+
+    if body.interaction_type not in _INTERACTION_WEIGHTS:
+        raise ApiError(
+            "VALIDATION_ERROR",
+            f"interaction_type must be one of {list(_INTERACTION_WEIGHTS.keys())}",
+            http_status=422,
+        )
+
+    # post 존재 확인
+    post_check = await db.execute(
+        text("SELECT id FROM posts WHERE id = :pid"),
+        {"pid": body.post_id},
+    )
+    if not post_check.fetchone():
+        raise ApiError("NOT_FOUND", "Post not found", http_status=404)
+
+    weight = float(
+        body.weight if body.weight is not None else _INTERACTION_WEIGHTS[body.interaction_type]
+    )
+
+    try:
+        await db.execute(
+            text("""
+                INSERT INTO user_post_interactions (user_id, post_id, interaction_type, weight)
+                VALUES (:uid, :pid, :itype, :weight)
+            """),
+            {
+                "uid": str(user.id),
+                "pid": body.post_id,
+                "itype": body.interaction_type,
+                "weight": weight,
+            },
+        )
+        await db.commit()
+    except Exception as exc:  # noqa: BLE001
+        _log.warning("record_feed_interaction: INSERT 실패 — %s", exc)
+        await db.rollback()
+        raise ApiError("INTERNAL_ERROR", "Failed to record interaction", http_status=500)
+
+    return {"data": {"ok": True}}
 
 
 @router.get("/feed")
 async def home_feed(
     limit: int = Query(20, ge=1, le=100),
     following_only: bool = Query(False),
-    algo: str = Query("default", pattern="^(default|v1)$"),
+    algo: str = Query("default", pattern="^(default|v1|v2|auto)$"),
     cursor: str | None = Query(None),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -868,13 +1113,46 @@ async def home_feed(
 
     algo=default (legacy): 팔로잉 70% + 트렌딩 30% chronological mix. No cursor.
     algo=v1 (A-3): SQL + Python hybrid personalized feed with (score, id) cursor.
+    algo=v2 (K-1): ML 협업 필터링 피드 (cold user → chronological fallback 자동).
+    algo=auto (K-8): ml_experiments A/B 테스트 기반 v1/v2 자동 결정.
 
-    PostHog feature flag 'feed-algorithm-v2' controls client-side algo selection.
-    Backward compat: algo=default (기본값) 시 기존 동작 그대로.
+    응답: 기존 {data: PostOut[], pagination: {...}} 형식 동일.
+    v2 응답에는 algo_used + experiment_variant 메타 포함 (PostHog A/B 분석 용).
     """
+    # ── K-8: A/B 실험 기반 algo 결정 (algo=auto → experiment variant 조회) ────
+    use_ml, experiment_variant = await _resolve_ml_algo_with_experiment(
+        algo, user, db
+    )
+
+    if use_ml:
+        from app.services.ml_feed_inference import get_recommendations  # noqa: PLC0415
+
+        post_ids = await get_recommendations(db, str(user.id), top_k=limit)
+        if post_ids:
+            # post_ids → Post ORM 객체 일괄 로드
+            posts = await _load_posts_by_ids(db, post_ids)
+            if posts:
+                await _attach_active_auction_end_at(db, posts)
+                data = [_serialize_post(p) for p in posts]
+                return {
+                    "data": data,
+                    "pagination": {"next_cursor": None, "has_more": False},
+                    "algo_used": "v2",
+                    "experiment_variant": experiment_variant,
+                }
+        # post_ids 비어있으면 v1 fallback (cold user 또는 모델 미준비)
+        _log.info("home_feed: ML v2 결과 없음 → v1 fallback (user=%s)", user.id)
+        result = await _personalized_feed_v1(db, user, cursor, limit)
+        result["algo_used"] = "v1"
+        result["experiment_variant"] = experiment_variant
+        return result
+
     # ── A-3 personalized feed v1 ─────────────────────────────────────────────
-    if algo == "v1":
-        return await _personalized_feed_v1(db, user, cursor, limit)
+    if algo in ("v1", "auto"):
+        result = await _personalized_feed_v1(db, user, cursor, limit)
+        result["algo_used"] = "v1"
+        result["experiment_variant"] = experiment_variant
+        return result
 
     # ── Legacy chronological feed (algo=default) ──────────────────────────────
     # following_only=false (default): 팔로우 70% + 트렌딩 30% 혼합
@@ -1452,5 +1730,351 @@ async def create_comment(
             content=comment.content,
             status=comment.status,
             created_at=comment.created_at,
+        ).model_dump(mode="json")
+    }
+
+
+# ─── K-3 AI Caption Endpoints ────────────────────────────────────────────
+
+
+@router.post("/{post_id}/regenerate-caption")
+async def regenerate_caption(
+    post_id: UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("caption_regenerate"),
+    _rl_post=rate_limit("post_caption_regenerate"),
+):
+    """작가 전용 — AI 캡션 수동 재생성.
+
+    K-3: LLM Gateway vision 호출 → ai_caption 저장 + 5 locale 번역.
+    CO-1 PR-2: 기존 caption_regenerate(10/hr) 유지 + post_caption_regenerate(3/일) 추가.
+    작가 본인만 호출 가능. Mock 모드에서는 503 대신 빈 캡션으로 응답.
+    """
+    # 포스트 조회 (media 포함)
+    result = await db.execute(
+        select(Post)
+        .where(Post.id == post_id)
+        .options(selectinload(Post.media))
+    )
+    post = result.scalar_one_or_none()
+    if not post or post.status == "deleted":
+        raise ApiError("POST_NOT_FOUND", "Post not found", http_status=404)
+
+    # 작가 본인 확인
+    if post.author_id != user.id and user.role != "admin":
+        raise ApiError(
+            "POST_NOT_OWNER",
+            "캡션 재생성은 작품 작가만 가능합니다",
+            http_status=403,
+        )
+
+    # 재생성 실행 (force=True: caption_override 무시)
+    ok = await generate_for_post(db, post_id, force=True)
+
+    # DB reload (생성된 캡션 반영)
+    await db.refresh(post)
+
+    if not ok:
+        _log.warning(
+            "[ArtworkCaption] regenerate failed or mock mode post_id=%s", post_id
+        )
+        # Mock 모드 / LLM 장애 시 503 대신 현재 상태 반환 (graceful)
+        effective = get_effective_caption(post)
+        return {
+            "data": {
+                "post_id": str(post_id),
+                "ai_caption": post.ai_caption,
+                "ai_caption_locale_translations": post.ai_caption_locale_translations or {},
+                "ai_caption_model_version": post.ai_caption_model_version,
+                "ai_caption_generated_at": post.ai_caption_generated_at.isoformat() if post.ai_caption_generated_at else None,
+                "effective_caption": effective,
+                "message": "캡션 생성 실패 또는 Mock 모드 — ai_caption=null",
+            }
+        }
+
+    effective = get_effective_caption(post)
+    return {
+        "data": {
+            "post_id": str(post_id),
+            "ai_caption": post.ai_caption,
+            "ai_caption_locale_translations": post.ai_caption_locale_translations or {},
+            "ai_caption_model_version": post.ai_caption_model_version,
+            "ai_caption_generated_at": post.ai_caption_generated_at.isoformat() if post.ai_caption_generated_at else None,
+            "effective_caption": effective,
+        }
+    }
+
+
+@router.patch("/{post_id}/caption-override")
+async def update_caption_override(
+    post_id: UUID,
+    body: CaptionOverrideRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("post_caption_override"),
+):
+    """작가 전용 — caption_override 저장 또는 제거.
+
+    K-3: clear=True 전송 시 caption_override=NULL (AI 캡션으로 복원).
+    body.caption_override: 최대 500자 (Pydantic 검증).
+    CO-1 PR-2: rate_limit("post_caption_override") 추가 — 10회/일/사용자.
+    """
+    # 포스트 조회
+    result = await db.execute(select(Post).where(Post.id == post_id))
+    post = result.scalar_one_or_none()
+    if not post or post.status == "deleted":
+        raise ApiError("POST_NOT_FOUND", "Post not found", http_status=404)
+
+    # 작가 본인 확인
+    if post.author_id != user.id and user.role != "admin":
+        raise ApiError(
+            "POST_NOT_OWNER",
+            "캡션 수정은 작품 작가만 가능합니다",
+            http_status=403,
+        )
+
+    if body.clear:
+        post.caption_override = None
+    else:
+        post.caption_override = body.caption_override
+
+    await db.commit()
+    await db.refresh(post)
+
+    effective = get_effective_caption(post)
+    return {
+        "data": {
+            "post_id": str(post_id),
+            "caption_override": post.caption_override,
+            "effective_caption": effective,
+        }
+    }
+
+
+# ─── K-5 도슨트 엔드포인트 — llm-docent-artwork ──────────────────────────────
+# README 비전 "스토리텔링 hub"과 "AI 시대 작가의 정체성 재정의" 구현
+
+
+async def _get_post_for_docent(
+    db: AsyncSession,
+    post_id: UUID,
+) -> Post:
+    """도슨트 엔드포인트용 포스트 조회 헬퍼."""
+    result = await db.execute(
+        select(Post)
+        .where(Post.id == post_id)
+        .options(selectinload(Post.media))
+    )
+    post = result.scalar_one_or_none()
+    if not post:
+        raise ApiError("NOT_FOUND", "Post not found", http_status=404)
+    return post
+
+
+def _assert_docent_author(post: Post, user: User) -> None:
+    """도슨트 작가 권한 검증 — 다른 작가의 도슨트 수정/생성 시 403."""
+    if post.author_id != user.id and user.role != "admin":
+        raise ApiError(
+            "FORBIDDEN",
+            "본인 작품의 도슨트만 수정할 수 있습니다.",
+            http_status=403,
+        )
+
+
+@router.post("/{post_id}/docent/generate")
+async def generate_post_docent(
+    post_id: UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """POST /posts/{id}/docent/generate — AI 도슨트 생성 (작가 전용).
+
+    K-5 llm-docent-artwork: 작가가 "AI 도슨트 생성" 버튼 클릭 시 호출.
+    LLM Gateway(tuzigroup gemma4-e4b)로 큐레이터 톤 3~5문단 해설을 생성한다.
+
+    권한: 작가 본인 또는 admin. 불일치 시 403.
+    idempotency: 24h 이내 중복 생성 시 409 반환.
+    opt_out: True이면 403 반환.
+    Mock 모드: LLM 미설정 시 ai_docent_text=None graceful 반환.
+    """
+    post = await _get_post_for_docent(db, post_id)
+    _assert_docent_author(post, user)
+
+    # opt_out 상태 체크
+    if getattr(post, "ai_docent_opted_out", False):
+        raise ApiError(
+            "DOCENT_OPTED_OUT",
+            "AI 도슨트가 비활성화 상태입니다. 먼저 활성화해 주세요.",
+            http_status=403,
+        )
+
+    # 24h idempotency 체크 — 이미 생성된 도슨트가 있으면 409
+    generated_at = getattr(post, "ai_docent_generated_at", None)
+    if generated_at is not None:
+        now = datetime.now(timezone.utc)
+        if generated_at.tzinfo is None:
+            generated_at = generated_at.replace(tzinfo=timezone.utc)
+        if (now - generated_at) < timedelta(hours=24):
+            raise ApiError(
+                "DOCENT_RECENTLY_GENERATED",
+                "24시간 이내에 이미 생성된 도슨트가 있습니다.",
+                http_status=409,
+                details={"ai_docent_generated_at": generated_at.isoformat()},
+            )
+
+    # 작가 정보 조회
+    artist_result = await db.execute(
+        select(User)
+        .where(User.id == post.author_id)
+        .options(selectinload(User.artist_profile))
+    )
+    artist = artist_result.scalar_one_or_none()
+    if not artist:
+        raise ApiError("NOT_FOUND", "Artist not found", http_status=404)
+
+    # 시리즈 정보 조회 (있는 경우)
+    series: Series | None = None
+    series_membership_result = await db.execute(
+        select(PostSeriesMembership)
+        .where(PostSeriesMembership.post_id == post_id)
+        .limit(1)
+    )
+    membership = series_membership_result.scalar_one_or_none()
+    if membership:
+        series_result = await db.execute(
+            select(Series).where(Series.id == membership.series_id)
+        )
+        series = series_result.scalar_one_or_none()
+
+    # AI 도슨트 생성
+    docent_text = await generate_docent(
+        db=db,
+        post_id=post_id,
+        post=post,
+        artist=artist,
+        series=series,
+    )
+
+    from app.services.llm_gateway import LLMGatewayClient as _LLMClient
+    is_mock = _LLMClient().is_mock
+
+    if docent_text is None and is_mock:
+        return {
+            "data": DocentGenerateResponse(
+                ai_docent_text=None,
+                message="AI 도슨트 생성 서비스가 비활성화 상태입니다.",
+            ).model_dump(mode="json")
+        }
+
+    return {
+        "data": DocentGenerateResponse(
+            ai_docent_text=getattr(post, "ai_docent_text", None),
+            ai_docent_model_version=getattr(post, "ai_docent_model_version", None),
+            ai_docent_generated_at=getattr(post, "ai_docent_generated_at", None),
+            ai_docent_translations=getattr(post, "ai_docent_translations", {}) or {},
+        ).model_dump(mode="json")
+    }
+
+
+@router.patch("/{post_id}/docent")
+async def patch_artist_docent(
+    post_id: UUID,
+    body: DocentPatchRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """PATCH /posts/{id}/docent — 작가 직접 해설 작성/수정 (작가 전용).
+
+    K-5: 작가가 직접 작성한 해설을 저장한다.
+    artist_docent_text가 있으면 공개 API에서 AI 도슨트보다 우선 노출된다.
+    OQ-K-5-5=유지: 작가 해설 저장이 AI 도슨트를 삭제하지 않음 (독립적 관리).
+    """
+    post = await _get_post_for_docent(db, post_id)
+    _assert_docent_author(post, user)
+
+    post.artist_docent_text = body.artist_docent_text  # type: ignore[assignment]
+    await db.commit()
+    await db.refresh(post)
+
+    return {
+        "data": DocentPatchResponse(
+            artist_docent_text=post.artist_docent_text,  # type: ignore[attr-defined]
+            updated_at=datetime.now(timezone.utc),
+        ).model_dump(mode="json")
+    }
+
+
+@router.patch("/{post_id}/docent/opt-out")
+async def patch_docent_opt_out(
+    post_id: UUID,
+    body: DocentOptOutRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """PATCH /posts/{id}/docent/opt-out — AI 도슨트 비활성화 토글 (작가 전용).
+
+    K-5: opted_out=True 이후 GET /docent는 ai_docent_text=null 반환.
+    재활성화(opted_out=False) 시 기존 ai_docent_text 유지 — 다시 표시됨.
+    """
+    post = await _get_post_for_docent(db, post_id)
+    _assert_docent_author(post, user)
+
+    post.ai_docent_opted_out = body.opted_out  # type: ignore[assignment]
+    await db.commit()
+
+    msg = (
+        "AI 도슨트가 비활성화되었습니다."
+        if body.opted_out
+        else "AI 도슨트가 활성화되었습니다."
+    )
+    return {
+        "data": DocentOptOutResponse(
+            ai_docent_opted_out=body.opted_out,
+            message=msg,
+        ).model_dump(mode="json")
+    }
+
+
+@router.get("/{post_id}/docent")
+async def get_post_docent(
+    post_id: UUID,
+    locale: str = Query(default="ko", pattern=r"^(ko|en|ja|zh|es)$"),
+    db: AsyncSession = Depends(get_db),
+):
+    """GET /posts/{id}/docent — 도슨트 조회 (공개, 인증 불필요).
+
+    K-5: 작가 해설(artist_docent_text) + AI 해설(ai_docent_text) 반환.
+    locale_docent 결정 로직:
+      locale=ko  → ai_docent_text (원본)
+      locale 기타 → ai_docent_translations[locale] 없으면 한국어 fallback
+      opted_out=True → ai_docent_text=None, locale_docent=None
+    """
+    result = await db.execute(select(Post).where(Post.id == post_id))
+    post = result.scalar_one_or_none()
+    if not post:
+        raise ApiError("NOT_FOUND", "Post not found", http_status=404)
+
+    opted_out = getattr(post, "ai_docent_opted_out", False)
+    ai_docent_text = getattr(post, "ai_docent_text", None) if not opted_out else None
+    translations = getattr(post, "ai_docent_translations", {}) or {}
+
+    # locale_docent 결정
+    locale_docent: str | None = None
+    if not opted_out and ai_docent_text:
+        if locale == "ko":
+            locale_docent = ai_docent_text
+        else:
+            locale_docent = translations.get(locale) or ai_docent_text  # fallback to ko
+
+    return {
+        "data": DocentResponse(
+            post_id=post_id,
+            artist_docent_text=getattr(post, "artist_docent_text", None),
+            ai_docent_text=ai_docent_text,
+            ai_docent_opted_out=opted_out,
+            ai_docent_generated_at=getattr(post, "ai_docent_generated_at", None),
+            locale_docent=locale_docent,
+            locale=locale,
         ).model_dump(mode="json")
     }

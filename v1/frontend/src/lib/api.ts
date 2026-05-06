@@ -152,6 +152,12 @@ export type ApiUser = {
   birth_year?: number | null;
   country_code?: string | null;
   onboarded_at?: string | null;
+  /** B'-1: user's preferred display currency (USD/KRW/EUR/JPY). Default "USD". */
+  preferred_currency?: string;
+  /** Phase 9 L-E: cognitive simple mode flag */
+  cognitive_simple_mode?: boolean;
+  /** Phase 9 L-E: accessibility preferences JSON */
+  accessibility_preferences?: Record<string, unknown>;
 };
 
 /**
@@ -340,6 +346,9 @@ export type ProductPostView = {
   is_buy_now: boolean;
   // G'-10: cents integer (e.g. 5000 = $50.00 / ₩5000). Use formatPriceCents() to display.
   buy_now_price: number | null;
+  // B'-1: native currency the artist priced buy_now in (USD/KRW/EUR/JPY). Default USD.
+  buy_now_currency: string;
+  // auction currency (KRW default for backward compat)
   currency: string;
   dimensions: string | null;
   medium: string | null;
@@ -379,6 +388,12 @@ export type PostView = {
   is_tier_locked?: boolean;
   // auction-promotion-suite PDCA #11 — feed countdown (OQ-10=B, OQ-D-1=A)
   active_auction_end_at?: string | null;
+  // K-3 ai-artwork-caption — Phase 9
+  ai_caption?: string | null;
+  ai_caption_locale_translations?: Record<string, string>;
+  ai_caption_generated_at?: string | null;
+  caption_override?: string | null;
+  effective_caption?: string;
 };
 
 export type CommentView = {
@@ -454,7 +469,8 @@ export async function fetchExplorePosts(params: {
   return apiFetch<PostView[]>(`/posts/explore?${qs.toString()}`, { auth: false });
 }
 
-export type FeedAlgo = "default" | "v1";
+// CO-1 PR-4: "v2" 추가 — K-8 Feature Flag 분기에서 algo="v2" 사용 시 타입 안전성 확보
+export type FeedAlgo = "default" | "v1" | "v2" | "auto";
 
 export type FeedPagination = {
   next_cursor: string | null;
@@ -737,6 +753,65 @@ export async function unlikePost(postId: string) {
   );
 }
 
+// ─── K-5 도슨트 API — llm-docent-artwork ────────────────────────────────
+
+export type DocentView = {
+  post_id: string;
+  artist_docent_text: string | null;
+  ai_docent_text: string | null;
+  ai_docent_opted_out: boolean;
+  ai_docent_generated_at: string | null;
+  locale_docent: string | null;
+  locale: string;
+};
+
+export type DocentGenerateResult = {
+  ai_docent_text: string | null;
+  ai_docent_model_version: string | null;
+  ai_docent_generated_at: string | null;
+  ai_docent_translations: Record<string, string>;
+  message?: string;
+};
+
+/** GET /posts/{id}/docent — 공개 조회 (인증 불필요) */
+export async function fetchDocent(
+  postId: string,
+  locale: string = "ko"
+): Promise<DocentView> {
+  return apiFetch<DocentView>(`/posts/${postId}/docent?locale=${locale}`, {
+    auth: false,
+  });
+}
+
+/** POST /posts/{id}/docent/generate — AI 도슨트 생성 (작가 전용) */
+export async function generateDocent(postId: string): Promise<DocentGenerateResult> {
+  return apiFetch<DocentGenerateResult>(`/posts/${postId}/docent/generate`, {
+    method: "POST",
+  });
+}
+
+/** PATCH /posts/{id}/docent — 작가 직접 해설 작성 */
+export async function patchArtistDocent(
+  postId: string,
+  artistDocentText: string | null
+): Promise<{ artist_docent_text: string | null; updated_at: string }> {
+  return apiFetch(`/posts/${postId}/docent`, {
+    method: "PATCH",
+    body: JSON.stringify({ artist_docent_text: artistDocentText }),
+  });
+}
+
+/** PATCH /posts/{id}/docent/opt-out — AI 도슨트 비활성화 토글 */
+export async function patchDocentOptOut(
+  postId: string,
+  optedOut: boolean
+): Promise<{ ai_docent_opted_out: boolean; message: string }> {
+  return apiFetch(`/posts/${postId}/docent/opt-out`, {
+    method: "PATCH",
+    body: JSON.stringify({ opted_out: optedOut }),
+  });
+}
+
 // ─── Sponsorships (Phase 2) ──────────────────────────────────────────────
 export type SponsorshipView = {
   id: string;
@@ -804,6 +879,8 @@ export type SubscriptionView = {
   cancelled_at: string | null;
   // D'-2 / A-8 booster: cancellation reason for conditional WinbackBanner message
   cancellation_reason?: "too_expensive" | "changed_mind" | "not_satisfied" | "other" | null;
+  // B'-4: auto-renewal toggle
+  auto_renew_enabled: boolean;
   created_at: string;
 };
 
@@ -836,6 +913,42 @@ export async function cancelSubscription(
 
 export async function fetchMySubscriptions() {
   return apiFetch<SubscriptionView[]>("/subscriptions/mine");
+}
+
+// ─── B'-4: Auto-renewal endpoints ───────────────────────────────────────────
+
+export type RenewSubscriptionResponse = SubscriptionView & {
+  renewed_at: string;
+  message: string;
+};
+
+/**
+ * POST /v1/subscriptions/{id}/renew
+ * Manually triggers renewal for a subscription:
+ *   - active + cancel_at_period_end → reverts cancellation flag
+ *   - cancelled → creates new Stripe subscription
+ *   - past_due  → triggers retry (Stripe handles automatically)
+ *   - active (normal) → idempotent 200
+ */
+export async function renewSubscription(id: string) {
+  return apiFetch<RenewSubscriptionResponse>(`/subscriptions/${id}/renew`, {
+    method: "POST",
+  });
+}
+
+/**
+ * PATCH /v1/subscriptions/{id}/auto-renew
+ * Enables or disables auto-renewal monitoring for the subscription.
+ * When disabled, user must manually renew via renewSubscription().
+ */
+export async function toggleAutoRenew(
+  id: string,
+  auto_renew_enabled: boolean
+) {
+  return apiFetch<SubscriptionView>(`/subscriptions/${id}/auto-renew`, {
+    method: "PATCH",
+    body: JSON.stringify({ auto_renew_enabled }),
+  });
 }
 
 // ─── B-5 + D'-2: Churn list (artist dashboard) ──────────────────────────────
@@ -2090,6 +2203,49 @@ export async function requestPayout(
   });
 }
 
+// ─── B'-5: Patronage analytics (PostHog proxy / self-aggregated) ──────────────
+
+export type PatronageAnalyticsResponse = {
+  cohort_retention: Array<{ week: string; d1: number; d7: number; d30: number }>;
+  coupon_redemption: {
+    issued: number;
+    applied: number;
+    cancel_reverted: number;
+    expired: number;
+  };
+  newsletter: Array<{
+    issue: string;
+    sent: number;
+    opened: number;
+    clicked: number;
+    open_rate: number;
+    click_rate: number;
+  }>;
+  conversion_funnel: {
+    post_click: number;
+    sponsor_start: number;
+    sponsor_success: number;
+    active_30d: number;
+  };
+  dm_engagement: {
+    first_message_rate: number;
+    avg_response_minutes: number;
+    total_threads: number;
+  };
+  is_mock: boolean;
+};
+
+/**
+ * GET /v1/me/patronage/analytics
+ *
+ * Returns aggregated analytics data for the authenticated artist.
+ * Backend caches with Redis (1h TTL) and falls back to mock data
+ * when PostHog API key is not configured.
+ */
+export async function fetchPatronageAnalytics(): Promise<PatronageAnalyticsResponse> {
+  return apiFetch<PatronageAnalyticsResponse>("/me/patronage/analytics");
+}
+
 // ─── Tier benefits (B-4) ──────────────────────────────────────────────────
 
 export type TierBenefitsItem = {
@@ -2946,6 +3102,276 @@ export async function newsletterUnsubscribe(
 ): Promise<{ unsubscribed: boolean; user_id: string }> {
   return apiFetch<{ unsubscribed: boolean; user_id: string }>(
     `/newsletter/unsubscribe?token=${encodeURIComponent(token)}`,
+    { auth: false }
+  );
+}
+
+// ─── B'-2 DM Messaging ──────────────────────────────────────────────────────
+
+export type ConversationView = {
+  id: string;
+  other_user_id: string;
+  last_message_at: string | null;
+  created_at: string;
+  closed_by_admin: boolean;
+  last_message_preview: string | null;
+};
+
+export type MessageView = {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  body: string;
+  created_at: string;
+  read_at: string | null;
+  edited_at: string | null;
+  deleted_at: string | null;
+};
+
+export type ConversationListResponse = {
+  data: ConversationView[];
+  next_cursor: string | null;
+};
+
+export type MessageListResponse = {
+  data: MessageView[];
+  next_cursor: string | null;
+};
+
+/** Start a conversation with target_user_id, or return the existing one. */
+export async function startConversation(
+  targetUserId: string
+): Promise<ConversationView> {
+  return apiFetch<ConversationView>("/conversations", {
+    method: "POST",
+    body: JSON.stringify({ target_user_id: targetUserId }),
+  });
+}
+
+/** List current user's conversations (cursor-paginated). */
+export async function listConversations(
+  cursor?: string | null,
+  limit = 20
+): Promise<ConversationListResponse> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (cursor) params.set("cursor", cursor);
+  return apiFetch<ConversationListResponse>(`/me/conversations?${params}`);
+}
+
+/** List messages in a conversation (participants only). */
+export async function listMessages(
+  conversationId: string,
+  cursor?: string | null,
+  limit = 30
+): Promise<MessageListResponse> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (cursor) params.set("cursor", cursor);
+  return apiFetch<MessageListResponse>(
+    `/conversations/${conversationId}/messages?${params}`
+  );
+}
+
+/** Send a message. */
+export async function sendMessage(
+  conversationId: string,
+  body: string
+): Promise<MessageView> {
+  return apiFetch<MessageView>(`/conversations/${conversationId}/messages`, {
+    method: "POST",
+    body: JSON.stringify({ body }),
+  });
+}
+
+/** Edit own message (within 5-minute window). */
+export async function editMessage(
+  conversationId: string,
+  messageId: string,
+  body: string
+): Promise<MessageView> {
+  return apiFetch<MessageView>(
+    `/conversations/${conversationId}/messages/${messageId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ body }),
+    }
+  );
+}
+
+/** Soft-delete own message. */
+export async function deleteMessage(
+  conversationId: string,
+  messageId: string
+): Promise<MessageView> {
+  return apiFetch<MessageView>(
+    `/conversations/${conversationId}/messages/${messageId}`,
+    { method: "DELETE" }
+  );
+}
+
+/** Mark all received messages in conversation as read. */
+export async function markConversationRead(
+  conversationId: string
+): Promise<{ marked_read: number }> {
+  return apiFetch<{ marked_read: number }>(
+    `/conversations/${conversationId}/read`,
+    { method: "POST" }
+  );
+}
+
+/** Report a conversation for abuse. */
+export async function reportConversation(
+  conversationId: string,
+  reason: string
+): Promise<{ reported: boolean; conversation_id: string }> {
+  return apiFetch<{ reported: boolean; conversation_id: string }>(
+    `/conversations/${conversationId}/report`,
+    {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    }
+  );
+}
+
+// ─── B'-3: Push Notification Preferences ─────────────────────────────────────
+
+export type NotificationPreferencesView = {
+  user_id: string;
+  push_enabled: boolean;
+  email_enabled: boolean;
+  push_per_type: Record<string, boolean>;
+  email_per_type: Record<string, boolean>;
+  digest_frequency: "weekly" | "biweekly" | "monthly" | "never";
+  updated_at: string | null;
+};
+
+export type NotificationPreferencesPatch = {
+  push_enabled?: boolean;
+  email_enabled?: boolean;
+  push_per_type?: Record<string, boolean>;
+  email_per_type?: Record<string, boolean>;
+  digest_frequency?: "weekly" | "biweekly" | "monthly" | "never";
+};
+
+export type DeviceTokenView = {
+  id: string;
+  user_id: string;
+  platform: "fcm" | "apns";
+  device_id: string | null;
+  last_active_at: string | null;
+  created_at: string | null;
+};
+
+export type DeviceRegisterInput = {
+  token: string;
+  platform: "fcm" | "apns";
+  device_id?: string | null;
+};
+
+/** GET /me/notifications/preferences — Fetch notification preferences. */
+export async function fetchNotificationPreferences(): Promise<NotificationPreferencesView> {
+  return apiFetch<NotificationPreferencesView>("/me/notifications/preferences");
+}
+
+/** PATCH /me/notifications/preferences — Update notification preferences. */
+export async function patchNotificationPreferences(
+  body: NotificationPreferencesPatch
+): Promise<NotificationPreferencesView> {
+  return apiFetch<NotificationPreferencesView>("/me/notifications/preferences", {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+/** POST /me/devices — Register a push device token. */
+export async function registerDeviceToken(
+  input: DeviceRegisterInput
+): Promise<DeviceTokenView> {
+  return apiFetch<DeviceTokenView>("/me/devices", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+/** DELETE /me/devices/{id} — Revoke a push device token. */
+export async function revokeDeviceToken(
+  deviceId: string
+): Promise<{ deleted: boolean; id: string }> {
+  return apiFetch<{ deleted: boolean; id: string }>(
+    `/me/devices/${encodeURIComponent(deviceId)}`,
+    { method: "DELETE" }
+  );
+}
+
+// ─── Phase 10 K-7: AI 큐레이션 컬렉션 ───────────────────────────────────────
+
+export type AiCollectionItem = {
+  id: string;
+  week_start: string | null;
+  theme: string;
+  title: string | null;
+  description: string | null;
+  cover_image_url: string | null;
+  post_count: number;
+  published_at: string | null;
+};
+
+export type AiCollectionPost = {
+  position: number;
+  post_id: string;
+  title: string | null;
+  thumbnail_url: string | null;
+  author: {
+    id: string;
+    name: string | null;
+    avatar_url: string | null;
+  };
+};
+
+export type AiCollectionDetail = {
+  id: string;
+  week_start: string | null;
+  theme: string;
+  title: string | null;
+  description: string | null;
+  cover_image_url: string | null;
+  published_at: string | null;
+  posts: AiCollectionPost[];
+};
+
+export type AiCollectionsResponse = {
+  items: AiCollectionItem[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+/** GET /ai-collections — 활성 AI 큐레이션 컬렉션 목록 (공개). */
+export async function fetchCollections(params: {
+  page?: number;
+  limit?: number;
+  locale?: string;
+}): Promise<AiCollectionsResponse> {
+  const q = new URLSearchParams();
+  if (params.page) q.set("page", String(params.page));
+  if (params.limit) q.set("limit", String(params.limit));
+  if (params.locale) q.set("locale", params.locale);
+  const qs = q.toString();
+  // auth: false — 공개 엔드포인트, 인증 토큰 불필요
+  return apiFetch<AiCollectionsResponse>(
+    `/ai-collections${qs ? `?${qs}` : ""}`,
+    { auth: false }
+  );
+}
+
+/** GET /ai-collections/{id} — 컬렉션 상세 + 작품 리스트. */
+export async function fetchCollectionDetail(
+  id: string,
+  locale?: string
+): Promise<AiCollectionDetail> {
+  const q = locale ? `?locale=${encodeURIComponent(locale)}` : "";
+  // auth: false — 공개 엔드포인트, 인증 토큰 불필요
+  return apiFetch<AiCollectionDetail>(
+    `/ai-collections/${encodeURIComponent(id)}${q}`,
     { auth: false }
   );
 }

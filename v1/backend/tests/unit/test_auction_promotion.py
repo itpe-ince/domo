@@ -143,10 +143,14 @@ async def test_dispatch_idempotent():
     db.add = MagicMock()
     db.commit = AsyncMock()
 
-    # Sweep 1
-    summary1 = await dispatch_pending_notifications_once(db)
-    # Sweep 2
-    summary2 = await dispatch_pending_notifications_once(db)
+    # B'-3 push_notifier integration may add db.execute calls — patch to no-op
+    with patch("app.services.auction_promotion_jobs.push_notifier") as mock_push:
+        mock_push.notify_user = AsyncMock(return_value=None)
+
+        # Sweep 1
+        summary1 = await dispatch_pending_notifications_once(db)
+        # Sweep 2
+        summary2 = await dispatch_pending_notifications_once(db)
 
     # First sweep dispatched 1 for 24h slot
     assert summary1["auction_ending_24h"] == 1

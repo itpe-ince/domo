@@ -7,26 +7,101 @@ compose_issue(): auto-builds a NewsletterIssue draft by pulling data from:
   - C-4 MediaCoverage (featured published items)
 
 Markdown → HTML conversion is done inline (no external dependency).
+
+L-B: inject_tracking() — HTML 본문에 open tracking 픽셀과 click tracking 링크 삽입.
+  - 모든 <a href> 링크를 /v1/newsletter/track/click?... 로 감싼다.
+  - </body> 직전에 1x1 투명 PNG tracking pixel 삽입.
+  - user_id 플레이스홀더({user_id})는 발송 직전 실제 구독자 ID로 치환.
 """
 from __future__ import annotations
 
 import logging
 import re
+import urllib.parse
 import uuid
 from datetime import date, datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.models.featured_artist import FeaturedArtist
 from app.models.media_coverage import MediaCoverage
 from app.models.newsletter_issue import NewsletterIssue
 from app.models.post_engagement_cache import PostEngagementCache
 from app.models.user import User
+from app.services.otel_setup import get_tracer
 
 log = logging.getLogger(__name__)
 
+tracer = get_tracer(__name__)
+
 VALID_LOCALES = frozenset({"ko", "en", "ja", "zh", "es"})
+
+# ─── L-B: Newsletter tracking injection ───────────────────────────────────────
+
+# <a href="URL">텍스트</a> 패턴 — 트래킹 링크 치환에 사용
+_ANCHOR_RE = re.compile(r'<a\s+href="([^"]+)">([^<]*)</a>', re.IGNORECASE)
+
+
+def inject_tracking(html: str, issue_id: str, user_id: str = "{user_id}") -> str:
+    """HTML 본문에 open tracking 픽셀과 click tracking 링크를 삽입한다.
+
+    - 모든 외부 <a href> 링크를 /v1/newsletter/track/click?... 로 변환한다.
+    - Domo 내부 URL(api_base_url 시작) 및 /api/ 경로는 이중 redirect 방지를 위해 skip.
+    - </body> 직전에 1x1 투명 PNG tracking pixel img 태그를 삽입한다.
+
+    Args:
+        html: 변환할 HTML 문자열
+        issue_id: NewsletterIssue.id (str)
+        user_id: 구독자 user ID — 기본값 '{user_id}' 플레이스홀더 (발송 직전 치환)
+
+    Returns:
+        트래킹 요소가 주입된 HTML 문자열
+    """
+    settings = get_settings()
+    base_url = settings.api_base_url  # e.g. https://domo-api.tuzigroup.com/v1
+
+    # 트래킹 엔드포인트 기준 URL (api_base_url 포함)
+    track_base = base_url
+
+    pixel_url = f"{track_base}/newsletter/track/open?issue={issue_id}&user={user_id}"
+    pixel_tag = (
+        f'<img src="{pixel_url}" width="1" height="1" alt="" '
+        'style="display:none;border:0;outline:none;"/>'
+    )
+
+    def _wrap_link(match: re.Match) -> str:
+        """외부 링크를 클릭 트래킹 URL로 감싼다."""
+        original_url: str = match.group(1)
+        link_text: str = match.group(2)
+
+        # Domo 내부 URL 또는 이미 트래킹 URL이면 skip
+        if (
+            original_url.startswith(base_url)
+            or original_url.startswith("/api/")
+            or "/newsletter/track/" in original_url
+        ):
+            return match.group(0)
+
+        encoded = urllib.parse.quote(original_url, safe="")
+        track_url = (
+            f"{track_base}/newsletter/track/click"
+            f"?issue={issue_id}&user={user_id}&url={encoded}"
+        )
+        return f'<a href="{track_url}">{link_text}</a>'
+
+    # 1. 클릭 트래킹 링크 치환
+    html = _ANCHOR_RE.sub(_wrap_link, html)
+
+    # 2. open tracking 픽셀 삽입 (</body> 직전 또는 끝에 추가)
+    if "</body>" in html:
+        html = html.replace("</body>", f"{pixel_tag}</body>", 1)
+    else:
+        html += pixel_tag
+
+    return html
+
 
 # ─── Simple markdown → HTML (subset: headings, bold, paragraphs, links) ───────
 
@@ -85,6 +160,21 @@ async def compose_issue(
     Pulls data from G'-7, A-6, G'-9, C-4.
     Returns an unsaved NewsletterIssue — caller is responsible for db.add/commit.
     """
+    with tracer.start_as_current_span("newsletter.compose_issue") as span:
+        span.set_attribute("locale", locale)
+        span.set_attribute("issue_date", str(issue_date))
+        return await _compose_issue_inner(
+            issue_date=issue_date, locale=locale, db=db, admin_id=admin_id
+        )
+
+
+async def _compose_issue_inner(
+    issue_date: date,
+    locale: str,
+    db: AsyncSession,
+    admin_id: uuid.UUID,
+) -> NewsletterIssue:
+    """Inner implementation — called from compose_issue with OTel span."""
     if locale not in VALID_LOCALES:
         raise ValueError(f"Invalid locale: {locale}")
 
@@ -149,6 +239,12 @@ async def compose_issue(
         mc_rows=mc_rows,
     )
     html = md_to_html(md)
+
+    # L-B: issue_id 미확정 단계이므로 임시 UUID를 사용해 플레이스홀더 삽입.
+    # 발송 직전(newsletter_jobs.py) 실제 issue.id 와 user_id로 치환한다.
+    _tmp_issue_id = str(uuid.uuid4())
+    html = inject_tracking(html, issue_id=_tmp_issue_id, user_id="{user_id}")
+
     subject = _SUBJECTS.get(locale, _SUBJECTS["en"]).format(month=month_label)
 
     return NewsletterIssue(

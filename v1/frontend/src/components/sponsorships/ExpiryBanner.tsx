@@ -1,19 +1,23 @@
 "use client";
 
 /**
- * ExpiryBanner — A-8 retention-loop-enhancement
+ * ExpiryBanner — A-8 retention-loop-enhancement + B'-4 auto-renewal booster
  *
  * Shown on the /me/sponsorships dashboard when a subscription is expiring
  * within 7 days. The banner displays per-subscription with a "갱신하기" CTA
- * and a dismissable "잊기" link (7-day cooldown via useExpiryBanner).
+ * that now calls POST /subscriptions/{id}/renew (B'-4) and a dismissable
+ * "잊기" link (7-day cooldown via useExpiryBanner).
  *
- * PostHog events: expiry_banner_view, expiry_banner_renew_click, expiry_banner_dismiss
+ * On successful renewal: shows updated expiry date (+30d refresh indication).
+ *
+ * PostHog events: expiry_banner_view, expiry_banner_renew_click, expiry_banner_dismiss,
+ *                 expiry_banner_renew_success (B'-4)
  */
 
-import { useEffect } from "react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n";
 import { captureEvent } from "@/lib/analytics/capture";
+import { renewSubscription } from "@/lib/api";
 
 type Props = {
   subscriptionId: string;
@@ -21,6 +25,8 @@ type Props = {
   artistName?: string;
   daysLeft: number;
   onDismiss: (subscriptionId: string) => void;
+  /** B'-4: called after successful renewal so parent can refresh subscription list */
+  onRenewSuccess?: (subscriptionId: string) => void;
 };
 
 export function ExpiryBanner({
@@ -29,8 +35,12 @@ export function ExpiryBanner({
   artistName,
   daysLeft,
   onDismiss,
+  onRenewSuccess,
 }: Props) {
   const { t } = useI18n();
+  const [renewing, setRenewing] = useState(false);
+  const [renewError, setRenewError] = useState<string | null>(null);
+  const [renewedPeriodEnd, setRenewedPeriodEnd] = useState<string | null>(null);
 
   // Fire PostHog view event on mount
   useEffect(() => {
@@ -42,12 +52,32 @@ export function ExpiryBanner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscriptionId]);
 
-  function handleRenewClick() {
+  async function handleRenewClick() {
     captureEvent({
       type: "expiry_banner_renew_click",
       subscription_id: subscriptionId,
     });
-    // Navigate to artist page — renew flow handled there (placeholder for Stripe deep integration)
+
+    setRenewing(true);
+    setRenewError(null);
+    try {
+      const res = await renewSubscription(subscriptionId);
+      const updated = (res as { data?: { current_period_end?: string | null }; current_period_end?: string | null }).data ?? res;
+      const newPeriodEnd = (updated as { current_period_end?: string | null }).current_period_end;
+      if (newPeriodEnd) {
+        setRenewedPeriodEnd(new Date(newPeriodEnd).toLocaleDateString());
+      }
+      captureEvent({
+        type: "expiry_banner_renew_click",
+        subscription_id: subscriptionId,
+      });
+      onRenewSuccess?.(subscriptionId);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : t("subscription.renewal.renewError");
+      setRenewError(msg);
+    } finally {
+      setRenewing(false);
+    }
   }
 
   function handleDismiss() {
@@ -61,6 +91,21 @@ export function ExpiryBanner({
   const label = t("retention.expiry.banner.title")
     .replace("{{artistName}}", artistName ?? `@${artistId.slice(0, 8)}`)
     .replace("{{days}}", String(daysLeft));
+
+  // Post-renewal success state
+  if (renewedPeriodEnd) {
+    return (
+      <div
+        role="alert"
+        className="rounded-xl border border-green-300 bg-green-50 px-5 py-4 flex items-center gap-3"
+      >
+        <span className="text-2xl flex-shrink-0" aria-hidden="true">✅</span>
+        <p className="text-sm font-semibold text-green-900">
+          {t("subscription.renewal.renewSuccess").replace("{{date}}", renewedPeriodEnd)}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -80,14 +125,21 @@ export function ExpiryBanner({
           </p>
         </div>
 
+        {renewError && (
+          <p className="text-xs text-red-600">{renewError}</p>
+        )}
+
         <div className="flex items-center gap-3 flex-wrap">
-          <Link
-            href={`/users/${artistId}`}
+          <button
             onClick={handleRenewClick}
-            className="px-4 py-1.5 bg-amber-600 text-white rounded-full text-xs font-semibold hover:bg-amber-700 transition-colors"
+            disabled={renewing}
+            className="px-4 py-1.5 bg-amber-600 text-white rounded-full text-xs font-semibold hover:bg-amber-700 transition-colors disabled:opacity-50"
+            aria-busy={renewing}
           >
-            {t("retention.expiry.banner.renewCta")}
-          </Link>
+            {renewing
+              ? t("subscription.renewal.renewing")
+              : t("retention.expiry.banner.renewCta")}
+          </button>
 
           <button
             onClick={handleDismiss}

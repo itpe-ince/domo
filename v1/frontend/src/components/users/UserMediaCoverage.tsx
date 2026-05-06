@@ -10,6 +10,7 @@
 
 import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n";
+import { captureEvent } from "@/lib/analytics/capture";
 import { fetchMediaCoverage } from "@/lib/api";
 import type { MediaCoverageOut } from "@/lib/api";
 
@@ -70,6 +71,16 @@ export function UserMediaCoverage({ artistId, locale = "ko", limit = 5 }: Props)
     };
   }, [artistId, locale, limit]);
 
+  function handleClick(item: MediaCoverageOut) {
+    captureEvent({
+      type: "media_coverage_click",
+      coverage_id: String(item.id),
+      coverage_type: (item.coverage_type as "article" | "youtube" | "radio" | "podcast" | "tv" | "other") ?? "other",
+      url: item.external_url,
+      source: item.source_name,
+    });
+  }
+
   if (loading) return null; // Avoid layout shift — section appears after load
   if (items.length === 0) return null; // Graceful degrade — section hidden when no data
 
@@ -88,6 +99,7 @@ export function UserMediaCoverage({ artistId, locale = "ko", limit = 5 }: Props)
             href={item.external_url}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => handleClick(item)}
             className={`flex items-start gap-3 rounded-xl border p-3 hover:shadow-sm transition-shadow ${
               TYPE_COLORS[item.coverage_type] ?? TYPE_COLORS.other
             }`}

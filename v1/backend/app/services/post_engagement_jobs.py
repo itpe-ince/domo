@@ -36,6 +36,9 @@ from app.core.metrics import (
     post_engagement_cache_rows_total,
 )
 from app.db.session import AsyncSessionLocal
+from app.services.otel_setup import get_tracer
+
+tracer = get_tracer(__name__)
 
 log = logging.getLogger(__name__)
 
@@ -312,12 +315,14 @@ async def post_engagement_cron_loop(interval_seconds: int = 3600) -> None:
     )
     while True:
         try:
-            with record_cron_run("post_engagement"):
-                with post_engagement_cache_calc_duration_seconds.labels(phase="full").time():
-                    async with AsyncSessionLocal() as db:
-                        n = await recalc_post_engagement(db)
-                    cron_rows_processed_total.labels(worker="post_engagement").inc(n)
-                    log.info("post_engagement_cache sweep complete: %d posts", n)
+            with tracer.start_as_current_span("cron.post_engagement") as span:
+                with record_cron_run("post_engagement"):
+                    with post_engagement_cache_calc_duration_seconds.labels(phase="full").time():
+                        async with AsyncSessionLocal() as db:
+                            n = await recalc_post_engagement(db)
+                        cron_rows_processed_total.labels(worker="post_engagement").inc(n)
+                        log.info("post_engagement_cache sweep complete: %d posts", n)
+                span.set_attribute("posts_processed", n)
         except Exception:
             log.exception("post_engagement_cron sweep failed")
         await asyncio.sleep(interval_seconds)

@@ -70,7 +70,36 @@ class SubscriptionOut(BaseModel):
     cancelled_at: datetime | None
     cancellation_reason: str | None = None
     cancellation_feedback: str | None = None
+    # B'-4: auto-renewal toggle
+    auto_renew_enabled: bool = True
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class SubscriptionRenewResponse(BaseModel):
+    """Response for POST /subscriptions/{id}/renew (B'-4)."""
+
+    id: UUID
+    sponsor_id: UUID
+    artist_id: UUID
+    monthly_bluebird: int
+    monthly_amount: Decimal
+    currency: str
+    status: str
+    cancel_at_period_end: bool
+    current_period_end: datetime | None
+    cancelled_at: datetime | None
+    auto_renew_enabled: bool = True
+    renewed_at: datetime
+    message: str
+
+    class Config:
+        from_attributes = True
+
+
+class AutoRenewToggleRequest(BaseModel):
+    """Request body for PATCH /subscriptions/{id}/auto-renew (B'-4)."""
+
+    auto_renew_enabled: bool

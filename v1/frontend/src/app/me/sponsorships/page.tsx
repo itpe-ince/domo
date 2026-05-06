@@ -73,7 +73,7 @@ export default function MySponsorshipsPage() {
   }
 
   return (
-    <main className="flex-1 min-w-0 max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+    <main className="flex-1 min-w-0 max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-8" aria-label={t("patronage.supporter.title")}>
       {/* ── Section 1: Header ── */}
       <div>
         <h1 className="text-2xl font-bold text-text-primary mb-1">

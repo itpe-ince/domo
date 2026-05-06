@@ -7,14 +7,14 @@
  * No authentication required — uses the token embedded in email footer.
  */
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useI18n } from "@/i18n";
 import { newsletterUnsubscribe } from "@/lib/api";
 
 type UnsubscribeState = "loading" | "success" | "already" | "error" | "missing";
 
-export default function NewsletterUnsubscribePage() {
+function UnsubscribePageInner() {
   const { t } = useI18n();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -112,5 +112,13 @@ export default function NewsletterUnsubscribePage() {
         </a>
       </div>
     </div>
+  );
+}
+
+export default function NewsletterUnsubscribePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">로딩 중...</p></div>}>
+      <UnsubscribePageInner />
+    </Suspense>
   );
 }

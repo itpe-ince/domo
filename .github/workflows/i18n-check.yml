@@ -1,0 +1,25 @@
+name: i18n Key Audit
+
+# CO-1 PR-5: i18n CI 자동 검증
+# ko.json 기준으로 en/ja/zh/es locale 키 누락 여부를 PR마다 자동 검증
+
+on:
+  pull_request:
+    paths:
+      - "v1/frontend/src/i18n/**"
+      - "v1/frontend/scripts/i18n-key-audit.sh"
+
+jobs:
+  i18n-check:
+    name: i18n Key Matrix Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Run i18n key audit
+        run: bash v1/frontend/scripts/i18n-key-audit.sh

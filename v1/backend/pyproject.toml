@@ -15,7 +15,7 @@ dependencies = [
     "bcrypt>=4.2",
     "python-multipart>=0.0.20",
     "httpx>=0.28",
-    "redis>=5.2",
+    "redis[hiredis]>=5.2",
     "google-auth>=2.36",
     "requests>=2.32",
     "Pillow>=11.0",
@@ -26,6 +26,14 @@ dependencies = [
     "webauthn>=2.5",
     "prometheus-client>=0.21",
     "posthog>=3.0.0",
+    # OpenTelemetry — G''-1 opentelemetry-tracing
+    "opentelemetry-sdk>=1.25.0",
+    "opentelemetry-api>=1.25.0",
+    "opentelemetry-instrumentation-fastapi>=0.46b0",
+    "opentelemetry-instrumentation-sqlalchemy>=0.46b0",
+    "opentelemetry-instrumentation-httpx>=0.46b0",
+    "opentelemetry-instrumentation-asyncpg>=0.46b0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.25.0",
 ]
 
 [project.optional-dependencies]

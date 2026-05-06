@@ -20,11 +20,13 @@ from app.models.sponsorship import Sponsorship, Subscription
 from app.models.user import User
 from app.schemas.coupon import AppliedCouponOut, WinbackCouponRequest, WinbackCouponResponse
 from app.schemas.sponsorship import (
+    AutoRenewToggleRequest,
     SponsorshipCreate,
     SponsorshipOut,
     SubscriptionCancelRequest,
     SubscriptionCreate,
     SubscriptionOut,
+    SubscriptionRenewResponse,
 )
 from app.services.kyc import require_kyc_verified
 from app.services.payments import get_coupon_provider, get_payment_provider
@@ -395,6 +397,215 @@ async def my_subscriptions(
             SubscriptionOut.model_validate(s).model_dump(mode="json") for s in subs
         ]
     }
+
+
+@subscription_router.post("/{subscription_id}/renew")
+async def renew_subscription(
+    subscription_id: UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("subscription_renew"),
+):
+    """POST /v1/subscriptions/{id}/renew — B'-4 stripe-billing-auto-renewal.
+
+    Manually triggers renewal of a subscription:
+    - If active with cancel_at_period_end=True → reverts cancel flag (keeps subscription alive)
+    - If 'cancelled' status → creates a new Stripe subscription (re-start)
+    - If 'past_due' → triggers retry via Stripe billing (status becomes active on webhook)
+    - If already active & auto-renewing → 200 (idempotent)
+
+    Auth: subscription owner only.
+    Rate limit: subscription_renew (5/min).
+    """
+    result = await db.execute(
+        select(Subscription).where(Subscription.id == subscription_id)
+    )
+    sub = result.scalar_one_or_none()
+    if not sub:
+        raise ApiError("NOT_FOUND", "Subscription not found", http_status=404)
+    if sub.sponsor_id != user.id:
+        raise ApiError("FORBIDDEN", "Not your subscription", http_status=403)
+
+    provider = get_payment_provider()
+    now = datetime.now(timezone.utc)
+
+    if sub.status == "active" and sub.cancel_at_period_end:
+        # Revert pending cancellation → subscription renews automatically
+        if sub.provider_subscription_id:
+            if hasattr(provider, "revert_cancel_at_period_end"):
+                try:
+                    await provider.revert_cancel_at_period_end(
+                        sub.provider_subscription_id
+                    )
+                except Exception as exc:
+                    log.warning("revert_cancel_at_period_end failed (non-fatal): %s", exc)
+            else:
+                # Generic: cancel_subscription with at_period_end=True is the cancel path;
+                # to revert we modify cancel_at_period_end=False
+                try:
+                    import asyncio as _asyncio
+                    if hasattr(provider, "_stripe"):
+                        await _asyncio.to_thread(
+                            provider._stripe.Subscription.modify,
+                            sub.provider_subscription_id,
+                            cancel_at_period_end=False,
+                        )
+                except Exception as exc:
+                    log.warning("Stripe revert cancel_at_period_end failed: %s", exc)
+
+        sub.cancel_at_period_end = False
+        sub.cancelled_at = None
+        sub.cancellation_reason = None
+        # Reset expiry notification so cron can fire again next cycle if needed
+        sub.expiry_notified_at = None
+        message = "구독 취소가 철회되었습니다. 자동 갱신이 계속됩니다."
+
+    elif sub.status == "cancelled":
+        # Re-start: create new Stripe subscription
+        unit = await get_setting(db, "bluebird_unit_price")
+        monthly_amount = sub.monthly_amount
+        currency = sub.currency
+
+        import inspect as _inspect
+        create_sub_kwargs: dict = dict(
+            sponsor_id=str(user.id),
+            artist_id=str(sub.artist_id),
+            monthly_amount=monthly_amount,
+            currency=currency,
+        )
+        if "db" in _inspect.signature(provider.create_subscription).parameters:
+            create_sub_kwargs["db"] = db
+
+        try:
+            new_result = await provider.create_subscription(**create_sub_kwargs)
+        except Exception as exc:
+            log.error("re-start subscription failed: %s", exc)
+            raise ApiError(
+                "PAYMENT_ERROR",
+                "구독 재시작에 실패했습니다. 결제 수단을 확인해주세요.",
+                http_status=502,
+            ) from exc
+
+        period_end = (
+            datetime.fromtimestamp(new_result.current_period_end_unix, tz=timezone.utc)
+            if new_result.current_period_end_unix
+            else None
+        )
+        sub.provider_subscription_id = new_result.id
+        sub.status = "active"
+        sub.cancel_at_period_end = False
+        sub.cancelled_at = None
+        sub.cancellation_reason = None
+        sub.cancellation_feedback = None
+        sub.current_period_end = period_end
+        sub.expiry_notified_at = None
+
+        # Notify artist
+        db.add(
+            Notification(
+                user_id=sub.artist_id,
+                type="subscription_renewed",
+                title="구독이 재시작되었습니다",
+                body=f"@{user.display_name}님이 정기 후원을 다시 시작했습니다.",
+            )
+        )
+        message = "구독이 재시작되었습니다."
+
+    elif sub.status == "past_due":
+        # Stripe handles billing retry automatically; we just log and return current state.
+        # In production Stripe will retry and fire invoice.payment_succeeded/failed webhook.
+        _log_action(
+            "SUBSCRIPTION_RENEW_PAST_DUE",
+            subscription_id=str(subscription_id),
+            sponsor_id=str(user.id),
+            provider_subscription_id=sub.provider_subscription_id,
+        )
+        message = "결제 재시도가 예정되어 있습니다. Stripe가 자동으로 처리합니다."
+
+    else:
+        # Already active and auto-renewing — idempotent
+        message = "구독이 이미 활성 상태입니다."
+
+    _log_action(
+        "SUBSCRIPTION_RENEWED",
+        subscription_id=str(subscription_id),
+        sponsor_id=str(user.id),
+        previous_status=sub.status if sub.status != "active" else "active",
+    )
+
+    await db.commit()
+    await db.refresh(sub)
+
+    capture_event(
+        str(user.id),
+        "subscription_renewed_manual",
+        {
+            "subscription_id": str(subscription_id),
+            "artist_id": str(sub.artist_id),
+            "status": sub.status,
+        },
+    )
+
+    return {
+        "data": {
+            **SubscriptionOut.model_validate(sub).model_dump(mode="json"),
+            "renewed_at": now.isoformat(),
+            "message": message,
+        }
+    }
+
+
+@subscription_router.patch("/{subscription_id}/auto-renew")
+async def toggle_auto_renew(
+    subscription_id: UUID,
+    body: AutoRenewToggleRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """PATCH /v1/subscriptions/{id}/auto-renew — B'-4 auto_renew toggle.
+
+    Enables or disables automatic renewal for the subscription.
+    When auto_renew_enabled=False the user must manually renew via POST /renew.
+    Stripe continues billing on its schedule; this flag controls backend monitoring
+    and UI guidance only (does NOT cancel Stripe subscription).
+    """
+    result = await db.execute(
+        select(Subscription).where(Subscription.id == subscription_id)
+    )
+    sub = result.scalar_one_or_none()
+    if not sub:
+        raise ApiError("NOT_FOUND", "Subscription not found", http_status=404)
+    if sub.sponsor_id != user.id:
+        raise ApiError("FORBIDDEN", "Not your subscription", http_status=403)
+    if sub.status not in ("active", "past_due"):
+        raise ApiError(
+            "CONFLICT",
+            "자동 갱신 설정은 활성 구독에서만 변경 가능합니다.",
+            http_status=409,
+        )
+
+    sub.auto_renew_enabled = body.auto_renew_enabled
+
+    _log_action(
+        "AUTO_RENEW_TOGGLED",
+        subscription_id=str(subscription_id),
+        sponsor_id=str(user.id),
+        auto_renew_enabled=body.auto_renew_enabled,
+    )
+
+    await db.commit()
+    await db.refresh(sub)
+
+    capture_event(
+        str(user.id),
+        "auto_renew_toggled",
+        {
+            "subscription_id": str(subscription_id),
+            "auto_renew_enabled": body.auto_renew_enabled,
+        },
+    )
+
+    return {"data": SubscriptionOut.model_validate(sub).model_dump(mode="json")}
 
 
 @subscription_router.post("/{subscription_id}/winback-coupon")

@@ -91,6 +91,9 @@ class Subscription(Base):
     expiry_notified_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    # B'-4: auto-renewal toggle (0065_auto_renew_enabled)
+    # True (default) → Stripe handles billing; False → manual renewal required
+    auto_renew_enabled: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

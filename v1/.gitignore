@@ -42,6 +42,9 @@ yarn-error.log*
 backend/uploads/
 *.tmp
 
+# CJK fonts — downloaded via scripts/download_cjk_fonts.sh (H'-2)
+backend/app/fonts/
+
 # Docker volumes
 postgres_data/
 redis_data/

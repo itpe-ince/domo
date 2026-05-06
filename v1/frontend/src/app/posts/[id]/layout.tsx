@@ -1,13 +1,25 @@
 /**
- * /posts/[id]/layout.tsx — G'-6 Metadata wrapper
+ * /posts/[id]/layout.tsx — G'-6 Metadata wrapper + H'-3 Multi-language SEO
  *
  * Server component: exports generateMetadata for post detail pages.
  * The opengraph-image.tsx in this segment is auto-inferred by Next.js.
+ *
+ * H'-3 additions:
+ *  - og:locale (ko_KR) + og:locale:alternate (en_US, ja_JP, zh_CN, es_ES)
+ *  - hreflang alternates via metadata.alternates.languages
+ *  - canonical URL
  *
  * Non-visual — passes children through unchanged.
  */
 
 import type { Metadata } from "next";
+import {
+  buildAlternateLanguages,
+  buildCanonical,
+  buildOgLocaleAlternates,
+  OG_LOCALE,
+  DEFAULT_LOCALE,
+} from "@/lib/seo/locales";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3710/v1";
@@ -52,12 +64,22 @@ export async function generateMetadata({
       ? content.slice(0, 150) + tagText
       : `@${authorName}의 작품${tagText} — Domo 글로벌 신진작가 플랫폼`;
 
+  const pathname = `/posts/${id}`;
+  const ogLocale = OG_LOCALE[DEFAULT_LOCALE];
+  const ogLocaleAlternates = buildOgLocaleAlternates(DEFAULT_LOCALE);
+
   return {
     title: pageTitle,
     description,
+    alternates: {
+      canonical: buildCanonical(pathname),
+      languages: buildAlternateLanguages(pathname),
+    },
     openGraph: {
       title,
       description,
+      locale: ogLocale,
+      alternateLocale: ogLocaleAlternates,
       // images: auto-inferred from opengraph-image.tsx in this segment
     },
     twitter: {

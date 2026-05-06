@@ -6,7 +6,10 @@ Orchestrates LLM-powered multi-locale translation for:
   3. Milestone text (A-7 booster — future use, in-memory helper)
 
 LLM cost controls:
-  - 24h in-memory translation cache (per user_id+locale+content_hash)
+  - Phase 9 L-F: DB + Redis 2-tier 번역 메모리 (translate_bio_to_all_locales)
+    Redis(24h TTL) → DB(영구) → LLM Gateway 순으로 조회.
+    DB 캐시 hit 시 hit_count++, last_used_at 갱신.
+  - translate_milestone_text: 24h in-memory 캐시 유지 (DB session 불필요, ROI 낮음)
   - Rate limit enforced at API layer (5/day/user for bio_translate)
 """
 from __future__ import annotations
@@ -22,10 +25,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user_bio_translation import SUPPORTED_LOCALES, UserBioTranslation
 from app.services.llm_gateway import LLMGatewayClient
+from app.services.translation_cache import get_cached_translation, save_translation
 
 log = logging.getLogger(__name__)
 
-# ─── 24-hour in-memory translation cache ─────────────────────────────────────
+# ─── 24-hour in-memory translation cache (milestone text 전용) ───────────────
+# translate_milestone_text는 DB session이 없으므로 in-memory 캐시 유지.
 # Key: (content_hash, target_locale) → (translated_text, expires_at_unix)
 _TRANSLATION_CACHE: dict[tuple[str, str], tuple[str, float]] = {}
 _CACHE_TTL_SECONDS = 86400  # 24 hours
@@ -65,7 +70,10 @@ async def translate_bio_to_all_locales(
     """Translate artist bio to all 5 supported locales using LLM Gateway.
 
     Skips the source locale (stores original text directly without LLM call).
-    Uses 24h in-memory cache to avoid redundant LLM calls on repeated requests.
+
+    Phase 9 L-F: DB + Redis 2-tier 번역 메모리 통합.
+    Redis(24h TTL) → DB → LLM Gateway 순으로 조회 (transparent caching).
+    기존 호출 패턴 변경 없음.
 
     Returns:
         dict mapping locale → translated text (includes source_locale with original).
@@ -78,9 +86,10 @@ async def translate_bio_to_all_locales(
     results: dict[str, str] = {source_locale: source_text}
 
     for locale in sorted(target_locales):  # deterministic order
-        cached = _cache_get(source_text, locale)
+        # Phase 9 L-F: DB + Redis 2-tier 캐시 조회
+        cached = await get_cached_translation(db, source_text, source_locale, locale)
         if cached is not None:
-            log.debug("story_translator: cache hit %s→%s", source_locale, locale)
+            log.debug("story_translator: DB/Redis cache hit %s→%s", source_locale, locale)
             results[locale] = cached
         else:
             translated = await client.translate_text(
@@ -88,7 +97,15 @@ async def translate_bio_to_all_locales(
                 source_locale=source_locale,
                 target_locale=locale,
             )
-            _cache_set(source_text, locale, translated)
+            # 번역 결과 DB + Redis에 저장
+            await save_translation(
+                db=db,
+                source_text=source_text,
+                source_lang=source_locale,
+                target_lang=locale,
+                translated_text=translated,
+                model_version=client.model if not client.is_mock else "mock-gateway",
+            )
             results[locale] = translated
 
     # Upsert all 5 locales

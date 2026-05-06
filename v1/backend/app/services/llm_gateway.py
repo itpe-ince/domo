@@ -14,6 +14,7 @@ import logging
 import httpx
 
 from app.core.config import get_settings
+from app.services.otel_setup import get_tracer
 
 log = logging.getLogger(__name__)
 
@@ -69,6 +70,24 @@ class LLMGatewayClient:
           model         str  — model identifier used
           usage_tokens  int  — total tokens consumed (0 in mock mode)
         """
+        tracer = get_tracer(__name__)
+        with tracer.start_as_current_span("llm.generate_interview") as span:
+            span.set_attribute("model", self.model)
+            span.set_attribute("max_tokens", max_tokens)
+            span.set_attribute("mock_mode", self.is_mock)
+            result = await self._generate_interview_inner(
+                prompt=prompt, max_tokens=max_tokens, temperature=temperature
+            )
+            span.set_attribute("usage_tokens", result.get("usage_tokens", 0))
+            return result
+
+    async def _generate_interview_inner(
+        self,
+        prompt: str,
+        max_tokens: int = 2000,
+        temperature: float = 0.7,
+    ) -> dict:
+        """Inner implementation — called from generate_interview with OTel span."""
         if self.is_mock:
             log.info("LLMGatewayClient: Mock mode (LLM_GATEWAY_API_KEY not set)")
             return self._mock_response(prompt)
@@ -174,9 +193,109 @@ class LLMGatewayClient:
         result = await self.generate_interview(prompt, max_tokens=2000, temperature=0.3)
         return result["content"]
 
+    async def generate_artwork_caption(
+        self,
+        image_url: str,
+        locale: str = "ko",
+        max_tokens: int = 300,
+    ) -> dict:
+        """작품 이미지 → 캡션 생성 (vision 모델).
+
+        K-3 ai-artwork-caption: tuzigroup LLM Gateway vision 모델 호출.
+
+        Mock 모드 시: {"content": None, "model": "mock-gateway", "usage_tokens": 0}
+        vision 미지원 시: text-only fallback (image URL만 전달) 시도.
+
+        Returns dict:
+            content: str | None — 생성된 캡션 (2~3문장), 실패 시 None
+            model: str — 사용된 모델 식별자
+            usage_tokens: int — 소비 토큰 수
+        """
+        if self.is_mock:
+            log.warning(
+                "[ArtworkCaption] Mock mode — LLM_GATEWAY_API_KEY 미설정. "
+                "image_url=%s, content=None",
+                image_url,
+            )
+            return {"content": None, "model": "mock-gateway", "usage_tokens": 0}
+
+        system_prompt = (
+            "당신은 전문 미술 큐레이터입니다. 작품 이미지를 보고 장르, 기법, 색채, 감정, 주제를 "
+            "간결하고 명확하게 설명하는 전문가입니다."
+        )
+        user_prompt = (
+            f"이 작품 이미지를 보고 다음 기준으로 한국어 캡션을 2~3문장으로 작성하세요.\n"
+            "- 장르와 기법 (예: 수채화, 디지털 아트, 유화 등)\n"
+            "- 주요 색채와 구도\n"
+            "- 작품이 전달하는 감정 또는 주제\n"
+            "- 마케팅 언어 사용 금지, 객관적 설명에 집중\n"
+            "- 출력: 캡션 텍스트만 (설명이나 서론 없이)\n\n"
+            f"[image: {image_url}]"
+        )
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            try:
+                response = await client.post(
+                    f"{self.base_url}/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": self.model,
+                        "messages": [
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt},
+                        ],
+                        "max_tokens": max_tokens,
+                        "temperature": 0.5,
+                    },
+                )
+                # vision 미지원 감지 (400 또는 415)
+                if response.status_code in (400, 415):
+                    raise VisionNotSupportedError(
+                        f"vision not supported: {response.status_code} {response.text[:100]}"
+                    )
+                response.raise_for_status()
+                data = response.json()
+                content = data["choices"][0]["message"]["content"]
+                used_model = data.get("model", self.model)
+                usage_tokens = data.get("usage", {}).get("total_tokens", 0)
+
+                log.info(
+                    "[ArtworkCaption] vision caption generated model=%s tokens=%s",
+                    used_model,
+                    usage_tokens,
+                )
+                return {
+                    "content": content,
+                    "model": used_model,
+                    "usage_tokens": usage_tokens,
+                }
+
+            except VisionNotSupportedError:
+                raise
+            except httpx.TimeoutException:
+                log.warning("[ArtworkCaption] vision call timeout image_url=%s", image_url)
+                return {"content": None, "model": self.model, "usage_tokens": 0}
+            except httpx.HTTPStatusError as exc:
+                log.error(
+                    "[ArtworkCaption] HTTP error %s — %s",
+                    exc.response.status_code,
+                    exc.response.text[:200],
+                )
+                return {"content": None, "model": self.model, "usage_tokens": 0}
+            except httpx.RequestError as exc:
+                log.error("[ArtworkCaption] request error — %s", exc)
+                return {"content": None, "model": self.model, "usage_tokens": 0}
+
     def _mock_response(self, _prompt: str) -> dict:
         return {
             "content": _MOCK_BODY,
             "model": "mock-gateway",
             "usage_tokens": 0,
         }
+
+
+class VisionNotSupportedError(Exception):
+    """vision 모델 미지원 시 발생 — text-only fallback 트리거."""

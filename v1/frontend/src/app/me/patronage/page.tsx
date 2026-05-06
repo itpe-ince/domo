@@ -26,9 +26,28 @@ import { SummaryCard } from "@/components/patronage/SummaryCard";
 import { TierDistribution } from "@/components/patronage/TierDistribution";
 import { RevenueChart } from "@/components/patronage/RevenueChart";
 import { SupportersTable } from "@/components/patronage/SupportersTable";
-import { PayoutRequestModal } from "@/components/patronage/PayoutRequestModal";
+import dynamic from "next/dynamic";
+
+// PayoutRequestModal — 정산 요청 모달. 버튼 클릭 시에만 마운트되므로
+// dynamic import로 초기 번들에서 제외 (G''-6 번들 최종화)
+const PayoutRequestModal = dynamic(
+  () =>
+    import("@/components/patronage/PayoutRequestModal").then(
+      (m) => ({ default: m.PayoutRequestModal })
+    ),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
 import { ChurnList } from "@/components/sponsorships/ChurnList";
 import { SettingsIcon, BluebirdIcon } from "@/components/icons";
+import { CohortRetentionChart } from "@/components/patronage/CohortRetentionChart";
+import { CouponRedemptionStats } from "@/components/patronage/CouponRedemptionStats";
+import { NewsletterStats } from "@/components/patronage/NewsletterStats";
+import { ConversionFunnel } from "@/components/patronage/ConversionFunnel";
+import { DmEngagementCard } from "@/components/patronage/DmEngagementCard";
+import { usePatronageAnalytics } from "@/lib/hooks/usePatronageAnalytics";
 
 function formatCents(cents: number): string {
   const usd = cents / 100;
@@ -64,6 +83,7 @@ export default function PatronageDashboardPage() {
     hasMore,
     loadMore,
   } = usePatronageSupporters(supporterFilter);
+  const { analytics, loading: analyticsLoading, isMock } = usePatronageAnalytics();
 
   const revDelta = summary
     ? computeDelta(
@@ -73,7 +93,7 @@ export default function PatronageDashboardPage() {
     : { label: "", dir: "neutral" as const };
 
   return (
-    <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-8 flex flex-col gap-8">
+    <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-8 flex flex-col gap-8" aria-label={t("patronage.artist.title")}>
       {/* ── 1. Header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -94,7 +114,7 @@ export default function PatronageDashboardPage() {
       </div>
 
       {/* ── 2. Summary cards 2×2 grid ── */}
-      <section>
+      <section aria-label={t("patronage.artist.summary.supporters")}>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <SummaryCard
             label={t("patronage.artist.summary.supporters")}
@@ -133,7 +153,7 @@ export default function PatronageDashboardPage() {
       </section>
 
       {/* ── 3. Revenue chart ── */}
-      <section>
+      <section aria-label={t("patronage.artist.chart.daily")}>
         <RevenueChart
           data={revenueData}
           loading={revLoading}
@@ -150,7 +170,7 @@ export default function PatronageDashboardPage() {
       </section>
 
       {/* ── 4. Supporters table ── */}
-      <section>
+      <section aria-label={t("patronage.artist.supporters.table.title")}>
         <SupportersTable
           supporters={supporters}
           loading={suppLoading}
@@ -182,6 +202,93 @@ export default function PatronageDashboardPage() {
           {t("retention.churn.title")}
         </h2>
         <ChurnList limit={20} />
+      </section>
+
+      {/* ── B'-5 Analytics section ── */}
+      <section aria-label={t("patronage.analytics.title")} className="flex flex-col gap-4">
+        <h2 className="text-lg font-semibold text-text-primary">
+          {t("patronage.analytics.title")}
+        </h2>
+
+        {/* Cohort retention */}
+        <CohortRetentionChart
+          data={analytics?.cohort_retention ?? []}
+          loading={analyticsLoading}
+          isMock={isMock}
+          labels={{
+            title: t("patronage.analytics.cohort.title"),
+            d1: t("patronage.analytics.cohort.d1"),
+            d7: t("patronage.analytics.cohort.d7"),
+            d30: t("patronage.analytics.cohort.d30"),
+            noData: t("patronage.analytics.noData"),
+            mockBadge: t("patronage.analytics.mockBadge"),
+          }}
+        />
+
+        {/* Conversion funnel */}
+        <ConversionFunnel
+          data={analytics?.conversion_funnel ?? null}
+          loading={analyticsLoading}
+          isMock={isMock}
+          labels={{
+            title: t("patronage.analytics.funnel.title"),
+            postClick: t("patronage.analytics.funnel.postClick"),
+            sponsorStart: t("patronage.analytics.funnel.sponsorStart"),
+            sponsorSuccess: t("patronage.analytics.funnel.sponsorSuccess"),
+            active30d: t("patronage.analytics.funnel.active30d"),
+            conversionRate: t("patronage.analytics.funnel.conversionRate"),
+            noData: t("patronage.analytics.noData"),
+            mockBadge: t("patronage.analytics.mockBadge"),
+          }}
+        />
+
+        {/* Coupon + Newsletter — side by side on large screens */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <CouponRedemptionStats
+            data={analytics?.coupon_redemption ?? null}
+            loading={analyticsLoading}
+            isMock={isMock}
+            labels={{
+              title: t("patronage.analytics.coupon.title"),
+              issued: t("patronage.analytics.coupon.issued"),
+              applied: t("patronage.analytics.coupon.applied"),
+              cancelReverted: t("patronage.analytics.coupon.cancelReverted"),
+              expired: t("patronage.analytics.coupon.expired"),
+              redemptionRate: t("patronage.analytics.coupon.redemptionRate"),
+              noData: t("patronage.analytics.noData"),
+              mockBadge: t("patronage.analytics.mockBadge"),
+            }}
+          />
+          <NewsletterStats
+            data={analytics?.newsletter ?? []}
+            loading={analyticsLoading}
+            isMock={isMock}
+            labels={{
+              title: t("patronage.analytics.newsletter.title"),
+              openRate: t("patronage.analytics.newsletter.openRate"),
+              clickRate: t("patronage.analytics.newsletter.clickRate"),
+              noData: t("patronage.analytics.noData"),
+              mockBadge: t("patronage.analytics.mockBadge"),
+            }}
+          />
+        </div>
+
+        {/* DM engagement */}
+        <DmEngagementCard
+          data={analytics?.dm_engagement ?? null}
+          loading={analyticsLoading}
+          isMock={isMock}
+          labels={{
+            title: t("patronage.analytics.dm.title"),
+            firstMessageRate: t("patronage.analytics.dm.firstMessageRate"),
+            firstMessageHint: t("patronage.analytics.dm.firstMessageHint"),
+            avgResponseTime: t("patronage.analytics.dm.avgResponseTime"),
+            avgResponseUnit: t("patronage.analytics.dm.avgResponseUnit"),
+            totalThreads: t("patronage.analytics.dm.totalThreads"),
+            noData: t("patronage.analytics.noData"),
+            mockBadge: t("patronage.analytics.mockBadge"),
+          }}
+        />
       </section>
 
       {/* ── 6. Payout section ── */}

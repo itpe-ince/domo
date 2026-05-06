@@ -1,14 +1,16 @@
-"""User activity tracking + currency conversion API."""
+"""User activity tracking API.
+
+Currency conversion endpoints moved to app/api/exchange_rates.py (G''-2).
+"""
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, Query
+from fastapi import APIRouter, Depends, Header
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_token
 from app.db.session import get_db
 from app.models.activity_log import UserActivityLog
-from app.services.currency import convert_usd, get_exchange_rate
 
 router = APIRouter(prefix="/activity", tags=["activity"])
 
@@ -51,25 +53,3 @@ async def track_activity(
     ))
     await db.commit()
     return {"data": {"ok": True}}
-
-
-# ─── Currency Conversion ─────────────────────────────────────────────────
-
-
-@router.get("/exchange-rate")
-async def exchange_rate(
-    target: str = Query("KRW", min_length=3, max_length=3),
-):
-    """Get current USD → target exchange rate."""
-    rate = await get_exchange_rate(target.upper())
-    return {"data": {"base": "USD", "target": target.upper(), "rate": rate}}
-
-
-@router.get("/convert")
-async def convert_currency(
-    amount: float = Query(..., gt=0),
-    target: str = Query("KRW", min_length=3, max_length=3),
-):
-    """Convert USD amount to target currency."""
-    result = await convert_usd(amount, target.upper())
-    return {"data": result}

@@ -1,0 +1,59 @@
+name: DB Performance Audit
+
+on:
+  pull_request:
+    paths:
+      - "v1/backend/**"
+      - ".github/workflows/db-perf.yml"
+
+jobs:
+  explain-analyze:
+    name: EXPLAIN ANALYZE Gate (18 queries)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: domo
+          POSTGRES_PASSWORD: domo_dev_pw
+          POSTGRES_DB: domo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U domo -d domo"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: ./v1/backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: v1/backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -e . --quiet
+
+      - name: Run alembic upgrade head
+        env:
+          DATABASE_URL: postgresql+asyncpg://domo:domo_dev_pw@localhost:5432/domo
+        run: alembic upgrade head
+
+      - name: Run EXPLAIN ANALYZE gate (18 queries)
+        run: chmod +x scripts/check_query_plans.sh && scripts/check_query_plans.sh
+        env:
+          DB_HOST: localhost
+          DB_PORT: "5432"
+          DB_USER: domo
+          DB_NAME: domo
+          PGPASSWORD: domo_dev_pw

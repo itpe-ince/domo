@@ -5,7 +5,8 @@ import { useI18n } from "@/i18n";
 import { PostView } from "@/lib/api";
 import { usePostTranslation } from "@/lib/useTranslation";
 import { AuctionCountdown } from "@/components/AuctionCountdown";
-import { formatPriceCents } from "@/lib/format";
+import { convertAndFormat } from "@/lib/format";
+import { useExchangeRates } from "@/lib/hooks/useExchangeRates";
 
 export function FeedItem({
   post,
@@ -17,6 +18,7 @@ export function FeedItem({
   source?: "feed" | "explore" | "search" | "profile";
 }) {
   const { t } = useI18n();
+  const { rates, currency: preferredCurrency } = useExchangeRates();
   const heroMedia = post.media[0];
   const { title: translatedTitle, content: translatedContent, isTranslated } = usePostTranslation(
     post.id, post.language, post.title, post.content
@@ -112,7 +114,7 @@ export function FeedItem({
           ) : (
             <img
               src={heroMedia.thumbnail_url ?? heroMedia.url}
-              alt={post.title ?? ""}
+              alt={post.effective_caption || post.title || ""}
               className="w-full rounded-xl object-cover max-h-[500px]"
             />
           )}
@@ -151,7 +153,12 @@ export function FeedItem({
         </span>
         {post.product && post.product.buy_now_price != null && post.product.buy_now_price > 0 && (
           <span className="ml-auto text-primary font-semibold text-xs">
-            {formatPriceCents(post.product.buy_now_price, post.product.currency || "KRW")}
+            {convertAndFormat(
+              post.product.buy_now_price,
+              post.product.buy_now_currency || post.product.currency || "USD",
+              preferredCurrency,
+              rates
+            )}
           </span>
         )}
       </div>

@@ -29,6 +29,12 @@ from app.models.user import ArtistApplication, ArtistProfile, User
 from app.models.webhook_event import WebhookEvent
 from app.models.newsletter_preferences import NewsletterPreferences
 from app.models.newsletter_issue import NewsletterIssue
+from app.models.exchange_rate import ExchangeRate
+from app.models.dm import DMConversation, DMMessage
+from app.models.device_token import DeviceToken
+from app.models.notification_preferences import NotificationPreferences
+from app.models.translation_cache import TranslationCache
+from app.models.cohort_alert import CohortAlert
 
 __all__ = [
     "User",
@@ -75,4 +81,11 @@ __all__ = [
     "MediaCoverage",
     "NewsletterPreferences",
     "NewsletterIssue",
+    "ExchangeRate",
+    "DMConversation",
+    "DMMessage",
+    "DeviceToken",
+    "NotificationPreferences",
+    "TranslationCache",
+    "CohortAlert",
 ]

@@ -89,7 +89,7 @@ function ExploreContent() {
   }, [tab, filters.region, filters.genre]);
 
   return (
-    <main className="flex-1 min-w-0 xl:max-w-[900px] mx-auto">
+    <main className="flex-1 min-w-0 xl:max-w-[900px] mx-auto" aria-label={t("explore.title")}>
       {/* ── Sticky header: title + tabs + context filter ── */}
       <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3 space-y-2">
         <h1 className="text-xl font-bold text-text-primary">

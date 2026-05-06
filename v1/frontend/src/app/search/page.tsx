@@ -196,11 +196,11 @@ function SearchPageInner() {
   const showDropdown = inputFocused && (history.length > 0 || popular.length > 0);
 
   return (
-    <main className="flex-1 min-w-0 max-w-3xl mx-auto">
+    <main className="flex-1 min-w-0 max-w-3xl mx-auto" aria-label={t("common.search")}>
       {/* Search input */}
       <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="relative">
-          <form onSubmit={handleSubmit} className="px-4 py-3">
+          <form onSubmit={handleSubmit} className="px-4 py-3" role="search">
             <div className="relative">
               <input
                 ref={inputRef}
@@ -304,19 +304,21 @@ function SearchPageInner() {
 
         {/* Tabs */}
         {hasQuery && (
-          <div className="flex">
-            {TABS.map((t) => (
+          <div className="flex" role="tablist" aria-label={t("common.search")}>
+            {TABS.map((tab_item) => (
               <button
-                key={t.key}
-                onClick={() => switchTab(t.key)}
+                key={tab_item.key}
+                role="tab"
+                aria-selected={tab === tab_item.key}
+                onClick={() => switchTab(tab_item.key)}
                 className={`flex-1 py-2.5 text-sm font-semibold transition-colors relative ${
-                  tab === t.key
+                  tab === tab_item.key
                     ? "text-text-primary"
                     : "text-text-muted hover:bg-surface-hover"
                 }`}
               >
-                {t.label}
-                {tab === t.key && (
+                {tab_item.label}
+                {tab === tab_item.key && (
                   <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 rounded-full bg-primary" />
                 )}
               </button>
@@ -520,9 +522,9 @@ function SearchPageInner() {
 
         {/* Loading */}
         {loading && (
-          <div className="space-y-3">
+          <div className="space-y-3" aria-busy="true" aria-label={t("common.loading")}>
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="card p-4 animate-pulse">
+              <div key={i} className="card p-4 animate-pulse" aria-hidden="true">
                 <div className="h-4 w-2/3 bg-surface-hover rounded mb-2" />
                 <div className="h-3 w-1/2 bg-surface-hover rounded" />
               </div>
@@ -532,7 +534,7 @@ function SearchPageInner() {
 
         {/* Error */}
         {error && (
-          <div className="card border-danger p-4 text-danger text-sm">
+          <div className="card border-danger p-4 text-danger text-sm" role="alert">
             {error}
           </div>
         )}
@@ -580,8 +582,11 @@ function SearchPageInner() {
                     </div>
                   </div>
                 </Link>
-                <button className="px-4 py-1.5 rounded-full text-xs font-semibold bg-primary text-background hover:bg-primary-hover transition-colors flex-shrink-0">
-                  팔로우
+                <button
+                  className="px-4 py-1.5 rounded-full text-xs font-semibold bg-primary text-background hover:bg-primary-hover transition-colors flex-shrink-0"
+                  aria-label={`${t("common.follow")} @${u.display_name}`}
+                >
+                  {t("common.follow")}
                 </button>
               </li>
             ))}

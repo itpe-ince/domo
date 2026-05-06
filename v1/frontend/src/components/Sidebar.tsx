@@ -22,6 +22,7 @@ import {
   HomeIcon,
   LayersIcon,
   LogoutIcon,
+  MessageCircleIcon,
   MoreHorizontalIcon,
   PlusIcon,
   ReceiptIcon,
@@ -31,6 +32,7 @@ import {
   UserIcon,
   UsersIcon,
 } from "./icons";
+import { CurrencySwitcher } from "./CurrencySwitcher";
 
 type NavItem = {
   href: string;
@@ -72,6 +74,13 @@ export function Sidebar() {
       Icon: BellIcon,
       needsAuth: true,
       badge: unread,
+    },
+    // B'-2 dm-messaging
+    {
+      href: "/me/messages",
+      label: t("nav.messages"),
+      Icon: MessageCircleIcon,
+      needsAuth: true,
     },
   ];
 
@@ -118,6 +127,8 @@ export function Sidebar() {
       needsAuth: true,
     },
     { href: "/me/account", label: t("nav.settings"), Icon: SettingsIcon, needsAuth: true },
+    // Phase 9 L-E: 접근성 설정
+    { href: "/me/settings/accessibility", label: t("nav.accessibilitySettings"), Icon: SettingsIcon, needsAuth: true },
   ];
 
   // Admin은 별도 앱 (포트 3800)
@@ -350,6 +361,11 @@ export function Sidebar() {
             </details>
           </div>
         )}
+
+        {/* B'-1: Currency switcher — bottom of sidebar, above language switcher */}
+        <div className="mx-3 mb-1 flex justify-center xl:justify-start">
+          <CurrencySwitcher compact className="xl:w-full" syncToServer={!!me} />
+        </div>
 
         {/* Language switcher
             - xl 이상 (사이드바 확장): 풀 select with flag + name

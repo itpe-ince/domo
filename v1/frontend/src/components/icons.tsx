@@ -438,3 +438,15 @@ export function BookOpenIcon(p: IconProps) {
     </svg>
   );
 }
+
+// B'-2 dm-messaging — paper-plane send icon
+export function SendIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <line x1="22" y1="2" x2="11" y2="13" />
+      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+    </svg>
+  );
+}
+
+// B'-2 dm-messaging removed duplicate — using existing MessageCircleIcon at line 380

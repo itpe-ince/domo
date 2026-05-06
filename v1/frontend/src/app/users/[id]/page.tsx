@@ -176,12 +176,12 @@ export default function UserProfilePage({
   );
 
   return (
-    <main className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8">
+    <main className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8" aria-label={`@${profile.display_name}`}>
       <Link
         href="/"
         className="text-text-secondary text-sm mb-6 inline-block hover:text-primary"
       >
-        ← 홈
+        ← {t("nav.home")}
       </Link>
 
       {/* B-5: Win-back banner — shown to past supporters who churned (7d cooldown) */}
@@ -199,14 +199,14 @@ export default function UserProfilePage({
         </div>
       )}
 
-      <header className="card p-6 mb-8">
+      <header className="card p-6 mb-8" aria-label={`${t("common.profile")}: @${profile.display_name}`}>
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-4">
             <div className="w-20 h-20 rounded-full bg-surface-hover flex items-center justify-center text-3xl">
               {profile.avatar_url ? (
                 <img
                   src={profile.avatar_url}
-                  alt={profile.display_name}
+                  alt={`@${profile.display_name} profile photo`}
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
@@ -316,9 +316,9 @@ export default function UserProfilePage({
 
       {/* Received sponsorships (artists only) */}
       {profile.role === "artist" && (
-        <section className="mb-8">
+        <section className="mb-8" aria-label="Received sponsorships">
           <h2 className="text-lg font-semibold mb-4">
-            🕊 받은 후원
+            <span aria-hidden="true">🕊</span> {t("sponsorship.received") || "받은 후원"}
             {totalBluebird > 0 && (
               <span className="text-primary text-sm ml-2">
                 총 {totalBluebird} 블루버드
@@ -385,9 +385,9 @@ export default function UserProfilePage({
       )}
 
       {/* Posts by this user */}
-      <section>
+      <section aria-label={`${t("post.series.viewAll") || "작품"} (${posts.length})`}>
         <h2 className="text-lg font-semibold mb-4">
-          작품 ({posts.length})
+          {t("post.series.viewAll") || "작품"} ({posts.length})
         </h2>
         {posts.length === 0 ? (
           <div className="card p-6 text-center text-text-muted text-sm">

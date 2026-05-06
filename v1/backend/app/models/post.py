@@ -17,6 +17,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
+# K-3 ai-artwork-caption: 기본 모델 버전 상수
+AI_CAPTION_DEFAULT_MODEL = "gemma4-e4b"
+
 
 class Post(Base):
     __tablename__ = "posts"
@@ -66,6 +69,24 @@ class Post(Base):
     )
     # 'pending' | 'approved' | 'rejected' | 'not_required'
 
+    # K-3 ai-artwork-caption — Phase 9
+    # AI 생성 캡션 (한국어 원본, LLM Gateway vision 호출 결과)
+    ai_caption: Mapped[str | None] = mapped_column(Text, nullable=True, default=None)
+    # 5 locale 번역 JSONB {"en": "...", "ja": "...", "zh": "...", "es": "..."}
+    ai_caption_locale_translations: Mapped[dict] = mapped_column(
+        JSONB, nullable=False, default=dict, server_default="{}"
+    )
+    # 캡션 생성에 사용한 LLM 모델 식별자 (예: "gemma4-e4b")
+    ai_caption_model_version: Mapped[str | None] = mapped_column(
+        String(50), nullable=True, default=None
+    )
+    # 캡션 최초 생성 시각 (NULL이면 아직 미생성 → batch sweep 대상)
+    ai_caption_generated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None
+    )
+    # 작가 수동 입력 캡션 — 이 값이 있으면 AI 캡션 무시 (effective_caption 로직)
+    caption_override: Mapped[str | None] = mapped_column(Text, nullable=True, default=None)
+
     scheduled_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
@@ -74,6 +95,34 @@ class Post(Base):
     location_lng: Mapped[float | None] = mapped_column(Float, nullable=True)
     is_live: Mapped[bool] = mapped_column(Boolean, default=False)
     live_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # K-5 LLM 도슨트 컬럼 (alembic 0079)
+    # README 비전 "스토리텔링 hub"과 "AI 시대 작가의 정체성 재정의" 구현
+    # 작가 해설이 항상 우선 노출, AI 도슨트는 작가 요청 시 생성
+    artist_docent_text: Mapped[str | None] = mapped_column(
+        Text, nullable=True, default=None,
+        comment="K-5: 작가가 직접 작성한 해설 (AI 도슨트보다 우선 노출)",
+    )
+    ai_docent_text: Mapped[str | None] = mapped_column(
+        Text, nullable=True, default=None,
+        comment="K-5: LLM 생성 원본 해설 (한국어, 3~5문단 큐레이터 톤)",
+    )
+    ai_docent_translations: Mapped[dict] = mapped_column(
+        JSONB, server_default="{}", nullable=False, default=dict,
+        comment="K-5: 5 locale 번역 캐시 {'en':..., 'ja':..., 'zh':..., 'es':...}",
+    )
+    ai_docent_model_version: Mapped[str | None] = mapped_column(
+        String(50), nullable=True, default=None,
+        comment="K-5: 생성에 사용된 모델 식별자 (예: gemma4-e4b)",
+    )
+    ai_docent_generated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None,
+        comment="K-5: AI 도슨트 최초 생성 시각 (24h idempotency 체크용)",
+    )
+    ai_docent_opted_out: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False,
+        comment="K-5: 작가 AI 도슨트 비활성화 플래그 (opt-out 방식)",
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
@@ -160,6 +209,9 @@ class ProductPost(Base):
     # G'-10 price-unit-consistency: cents (BigInteger) — was Numeric(12,2) dollars.
     # API accepts dollars from UI, backend converts to cents before persistence.
     buy_now_price: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    # B'-1: buy_now_currency = native currency the artist priced in (USD/KRW/EUR/JPY).
+    # currency = auction currency (kept KRW default for backward compat).
+    buy_now_currency: Mapped[str] = mapped_column(String(3), default="USD")
     currency: Mapped[str] = mapped_column(String(3), default="KRW")
     dimensions: Mapped[str | None] = mapped_column(String(100), nullable=True)
     medium: Mapped[str | None] = mapped_column(String(100), nullable=True)

@@ -1,7 +1,8 @@
 """Public media coverage endpoints — C-4 media-coverage-cms.
 
-GET /media-coverage                  — public list (locale + type + artist filter)
-GET /media-coverage/featured         — featured items for storyhub hero grid
+GET  /media-coverage                   — public list (locale + type + artist filter)
+GET  /media-coverage/featured          — featured items for storyhub hero grid
+POST /media-coverage/{id}/click        — H'-4 analytics hit (rate limit 60/min/IP)
 """
 from __future__ import annotations
 
@@ -125,3 +126,43 @@ async def list_media_coverage(
         next_cursor = rows[-1].published_at.isoformat()
 
     return {"data": [_row_to_out(r) for r in rows], "next_cursor": next_cursor}
+
+
+@router.post("/{entry_id}/click", status_code=200)
+async def record_media_coverage_click(
+    entry_id: str,
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("media_coverage_click"),
+):
+    """Record a click on a media coverage external link — H'-4 analytics hit.
+
+    Validates the entry exists (published), logs an audit line.
+    Rate limited: 60/min/IP to prevent abuse.
+
+    Returns 200 {"ok": true} on success; 404 if entry not found/published.
+    """
+    try:
+        eid = uuid.UUID(entry_id)
+    except ValueError:
+        from app.core.errors import ApiError
+        raise ApiError("INVALID_ID", "Invalid UUID format", http_status=422)
+
+    result = await db.execute(
+        select(MediaCoverage).where(
+            MediaCoverage.id == eid,
+            MediaCoverage.is_published.is_(True),
+        )
+    )
+    entry = result.scalar_one_or_none()
+    if entry is None:
+        from app.core.errors import ApiError
+        raise ApiError("NOT_FOUND", "Media coverage entry not found", http_status=404)
+
+    log.info(
+        "ANALYTICS action=media_coverage_click id=%s type=%s source=%s",
+        eid,
+        entry.coverage_type,
+        entry.source_name,
+    )
+
+    return {"ok": True}

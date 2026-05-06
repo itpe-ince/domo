@@ -53,7 +53,7 @@ export default function MyNewsletterPage() {
   if (!preferences) return null;
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-8">
+    <main className="max-w-xl mx-auto px-4 py-8" aria-label={t("newsletter.preferences.title")}>
       <h1 className="text-2xl font-bold mb-6">
         {t("newsletter.preferences.title")}
       </h1>
@@ -75,6 +75,7 @@ export default function MyNewsletterPage() {
             } disabled:opacity-50`}
             role="switch"
             aria-checked={preferences.is_subscribed}
+            aria-label={t("newsletter.preferences.subscribe.label")}
           >
             <span
               className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -148,6 +149,6 @@ export default function MyNewsletterPage() {
       <p className="text-xs text-gray-400 mt-6">
         {t("newsletter.preferences.unsubscribeNote")}
       </p>
-    </div>
+    </main>
   );
 }

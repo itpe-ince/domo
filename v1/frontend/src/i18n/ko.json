@@ -30,6 +30,7 @@
     "following": "팔로잉",
     "explore": "탐색",
     "notifications": "알림",
+    "messages": "메시지",
     "profile": "프로필",
     "register": "등록",
     "subscription": "정기 후원",
@@ -43,7 +44,8 @@
     "patronageDashboard": "후원 대시보드",
     "tierBenefits": "후원 혜택 설정",
     "artistIndex": "신진작가 인덱스",
-    "stories": "스토리 허브"
+    "stories": "스토리 허브",
+    "accessibilitySettings": "접근성 설정"
   },
   "home": {
     "title": "Domo Lounge",
@@ -187,6 +189,31 @@
         "system": "시스템"
       },
       "markedAsRead": "{{count}}개 알림 읽음 처리됨"
+    },
+    "preferences": {
+      "title": "알림 설정",
+      "subtitle": "받고 싶은 알림을 선택하세요",
+      "pushSection": "푸시 알림",
+      "emailSection": "이메일 알림",
+      "pushEnabled": "푸시 알림 전체",
+      "emailEnabled": "이메일 다이제스트 전체",
+      "digestFrequency": "다이제스트 빈도",
+      "frequency": {
+        "weekly": "매주",
+        "biweekly": "격주",
+        "monthly": "매월",
+        "never": "수신 안 함"
+      },
+      "types": {
+        "auction": "옥션 알림",
+        "sponsorship": "후원/구독 알림",
+        "engagement": "좋아요·댓글 알림",
+        "system": "시스템 알림",
+        "digest": "다이제스트"
+      },
+      "saveSuccess": "알림 설정이 저장되었습니다",
+      "saveError": "알림 설정 저장에 실패했습니다",
+      "gdprNote": "알림은 직접 동의해야 수신됩니다 (GDPR 준수)"
     }
   },
   "post": {
@@ -819,6 +846,46 @@
       "empty": {
         "celebrated": "최근 30일 이탈 후원자가 없습니다 ✨"
       }
+    },
+    "analytics": {
+      "title": "분석",
+      "noData": "아직 데이터가 없습니다.",
+      "mockBadge": "샘플 데이터",
+      "cohort": {
+        "title": "코호트 리텐션 (D1 / D7 / D30)",
+        "d1": "1일차",
+        "d7": "7일차",
+        "d30": "30일차"
+      },
+      "coupon": {
+        "title": "윈백 쿠폰 사용률",
+        "issued": "발급",
+        "applied": "적용",
+        "cancelReverted": "취소 철회",
+        "expired": "만료",
+        "redemptionRate": "적용률"
+      },
+      "newsletter": {
+        "title": "뉴스레터 열람 및 클릭률",
+        "openRate": "열람률",
+        "clickRate": "클릭률"
+      },
+      "funnel": {
+        "title": "후원 전환 퍼널",
+        "postClick": "포스트 클릭",
+        "sponsorStart": "후원 시작",
+        "sponsorSuccess": "후원 완료",
+        "active30d": "30일 활성",
+        "conversionRate": "전체 전환율"
+      },
+      "dm": {
+        "title": "DM 인게이지먼트",
+        "firstMessageRate": "첫 메시지 발송률",
+        "firstMessageHint": "DM을 보낸 신규 후원자 비율",
+        "avgResponseTime": "평균 응답 시간",
+        "avgResponseUnit": "작가 중위 응답 시간",
+        "totalThreads": "총 대화 수"
+      }
     }
   },
   "tierBenefits": {
@@ -1053,6 +1120,19 @@
     },
     "subscription": {
       "appliedBadge": "{{discount}}% 할인 적용 중"
+    }
+  },
+  "subscription": {
+    "renewal": {
+      "autoOn": "자동 갱신",
+      "autoOff": "수동 갱신",
+      "enableAutoRenew": "자동 갱신 켜기",
+      "disableAutoRenew": "자동 갱신 끄기",
+      "renewNow": "지금 갱신",
+      "renewing": "갱신 중...",
+      "renewSuccess": "갱신 완료! 다음 만료일: {{date}}",
+      "renewError": "갱신에 실패했습니다. 다시 시도해주세요.",
+      "expiryWarning": "{{days}}일 후 만료됩니다"
     }
   },
   "admin": {
@@ -1470,5 +1550,126 @@
       "publicToggle": "공개 다운로드 허용",
       "publicToggleNote": "활성화 시 누구나 내 프레스 킷을 다운로드할 수 있습니다."
     }
+  },
+  "a11y": {
+    "skip": {
+      "toMain": "본문으로 건너뛰기",
+      "toNav": "내비게이션으로 건너뛰기"
+    }
+  },
+  "accessibility": {
+    "pageTitle": "접근성 설정",
+    "simpleMode": {
+      "label": "단순 모드",
+      "description": "텍스트 크기와 줄 간격을 늘리고 애니메이션을 줄여 읽기 편의성을 높입니다.",
+      "enabled": "단순 모드 켜짐",
+      "disabled": "단순 모드 꺼짐"
+    },
+    "focusMode": {
+      "label": "포커스 모드",
+      "description": "키보드 내비게이션을 위해 인터랙티브 요소를 강조합니다."
+    },
+    "announcements": {
+      "bidPlaced": "입찰이 완료되었습니다",
+      "bidFailed": "입찰에 실패했습니다. 다시 시도해주세요.",
+      "auctionEnded": "경매가 종료되었습니다",
+      "auctionUrgent": "잔여 시간 10초 이하",
+      "modalOpened": "대화상자가 열렸습니다",
+      "modalClosed": "대화상자가 닫혔습니다"
+    },
+    "settings": {
+      "saved": "접근성 설정이 저장되었습니다",
+      "saveError": "설정 저장에 실패했습니다"
+    },
+    "contrast": {
+      "highContrastHint": "더 높은 대비를 원하시면 OS 고대비 모드를 사용하세요."
+    }
+  },
+  "currency": {
+    "label": {
+      "USD": "미국 달러",
+      "KRW": "한국 원",
+      "EUR": "유로",
+      "JPY": "일본 엔"
+    },
+    "switcher": {
+      "label": "통화 선택",
+      "converted": "환산 가격",
+      "native": "원래 가격",
+      "saved": "통화 설정 저장됨"
+    }
+  },
+  "messaging": {
+    "loginRequired": "메시지를 보려면 로그인해주세요.",
+    "list": {
+      "title": "메시지",
+      "empty": "아직 대화가 없습니다.",
+      "noMessages": "메시지 없음",
+      "refresh": "새로고침"
+    },
+    "conversation": {
+      "title": "대화",
+      "empty": "아직 메시지가 없습니다. 첫 메시지를 보내보세요!",
+      "closed": "[관리자에 의해 대화가 종료되었습니다]",
+      "loadMore": "이전 메시지 불러오기",
+      "report": "신고",
+      "reportTitle": "이 대화 신고",
+      "reportPlaceholder": "문제를 설명해주세요 (최대 500자)...",
+      "reportSubmit": "신고 제출",
+      "reportSent": "신고가 접수되었습니다. 감사합니다."
+    },
+    "message": {
+      "deleted": "[삭제된 메시지]",
+      "edited": "수정됨",
+      "read": "읽음",
+      "editAriaLabel": "메시지 수정",
+      "deleteAriaLabel": "메시지 삭제"
+    },
+    "composer": {
+      "placeholder": "메시지를 입력하세요... (Enter로 전송, Shift+Enter는 줄바꿈)",
+      "editPlaceholder": "메시지를 수정하세요...",
+      "send": "전송",
+      "ariaLabel": "메시지 입력창"
+    }
+  },
+  "docent": {
+    "title": "작품 해설",
+    "artist_label": "작가의 말",
+    "ai_label": "AI 도슨트",
+    "toggle_show": "AI 도슨트 해설 보기",
+    "toggle_hide": "AI 도슨트 해설 접기",
+    "ai_disclaimer": "이 해설은 AI가 생성했습니다",
+    "generating": "AI가 작품을 분석하는 중...",
+    "generate_button": "AI 도슨트 생성",
+    "regenerate": "도슨트 재생성",
+    "generate_failed": "도슨트 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+    "disabled_by_artist": "작가가 AI 도슨트를 비활성화했습니다.",
+    "opt_out_label": "AI 도슨트 비활성화",
+    "opt_in_label": "AI 도슨트 활성화",
+    "rate_limit_notice": "AI 도슨트는 1일 2회까지 생성 가능합니다.",
+    "locale_only_ko": "한국어로만 제공됩니다",
+    "by_artist": "작가 직접 작성",
+    "by_ai": "AI 생성",
+    "edit_page": {
+      "section_title": "도슨트 편집",
+      "artist_text_label": "직접 작성",
+      "artist_text_placeholder": "작품에 대한 이야기를 직접 작성해 주세요. 제작 과정, 영감의 원천, 작품이 담고 있는 의미 등을 자유롭게 서술할 수 있습니다.",
+      "generate_button": "AI 도슨트 생성",
+      "opt_out_label": "AI 도슨트 비활성화",
+      "save_button": "저장",
+      "save_success": "저장되었습니다"
+    }
+  },
+  "collections": {
+    "editors_pick": "Editor's Pick",
+    "subtitle": "AI가 큐레이션한 이번 주 주제별 컬렉션",
+    "works_count": "{{count}}개 작품",
+    "week_label": "{{date}} 주간",
+    "share": "공유하기",
+    "share_link_copied": "링크가 복사되었습니다",
+    "no_collections": "현재 공개된 컬렉션이 없습니다",
+    "view_all": "모든 컬렉션 보기",
+    "back": "컬렉션 목록으로",
+    "generated_by_ai": "AI 큐레이션 컬렉션"
   }
 }

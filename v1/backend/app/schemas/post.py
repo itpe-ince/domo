@@ -6,6 +6,13 @@ from pydantic import BaseModel, Field, field_validator
 from app.schemas.media_transform import CropMetaSchema
 
 
+# K-3: 캡션 오버라이드 요청 스키마
+class CaptionOverrideRequest(BaseModel):
+    """PATCH /api/posts/{id}/caption-override 요청 바디."""
+    caption_override: str | None = Field(None, max_length=500)
+    clear: bool = False  # True 시 caption_override=NULL (AI 캡션으로 복원)
+
+
 class MediaAssetIn(BaseModel):
     type: str  # 'image' | 'video' | 'external_embed'
     url: str
@@ -49,12 +56,17 @@ class ProductPostIn(BaseModel):
     G'-10: buy_now_price is accepted as a float/int dollar amount from the UI
     and stored as cents (BigInteger) in the DB. The validator converts on ingest.
     Frontend sends dollars (e.g. 50.00); DB stores 5000 cents.
+
+    B'-1: buy_now_currency is the currency the artist prices in (USD/KRW/EUR/JPY).
+    currency is the auction currency (backward compat default: KRW).
     """
 
     is_auction: bool = False
     is_buy_now: bool = False
     # UI sends dollar amount; we convert to cents on validation.
     buy_now_price: float | int | None = None
+    # B'-1: native currency for buy_now_price (USD default for new posts)
+    buy_now_currency: str = "USD"
     currency: str = "KRW"
     dimensions: str | None = None
     medium: str | None = None
@@ -83,6 +95,9 @@ class ProductPostOut(BaseModel):
     is_buy_now: bool
     # Cents integer (e.g. 5000 = $50.00 / ₩5000)
     buy_now_price: int | None = None
+    # B'-1: native currency the artist priced in (USD/KRW/EUR/JPY)
+    buy_now_currency: str = "USD"
+    # auction currency (KRW default for backward compat)
     currency: str
     dimensions: str | None = None
     medium: str | None = None
@@ -153,6 +168,13 @@ class PostOut(BaseModel):
     # active auction end_at for feed card D-1h compact countdown (AC-12).
     # None when no active auction exists for this post.
     active_auction_end_at: datetime | None = None
+    # K-3 ai-artwork-caption — Phase 9
+    # AI 생성 캡션 필드 (서버 계산값 effective_caption 포함)
+    ai_caption: str | None = None
+    ai_caption_locale_translations: dict = {}
+    ai_caption_generated_at: datetime | None = None
+    caption_override: str | None = None
+    effective_caption: str = ""  # 항상 최종 캡션 반환 (empty string 허용)
 
 
 class CommentIn(BaseModel):

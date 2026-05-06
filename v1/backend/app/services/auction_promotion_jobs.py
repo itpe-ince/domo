@@ -29,8 +29,12 @@ from app.models.notification import Notification
 from app.models.user import User
 from app.services.analytics import capture_event
 from app.services.i18n import t as _t
+from app.services.otel_setup import get_tracer
+from app.services.push_notifier import push_notifier
 
 log = logging.getLogger(__name__)
+
+tracer = get_tracer(__name__)
 
 # ─── Notification slot definitions ──────────────────────────────────────────
 # (column_name, time_delta_before_end, notification_type)
@@ -151,6 +155,21 @@ async def dispatch_pending_notifications_once(db) -> dict[str, int]:
                     "notification_sent_server",
                     {"type": notif_type, "channel": "in_app"},
                 )
+                # B'-3: push dispatch to seller (and winner if different)
+                push_title = _t(notif_type, "title", None)
+                push_body = _t(notif_type, "body", None)
+                try:
+                    await push_notifier.notify_user(
+                        db, auction.seller_id, notif_type, push_title, push_body,
+                        data={"link": f"/auctions/{auction.id}"},
+                    )
+                    if auction.current_winner and auction.current_winner != auction.seller_id:
+                        await push_notifier.notify_user(
+                            db, auction.current_winner, notif_type, push_title, push_body,
+                            data={"link": f"/auctions/{auction.id}"},
+                        )
+                except Exception:
+                    log.exception("auction_promotion: push failed for auction=%s", auction.id)
 
         summary[notif_type] = len(auctions)
 
@@ -181,6 +200,27 @@ def _generate_share_card(
     Right 50%: artist name (amber) + price (white) + remaining time (amber)
     Bottom-right: domo.art watermark (OQ-9=A, RGBA semi-transparent)
     """
+    with tracer.start_as_current_span("pillow.generate_share_card") as span:
+        span.set_attribute("has_thumbnail", thumbnail_url is not None)
+        span.set_attribute("currency", currency)
+        return _generate_share_card_inner(
+            thumbnail_url=thumbnail_url,
+            artist_name=artist_name,
+            current_price=current_price,
+            currency=currency,
+            end_at=end_at,
+        )
+
+
+def _generate_share_card_inner(
+    *,
+    thumbnail_url: str | None,
+    artist_name: str,
+    current_price: int,
+    currency: str,
+    end_at: datetime,
+) -> bytes:
+    """Inner Pillow compositor — called from _generate_share_card with OTel span."""
     # Canvas: 1200×630, Domo dark background
     canvas = Image.new("RGB", (1200, 630), (26, 20, 16))
     draw = ImageDraw.Draw(canvas, "RGBA")
@@ -243,12 +283,14 @@ async def auction_promotion_cron_loop(interval_seconds: int = 60) -> None:
     log.info("auction_promotion_cron_loop started (interval=%ss)", interval_seconds)
     while True:
         try:
-            with record_cron_run("auction_promotion"):
-                async with AsyncSessionLocal() as db:
-                    summary = await dispatch_pending_notifications_once(db)
-                total_rows = sum(summary.values())
-                if total_rows:
-                    cron_rows_processed_total.labels(worker="auction_promotion").inc(total_rows)
+            with tracer.start_as_current_span("cron.auction_promotion") as span:
+                with record_cron_run("auction_promotion"):
+                    async with AsyncSessionLocal() as db:
+                        summary = await dispatch_pending_notifications_once(db)
+                    total_rows = sum(summary.values())
+                    if total_rows:
+                        cron_rows_processed_total.labels(worker="auction_promotion").inc(total_rows)
+                    span.set_attribute("rows_processed", total_rows)
         except Exception:
             log.exception("auction_promotion cron sweep failed")
         await asyncio.sleep(interval_seconds)

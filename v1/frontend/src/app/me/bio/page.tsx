@@ -67,7 +67,7 @@ export default function MyBioPage() {
   }
 
   return (
-    <main className="flex-1 min-w-0 max-w-2xl mx-auto px-4 py-8">
+    <main className="flex-1 min-w-0 max-w-2xl mx-auto px-4 py-8" aria-label={t("bio.pageTitle")}>
       {/* Header */}
       <header className="mb-8">
         <h1 className="text-2xl font-bold text-text-primary">{t("bio.pageTitle")}</h1>
@@ -129,9 +129,14 @@ export default function MyBioPage() {
           </div>
 
           {/* Textarea */}
+          <label htmlFor="bio-textarea" className="sr-only">
+            {t("bio.bioPlaceholder")}
+          </label>
           <textarea
+            id="bio-textarea"
             className="w-full h-48 px-3 py-2 border border-border rounded-lg bg-surface text-text-primary text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
             placeholder={t("bio.bioPlaceholder")}
+            aria-label={`${t("bio.pageTitle")} — ${activeLocale.toUpperCase()}`}
             value={getDisplayBio(activeLocale)}
             onChange={(e) =>
               setDraftBio((prev) => ({ ...prev, [activeLocale]: e.target.value }))

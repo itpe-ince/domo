@@ -18,10 +18,13 @@ from app.models.user import ArtistApplication, ArtistProfile, User
 from app.schemas.artist import ArtistApplicationCreate, ArtistApplicationOut
 from app.schemas.artist_index import ArtistIndexEntry, ArtistRankingResponse
 from app.services.artist_index_scoring import derive_tier_badge
+from app.services.cache import cache
 from app.services.kyc import require_kyc_verified
 
 # In-memory store for dev (Redis in production)
 _edu_verification_codes: dict[str, dict] = {}
+
+_ARTIST_INDEX_CACHE_TTL = 3600  # 1 hour
 
 router = APIRouter(prefix="/artists", tags=["artists"])
 
@@ -224,6 +227,14 @@ async def get_artist_index(
       - region: country_code (e.g. "KR", "PE", "US")
       - genre: artist_profiles.genre_tags contains this value
     """
+    # Cache key encodes all query dimensions: region, genre, limit, cursor.
+    _region_part = region.upper() if region else "all"
+    _genre_part = genre or "all"
+    cache_key = f"artists:index:{_region_part}:{_genre_part}:{limit}:{cursor or 'start'}"
+    cached = await cache.get_json(cache_key, prefix="artists")
+    if cached is not None:
+        return cached
+
     # Cursor is a rank offset (integer)
     rank_offset = 0
     if cursor:
@@ -325,13 +336,15 @@ async def get_artist_index(
 
     # Double-wrap: apiFetch<ArtistIndexListResponse> unwraps json.data → ArtistIndexListResponse
     # So the envelope must be {"data": {"data": [...], "next_cursor": ..., "total": ...}}
-    return {
+    response = {
         "data": {
             "data": [e.model_dump() for e in entries],
             "next_cursor": next_cursor,
             "total": None,  # Full count expensive — omitted; use has_more pattern
         }
     }
+    await cache.set_json(cache_key, response, _ARTIST_INDEX_CACHE_TTL, prefix="artists")
+    return response
 
 
 @router.get("/{user_id}/index")

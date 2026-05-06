@@ -30,6 +30,7 @@
     "following": "Siguiendo",
     "explore": "Explorar",
     "notifications": "Notificaciones",
+    "messages": "Mensajes",
     "profile": "Perfil",
     "register": "Crear",
     "subscription": "Suscripciones",
@@ -43,7 +44,8 @@
     "patronageDashboard": "Panel de mecenazgo",
     "tierBenefits": "Configurar beneficios por nivel",
     "artistIndex": "Índice de artistas",
-    "stories": "Hub de historias"
+    "stories": "Hub de historias",
+    "accessibilitySettings": "Accesibilidad"
   },
   "home": {
     "title": "Domo Lounge",
@@ -187,6 +189,31 @@
         "system": "Sistema"
       },
       "markedAsRead": "{{count}} notificaciones marcadas como leídas"
+    },
+    "preferences": {
+      "title": "Configuración de notificaciones",
+      "subtitle": "Elige las notificaciones que deseas recibir",
+      "pushSection": "Notificaciones push",
+      "emailSection": "Notificaciones por correo",
+      "pushEnabled": "Notificaciones push (general)",
+      "emailEnabled": "Resumen por correo (general)",
+      "digestFrequency": "Frecuencia del resumen",
+      "frequency": {
+        "weekly": "Semanal",
+        "biweekly": "Quincenal",
+        "monthly": "Mensual",
+        "never": "Nunca"
+      },
+      "types": {
+        "auction": "Alertas de subasta",
+        "sponsorship": "Alertas de patrocinio",
+        "engagement": "Me gusta y comentarios",
+        "system": "Alertas del sistema",
+        "digest": "Resumen"
+      },
+      "saveSuccess": "Configuración de notificaciones guardada",
+      "saveError": "Error al guardar la configuración",
+      "gdprNote": "Debes dar tu consentimiento explícito para recibir notificaciones (cumple con el GDPR)"
     }
   },
   "post": {
@@ -819,6 +846,46 @@
       "empty": {
         "celebrated": "No hay mecenas que hayan abandonado en los últimos 30 días ✨"
       }
+    },
+    "analytics": {
+      "title": "Análisis",
+      "noData": "Aún no hay datos disponibles.",
+      "mockBadge": "datos de muestra",
+      "cohort": {
+        "title": "Retención de cohorte (D1 / D7 / D30)",
+        "d1": "Día 1",
+        "d7": "Día 7",
+        "d30": "Día 30"
+      },
+      "coupon": {
+        "title": "Uso de cupones de recuperación",
+        "issued": "Emitidos",
+        "applied": "Aplicados",
+        "cancelReverted": "Cancelaciones revertidas",
+        "expired": "Vencidos",
+        "redemptionRate": "Tasa de uso"
+      },
+      "newsletter": {
+        "title": "Tasa de apertura y clics del boletín",
+        "openRate": "Tasa de apertura",
+        "clickRate": "Tasa de clics"
+      },
+      "funnel": {
+        "title": "Embudo de conversión de mecenazgo",
+        "postClick": "Clic en publicación",
+        "sponsorStart": "Inicio de patrocinio",
+        "sponsorSuccess": "Patrocinio exitoso",
+        "active30d": "Activo 30d",
+        "conversionRate": "Conversión total"
+      },
+      "dm": {
+        "title": "Participación en mensajes directos",
+        "firstMessageRate": "Tasa de primer mensaje",
+        "firstMessageHint": "Nuevos mecenas que enviaron un mensaje",
+        "avgResponseTime": "Tiempo medio de respuesta",
+        "avgResponseUnit": "Tiempo mediano de respuesta del artista",
+        "totalThreads": "Total de conversaciones"
+      }
     }
   },
   "tierBenefits": {
@@ -1053,6 +1120,19 @@
     },
     "subscription": {
       "appliedBadge": "{{discount}}% de descuento activo"
+    }
+  },
+  "subscription": {
+    "renewal": {
+      "autoOn": "Renovación automática",
+      "autoOff": "Renovación manual",
+      "enableAutoRenew": "Activar renovación automática",
+      "disableAutoRenew": "Desactivar renovación automática",
+      "renewNow": "Renovar ahora",
+      "renewing": "Renovando...",
+      "renewSuccess": "¡Renovado! Próxima fecha de vencimiento: {{date}}",
+      "renewError": "Error al renovar. Por favor, inténtalo de nuevo.",
+      "expiryWarning": "Vence en {{days}} día(s)"
     }
   },
   "admin": {
@@ -1470,5 +1550,126 @@
       "publicToggle": "Permitir descarga pública",
       "publicToggleNote": "Cuando está activado, cualquiera puede descargar tu kit de prensa."
     }
+  },
+  "a11y": {
+    "skip": {
+      "toMain": "Saltar al contenido principal",
+      "toNav": "Saltar a la navegación"
+    }
+  },
+  "accessibility": {
+    "pageTitle": "Configuración de accesibilidad",
+    "simpleMode": {
+      "label": "Modo simple",
+      "description": "Aumenta el tamaño del texto, el interlineado y reduce las animaciones para facilitar la lectura.",
+      "enabled": "Modo simple activado",
+      "disabled": "Modo simple desactivado"
+    },
+    "focusMode": {
+      "label": "Modo de enfoque",
+      "description": "Resalta elementos interactivos para la navegación por teclado."
+    },
+    "announcements": {
+      "bidPlaced": "Oferta realizada con éxito",
+      "bidFailed": "La oferta falló. Por favor, inténtalo de nuevo.",
+      "auctionEnded": "La subasta ha terminado",
+      "auctionUrgent": "Menos de 10 segundos restantes",
+      "modalOpened": "Diálogo abierto",
+      "modalClosed": "Diálogo cerrado"
+    },
+    "settings": {
+      "saved": "Configuración de accesibilidad guardada",
+      "saveError": "Error al guardar la configuración"
+    },
+    "contrast": {
+      "highContrastHint": "Para mayor contraste, usa el modo de alto contraste de tu sistema operativo."
+    }
+  },
+  "currency": {
+    "label": {
+      "USD": "Dólar estadounidense",
+      "KRW": "Won coreano",
+      "EUR": "Euro",
+      "JPY": "Yen japonés"
+    },
+    "switcher": {
+      "label": "Seleccionar moneda",
+      "converted": "Precio convertido",
+      "native": "Precio original",
+      "saved": "Preferencia de moneda guardada"
+    }
+  },
+  "messaging": {
+    "loginRequired": "Inicia sesión para ver los mensajes.",
+    "list": {
+      "title": "Mensajes",
+      "empty": "Aún no hay conversaciones.",
+      "noMessages": "Sin mensajes",
+      "refresh": "Actualizar"
+    },
+    "conversation": {
+      "title": "Conversación",
+      "empty": "Aún no hay mensajes. ¡Envía el primero!",
+      "closed": "[Conversación cerrada por un administrador]",
+      "loadMore": "Cargar mensajes anteriores",
+      "report": "Reportar",
+      "reportTitle": "Reportar esta conversación",
+      "reportPlaceholder": "Describe el problema (máx. 500 caracteres)...",
+      "reportSubmit": "Enviar reporte",
+      "reportSent": "Tu reporte ha sido enviado. ¡Gracias!"
+    },
+    "message": {
+      "deleted": "[Mensaje eliminado]",
+      "edited": "editado",
+      "read": "Leído",
+      "editAriaLabel": "Editar mensaje",
+      "deleteAriaLabel": "Eliminar mensaje"
+    },
+    "composer": {
+      "placeholder": "Escribe un mensaje... (Enter para enviar, Shift+Enter para nueva línea)",
+      "editPlaceholder": "Edita tu mensaje...",
+      "send": "Enviar",
+      "ariaLabel": "Campo de entrada de mensaje"
+    }
+  },
+  "docent": {
+    "title": "Comentario de la obra",
+    "artist_label": "Palabras del artista",
+    "ai_label": "Guía AI",
+    "toggle_show": "Ver comentario de la guía AI",
+    "toggle_hide": "Ocultar comentario de la guía AI",
+    "ai_disclaimer": "Este comentario fue generado por IA",
+    "generating": "La IA está analizando la obra...",
+    "generate_button": "Generar guía AI",
+    "regenerate": "Regenerar guía",
+    "generate_failed": "No se pudo generar la guía. Inténtalo de nuevo más tarde.",
+    "disabled_by_artist": "El artista ha desactivado la guía AI para esta obra.",
+    "opt_out_label": "Desactivar guía AI",
+    "opt_in_label": "Activar guía AI",
+    "rate_limit_notice": "La guía AI se puede generar hasta 2 veces al día.",
+    "locale_only_ko": "Disponible solo en coreano",
+    "by_artist": "Escrito por el artista",
+    "by_ai": "Generado por IA",
+    "edit_page": {
+      "section_title": "Editar guía",
+      "artist_text_label": "Escribir manualmente",
+      "artist_text_placeholder": "Escribe libremente sobre la obra. Puedes describir el proceso creativo, la fuente de inspiración y el significado de la pieza.",
+      "generate_button": "Generar guía AI",
+      "opt_out_label": "Desactivar guía AI",
+      "save_button": "Guardar",
+      "save_success": "Guardado"
+    }
+  },
+  "collections": {
+    "editors_pick": "Editor's Pick",
+    "subtitle": "Colecciones temáticas semanales curadas por IA",
+    "works_count": "{{count}} obras",
+    "week_label": "Semana del {{date}}",
+    "share": "Compartir",
+    "share_link_copied": "Enlace copiado",
+    "no_collections": "No hay colecciones disponibles",
+    "view_all": "Ver todas las colecciones",
+    "back": "Volver a colecciones",
+    "generated_by_ai": "Colección curada por IA"
   }
 }

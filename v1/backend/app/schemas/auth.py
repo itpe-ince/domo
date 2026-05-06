@@ -31,6 +31,8 @@ class UserPublic(BaseModel):
     is_minor: bool
     warning_count: int
     created_at: datetime
+    # B'-1 multi-currency-foundation — user preferred display currency
+    preferred_currency: str = "USD"
     # 2FA enrollment status (admin only — None for non-admin users)
     totp_enabled_at: datetime | None = None
 

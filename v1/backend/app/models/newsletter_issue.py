@@ -63,6 +63,18 @@ class NewsletterIssue(Base):
     sent_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+
+    # ── H'-5 delivery tracking (incremented via SES SNS events) ──────────────
+    # SES Delivery event → delivered_count++
+    delivered_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # SES Bounce event (any type) → bounced_count++
+    bounced_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # SES Complaint event → complained_count++
+    complained_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # SES Configuration Set name used for this issue (optional, for tracking)
+    ses_configuration_set: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )
     created_by_admin_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
     )

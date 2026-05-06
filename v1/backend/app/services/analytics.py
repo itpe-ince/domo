@@ -4,6 +4,9 @@ Wraps the PostHog Python SDK with:
   - Mock mode fallback (POSTHOG_API_KEY unset → console log only)
   - PII redaction (email, phone, card_number, iban, ssn stripped before capture)
   - Graceful shutdown (flush on app exit)
+  - OTel trace_id propagation (G''-1 booster): when an active span exists,
+    "trace_id" is injected into event properties so PostHog events can be
+    correlated with AWS X-Ray traces in production.
 
 Usage:
     from app.services.analytics import capture_event
@@ -65,6 +68,32 @@ def _redact_pii(props: dict) -> dict:
     return {k: v for k, v in props.items() if k.lower() not in _PII_KEYS}
 
 
+def _inject_trace_id(props: dict) -> dict:
+    """Inject current OTel trace_id into event properties for X-Ray correlation.
+
+    No-op when:
+    - OTel Mock mode (OTEL_ENABLED=False) — no active span, returns props unchanged.
+    - No active span in the current execution context.
+    - trace_id is already present in props (caller-provided value wins).
+
+    The trace_id is a 32-char hex string matching the W3C TraceContext format
+    used by AWS X-Ray. This enables PostHog → X-Ray trace correlation in
+    production dashboards.
+    """
+    if "trace_id" in props:
+        return props  # caller-provided value wins
+    try:
+        from opentelemetry import trace as _otel_trace
+        span = _otel_trace.get_current_span()
+        ctx = span.get_span_context()
+        # trace_id == 0 means no active span (NoOpSpan / invalid context)
+        if ctx.trace_id != 0:
+            return {**props, "trace_id": format(ctx.trace_id, "032x")}
+    except Exception:  # noqa: BLE001 — never raise from analytics helper
+        pass
+    return props
+
+
 def capture_event(
     distinct_id: str,
     event: str,
@@ -81,8 +110,9 @@ def capture_event(
         - Mock mode (POSTHOG_API_KEY unset): logs to console, no SDK call.
         - Real mode: sends via posthog.capture() with async batching (SDK handles flush).
         - Never raises — errors are logged and swallowed to avoid impacting main request path.
+        - G''-1 booster: injects OTel trace_id when an active span exists.
     """
-    safe_props = _redact_pii(properties or {})
+    safe_props = _inject_trace_id(_redact_pii(properties or {}))
 
     if not _posthog_enabled:
         log.info(

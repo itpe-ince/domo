@@ -61,6 +61,12 @@ def _make_post(
     p.comments_enabled = True
     p.early_access_until = None
     p.early_access_tier = None
+    # K-3 AI caption fields
+    p.ai_caption = None
+    p.ai_caption_locale_translations = {}
+    p.ai_caption_model_version = None
+    p.ai_caption_generated_at = None
+    p.caption_override = None
     if set_attr:
         p._active_auction_end_at = active_auction_end_at
     return p

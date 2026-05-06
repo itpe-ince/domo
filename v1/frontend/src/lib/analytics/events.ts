@@ -88,11 +88,15 @@ export type FeaturedArtistClickEvent = {
   artist_id: string;
 };
 
-/** A-7: Fired when an external media coverage item is clicked. */
+/** A-7 / H'-4: Fired when an external media coverage item is clicked. */
 export type MediaCoverageClickEvent = {
   type: "media_coverage_click";
   coverage_id: string;
-  coverage_type: "article" | "youtube" | "radio" | "other";
+  coverage_type: "article" | "youtube" | "radio" | "podcast" | "tv" | "other";
+  /** External URL the user navigated to. */
+  url: string;
+  /** Source outlet name (e.g. "한겨레", "TBS"). */
+  source: string;
 };
 
 export type SearchEvent = {
@@ -157,10 +161,12 @@ export type FollowEvent = {
  *
  * algo: "default" = legacy chronological mix.
  *       "v1"      = A-3 personalized score-ranked feed.
+ *       "v2"      = K-1 ML collaborative filtering feed.
+ *       "auto"    = K-8 PostHog feature flag determines variant.
  */
 export type FeedAlgorithmViewEvent = {
   type: "feed_algorithm_view";
-  algo: "default" | "v1";
+  algo: "default" | "v1" | "v2" | "auto";
 };
 
 // ─── Onboarding funnel (A-2) ─────────────────────────────────────────────

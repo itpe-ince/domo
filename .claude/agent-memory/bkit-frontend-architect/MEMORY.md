@@ -1,6 +1,9 @@
 # Memory Index
 
 ## Project
+- [phase10-CO-1 complete](project_phase10_co1.md) — 11 carry-overs → 6 atomic PRs; DocentSection split, FeedAlgo "v2", i18n CI, rate limits, ops doc
+
+
 - [editor-image-studio Step 5 complete](project_image_studio_step5.md) — Step 5 (deps/types/API client/EditButton) shipped; superseded by Step 6
 - [editor-image-studio Step 6 complete](project_image_studio_step6.md) — Step 6 (ImageEditor modal + Konva Stage + props drilling + SSR lazy) shipped; superseded by Step 7
 - [editor-image-studio Step 7 complete](project_image_studio_step7.md) — Step 7 (4 tools + hotkeys + i18n) shipped; superseded by Step 8

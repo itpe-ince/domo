@@ -27,6 +27,57 @@
   }
 }
 
+/* ─── Phase 9 L-E: WCAG AAA Color Tokens ──────────────────────────────────── */
+:root {
+  --color-text-subtle: #C8BBAE;   /* ~10.2:1 on background — AAA pass */
+  --color-danger-aaa: #F07070;    /* ~7.1:1 on background — AAA pass */
+}
+
+/* ─── Phase 9 L-E: WCAG AAA focus-visible ring (전체 인터랙티브 요소) ─────── */
+@layer base {
+  :focus-visible {
+    outline: 2px solid #A8D76E;
+    outline-offset: 2px;
+  }
+}
+
+/* ─── Phase 9 L-E: Cognitive Simple Mode ──────────────────────────────────── */
+[data-simple-mode="true"] {
+  /* 1. 폰트 크기 1.2× */
+  font-size: 120%;
+  /* CSS 변수 명도 상향 */
+  --color-text-subtle: #D4C9BE;
+}
+
+/* 2. 애니메이션 최소화 (prefers-reduced-motion 강제 동등) */
+[data-simple-mode="true"] *,
+[data-simple-mode="true"] *::before,
+[data-simple-mode="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* 3. 줄 간격 1.5× */
+[data-simple-mode="true"] p,
+[data-simple-mode="true"] li,
+[data-simple-mode="true"] span {
+  line-height: 1.8;
+}
+
+/* 4. 장식 요소 제거 */
+[data-simple-mode="true"] .decorative {
+  display: none !important;
+}
+
+/* backdrop-blur 제거 */
+[data-simple-mode="true"] .backdrop-blur-md,
+[data-simple-mode="true"] .backdrop-blur-sm,
+[data-simple-mode="true"] .backdrop-blur {
+  backdrop-filter: none !important;
+}
+
 @layer components {
   .font-logo {
     font-family: 'Playfair Display', serif;

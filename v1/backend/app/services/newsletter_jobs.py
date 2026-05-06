@@ -7,8 +7,14 @@ Algorithm:
   1. SELECT newsletter_issues WHERE status='sending'
   2. For each issue: SELECT newsletter_preferences WHERE is_subscribed=True
      AND preferred_locale=issue.locale AND user.email IS NOT NULL
+     AND (suspended_until IS NULL OR suspended_until < NOW())
   3. Batch-send via SES (50 emails per batch with short sleep between batches)
   4. Update sent_count/failed_count; transition to status='sent' when complete
+
+H'-5 bounce integration:
+  - Hard-bounced users (is_subscribed=False) are excluded by is_subscribed filter
+  - Soft-bounce suspended users (suspended_until > NOW()) are skipped per sweep
+  - Once suspended_until lapses, users are naturally included again
 
 Idempotency: issues already in status='sent' are never re-processed.
 Each recipient is identified by (issue_id, user_id) — no per-recipient tracking
@@ -34,8 +40,12 @@ from app.models.newsletter_issue import NewsletterIssue
 from app.models.newsletter_preferences import NewsletterPreferences
 from app.models.user import User
 from app.services.email_ses import ses_client
+from app.services.otel_setup import get_tracer
+from app.services.push_notifier import push_notifier
 
 log = logging.getLogger(__name__)
+
+tracer = get_tracer(__name__)
 
 _BATCH_SIZE = 50
 _BATCH_SLEEP = 0.1  # seconds between batches (SES rate limit buffer)
@@ -48,7 +58,12 @@ async def _get_recipient_emails(
     db: AsyncSession,
     locale: str,
 ) -> list[tuple[str, str]]:
-    """Return (user_id_str, email) pairs for subscribed users matching locale."""
+    """Return (user_id_str, email) pairs for eligible subscribers matching locale.
+
+    H'-5: excludes hard-bounced (is_subscribed=False) and soft-bounce suspended
+    users (suspended_until is not NULL and > current timestamp).
+    """
+    now = datetime.now(timezone.utc)
     result = await db.execute(
         select(User.id, User.email)
         .join(
@@ -60,6 +75,11 @@ async def _get_recipient_emails(
             NewsletterPreferences.preferred_locale == locale,
             User.email.isnot(None),
             User.deleted_at.is_(None),
+            # H'-5: skip suspended users (soft bounce suspension window active)
+            (
+                NewsletterPreferences.suspended_until.is_(None)
+                | (NewsletterPreferences.suspended_until <= now)
+            ),
         )
     )
     return [(str(row[0]), row[1]) for row in result.fetchall()]
@@ -92,7 +112,7 @@ async def _send_issue(db: AsyncSession, issue: NewsletterIssue) -> None:
 
     for i in range(0, len(recipients), _BATCH_SIZE):
         batch = recipients[i : i + _BATCH_SIZE]
-        for _uid, email in batch:
+        for uid_str, email in batch:
             try:
                 await ses_client.send_email(
                     to=email,
@@ -105,6 +125,23 @@ async def _send_issue(db: AsyncSession, issue: NewsletterIssue) -> None:
                     "newsletter: send failed to=%s issue_id=%s", email, issue.id
                 )
                 failed += 1
+
+            # B'-3: push notification for newsletter (R-5: separate session to avoid
+            # interfering with newsletter batch commit flow)
+            try:
+                import uuid as _uuid
+                from app.db.session import AsyncSessionLocal as _ASL
+                async with _ASL() as push_db:
+                    await push_notifier.notify_user(
+                        push_db,
+                        _uuid.UUID(uid_str),
+                        notification_type="system",
+                        title="새 뉴스레터 발행",
+                        body=issue.subject[:80],
+                        data={"link": "/newsletter"},
+                    )
+            except Exception:
+                log.debug("newsletter: push skipped for uid=%s", uid_str)
 
         if i + _BATCH_SIZE < len(recipients):
             await asyncio.sleep(_BATCH_SLEEP)
@@ -166,9 +203,11 @@ async def newsletter_cron_loop(interval_seconds: int = 3600) -> None:
     log.info("newsletter_cron_loop started (interval=%ss)", interval_seconds)
     while True:
         try:
-            with record_cron_run("newsletter"):
-                n = await process_sending_issues()
-                log.info("newsletter sweep complete: %d issues processed", n)
+            with tracer.start_as_current_span("cron.newsletter") as span:
+                with record_cron_run("newsletter"):
+                    n = await process_sending_issues()
+                    log.info("newsletter sweep complete: %d issues processed", n)
+                span.set_attribute("issues_processed", n)
         except Exception:
             log.exception("newsletter cron sweep failed")
         await asyncio.sleep(interval_seconds)

@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 # ─── Optional prometheus_client import ───────────────────────────────────────
 
 try:
-    from prometheus_client import Counter, Histogram  # type: ignore[import]
+    from prometheus_client import Counter, Gauge, Histogram  # type: ignore[import]
     _PROMETHEUS_AVAILABLE = True
 except ImportError:  # pragma: no cover
     _PROMETHEUS_AVAILABLE = False
@@ -41,6 +41,12 @@ except ImportError:  # pragma: no cover
         """Stub returned by .labels() — all operations are no-ops."""
 
         def inc(self, amount: float = 1) -> None:
+            pass
+
+        def dec(self, amount: float = 1) -> None:
+            pass
+
+        def set(self, value: float) -> None:
             pass
 
         def observe(self, amount: float) -> None:
@@ -63,6 +69,23 @@ except ImportError:  # pragma: no cover
             return self._labels
 
         def inc(self, amount: float = 1) -> None:
+            pass
+
+    class Gauge:  # type: ignore[no-redef]
+        def __init__(self, *args, **kwargs):
+            self._labels = _Labels()
+            self._value = _Labels._Value()
+
+        def labels(self, **kwargs) -> _Labels:
+            return self._labels
+
+        def inc(self, amount: float = 1) -> None:
+            pass
+
+        def dec(self, amount: float = 1) -> None:
+            pass
+
+        def set(self, value: float) -> None:
             pass
 
     class Histogram:  # type: ignore[no-redef]
@@ -201,8 +224,48 @@ post_engagement_cache_rows_total = Counter(
     labelnames=["result"],
 )
 
-# ─── Helper context manager ──────────────────────────────────────────────────
+# ─── Redis Cache metrics (G''-2 redis-cache-layer) ───────────────────────────
 
+cache_hit_total = Counter(
+    "domo_cache_hit_total",
+    "Total Redis cache hits by key prefix",
+    labelnames=["cache_key_prefix"],
+)
+
+cache_miss_total = Counter(
+    "domo_cache_miss_total",
+    "Total Redis cache misses by key prefix",
+    labelnames=["cache_key_prefix"],
+)
+
+cache_set_total = Counter(
+    "domo_cache_set_total",
+    "Total Redis cache set operations by key prefix",
+    labelnames=["cache_key_prefix"],
+)
+
+cache_invalidate_total = Counter(
+    "domo_cache_invalidate_total",
+    "Total Redis cache invalidations by reason",
+    labelnames=["reason"],
+)
+
+# ─── DB Connection Pool metrics (G''-4 db-connection-pool-tuning) ────────────
+# checkout/checkin event listeners are registered in app/db/session.py after the
+# engine is created so that pool events are captured at the correct lifecycle point.
+
+db_pool_connections = Gauge(
+    "domo_db_pool_connections",
+    "Current number of DB connections in the given pool state",
+    labelnames=["state"],  # state: checked_out
+)
+
+db_query_duration_seconds = Histogram(
+    "domo_db_query_duration_seconds",
+    "Database query duration in seconds by operation type",
+    labelnames=["operation"],  # operation: read | write
+    buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0),
+)
 
 # ─── Newsletter metrics (C-5) ─────────────────────────────────────────────────
 
@@ -226,6 +289,97 @@ newsletter_opt_in_total = Counter(
 newsletter_opt_out_total = Counter(
     "domo_newsletter_opt_out_total",
     "Total newsletter opt-out actions (PATCH preferences or unsubscribe link)",
+)
+
+# ── H'-5 bounce/complaint metrics ─────────────────────────────────────────────
+
+ses_bounce_received_total = Counter(
+    "domo_ses_bounce_received_total",
+    "Total SES bounce events received via SNS",
+    labelnames=["bounce_type"],  # permanent | transient | undetermined
+)
+
+ses_complaint_received_total = Counter(
+    "domo_ses_complaint_received_total",
+    "Total SES complaint events received via SNS",
+)
+
+ses_delivery_received_total = Counter(
+    "domo_ses_delivery_received_total",
+    "Total SES delivery events received via SNS",
+)
+
+ses_sns_webhook_received_total = Counter(
+    "domo_ses_sns_webhook_received_total",
+    "Total SNS messages received on the SES bounce webhook",
+    labelnames=["message_type"],  # SubscriptionConfirmation | Notification | UnsubscribeConfirmation
+)
+
+ses_hard_bounce_unsubscribed_total = Counter(
+    "domo_ses_hard_bounce_unsubscribed_total",
+    "Total users auto-unsubscribed due to hard bounce (permanent bounce)",
+)
+
+ses_soft_bounce_suspended_total = Counter(
+    "domo_ses_soft_bounce_suspended_total",
+    "Total users temporarily suspended after 3 consecutive soft bounces",
+)
+
+# ─── Exchange rate metrics (B'-1 multi-currency-foundation) ──────────────────
+
+EXCHANGE_RATE_FETCH_TOTAL = Counter(
+    "domo_exchange_rate_fetch_total",
+    "Total exchange rate fetch cycles by status",
+    labelnames=["status"],  # status: ok | mock | error
+)
+
+# ─── ML A/B 테스트 metrics (Phase 10 K-8) ────────────────────────────────────
+
+ML_AB_ASSIGNMENTS = Counter(
+    "domo_ml_ab_test_assignments_total",
+    "Total ML A/B test variant assignments by variant",
+    labelnames=["variant"],  # variant: v1 | v2
+)
+
+ML_AB_EVENTS = Counter(
+    "domo_ml_ab_test_events_total",
+    "Total ML A/B test events captured by event type",
+    labelnames=["event_type"],  # event_type: feed_post_click | sponsor_created | ...
+)
+
+ML_AB_CONVERSIONS = Counter(
+    "domo_ml_ab_test_conversions_total",
+    "Total ML A/B test sponsor_created conversion events",
+)
+
+# ─── Diversity Reranking metrics (Phase 10 K-2) ──────────────────────────────
+
+# 피드 top-20 중 신진작가 비율 (0.0 ~ 1.0)
+diversity_emerging_artist_ratio = Gauge(
+    "domo_diversity_emerging_artist_ratio",
+    "Ratio of emerging artists (artist_index_rank > 80%) in top-K feed",
+    labelnames=["algo"],
+)
+
+# 피드 top-20 unique genres 수
+diversity_genre_count_top20 = Gauge(
+    "domo_diversity_genre_count_top20",
+    "Unique genre count in top-K feed",
+    labelnames=["algo"],
+)
+
+# 피드 top-20 unique regions 수
+diversity_region_count_top20 = Gauge(
+    "domo_diversity_region_count_top20",
+    "Unique region count in top-K feed",
+    labelnames=["algo"],
+)
+
+# Reranking 처리 시간 (seconds)
+diversity_rerank_duration_seconds = Histogram(
+    "domo_diversity_rerank_duration_seconds",
+    "Diversity reranking processing time in seconds",
+    buckets=(0.001, 0.005, 0.01, 0.02, 0.05, 0.1),
 )
 
 # ─── Helper context manager ──────────────────────────────────────────────────

@@ -59,7 +59,7 @@ export default function TierBenefitsSettingsPage() {
   };
 
   return (
-    <main className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8 space-y-8">
+    <main className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8 space-y-8" aria-label={t("tierBenefits.editor.title")}>
       {/* Back */}
       <Link
         href="/me/patronage"

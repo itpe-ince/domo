@@ -30,6 +30,7 @@
     "following": "Following",
     "explore": "Explore",
     "notifications": "Notifications",
+    "messages": "Messages",
     "profile": "Profile",
     "register": "Create",
     "subscription": "Subscriptions",
@@ -43,7 +44,8 @@
     "patronageDashboard": "Patronage Dashboard",
     "tierBenefits": "Tier Benefits Settings",
     "artistIndex": "Artist Index",
-    "stories": "Story Hub"
+    "stories": "Story Hub",
+    "accessibilitySettings": "Accessibility"
   },
   "home": {
     "title": "Domo Lounge",
@@ -187,6 +189,31 @@
         "system": "System"
       },
       "markedAsRead": "{{count}} notifications marked as read"
+    },
+    "preferences": {
+      "title": "Notification Settings",
+      "subtitle": "Choose which notifications you want to receive",
+      "pushSection": "Push Notifications",
+      "emailSection": "Email Notifications",
+      "pushEnabled": "Push Notifications (master)",
+      "emailEnabled": "Email Digest (master)",
+      "digestFrequency": "Digest Frequency",
+      "frequency": {
+        "weekly": "Weekly",
+        "biweekly": "Biweekly",
+        "monthly": "Monthly",
+        "never": "Never"
+      },
+      "types": {
+        "auction": "Auction Alerts",
+        "sponsorship": "Sponsorship Alerts",
+        "engagement": "Likes & Comments",
+        "system": "System Alerts",
+        "digest": "Digest"
+      },
+      "saveSuccess": "Notification settings saved",
+      "saveError": "Failed to save notification settings",
+      "gdprNote": "You must explicitly opt in to receive notifications (GDPR compliant)"
     }
   },
   "post": {
@@ -819,6 +846,46 @@
       "empty": {
         "celebrated": "No churned supporters in the last 30 days ✨"
       }
+    },
+    "analytics": {
+      "title": "Analytics",
+      "noData": "No data available yet.",
+      "mockBadge": "sample data",
+      "cohort": {
+        "title": "Cohort Retention (D1 / D7 / D30)",
+        "d1": "Day 1",
+        "d7": "Day 7",
+        "d30": "Day 30"
+      },
+      "coupon": {
+        "title": "Winback Coupon Redemption",
+        "issued": "Issued",
+        "applied": "Applied",
+        "cancelReverted": "Cancels reverted",
+        "expired": "Expired",
+        "redemptionRate": "Redemption rate"
+      },
+      "newsletter": {
+        "title": "Newsletter Open & Click Rates",
+        "openRate": "Open rate",
+        "clickRate": "Click rate"
+      },
+      "funnel": {
+        "title": "Sponsorship Conversion Funnel",
+        "postClick": "Post click",
+        "sponsorStart": "Sponsor started",
+        "sponsorSuccess": "Sponsor success",
+        "active30d": "Active 30d",
+        "conversionRate": "Overall conversion"
+      },
+      "dm": {
+        "title": "DM Engagement",
+        "firstMessageRate": "First-message rate",
+        "firstMessageHint": "New supporters who messaged",
+        "avgResponseTime": "Avg response time",
+        "avgResponseUnit": "Median artist reply",
+        "totalThreads": "Total threads"
+      }
     }
   },
   "tierBenefits": {
@@ -1053,6 +1120,19 @@
     },
     "subscription": {
       "appliedBadge": "{{discount}}% discount active"
+    }
+  },
+  "subscription": {
+    "renewal": {
+      "autoOn": "Auto-renewal",
+      "autoOff": "Manual renewal",
+      "enableAutoRenew": "Enable auto-renewal",
+      "disableAutoRenew": "Disable auto-renewal",
+      "renewNow": "Renew now",
+      "renewing": "Renewing...",
+      "renewSuccess": "Renewed! Next expiry: {{date}}",
+      "renewError": "Renewal failed. Please try again.",
+      "expiryWarning": "Expires in {{days}} day(s)"
     }
   },
   "admin": {
@@ -1470,5 +1550,126 @@
       "publicToggle": "Allow public download",
       "publicToggleNote": "When enabled, anyone can download your press kit."
     }
+  },
+  "a11y": {
+    "skip": {
+      "toMain": "Skip to main content",
+      "toNav": "Skip to navigation"
+    }
+  },
+  "accessibility": {
+    "pageTitle": "Accessibility Settings",
+    "simpleMode": {
+      "label": "Simple Mode",
+      "description": "Increases text size, line spacing, and reduces animations for easier reading.",
+      "enabled": "Simple mode on",
+      "disabled": "Simple mode off"
+    },
+    "focusMode": {
+      "label": "Focus Mode",
+      "description": "Highlights interactive elements for keyboard navigation."
+    },
+    "announcements": {
+      "bidPlaced": "Bid placed successfully",
+      "bidFailed": "Bid failed. Please try again.",
+      "auctionEnded": "Auction has ended",
+      "auctionUrgent": "Less than 10 seconds remaining",
+      "modalOpened": "Dialog opened",
+      "modalClosed": "Dialog closed"
+    },
+    "settings": {
+      "saved": "Accessibility settings saved",
+      "saveError": "Failed to save settings"
+    },
+    "contrast": {
+      "highContrastHint": "For higher contrast, use your OS high contrast mode."
+    }
+  },
+  "currency": {
+    "label": {
+      "USD": "US Dollar",
+      "KRW": "Korean Won",
+      "EUR": "Euro",
+      "JPY": "Japanese Yen"
+    },
+    "switcher": {
+      "label": "Select currency",
+      "converted": "Converted price",
+      "native": "Original price",
+      "saved": "Currency preference saved"
+    }
+  },
+  "messaging": {
+    "loginRequired": "Please log in to access messages.",
+    "list": {
+      "title": "Messages",
+      "empty": "No conversations yet.",
+      "noMessages": "No messages",
+      "refresh": "Refresh"
+    },
+    "conversation": {
+      "title": "Conversation",
+      "empty": "No messages yet. Send the first one!",
+      "closed": "[Conversation closed by admin]",
+      "loadMore": "Load earlier messages",
+      "report": "Report",
+      "reportTitle": "Report this conversation",
+      "reportPlaceholder": "Describe the issue (max 500 chars)...",
+      "reportSubmit": "Submit report",
+      "reportSent": "Your report has been submitted. Thank you."
+    },
+    "message": {
+      "deleted": "[Message deleted]",
+      "edited": "edited",
+      "read": "Read",
+      "editAriaLabel": "Edit message",
+      "deleteAriaLabel": "Delete message"
+    },
+    "composer": {
+      "placeholder": "Type a message... (Enter to send, Shift+Enter for newline)",
+      "editPlaceholder": "Edit your message...",
+      "send": "Send",
+      "ariaLabel": "Message input"
+    }
+  },
+  "docent": {
+    "title": "Artwork Commentary",
+    "artist_label": "Artist's Statement",
+    "ai_label": "AI Docent",
+    "toggle_show": "View AI Docent Commentary",
+    "toggle_hide": "Hide AI Docent Commentary",
+    "ai_disclaimer": "This commentary was generated by AI",
+    "generating": "AI is analyzing the artwork...",
+    "generate_button": "Generate AI Docent",
+    "regenerate": "Regenerate Docent",
+    "generate_failed": "Failed to generate docent. Please try again later.",
+    "disabled_by_artist": "The artist has disabled AI docent for this artwork.",
+    "opt_out_label": "Disable AI Docent",
+    "opt_in_label": "Enable AI Docent",
+    "rate_limit_notice": "AI Docent can be generated up to 2 times per day.",
+    "locale_only_ko": "Available in Korean only",
+    "by_artist": "Written by Artist",
+    "by_ai": "AI Generated",
+    "edit_page": {
+      "section_title": "Edit Docent",
+      "artist_text_label": "Write manually",
+      "artist_text_placeholder": "Write your own story about the artwork. You can freely describe the production process, the source of inspiration, and the meaning behind the piece.",
+      "generate_button": "Generate AI Docent",
+      "opt_out_label": "Disable AI Docent",
+      "save_button": "Save",
+      "save_success": "Saved"
+    }
+  },
+  "collections": {
+    "editors_pick": "Editor's Pick",
+    "subtitle": "AI-curated weekly collections",
+    "works_count": "{{count}} works",
+    "week_label": "Week of {{date}}",
+    "share": "Share",
+    "share_link_copied": "Link copied",
+    "no_collections": "No collections available",
+    "view_all": "View all collections",
+    "back": "Back to collections",
+    "generated_by_ai": "AI-curated collection"
   }
 }

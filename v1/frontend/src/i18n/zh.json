@@ -30,6 +30,7 @@
     "following": "追蹤中",
     "explore": "探索",
     "notifications": "通知",
+    "messages": "消息",
     "profile": "個人資料",
     "register": "發布",
     "subscription": "定期贊助",
@@ -43,7 +44,8 @@
     "patronageDashboard": "贊助儀表板",
     "tierBenefits": "會員等級福利設定",
     "artistIndex": "藝術家指數",
-    "stories": "故事中心"
+    "stories": "故事中心",
+    "accessibilitySettings": "无障碍"
   },
   "home": {
     "title": "Domo Lounge",
@@ -187,6 +189,31 @@
         "system": "系統"
       },
       "markedAsRead": "{{count}}條通知已標為已讀"
+    },
+    "preferences": {
+      "title": "通知設定",
+      "subtitle": "選擇您想接收的通知",
+      "pushSection": "推播通知",
+      "emailSection": "電子郵件通知",
+      "pushEnabled": "推播通知（總開關）",
+      "emailEnabled": "電子郵件摘要（總開關）",
+      "digestFrequency": "摘要頻率",
+      "frequency": {
+        "weekly": "每週",
+        "biweekly": "每兩週",
+        "monthly": "每月",
+        "never": "不接收"
+      },
+      "types": {
+        "auction": "拍賣通知",
+        "sponsorship": "贊助通知",
+        "engagement": "讚·留言通知",
+        "system": "系統通知",
+        "digest": "摘要"
+      },
+      "saveSuccess": "通知設定已儲存",
+      "saveError": "儲存通知設定失敗",
+      "gdprNote": "您必須明確同意才能接收通知（符合GDPR規範）"
     }
   },
   "post": {
@@ -819,6 +846,46 @@
       "empty": {
         "celebrated": "過去30天內沒有流失的支持者 ✨"
       }
+    },
+    "analytics": {
+      "title": "分析",
+      "noData": "尚無可用資料。",
+      "mockBadge": "範例資料",
+      "cohort": {
+        "title": "同期群留存率（D1 / D7 / D30）",
+        "d1": "第1天",
+        "d7": "第7天",
+        "d30": "第30天"
+      },
+      "coupon": {
+        "title": "回流優惠券使用率",
+        "issued": "已發放",
+        "applied": "已使用",
+        "cancelReverted": "取消已撤回",
+        "expired": "已過期",
+        "redemptionRate": "使用率"
+      },
+      "newsletter": {
+        "title": "電子報開信與點擊率",
+        "openRate": "開信率",
+        "clickRate": "點擊率"
+      },
+      "funnel": {
+        "title": "贊助轉換漏斗",
+        "postClick": "貼文點擊",
+        "sponsorStart": "開始贊助",
+        "sponsorSuccess": "贊助完成",
+        "active30d": "30天活躍",
+        "conversionRate": "整體轉換率"
+      },
+      "dm": {
+        "title": "私訊互動",
+        "firstMessageRate": "首次私訊率",
+        "firstMessageHint": "傳送私訊的新贊助者比例",
+        "avgResponseTime": "平均回覆時間",
+        "avgResponseUnit": "藝術家中位數回覆時間",
+        "totalThreads": "總對話數"
+      }
     }
   },
   "tierBenefits": {
@@ -1053,6 +1120,19 @@
     },
     "subscription": {
       "appliedBadge": "{{discount}}% 折扣生效中"
+    }
+  },
+  "subscription": {
+    "renewal": {
+      "autoOn": "自動續訂",
+      "autoOff": "手動續訂",
+      "enableAutoRenew": "啟用自動續訂",
+      "disableAutoRenew": "停用自動續訂",
+      "renewNow": "立即續訂",
+      "renewing": "續訂中...",
+      "renewSuccess": "續訂成功！下次到期日: {{date}}",
+      "renewError": "續訂失敗，請再試一次。",
+      "expiryWarning": "{{days}}天後到期"
     }
   },
   "admin": {
@@ -1470,5 +1550,126 @@
       "publicToggle": "允许公开下载",
       "publicToggleNote": "启用后，任何人都可以下载您的新闻资料包。"
     }
+  },
+  "a11y": {
+    "skip": {
+      "toMain": "跳到主要内容",
+      "toNav": "跳到导航"
+    }
+  },
+  "accessibility": {
+    "pageTitle": "无障碍设置",
+    "simpleMode": {
+      "label": "简单模式",
+      "description": "增大文字大小和行距，减少动画以提升阅读便利性。",
+      "enabled": "简单模式已开启",
+      "disabled": "简单模式已关闭"
+    },
+    "focusMode": {
+      "label": "专注模式",
+      "description": "突出显示交互元素以便键盘导航。"
+    },
+    "announcements": {
+      "bidPlaced": "出价成功",
+      "bidFailed": "出价失败，请重试。",
+      "auctionEnded": "拍卖已结束",
+      "auctionUrgent": "剩余不足10秒",
+      "modalOpened": "对话框已打开",
+      "modalClosed": "对话框已关闭"
+    },
+    "settings": {
+      "saved": "无障碍设置已保存",
+      "saveError": "保存设置失败"
+    },
+    "contrast": {
+      "highContrastHint": "如需更高对比度，请使用操作系统高对比度模式。"
+    }
+  },
+  "currency": {
+    "label": {
+      "USD": "美元",
+      "KRW": "韩元",
+      "EUR": "欧元",
+      "JPY": "日元"
+    },
+    "switcher": {
+      "label": "选择货币",
+      "converted": "换算价格",
+      "native": "原始价格",
+      "saved": "货币偏好已保存"
+    }
+  },
+  "messaging": {
+    "loginRequired": "请登录以查看消息。",
+    "list": {
+      "title": "消息",
+      "empty": "暂无对话。",
+      "noMessages": "无消息",
+      "refresh": "刷新"
+    },
+    "conversation": {
+      "title": "对话",
+      "empty": "暂无消息。发送第一条消息吧！",
+      "closed": "[管理员已关闭此对话]",
+      "loadMore": "加载更早的消息",
+      "report": "举报",
+      "reportTitle": "举报此对话",
+      "reportPlaceholder": "请描述问题（最多500字）...",
+      "reportSubmit": "提交举报",
+      "reportSent": "举报已提交，感谢您的反馈。"
+    },
+    "message": {
+      "deleted": "[消息已删除]",
+      "edited": "已编辑",
+      "read": "已读",
+      "editAriaLabel": "编辑消息",
+      "deleteAriaLabel": "删除消息"
+    },
+    "composer": {
+      "placeholder": "输入消息...（Enter发送，Shift+Enter换行）",
+      "editPlaceholder": "编辑消息...",
+      "send": "发送",
+      "ariaLabel": "消息输入框"
+    }
+  },
+  "docent": {
+    "title": "作品解说",
+    "artist_label": "艺术家的话",
+    "ai_label": "AI 导览",
+    "toggle_show": "查看AI导览解说",
+    "toggle_hide": "收起AI导览解说",
+    "ai_disclaimer": "此解说由AI生成",
+    "generating": "AI正在分析作品...",
+    "generate_button": "生成AI导览",
+    "regenerate": "重新生成导览",
+    "generate_failed": "导览生成失败，请稍后再试。",
+    "disabled_by_artist": "艺术家已禁用AI导览。",
+    "opt_out_label": "禁用AI导览",
+    "opt_in_label": "启用AI导览",
+    "rate_limit_notice": "AI导览每天最多生成2次。",
+    "locale_only_ko": "仅提供韩语版本",
+    "by_artist": "艺术家亲笔",
+    "by_ai": "AI生成",
+    "edit_page": {
+      "section_title": "编辑导览",
+      "artist_text_label": "亲自撰写",
+      "artist_text_placeholder": "请自由描述关于作品的故事，可以介绍创作过程、灵感来源以及作品所蕴含的意义。",
+      "generate_button": "生成AI导览",
+      "opt_out_label": "禁用AI导览",
+      "save_button": "保存",
+      "save_success": "已保存"
+    }
+  },
+  "collections": {
+    "editors_pick": "Editor's Pick",
+    "subtitle": "AI策划的本周主题系列",
+    "works_count": "{{count}}件作品",
+    "week_label": "{{date}}当周",
+    "share": "分享",
+    "share_link_copied": "链接已复制",
+    "no_collections": "目前没有公开的系列",
+    "view_all": "查看所有系列",
+    "back": "返回系列列表",
+    "generated_by_ai": "AI策划系列"
   }
 }

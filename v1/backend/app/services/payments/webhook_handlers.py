@@ -158,7 +158,10 @@ async def handle_payment_requires_action(db: AsyncSession, event: dict) -> None:
 # ─── invoice.payment_succeeded ────────────────────────────────────────────────
 
 async def handle_invoice_payment_succeeded(db: AsyncSession, event: dict) -> None:
-    """Update subscription current_period_end on successful recurring charge."""
+    """Update subscription current_period_end on successful recurring charge.
+
+    B'-4 booster: enhanced audit log with renewal confirmation + period reset.
+    """
     obj = _get_object(event)
     sub_id = obj.get("subscription")
     if not sub_id:
@@ -170,6 +173,9 @@ async def handle_invoice_payment_succeeded(db: AsyncSession, event: dict) -> Non
     sub = result.scalar_one_or_none()
     if not sub:
         return
+
+    prev_status = sub.status
+    prev_period_end = sub.current_period_end
 
     # Update period end from invoice lines (best-effort)
     lines = obj.get("lines", {})
@@ -185,21 +191,41 @@ async def handle_invoice_payment_succeeded(db: AsyncSession, event: dict) -> Non
         sub.current_period_end = new_period_end
 
     # Reset past_due if subscription was in that state
-    if sub.status == "past_due":
+    was_past_due = sub.status == "past_due"
+    if was_past_due:
         sub.status = "active"
+
+    # B'-4: reset expiry notification stamp so cron can fire again next cycle
+    sub.expiry_notified_at = None
+
+    invoice_id = obj.get("id", "unknown")
+    amount_paid = obj.get("amount_paid", 0)
+    currency = obj.get("currency", "").upper()
 
     db.add(Notification(
         user_id=sub.sponsor_id,
         type="subscription_renewed",
         title="구독이 갱신되었습니다",
-        body="정기 후원이 성공적으로 갱신되었습니다.",
+        body=(
+            f"정기 후원이 성공적으로 갱신되었습니다."
+            + (f" 결제 금액: {amount_paid / 100:.0f} {currency}" if amount_paid else "")
+        ),
         link="/me/patronage",
     ))
     _log_action(
         "WEBHOOK_PROCESSED",
         event_type="invoice.payment_succeeded",
         event_id=event.get("id"),
+        invoice_id=invoice_id,
         subscription_id=sub_id,
+        sponsor_id=str(sub.sponsor_id),
+        prev_status=prev_status,
+        new_status=sub.status,
+        prev_period_end=str(prev_period_end) if prev_period_end else None,
+        new_period_end=str(new_period_end) if new_period_end else None,
+        was_past_due=was_past_due,
+        amount_paid=amount_paid,
+        currency=currency,
         result="success",
     )
 
@@ -207,7 +233,12 @@ async def handle_invoice_payment_succeeded(db: AsyncSession, event: dict) -> Non
 # ─── invoice.payment_failed ───────────────────────────────────────────────────
 
 async def handle_invoice_payment_failed(db: AsyncSession, event: dict) -> None:
-    """Mark subscription past_due on failed recurring charge."""
+    """Mark subscription past_due on failed recurring charge.
+
+    B'-4 booster: retry strategy metadata + user notification + admin alert.
+    Stripe will automatically retry based on its dunning configuration.
+    Backend records the attempt count for escalation logic.
+    """
     obj = _get_object(event)
     sub_id = obj.get("subscription")
     if not sub_id:
@@ -220,21 +251,63 @@ async def handle_invoice_payment_failed(db: AsyncSession, event: dict) -> None:
     if not sub:
         return
 
+    prev_status = sub.status
     if sub.status == "active":
         sub.status = "past_due"
+
+    # Stripe retry metadata
+    attempt_count = obj.get("attempt_count", 1)
+    next_payment_attempt = obj.get("next_payment_attempt")
+    invoice_id = obj.get("id", "unknown")
+    amount_due = obj.get("amount_due", 0)
+    currency = obj.get("currency", "").upper()
+
+    # User notification — escalate message based on attempt count
+    if attempt_count == 1:
+        body = "정기 후원 결제가 실패했습니다. 카드 정보를 업데이트해주세요."
+    elif attempt_count == 2:
+        body = "두 번째 결제 시도도 실패했습니다. 빠른 시일 내에 결제 수단을 업데이트해주세요."
+    else:
+        body = (
+            f"결제가 {attempt_count}회 실패했습니다. "
+            "지금 바로 카드를 업데이트하지 않으면 구독이 취소될 수 있습니다."
+        )
 
     db.add(Notification(
         user_id=sub.sponsor_id,
         type="subscription_payment_failed",
         title="구독 결제 실패",
-        body="정기 후원 결제가 실패했습니다. 카드 정보를 업데이트해주세요.",
+        body=body,
         link="/me/settings/payment",
     ))
+
+    # Admin alert: log structured warning for monitoring/alerting pickup
+    log.warning(
+        "STRIPE_RENEWAL_FAILED subscription_id=%s sponsor_id=%s invoice_id=%s "
+        "attempt_count=%s amount_due=%s %s prev_status=%s next_retry=%s",
+        sub_id,
+        sub.sponsor_id,
+        invoice_id,
+        attempt_count,
+        amount_due,
+        currency,
+        prev_status,
+        next_payment_attempt,
+    )
+
     _log_action(
         "WEBHOOK_PROCESSED",
         event_type="invoice.payment_failed",
         event_id=event.get("id"),
+        invoice_id=invoice_id,
         subscription_id=sub_id,
+        sponsor_id=str(sub.sponsor_id),
+        attempt_count=attempt_count,
+        next_payment_attempt=next_payment_attempt,
+        prev_status=prev_status,
+        new_status=sub.status,
+        amount_due=amount_due,
+        currency=currency,
         result="success",
     )
 

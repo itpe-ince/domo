@@ -1,4 +1,4 @@
-"""Integration tests for C-4 media-coverage-cms.
+"""Integration tests for C-4 media-coverage-cms + H'-4 click-tracking.
 
 Endpoints under test:
   POST   /admin/media-coverage          — admin create (201)
@@ -9,11 +9,14 @@ Endpoints under test:
   GET    /media-coverage                — public list locale+type filter (200)
   GET    /media-coverage                — public list artist_id filter (200)
   GET    /media-coverage/featured       — featured items (200)
+  POST   /media-coverage/{id}/click     — H'-4: click hit 200 (published)
+  POST   /media-coverage/{id}/click     — H'-4: click hit 404 (not found)
+  POST   /media-coverage/{id}/click     — H'-4: click hit 422 (invalid uuid)
 
 Strategy: direct endpoint function calls with AsyncMock DB + MagicMock objects.
 No real DB required. Mirrors test_admin_featured_artists.py pattern.
 
-Test count: 8
+Test count: 11
 """
 from __future__ import annotations
 
@@ -32,6 +35,7 @@ from app.api.admin_media_coverage import (
 from app.api.media_coverage import (
     get_featured_media_coverage,
     list_media_coverage,
+    record_media_coverage_click,
 )
 from app.core.errors import ApiError
 from app.schemas.media_coverage import (
@@ -332,3 +336,59 @@ async def test_get_featured_media_coverage_200():
     for item in result["data"]:
         assert item["is_featured"] is True
         assert item["is_published"] is True
+
+
+# ─── Test 9: POST /media-coverage/{id}/click — 200 (published entry) ────────
+
+
+@pytest.mark.asyncio
+async def test_record_media_coverage_click_200():
+    """200 — click hit recorded for a published media coverage entry."""
+    row = _make_coverage_row(is_published=True)
+    db = _make_db_returning(row, single=True)
+
+    result = await record_media_coverage_click(
+        entry_id=str(row.id),
+        db=db,
+        _rl=None,
+    )
+
+    assert result == {"ok": True}
+
+
+# ─── Test 10: POST /media-coverage/{id}/click — 404 (not found) ──────────────
+
+
+@pytest.mark.asyncio
+async def test_record_media_coverage_click_404_not_found():
+    """404 — click hit for non-existent or unpublished entry raises ApiError."""
+    db = _make_db_returning(None, single=True)
+
+    with pytest.raises(ApiError) as exc_info:
+        await record_media_coverage_click(
+            entry_id=str(uuid.uuid4()),
+            db=db,
+            _rl=None,
+        )
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.code == "NOT_FOUND"
+
+
+# ─── Test 11: POST /media-coverage/{id}/click — 422 (invalid uuid) ───────────
+
+
+@pytest.mark.asyncio
+async def test_record_media_coverage_click_422_invalid_uuid():
+    """422 — click hit with a malformed UUID raises ApiError."""
+    db = AsyncMock()
+
+    with pytest.raises(ApiError) as exc_info:
+        await record_media_coverage_click(
+            entry_id="not-a-valid-uuid",
+            db=db,
+            _rl=None,
+        )
+
+    assert exc_info.value.status_code == 422
+    assert exc_info.value.code == "INVALID_ID"

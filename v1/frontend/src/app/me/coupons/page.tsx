@@ -49,7 +49,7 @@ export default function MyCouponsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <main className="max-w-2xl mx-auto px-4 py-8" aria-label={t("coupon.user.title")}>
       <h1 className="text-2xl font-bold text-text-primary mb-6">
         {t("coupon.user.title")}
       </h1>
@@ -130,6 +130,6 @@ export default function MyCouponsPage() {
           ))}
         </ul>
       )}
-    </div>
+    </main>
   );
 }

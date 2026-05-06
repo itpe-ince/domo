@@ -12,9 +12,15 @@ import { useRouter } from "next/navigation";
 import { useI18n } from "@/i18n";
 import { fetchMe } from "@/lib/api";
 import type { NewsletterIssueOut } from "@/lib/api";
+import dynamic from "next/dynamic";
 import { useAdminNewsletter } from "@/lib/hooks/useAdminNewsletter";
 import { NewsletterIssuesList } from "@/components/admin/NewsletterIssuesList";
-import { NewsletterIssueEditor } from "@/components/admin/NewsletterIssueEditor";
+
+// Heavy editor modal — lazy-load so the list view chunk stays lean
+const NewsletterIssueEditor = dynamic(
+  () => import("@/components/admin/NewsletterIssueEditor").then((m) => ({ default: m.NewsletterIssueEditor })),
+  { ssr: false, loading: () => null }
+);
 
 export default function AdminNewsletterPage() {
   const { t } = useI18n();

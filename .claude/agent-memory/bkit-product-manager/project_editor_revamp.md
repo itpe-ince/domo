@@ -1,6 +1,6 @@
 ---
-name: domo Phase 4 종결 + Phase 5 로드맵 상태
-description: editor-revamp-roadmap 11/11 완료 종결 + Phase 5 D/B 단계 로드맵 현황 (2026-05-04 기준)
+name: domo Phase 4~10 로드맵 상태
+description: Phase 4~9 종결 현황 + Phase 10 로드맵 계획 (2026-05-06 기준)
 type: project
 ---
 
@@ -8,41 +8,62 @@ type: project
 
 editor-revamp-roadmap 11/11 sub-PDCA 모두 archived. Match Rate 평균 ~98%.
 
-완료 목록: #1 role-gating(98%), #2 draft-autosave, #3 responsive-redesign(96%), #4 media-ux(95%), #6-image media-studio(96%), #8 publish-controls(100%), #10 artist-tier-release, #11 auction-promotion-suite(97%)
+---
 
-Deferred: #9 artist-pricing-assist (데이터 축적 부족, Phase 4.5)
+**Phase 5~7 누적 완료 (2026-05-05 기준)**
 
-**Why:** Phase 4 Critical Path 완주. 에디터/발행 인프라 완성 → Phase 5로 전환.
+- Phase 5: D(6)+B(6) = 12 sub-PDCAs. Blue Bird Patronage 후원 인프라 완성.
+- Phase 6: D'(5/6)+A(8/8) = 13/13 sub-PDCAs 100%. 그로스해킹 깔때기 + 신진작가 인덱스 + 스토리텔링 허브.
+- Phase 7: G'(10/10)+C(5/5) = 15/15 sub-PDCAs 100%. Tech Debt 청산 + 마케팅 허브 자동화(AI 인터뷰 + Press Kit + Newsletter).
+- 누적 지표: 77 → 311 passed / alembic 0043 → 0058 / ~2850+ i18n × 5 locales / 8 cron workers (R-5 격리)
 
-**How to apply:** Phase 5 로드맵 문서: `/Users/sangincha/dev/domo/v1/docs/01-plan/features/domo-phase5-roadmap.plan.md`
+**Phase 8 완료 (2026-05-05 기준)**
+
+- Phase 8: G''(5/5)+H'(6/6)+B'(5/5) = 15/15(+G''-6 Phase 9 defer) sub-PDCAs 100%.
+- G'': OpenTelemetry X-Ray + Redis ElastiCache + N+1 audit + DB pool. p95 187ms, Redis hit 73%.
+- H': VoiceOver/NVDA WCAG AA + CJK PDF + Multi-language SEO + Click tracking + SES bounce + ML 데이터(50K events).
+- B': Multi-currency(USD/KRW/EUR/JPY) + DM 1:1 + FCM/APNs Push + Stripe 자동갱신 96.3% + 후원 analytics.
+- 누적 지표: 311 → 412 passed (+101) / alembic 0050~0065 (16건) / Cron 11개 R-5 격리 / i18n +1500 × 5 locales.
+
+**Why:** Phase 8까지 후원 인프라 Maturity 완성. Phase 9 = Carry-over 청산 + ML/AI 고도화.
+
+**How to apply:**
+- Phase 8 plan: `/Users/sangincha/dev/domo/v1/docs/archive/2026-05/domo-phase8-roadmap/plan.md`
+- Phase 9 plan: `/Users/sangincha/dev/domo/v1/docs/01-plan/features/domo-phase9-roadmap.plan.md`
 
 ---
 
-**Phase 5 계획 (2026-05-04 초안)**
+**Phase 9 종결 (2026-05-06 기준)**
 
-총 12 sub-PDCA (D 6 + B 6), 10~12주 예정.
+총 9 sub-PDCAs (L 6 + K Wave 1 3) 100% 완료. 가중 Match Rate 93.0%.
 
-**D 단계 — Tech Debt Stabilization (1~2주)**
-- D-1 `editor-i18n-cleanup-v3` (Must, ~3일) — #3/#4/#11 carry-over 25곳 i18n + namespace 통합
-- D-2 `upload-retry-ui` (Should, ~3일) — #4 R-FE-7 carry-over (retry/cancel 버튼). plan 이미 존재
-- D-3 `series-reorder-persistence` (Must, ~2일) — #8 carry-over 서버 영속화
-- D-4 `notifications-ux-audit` (Must, ~3일) — #12 Phase 3 독립 → D로 편입
-- D-5 `server-side-notification-i18n` (Should, ~1일) — #11 m-2 서버사이드 i18n
-- D-6 `observability-monitoring-baseline` (Should, ~3일) — Prometheus + EXPLAIN ANALYZE 게이트
-- D-7 defer → Phase 5.5
+- L-A~L-F: Phase 8 carry-over 청산 + pgvector 임베딩 인프라 완성
+- K-1: ML 피드 v2 (Collaborative Filtering, alembic 0073) — Critical Path 완성
+- K-3: AI 작품 캡션 (alembic 0078, vision LLM + translation_cache)
+- K-5: LLM 도슨트 (alembic 0079, 3~5문단 큐레이터 해설)
+- 누적: 테스트 510→581(+71), alembic 0066~0079 (14건), cron 16→21
 
-병렬 전략(OQ-1=B 권장): 그룹A(D-1+D-3+D-5) 동시 + 그룹B(D-2+D-4) 동시 → D-6 순차
+**Phase 9 Carry-over 11항목 → Phase 10 CO-1으로 이월**
 
-**B 단계 — Blue Bird Patronage UI (8~10주)**
-- B-1 `bluebird-sponsor-flow` (Must, ~10일) — Critical Path. Stripe SetupIntent + 일회/정기
-- B-2 `artist-patronage-dashboard` (Must, ~8일)
-- B-3 `supporter-dashboard` (Must, ~5일) — B-2와 병렬
-- B-4 `tier-benefits-customization` (Should, ~5일)
-- B-5 `patronage-retention-ux` (Should, ~5일) — B-4와 병렬
-- B-6 `patronage-i18n-a11y-audit` (Must, ~3일) — 마무리
+---
 
-재사용 인프라: KYC(P3-2 ✅), 정산 배치(P3-3 ✅), artist-tier-release(#10 ✅), sponsorships 모델
+**Phase 10 계획 (2026-05-06 초안, 사용자 옵션 A 수락)**
 
-**Phase 5 OQ-1~OQ-8**: 권장 default 표 `/domo-phase5-roadmap.plan.md §3` 참조. "권장대로" 일괄 수락 시 즉시 D 단계 진입 가능.
+총 6 sub-PDCAs (K Wave 2 5 + CO-1 1), 6~8주 예정.
 
-**Phase 4 lessons → Phase 5 적용**: cron 격리(R-5), computed effective state, idempotent dispatch, OQ 일괄 수락 패턴, Schema Sync Checklist, i18n Exhaustive Check
+- Wave A (즉시, 병렬): K-8 `ml-ab-test-infra` (alembic 0080) + K-2 `feed-diversity-reranking` (alembic 0081)
+- Wave B (Wave A +2주, 병렬): K-4 `ai-featured-artist` (alembic 0082) + K-7 `ai-curation-collection` (alembic 0083)
+- Wave C (조건부, 거래≥100건): K-6 `ai-price-recommendation` (alembic 0084 예약)
+- Wave D (Wave A 병행): CO-1 `phase9-carryover-cleanup` (6 sub-task PR, alembic 없음)
+
+**alembic 사전 배정**: 0080(ml_experiments+assignments) 0081(diversity_constraints) 0082(featured_artist_candidates) 0083(ai_collections+posts) 0084(예약, K-6)
+
+**Phase 10 OQ-1~OQ-15**: 권장 default 표 `/v1/docs/01-plan/features/domo-phase10-roadmap.plan.md §5` 참조.
+
+**Phase 10 plan**: `/Users/sangincha/dev/domo/v1/docs/01-plan/features/domo-phase10-roadmap.plan.md`
+
+**Why:** K-1 출시 후 운영 데이터 기반 A/B 검증 + Diversity Reranking으로 ML 피드 가치 측정. CO-1로 기술 부채 완전 청산.
+
+**How to apply:**
+- Phase 9 archived: `/Users/sangincha/dev/domo/v1/docs/archive/2026-05/domo-phase9-roadmap/`
+- Phase 10 plan: `/Users/sangincha/dev/domo/v1/docs/01-plan/features/domo-phase10-roadmap.plan.md`

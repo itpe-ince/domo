@@ -11,6 +11,7 @@
  *   - Cancel subscription action (opens CancelSubscriptionModal)
  *   - Placeholder "change amount" CTA (B-5 scope)
  *   - D'-3: active coupon inline badge
+ *   - B'-4: auto_renew toggle + expiry 7d warning + "지금 갱신" button
  */
 
 import { useState } from "react";
@@ -40,6 +41,15 @@ function getTierFromBluebirds(monthly_bluebird: number): string {
   return "follower";
 }
 
+/** Days until current_period_end. Returns null if no period end. */
+function daysUntilExpiry(current_period_end: string | null): number | null {
+  if (!current_period_end) return null;
+  const end = new Date(current_period_end);
+  const now = new Date();
+  const diff = Math.floor((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return diff;
+}
+
 type Props = {
   subscription: SubscriptionView;
   cancelling: boolean;
@@ -49,6 +59,12 @@ type Props = {
   resubscribing?: boolean;
   /** D'-3: active coupon applied to this subscription (if any) */
   activeCoupon?: AppliedCouponView | null;
+  /** B'-4: manual renew handler */
+  onRenew?: (subscriptionId: string) => void;
+  renewing?: boolean;
+  /** B'-4: auto-renew toggle handler */
+  onToggleAutoRenew?: (subscriptionId: string, enabled: boolean) => void;
+  togglingAutoRenew?: boolean;
 };
 
 export function SubscriptionCard({
@@ -58,6 +74,10 @@ export function SubscriptionCard({
   onResubscribe,
   resubscribing = false,
   activeCoupon = null,
+  onRenew,
+  renewing = false,
+  onToggleAutoRenew,
+  togglingAutoRenew = false,
 }: Props) {
   const { t } = useI18n();
   const [benefitsOpen, setBenefitsOpen] = useState(false);
@@ -67,6 +87,15 @@ export function SubscriptionCard({
   const isActive = subscription.status === "active" || subscription.status === "past_due";
   const isCancelled =
     subscription.status === "cancelled" || subscription.cancel_at_period_end;
+
+  const daysLeft = daysUntilExpiry(subscription.current_period_end);
+  // Show expiry warning when 7 days or fewer remain and subscription is active
+  const showExpiryWarning =
+    isActive &&
+    !isCancelled &&
+    daysLeft !== null &&
+    daysLeft >= 0 &&
+    daysLeft <= 7;
 
   const tierBenefits: Record<string, string[]> = {
     subscriber: [
@@ -129,6 +158,21 @@ export function SubscriptionCard({
                 {subscription.status}
                 {subscription.cancel_at_period_end && ` · ${t("patronage.supporter.subscriptions.cancelAtEnd")}`}
               </span>
+
+              {/* B'-4: auto-renew badge */}
+              {isActive && !isCancelled && (
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${
+                    subscription.auto_renew_enabled
+                      ? "bg-blue-50 text-blue-600 border-blue-200"
+                      : "bg-surface text-text-muted border-border"
+                  }`}
+                >
+                  {subscription.auto_renew_enabled
+                    ? t("subscription.renewal.autoOn")
+                    : t("subscription.renewal.autoOff")}
+                </span>
+              )}
             </div>
 
             <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-text-muted">
@@ -185,6 +229,30 @@ export function SubscriptionCard({
           </div>
         )}
 
+        {/* B'-4: 7-day expiry warning inline banner */}
+        {showExpiryWarning && (
+          <div className="mx-4 mb-2 px-3 py-2 rounded-md bg-amber-50 border border-amber-200 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-amber-500 flex-shrink-0" aria-hidden="true">⏳</span>
+              <p className="text-xs font-medium text-amber-800">
+                {t("subscription.renewal.expiryWarning").replace("{{days}}", String(daysLeft))}
+              </p>
+            </div>
+            {onRenew && (
+              <button
+                onClick={() => onRenew(subscription.id)}
+                disabled={renewing}
+                className="flex-shrink-0 px-3 py-1 text-xs font-semibold bg-amber-600 text-white rounded-full hover:bg-amber-700 transition-colors disabled:opacity-50"
+                aria-busy={renewing}
+              >
+                {renewing
+                  ? t("subscription.renewal.renewing")
+                  : t("subscription.renewal.renewNow")}
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Tier benefits expand */}
         {benefitsOpen && (
           <div className="border-t border-border px-4 py-3 bg-surface/50">
@@ -224,6 +292,30 @@ export function SubscriptionCard({
             {t("patronage.supporter.subscriptions.changeAmount")}
           </button>
 
+          {/* B'-4: Auto-renew toggle (active subscriptions only) */}
+          {isActive && !isCancelled && onToggleAutoRenew && (
+            <>
+              <span className="text-border text-xs">|</span>
+              <button
+                onClick={() =>
+                  onToggleAutoRenew(subscription.id, !subscription.auto_renew_enabled)
+                }
+                disabled={togglingAutoRenew}
+                className="text-xs text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50"
+                aria-busy={togglingAutoRenew}
+                title={
+                  subscription.auto_renew_enabled
+                    ? t("subscription.renewal.disableAutoRenew")
+                    : t("subscription.renewal.enableAutoRenew")
+                }
+              >
+                {subscription.auto_renew_enabled
+                  ? t("subscription.renewal.disableAutoRenew")
+                  : t("subscription.renewal.enableAutoRenew")}
+              </button>
+            </>
+          )}
+
           {isActive && !isCancelled && (
             <>
               <span className="text-border text-xs">|</span>
@@ -249,6 +341,23 @@ export function SubscriptionCard({
                 {resubscribing
                   ? t("retention.resubscribe.confirming")
                   : t("retention.resubscribe.cta")}
+              </button>
+            </>
+          )}
+
+          {/* B'-4: Manual renew for cancel_at_period_end subscriptions */}
+          {isActive && subscription.cancel_at_period_end && onRenew && !showExpiryWarning && (
+            <>
+              <span className="text-border text-xs">|</span>
+              <button
+                onClick={() => onRenew(subscription.id)}
+                disabled={renewing}
+                className="text-xs text-primary hover:underline disabled:opacity-50"
+                aria-busy={renewing}
+              >
+                {renewing
+                  ? t("subscription.renewal.renewing")
+                  : t("subscription.renewal.renewNow")}
               </button>
             </>
           )}

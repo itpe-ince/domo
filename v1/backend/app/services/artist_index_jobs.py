@@ -26,9 +26,12 @@ from app.core.metrics import (
 )
 from app.db.session import AsyncSessionLocal
 from app.models.user import User
-from app.services.artist_index_scoring import ScoreComponents, calc_artist_score, calc_region_score, calc_genre_score
+from app.services.artist_index_scoring import ScoreComponents, calc_artist_score, calc_genre_score, calc_region_score
+from app.services.otel_setup import get_tracer
 
 log = logging.getLogger(__name__)
+
+tracer = get_tracer(__name__)
 
 # ─── Lookback window for "recent activity" ───────────────────────────────────
 _RECENT_DAYS = 30
@@ -395,18 +398,27 @@ async def recalc_all_artist_scores(db) -> int:
 
 async def artist_index_cron_loop(interval_seconds: int = 3600) -> None:
     """1-hour cron loop — R-5 격리: separate AsyncSessionLocal + separate metric label."""
+    from app.services.cache import cache  # late import to avoid circular at module load
+
     log.info(
         "artist_index_cron_loop started (interval=%ss)", interval_seconds
     )
     while True:
+        n = 0
         try:
-            with record_cron_run("artist_index"):
-                with artist_index_calc_duration_seconds.labels(phase="full").time():
-                    async with AsyncSessionLocal() as db:
-                        n = await recalc_all_artist_scores(db)
-                    cron_rows_processed_total.labels(worker="artist_index").inc(n)
-                    artist_index_artists_total.labels(status="ranked").inc(0)
-                    log.info("artist_index sweep complete: %d artists ranked", n)
+            with tracer.start_as_current_span("cron.artist_index") as span:
+                with record_cron_run("artist_index"):
+                    with artist_index_calc_duration_seconds.labels(phase="full").time():
+                        async with AsyncSessionLocal() as db:
+                            n = await recalc_all_artist_scores(db)
+                        cron_rows_processed_total.labels(worker="artist_index").inc(n)
+                        artist_index_artists_total.labels(status="ranked").inc(0)
+                        log.info("artist_index sweep complete: %d artists ranked", n)
+                span.set_attribute("artists_ranked", n)
+
+            # Invalidate artist index cache — fresh rankings available (G''-2)
+            deleted = await cache.delete_pattern("artists:index:*", reason="cron_artist_index")
+            log.info("artist_index cache invalidated: %d keys deleted", deleted)
         except Exception:
             log.exception("artist_index cron sweep failed")
         await asyncio.sleep(interval_seconds)

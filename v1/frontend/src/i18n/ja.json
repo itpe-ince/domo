@@ -30,6 +30,7 @@
     "following": "フォロー中",
     "explore": "探索",
     "notifications": "通知",
+    "messages": "メッセージ",
     "profile": "プロフィール",
     "register": "投稿",
     "subscription": "定期支援",
@@ -43,7 +44,8 @@
     "patronageDashboard": "パトロネージュダッシュボード",
     "tierBenefits": "ティア特典設定",
     "artistIndex": "アーティストインデックス",
-    "stories": "ストーリーハブ"
+    "stories": "ストーリーハブ",
+    "accessibilitySettings": "アクセシビリティ"
   },
   "home": {
     "title": "Domo Lounge",
@@ -187,6 +189,31 @@
         "system": "システム"
       },
       "markedAsRead": "{{count}}件の通知を既読にしました"
+    },
+    "preferences": {
+      "title": "通知設定",
+      "subtitle": "受け取りたい通知を選択してください",
+      "pushSection": "プッシュ通知",
+      "emailSection": "メール通知",
+      "pushEnabled": "プッシュ通知（全体）",
+      "emailEnabled": "メールダイジェスト（全体）",
+      "digestFrequency": "ダイジェスト頻度",
+      "frequency": {
+        "weekly": "毎週",
+        "biweekly": "隔週",
+        "monthly": "毎月",
+        "never": "受け取らない"
+      },
+      "types": {
+        "auction": "オークション通知",
+        "sponsorship": "スポンサー通知",
+        "engagement": "いいね・コメント通知",
+        "system": "システム通知",
+        "digest": "ダイジェスト"
+      },
+      "saveSuccess": "通知設定を保存しました",
+      "saveError": "通知設定の保存に失敗しました",
+      "gdprNote": "通知を受け取るには明示的な同意が必要です（GDPR準拠）"
     }
   },
   "post": {
@@ -819,6 +846,46 @@
       "empty": {
         "celebrated": "過去30日間に離脱した支援者はいません ✨"
       }
+    },
+    "analytics": {
+      "title": "分析",
+      "noData": "まだデータがありません。",
+      "mockBadge": "サンプルデータ",
+      "cohort": {
+        "title": "コホートリテンション（D1 / D7 / D30）",
+        "d1": "1日目",
+        "d7": "7日目",
+        "d30": "30日目"
+      },
+      "coupon": {
+        "title": "ウィンバッククーポン使用率",
+        "issued": "発行",
+        "applied": "適用",
+        "cancelReverted": "キャンセル取り消し",
+        "expired": "期限切れ",
+        "redemptionRate": "使用率"
+      },
+      "newsletter": {
+        "title": "ニュースレター開封・クリック率",
+        "openRate": "開封率",
+        "clickRate": "クリック率"
+      },
+      "funnel": {
+        "title": "スポンサーシップ転換ファネル",
+        "postClick": "投稿クリック",
+        "sponsorStart": "スポンサー開始",
+        "sponsorSuccess": "スポンサー完了",
+        "active30d": "30日アクティブ",
+        "conversionRate": "全体転換率"
+      },
+      "dm": {
+        "title": "DMエンゲージメント",
+        "firstMessageRate": "初回メッセージ率",
+        "firstMessageHint": "DMを送った新規支援者の割合",
+        "avgResponseTime": "平均返信時間",
+        "avgResponseUnit": "アーティストの中央値返信時間",
+        "totalThreads": "総スレッド数"
+      }
     }
   },
   "tierBenefits": {
@@ -1053,6 +1120,19 @@
     },
     "subscription": {
       "appliedBadge": "{{discount}}% 割引適用中"
+    }
+  },
+  "subscription": {
+    "renewal": {
+      "autoOn": "自動更新",
+      "autoOff": "手動更新",
+      "enableAutoRenew": "自動更新を有効にする",
+      "disableAutoRenew": "自動更新を無効にする",
+      "renewNow": "今すぐ更新",
+      "renewing": "更新中...",
+      "renewSuccess": "更新完了！次の満了日: {{date}}",
+      "renewError": "更新に失敗しました。再試行してください。",
+      "expiryWarning": "{{days}}日後に満了します"
     }
   },
   "admin": {
@@ -1470,5 +1550,126 @@
       "publicToggle": "公開ダウンロードを許可",
       "publicToggleNote": "有効にすると、誰でもあなたのプレスキットをダウンロードできます。"
     }
+  },
+  "a11y": {
+    "skip": {
+      "toMain": "メインコンテンツへスキップ",
+      "toNav": "ナビゲーションへスキップ"
+    }
+  },
+  "accessibility": {
+    "pageTitle": "アクセシビリティ設定",
+    "simpleMode": {
+      "label": "シンプルモード",
+      "description": "テキストサイズと行間を広げ、アニメーションを減らして読みやすくします。",
+      "enabled": "シンプルモードオン",
+      "disabled": "シンプルモードオフ"
+    },
+    "focusMode": {
+      "label": "フォーカスモード",
+      "description": "キーボードナビゲーション用にインタラクティブ要素を強調します。"
+    },
+    "announcements": {
+      "bidPlaced": "入札が完了しました",
+      "bidFailed": "入札に失敗しました。もう一度お試しください。",
+      "auctionEnded": "オークションが終了しました",
+      "auctionUrgent": "残り10秒以下",
+      "modalOpened": "ダイアログが開きました",
+      "modalClosed": "ダイアログが閉じました"
+    },
+    "settings": {
+      "saved": "アクセシビリティ設定を保存しました",
+      "saveError": "設定の保存に失敗しました"
+    },
+    "contrast": {
+      "highContrastHint": "より高いコントラストにはOSの高コントラストモードをご利用ください。"
+    }
+  },
+  "currency": {
+    "label": {
+      "USD": "米ドル",
+      "KRW": "韓国ウォン",
+      "EUR": "ユーロ",
+      "JPY": "日本円"
+    },
+    "switcher": {
+      "label": "通貨を選択",
+      "converted": "換算価格",
+      "native": "元の価格",
+      "saved": "通貨設定を保存しました"
+    }
+  },
+  "messaging": {
+    "loginRequired": "メッセージを見るにはログインしてください。",
+    "list": {
+      "title": "メッセージ",
+      "empty": "まだ会話がありません。",
+      "noMessages": "メッセージなし",
+      "refresh": "更新"
+    },
+    "conversation": {
+      "title": "会話",
+      "empty": "まだメッセージがありません。最初のメッセージを送りましょう！",
+      "closed": "[管理者により会話が終了されました]",
+      "loadMore": "以前のメッセージを読み込む",
+      "report": "報告",
+      "reportTitle": "この会話を報告",
+      "reportPlaceholder": "問題を説明してください（最大500文字）...",
+      "reportSubmit": "報告を送信",
+      "reportSent": "報告を受け付けました。ありがとうございます。"
+    },
+    "message": {
+      "deleted": "[削除されたメッセージ]",
+      "edited": "編集済み",
+      "read": "既読",
+      "editAriaLabel": "メッセージを編集",
+      "deleteAriaLabel": "メッセージを削除"
+    },
+    "composer": {
+      "placeholder": "メッセージを入力... (Enterで送信、Shift+Enterで改行)",
+      "editPlaceholder": "メッセージを編集...",
+      "send": "送信",
+      "ariaLabel": "メッセージ入力欄"
+    }
+  },
+  "docent": {
+    "title": "作品解説",
+    "artist_label": "作家のコメント",
+    "ai_label": "AIドーセント",
+    "toggle_show": "AI解説を見る",
+    "toggle_hide": "AI解説を閉じる",
+    "ai_disclaimer": "この解説はAIが生成したものです",
+    "generating": "AIが作品を分析中...",
+    "generate_button": "AIドーセントを生成",
+    "regenerate": "ドーセントを再生成",
+    "generate_failed": "解説の生成に失敗しました。後でもう一度お試しください。",
+    "disabled_by_artist": "作家がAIドーセントを無効にしました。",
+    "opt_out_label": "AIドーセントを無効にする",
+    "opt_in_label": "AIドーセントを有効にする",
+    "rate_limit_notice": "AIドーセントは1日2回まで生成できます。",
+    "locale_only_ko": "韓国語のみ提供",
+    "by_artist": "作家による記述",
+    "by_ai": "AI生成",
+    "edit_page": {
+      "section_title": "ドーセント編集",
+      "artist_text_label": "直接記述",
+      "artist_text_placeholder": "作品についてのストーリーを自由に書いてください。制作過程、インスピレーションの源、作品に込めた意味などを自由に記述できます。",
+      "generate_button": "AIドーセントを生成",
+      "opt_out_label": "AIドーセントを無効にする",
+      "save_button": "保存",
+      "save_success": "保存しました"
+    }
+  },
+  "collections": {
+    "editors_pick": "Editor's Pick",
+    "subtitle": "AIがキュレーションした今週のテーマ別コレクション",
+    "works_count": "{{count}}作品",
+    "week_label": "{{date}}の週",
+    "share": "シェアする",
+    "share_link_copied": "リンクをコピーしました",
+    "no_collections": "現在公開中のコレクションはありません",
+    "view_all": "すべてのコレクションを見る",
+    "back": "コレクション一覧へ",
+    "generated_by_ai": "AIキュレーションコレクション"
   }
 }

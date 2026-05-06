@@ -117,6 +117,13 @@ class User(Base):
         String(100), nullable=True
     )
 
+    # B'-1 multi-currency-foundation — user display currency preference (alembic 0061).
+    # Supported: USD / KRW / EUR / JPY. Default USD.
+    # Updated via PATCH /v1/me/preferences/currency.
+    preferred_currency: Mapped[str] = mapped_column(
+        String(3), nullable=False, default="USD"
+    )
+
     # M3 GDPR fields (Phase 4)
     deleted_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True

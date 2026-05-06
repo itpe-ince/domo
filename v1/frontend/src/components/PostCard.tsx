@@ -15,10 +15,16 @@ import type { PostView } from "@/lib/api";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
 import { TierBadge } from "@/components/TierBadge";
 import { AuctionCountdown } from "@/components/AuctionCountdown";
-import { BluebirdModal } from "@/components/BluebirdModal";
+import dynamic from "next/dynamic";
+
+const BluebirdModal = dynamic(
+  () => import("@/components/BluebirdModal").then((m) => ({ default: m.BluebirdModal })),
+  { ssr: false, loading: () => null }
+);
 import { useI18n } from "@/i18n";
 import { captureEvent } from "@/lib/analytics/capture";
-import { formatPriceCents } from "@/lib/format";
+import { convertAndFormat } from "@/lib/format";
+import { useExchangeRates } from "@/lib/hooks/useExchangeRates";
 
 export function PostCard({
   post,
@@ -28,6 +34,7 @@ export function PostCard({
   source?: "feed" | "explore" | "search" | "profile";
 }) {
   const { t } = useI18n();
+  const { rates, currency: preferredCurrency } = useExchangeRates();
   const cover = post.media[0];
   const isProduct = post.type === "product";
   const isArtist = post.author.role === "artist";
@@ -82,7 +89,7 @@ export function PostCard({
             <div className="relative aspect-[4/5] bg-background overflow-hidden">
               <img
                 src={cover.thumbnail_url ?? cover.url}
-                alt={post.title ?? "post"}
+                alt={post.effective_caption || post.title || ""}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                 loading="lazy"
               />
@@ -126,7 +133,12 @@ export function PostCard({
 
             {post.product?.buy_now_price != null && post.product.buy_now_price > 0 && (
               <div className="text-primary font-medium text-sm">
-                {formatPriceCents(post.product.buy_now_price, post.product.currency || "KRW")}
+                {convertAndFormat(
+                  post.product.buy_now_price,
+                  post.product.buy_now_currency || post.product.currency || "USD",
+                  preferredCurrency,
+                  rates
+                )}
               </div>
             )}
 

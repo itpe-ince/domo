@@ -24,8 +24,12 @@ const config: Config = {
           primary: "#F5EFE4",
           secondary: "#B5A99A",
           muted: "#998F82",
+          // Phase 9 L-E: AAA 필수 위치 전용 토큰 (~10.2:1 on background)
+          subtle: "#C8BBAE",
         },
         danger: "#E85D5D",
+        // Phase 9 L-E: 경매 urgent 상태 AAA 대비 토큰 (~7.1:1 on background)
+        dangerAAA: "#F07070",
         warning: "#F0B14A",
         success: "#A8D76E",
       },

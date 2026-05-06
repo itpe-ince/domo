@@ -19,8 +19,11 @@ from app.core.metrics import cron_rows_processed_total, record_cron_run, tier_re
 from app.db.session import AsyncSessionLocal
 from app.models.post import Post
 from app.services.analytics import capture_event
+from app.services.otel_setup import get_tracer
 
 log = logging.getLogger(__name__)
+
+tracer = get_tracer(__name__)
 
 
 async def clear_expired_tier_release_once(db) -> int:
@@ -47,19 +50,21 @@ async def tier_release_cron_loop(interval_seconds: int = 60) -> None:
     log.info("tier_release_cron_loop started (interval=%ss)", interval_seconds)
     while True:
         try:
-            with record_cron_run("tier_release"):
-                async with AsyncSessionLocal() as db:
-                    count = await clear_expired_tier_release_once(db)
-                if count:
-                    log.info("tier_release: cleared %d post(s)", count)
-                    tier_release_cleared_rows_total.inc(count)
-                    cron_rows_processed_total.labels(worker="tier_release").inc(count)
-                    # G'-4: cron outcome event (system-level, distinct_id="system")
-                    capture_event(
-                        "system",
-                        "cron_run_completed_server",
-                        {"worker": "tier_release", "rows_processed": count},
-                    )
+            with tracer.start_as_current_span("cron.tier_release") as span:
+                with record_cron_run("tier_release"):
+                    async with AsyncSessionLocal() as db:
+                        count = await clear_expired_tier_release_once(db)
+                    span.set_attribute("rows_processed", count)
+                    if count:
+                        log.info("tier_release: cleared %d post(s)", count)
+                        tier_release_cleared_rows_total.inc(count)
+                        cron_rows_processed_total.labels(worker="tier_release").inc(count)
+                        # G'-4: cron outcome event (system-level, distinct_id="system")
+                        capture_event(
+                            "system",
+                            "cron_run_completed_server",
+                            {"worker": "tier_release", "rows_processed": count},
+                        )
         except Exception:
             log.exception("tier_release cron sweep failed")
         await asyncio.sleep(interval_seconds)

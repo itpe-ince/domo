@@ -108,7 +108,7 @@ export function GalleryView() {
                   trending[0].media[0].thumbnail_url ??
                   trending[0].media[0].url
                 }
-                alt=""
+                alt={trending[0].effective_caption || trending[0].title || ""}
                 className="w-full h-full object-cover"
               />
             )}
@@ -214,7 +214,7 @@ function CardRow({ title, posts }: { title: string; posts: PostView[] }) {
                   src={
                     post.media[0].thumbnail_url ?? post.media[0].url
                   }
-                  alt=""
+                  alt={post.effective_caption || post.title || ""}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (

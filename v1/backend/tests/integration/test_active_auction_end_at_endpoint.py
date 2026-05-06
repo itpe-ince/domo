@@ -63,6 +63,12 @@ def _make_product_post(
     p.comments_enabled = True
     p.early_access_until = None
     p.early_access_tier = None
+    # K-3 AI caption fields
+    p.ai_caption = None
+    p.ai_caption_locale_translations = {}
+    p.ai_caption_model_version = None
+    p.ai_caption_generated_at = None
+    p.caption_override = None
     return p
 
 
@@ -112,8 +118,13 @@ async def test_feed_includes_active_auction_end_at():
     auction_rows = MagicMock()
     auction_rows.all.return_value = [(post.id, end_at)]
 
+    # K-8: home_feed now looks up ml_experiment_assignments at the start
+    experiment_result = MagicMock()
+    experiment_result.fetchone.return_value = None  # no active experiment
+
     db = AsyncMock()
     execute_calls = [
+        experiment_result, # K-8: ml_experiment lookup (no active experiment)
         follows_result,    # Follow.followee_id query
         trending_result,   # trending posts query
         authors_result,    # author bulk query

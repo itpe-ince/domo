@@ -10,11 +10,20 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/i18n";
 import { fetchMe } from "@/lib/api";
+import dynamic from "next/dynamic";
 import { useAdminInterviews } from "@/lib/hooks/useAdminInterviews";
-import { InterviewGenerateModal } from "@/components/admin/InterviewGenerateModal";
-import { InterviewReviewModal } from "@/components/admin/InterviewReviewModal";
 import { InterviewsList } from "@/components/admin/InterviewsList";
 import type { ArtistInterviewOut } from "@/lib/api";
+
+// Heavy admin modals — lazy-load to keep the interviews list chunk small
+const InterviewGenerateModal = dynamic(
+  () => import("@/components/admin/InterviewGenerateModal").then((m) => ({ default: m.InterviewGenerateModal })),
+  { ssr: false, loading: () => null }
+);
+const InterviewReviewModal = dynamic(
+  () => import("@/components/admin/InterviewReviewModal").then((m) => ({ default: m.InterviewReviewModal })),
+  { ssr: false, loading: () => null }
+);
 
 const STATUS_TABS = [
   "admin_review",
