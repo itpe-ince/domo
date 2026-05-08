@@ -72,7 +72,7 @@ async def test_admin_cannot_change_own_role():
     body = UserUpdateRequest(role="user")  # 자신의 role을 user로 낮추려 시도
 
     with pytest.raises(ApiError) as exc_info:
-        await update_user(user_id=admin_id, body=body, admin=admin, db=db)
+        await update_user(user_id=admin_id, body=body, admin=admin, request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db)
 
     assert exc_info.value.status_code == 400
     assert exc_info.value.code == "SELF_MODIFY_FORBIDDEN"
@@ -93,7 +93,7 @@ async def test_admin_cannot_suspend_self():
     body = UserUpdateRequest(status="suspended")
 
     with pytest.raises(ApiError) as exc_info:
-        await update_user(user_id=admin_id, body=body, admin=admin, db=db)
+        await update_user(user_id=admin_id, body=body, admin=admin, request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db)
 
     assert exc_info.value.status_code == 400
     assert exc_info.value.code == "SELF_MODIFY_FORBIDDEN"
@@ -115,7 +115,7 @@ async def test_admin_can_change_other_user_role_to_admin():
     body = UserUpdateRequest(role="admin")
 
     with patch("app.api.admin.users.revoke_user_tokens", new=AsyncMock()) as mock_revoke:
-        result = await update_user(user_id=target_id, body=body, admin=admin, db=db)
+        result = await update_user(user_id=target_id, body=body, admin=admin, request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db)
         mock_revoke.assert_awaited_once_with(db, target_id, reason="admin_role_change")
 
     assert result["data"]["role"] == "admin"
@@ -137,7 +137,7 @@ async def test_admin_can_change_other_user_role():
     body = UserUpdateRequest(role="user")
 
     with patch("app.api.admin.users.revoke_user_tokens", new=AsyncMock()) as mock_revoke:
-        result = await update_user(user_id=target_id, body=body, admin=admin, db=db)
+        result = await update_user(user_id=target_id, body=body, admin=admin, request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db)
         # 토큰 revoke 호출 확인
         mock_revoke.assert_awaited_once()
 

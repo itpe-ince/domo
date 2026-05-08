@@ -9,7 +9,7 @@ import logging
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +18,7 @@ from app.core.admin_deps import require_admin_with_2fa
 from app.core.errors import ApiError
 from app.db.session import get_db
 from app.models.user import User
+from app.services.audit_log import record_audit
 
 log = logging.getLogger(__name__)
 
@@ -128,6 +129,7 @@ async def list_diversity_configs(
 async def patch_diversity_config(
     name: str,
     body: DiversityConfigPatch,
+    request: Request,
     admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
 ):
@@ -143,12 +145,19 @@ async def patch_diversity_config(
 
     # 해당 config 존재 여부 확인
     check_result = await db.execute(
-        text("SELECT id FROM diversity_configs WHERE name = :name"),
+        text("""
+            SELECT id, emerging_artist_boost, genre_min_diversity,
+                   region_min_diversity, top_k_window, candidate_pool_size
+            FROM diversity_configs WHERE name = :name
+        """),
         {"name": name},
     )
     existing = check_result.fetchone()
     if existing is None:
         raise ApiError("NOT_FOUND", f"diversity_config '{name}'을 찾을 수 없습니다.", http_status=404)
+
+    # before 상태 저장
+    before_values = {k: getattr(existing, k, None) for k in updates}
 
     # SET 절 동적 생성
     set_clauses = ", ".join(f"{col} = :{col}" for col in updates)
@@ -164,6 +173,14 @@ async def patch_diversity_config(
     log.info(
         "admin diversity_config 수정: name=%s, fields=%s, admin=%s",
         name, list(updates.keys()), admin.id,
+    )
+    await record_audit(
+        db,
+        actor=admin,
+        action="admin.diversity_config_update",
+        target_type="diversity_config",
+        metadata={"name": name, "before": before_values, "after": updates},
+        request=request,
     )
 
     # 수정된 row 반환

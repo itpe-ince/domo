@@ -13,3 +13,6 @@
 - [editor-i18n-cleanup-v3 D-1 complete](project_d1_i18n_cleanup.md) — Phase 5 D-1: 4 carry-overs cleared; share.* removed, auction.shareCard.* canonical; 5 components de-hardcoded; tsc 0 errors
 - [a11y-tailwind-cleanup G'-3 complete](project_g3_a11y_tailwind_cleanup.md) — Phase 7 G'-3: tailwind contrast (text.muted+border), heading hierarchy, 20 i18n keys, axe-core script; tsc 0 errors
 - [dynamic-og-card G'-6 complete](project_g6_dynamic_og_card.md) — 4 opengraph-image.tsx routes + lib/og/utils.ts + 3 layout.tsx wrappers; Edge runtime; tsc 0 errors
+- [phase11-B-1 experiments UI complete](project_phase11_b1.md) — /experiments 6 컴포넌트 + 3 hooks + api.ts 타입/함수; PATCH 미구현 disabled 처리; tsc 0 errors
+- [phase11-B-2 diversity config UI](project_phase11_b2_diversity_config.md) — 4 슬라이더 + KPI 위젯 + AdminShell ML Operations 그룹; admin app TanStack Query 없음 주의
+- [phase11-D-1 keyboard shortcuts complete](project_phase11_d1_keyboard.md) — useGlobalHotkeys + KeyboardShortcutsHelp + j/k feed nav + ⌘S draft save + 10 i18n keys × 5; tsc 0 errors

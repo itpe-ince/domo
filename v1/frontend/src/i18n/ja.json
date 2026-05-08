@@ -1660,6 +1660,18 @@
       "save_success": "保存しました"
     }
   },
+  "preferences": {
+    "title": "環境設定",
+    "currency": {
+      "label": "通貨"
+    },
+    "locale": {
+      "label": "言語"
+    },
+    "simpleMode": {
+      "label": "シンプルモード"
+    }
+  },
   "collections": {
     "editors_pick": "Editor's Pick",
     "subtitle": "AIがキュレーションした今週のテーマ別コレクション",
@@ -1671,5 +1683,55 @@
     "view_all": "すべてのコレクションを見る",
     "back": "コレクション一覧へ",
     "generated_by_ai": "AIキュレーションコレクション"
+  },
+  "keyboardShortcuts": {
+    "title": "キーボードショートカット",
+    "close": "ヘルプを閉じる",
+    "category": {
+      "feed": "フィード",
+      "editor": "投稿",
+      "general": "一般"
+    },
+    "action": {
+      "nextPost": "次の投稿",
+      "prevPost": "前の投稿",
+      "saveDraft": "下書き保存",
+      "showHelp": "このヘルプを表示",
+      "closeModal": "モーダルを閉じる"
+    }
+  },
+  "auth": {
+    "signup": {
+      "tab": "新規登録",
+      "emailPlaceholder": "メールアドレス",
+      "passwordPlaceholder": "パスワード（8文字以上）",
+      "displayNamePlaceholder": "表示名（3〜50文字）",
+      "passwordHint": "大文字・小文字・数字・記号のうち3種類以上必要",
+      "submit": "アカウント作成"
+    },
+    "login": {
+      "email": {
+        "tab": "ログイン",
+        "emailPlaceholder": "メールアドレス",
+        "passwordPlaceholder": "パスワード",
+        "forgotPassword": "パスワードを忘れた方",
+        "forgotPasswordTooltip": "パスワードリセットはPhase 12で対応予定です",
+        "submit": "ログイン"
+      }
+    },
+    "verify": {
+      "banner": "確認メールを送信しました。24時間以内に認証を完了してください。",
+      "verifying": "メール認証中...",
+      "success": "メール認証完了！",
+      "redirecting": "まもなくホームへ移動します...",
+      "alreadyVerified": "このアカウントはすでに認証済みです",
+      "expired": "認証リンクの有効期限が切れています",
+      "expiredDesc": "24時間が経過しました。新しい認証メールを送信してください。",
+      "resend": "認証メールを再送信",
+      "resendSuccess": "認証メールを再送信しました。受信ボックスをご確認ください。",
+      "error": "認証に失敗しました",
+      "noToken": "認証トークンが見つかりません。メール内のリンクを再度クリックしてください。",
+      "goHome": "ホームへ"
+    }
   }
 }

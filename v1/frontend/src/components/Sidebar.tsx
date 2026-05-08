@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { useI18n, LOCALE_LABELS, Locale } from "@/i18n";
+import { useI18n } from "@/i18n";
 import { logout } from "@/lib/api";
 import { captureEvent, resetIdentity } from "@/lib/analytics/capture";
 import { useMe } from "@/lib/useMe";
@@ -32,7 +32,7 @@ import {
   UserIcon,
   UsersIcon,
 } from "./icons";
-import { CurrencySwitcher } from "./CurrencySwitcher";
+import { PreferencesCard } from "./PreferencesCard";
 
 type NavItem = {
   href: string;
@@ -49,7 +49,7 @@ export function Sidebar() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginRedirect, setLoginRedirect] = useState<string | undefined>();
   const unread = useUnreadCount();
-  const { t, locale, setLocale } = useI18n();
+  const { t } = useI18n();
   const { isFirstSession, reopenWizard } = useOnboarding();
 
   async function handleLogout() {
@@ -169,7 +169,7 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="hidden md:flex sticky top-0 h-screen flex-col justify-between py-4 px-2 xl:px-4 w-[80px] xl:w-[260px] border-r border-border bg-background flex-shrink-0">
+      <aside className="hidden md:flex sticky top-0 h-screen overflow-y-auto flex-col justify-between py-4 px-2 xl:px-4 w-[80px] xl:w-[260px] border-r border-border bg-background flex-shrink-0">
         <div className="flex flex-col gap-1">
           {/* Logo */}
           <Link
@@ -362,65 +362,9 @@ export function Sidebar() {
           </div>
         )}
 
-        {/* B'-1: Currency switcher — bottom of sidebar, above language switcher */}
-        <div className="mx-3 mb-1 flex justify-center xl:justify-start">
-          <CurrencySwitcher compact className="xl:w-full" syncToServer={!!me} />
-        </div>
-
-        {/* Language switcher
-            - xl 이상 (사이드바 확장): 풀 select with flag + name
-            - xl 미만 (사이드바 축소): flag만 보이는 popover dropdown
-        */}
+        {/* Phase 10: 통합 환경설정 카드 (통화 / 언어 / 단순 모드) */}
         <div className="mx-3 mb-2">
-          {/* Expanded sidebar — native select */}
-          <select
-            value={locale}
-            onChange={(e) => setLocale(e.target.value as Locale)}
-            className="hidden xl:block w-full bg-surface border border-border rounded-full px-3 py-1.5 text-xs text-text-muted focus:border-primary outline-none cursor-pointer"
-            aria-label="Language"
-          >
-            {(Object.entries(LOCALE_LABELS) as [Locale, { flag: string; name: string }][]).map(
-              ([code, { flag, name }]) => (
-                <option key={code} value={code}>
-                  {flag} {name}
-                </option>
-              )
-            )}
-          </select>
-
-          {/* Collapsed sidebar — icon-only dropdown via <details> */}
-          <details className="xl:hidden relative group">
-            <summary
-              className="list-none cursor-pointer flex items-center justify-center w-10 h-10 rounded-full bg-surface border border-border hover:bg-surface-hover transition-colors"
-              aria-label="Language"
-              title={LOCALE_LABELS[locale].name}
-            >
-              <span className="text-base leading-none">{LOCALE_LABELS[locale].flag}</span>
-            </summary>
-            <div className="absolute bottom-full mb-2 left-0 w-32 card p-1 z-40">
-              {(Object.entries(LOCALE_LABELS) as [Locale, { flag: string; name: string }][]).map(
-                ([code, { flag, name }]) => (
-                  <button
-                    key={code}
-                    type="button"
-                    onClick={() => {
-                      setLocale(code);
-                      // close <details>
-                      (document.activeElement as HTMLElement)?.blur();
-                    }}
-                    className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
-                      code === locale
-                        ? "bg-primary/15 text-primary"
-                        : "text-text-secondary hover:bg-surface-hover"
-                    }`}
-                  >
-                    <span className="text-sm">{flag}</span>
-                    <span>{name}</span>
-                  </button>
-                )
-              )}
-            </div>
-          </details>
+          <PreferencesCard isAuthenticated={!!me} />
         </div>
       </aside>
 

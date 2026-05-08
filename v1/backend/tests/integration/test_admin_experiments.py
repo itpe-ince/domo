@@ -153,7 +153,7 @@ async def test_post_experiment_create():
         hypothesis="테스트 가설",
     )
 
-    result = await create_or_update_experiment(body=body, admin=admin, db=db)
+    result = await create_or_update_experiment(body=body, admin=admin, request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db)
 
     assert result["data"]["name"] == "feed_v2_test"
 
@@ -181,7 +181,7 @@ async def test_post_experiment_duplicate_409():
     )
 
     with pytest.raises(ApiError) as exc_info:
-        await create_or_update_experiment(body=body, admin=admin, db=db)
+        await create_or_update_experiment(body=body, admin=admin, request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db)
 
     assert exc_info.value.status_code == 409
 

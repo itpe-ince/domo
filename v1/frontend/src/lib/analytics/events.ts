@@ -13,7 +13,7 @@
 
 export type SignupEvent = {
   type: "signup";
-  method: "email" | "google" | "kakao";
+  method: "email" | "google" | "kakao" | "email_password";
 };
 
 export type LoginEvent = {

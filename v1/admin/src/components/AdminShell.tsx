@@ -28,6 +28,20 @@ const NAV_GROUPS: { label: string; items: { href: string; label: string }[] }[] 
     ],
   },
   {
+    label: "Curation",
+    items: [
+      { href: "/featured-artist-queue", label: "Featured Artist 검수" },
+      { href: "/ai-collections-queue", label: "AI 컬렉션 검수" },
+    ],
+  },
+  {
+    label: "ML Operations",
+    items: [
+      { href: "/experiments", label: "A/B 테스트 (K-8)" },
+      { href: "/diversity-config", label: "다양성 설정 (K-2)" },
+    ],
+  },
+  {
     label: "Security",
     items: [
       { href: "/settings/passkeys", label: "패스키" },

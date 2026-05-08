@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from typing import Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,6 +20,7 @@ from app.models.notification import Notification
 from app.models.user import ArtistApplication, ArtistProfile, User
 from app.schemas.artist import ApplicationReviewRequest, ArtistApplicationOut
 from app.services.auth_tokens import revoke_user_tokens
+from app.services.audit_log import record_audit
 
 log = logging.getLogger(__name__)
 
@@ -229,6 +230,7 @@ async def list_users(
 @router.post("/users", status_code=201)
 async def create_user_by_admin(
     body: AdminCreateUserRequest,
+    request: Request,
     admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
 ):
@@ -285,12 +287,20 @@ async def create_user_by_admin(
     await db.commit()
     await db.refresh(new_user)
 
-    # 6. Audit log
-    log.info(
-        "AUDIT action=admin_create_user admin=%s target=%s role=%s",
-        admin.id,
-        new_user.id,
-        body.role,
+    # 6. Audit log (structured DB record)
+    await record_audit(
+        db,
+        actor=admin,
+        action="admin.create_user",
+        target_type="user",
+        target_id=new_user.id,
+        metadata={
+            "created_user_id": str(new_user.id),
+            "email": str(body.email),
+            "role": body.role,
+            "send_magic_link": body.send_magic_link,
+        },
+        request=request,
     )
 
     return {
@@ -310,6 +320,7 @@ async def create_user_by_admin(
 async def update_user(
     user_id: UUID,
     body: UserUpdateRequest,
+    request: Request,
     admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
 ):
@@ -336,6 +347,8 @@ async def update_user(
         )
     # ────────────────────────────────────────────────────────────────────────
 
+    before_status = user.status
+    before_role = user.role
     old_role = user.role
 
     if body.status and body.status in ("active", "suspended"):
@@ -361,4 +374,20 @@ async def update_user(
             prof.badge_level = body.badge_level
 
     await db.commit()
+
+    # Audit log (structured DB record)
+    await record_audit(
+        db,
+        actor=admin,
+        action="admin.update_user",
+        target_type="user",
+        target_id=user.id,
+        metadata={
+            "target_user_id": str(user.id),
+            "before": {"role": before_role, "status": before_status},
+            "after": {"role": user.role, "status": user.status},
+        },
+        request=request,
+    )
+
     return {"data": {"id": str(user.id), "status": user.status, "role": user.role}}

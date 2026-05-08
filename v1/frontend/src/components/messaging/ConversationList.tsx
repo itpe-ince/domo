@@ -20,6 +20,9 @@ export function ConversationList({
 }: ConversationListProps) {
   const { t } = useI18n();
 
+  // Defensive default — API가 undefined를 반환하거나 caller가 props를 미설정한 경우 대비
+  const items = conversations ?? [];
+
   if (loading) {
     return (
       <div className="space-y-1 p-2">
@@ -36,7 +39,7 @@ export function ConversationList({
     );
   }
 
-  if (conversations.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-16 px-4 text-center">
         <MessageCircleIcon className="w-10 h-10 text-text-muted opacity-40" />
@@ -47,7 +50,7 @@ export function ConversationList({
 
   return (
     <ul className="py-1" role="listbox" aria-label={t("messaging.list.title")}>
-      {conversations.map((conv) => {
+      {items.map((conv) => {
         const isSelected = conv.id === selectedId;
         return (
           <li key={conv.id}>

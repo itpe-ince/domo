@@ -91,7 +91,7 @@ async def test_create_user_role_success():
         "app.services.magic_link.send_admin_invite_magic_link",
         new=AsyncMock(return_value={"sent": True, "provider": "mock"}),
     ):
-        result = await create_user_by_admin(body=body, admin=admin, db=db)
+        result = await create_user_by_admin(body=body, admin=admin, request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db)
 
     assert "data" in result
     data = result["data"]
@@ -124,7 +124,7 @@ async def test_create_admin_role_with_magic_link():
         "app.services.magic_link.send_admin_invite_magic_link",
         new=AsyncMock(return_value={"sent": True, "provider": "mock"}),
     ):
-        result = await create_user_by_admin(body=body, admin=admin, db=db)
+        result = await create_user_by_admin(body=body, admin=admin, request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db)
 
     data = result["data"]
     assert data["role"] == "admin"
@@ -151,7 +151,7 @@ async def test_create_user_duplicate_email():
     )
 
     with pytest.raises(ApiError) as exc_info:
-        await create_user_by_admin(body=body, admin=admin, db=db)
+        await create_user_by_admin(body=body, admin=admin, request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db)
 
     assert exc_info.value.status_code == 409
     assert exc_info.value.code == "ALREADY_EXISTS"
@@ -213,7 +213,7 @@ async def test_create_user_no_magic_link():
         "app.services.magic_link.send_admin_invite_magic_link",
         new=AsyncMock(return_value={"sent": True}),
     ) as mock_send:
-        result = await create_user_by_admin(body=body, admin=admin, db=db)
+        result = await create_user_by_admin(body=body, admin=admin, request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db)
         # send_magic_link=False이므로 함수 자체가 호출되지 않아야 함
         mock_send.assert_not_called()
 
@@ -242,7 +242,7 @@ async def test_create_user_magic_link_failure_graceful():
         "app.services.magic_link.send_admin_invite_magic_link",
         new=AsyncMock(return_value={"sent": False, "reason": "SES not configured"}),
     ):
-        result = await create_user_by_admin(body=body, admin=admin, db=db)
+        result = await create_user_by_admin(body=body, admin=admin, request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db)
 
     # 예외 없이 응답 반환
     assert result["data"]["magic_link_sent"] is False

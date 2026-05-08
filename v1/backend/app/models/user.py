@@ -71,6 +71,24 @@ class User(Base):
         DateTime(timezone=True), nullable=True
     )
 
+    # D-3 이메일+비밀번호 인증 컬럼 (alembic 0085)
+    # Google OAuth 사용자는 alembic 마이그레이션 시 email_verified=True 일괄 설정됨.
+    # email_verification_token: secrets.token_urlsafe(32) 평문 저장 (단일 사용 후 NULL).
+    # failed_login_locked_until: admin의 locked_until 과 분리된 일반 사용자 잠금.
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    email_verification_token: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )
+    email_verification_sent_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    email_verification_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    failed_login_locked_until: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
     # M10 Stripe Customer caching
     stripe_customer_id: Mapped[str | None] = mapped_column(
         String(100), nullable=True, index=True

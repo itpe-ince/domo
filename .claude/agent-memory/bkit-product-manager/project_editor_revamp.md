@@ -1,6 +1,6 @@
 ---
-name: domo Phase 4~10 로드맵 상태
-description: Phase 4~9 종결 현황 + Phase 10 로드맵 계획 (2026-05-06 기준)
+name: domo Phase 4~11 로드맵 상태
+description: Phase 4~10 종결 현황 + Phase 11 로드맵 계획 (2026-05-08 기준)
 type: project
 ---
 
@@ -66,4 +66,46 @@ editor-revamp-roadmap 11/11 sub-PDCA 모두 archived. Match Rate 평균 ~98%.
 
 **How to apply:**
 - Phase 9 archived: `/Users/sangincha/dev/domo/v1/docs/archive/2026-05/domo-phase9-roadmap/`
-- Phase 10 plan: `/Users/sangincha/dev/domo/v1/docs/01-plan/features/domo-phase10-roadmap.plan.md`
+- Phase 10 plan: `/Users/sangincha/dev/domo/v1/docs/archive/2026-05/domo-phase10-roadmap/plan.md`
+
+---
+
+**Phase 10 종결 (2026-05-06 기준)**
+
+총 5 sub-PDCAs (K-8/K-2/K-4/K-7/CO-1) 100% 완료. K-6 거래 100건 미달로 정당 이월. 가중 Match Rate 96.4%.
+
+- K-8: PostHog A/B 테스트 인프라 (alembic 0080, ml_experiments+assignments)
+- K-2: Diversity Reranking + 신진작가 부스팅 (alembic 0081, diversity_configs)
+- K-4: Featured Artist 자동 추천 (alembic 0082, featured_artist_candidates)
+- K-7: AI 큐레이션 컬렉션 (alembic 0083, ai_collections+posts)
+- CO-1: Phase 9 carry-over 11항목 6 PR 청산 (alembic 없음)
+- 누적: 테스트 581→646(+65), alembic 0080~0083 (4건, single head), cron 21→23
+
+**가이드 v2 정본화 (2026-05-08) 에서 Phase 11 carry-over 식별**
+- 키보드 단축키 12개 미구현 (가이드 주장과 다름)
+- audit_logs 테이블 미존재 (Python 구조화 로그만)
+- 회원가입 Google OAuth 1종뿐 (이메일+비밀번호 미구현)
+- Admin 콘솔 누락 메뉴 7개 (백엔드 API는 완성, 프론트 미구현)
+
+---
+
+**Phase 11 계획 (2026-05-08 초안)**
+
+총 8 sub-PDCAs, 6~8주 예정.
+
+- Wave A (즉시, 병렬): A-1 `/admin/featured-artist/queue` UI + A-2 `/admin/ai-collections/queue` UI
+- Wave B (Wave A 후, 병렬): B-1 `/admin/experiments` UI + B-2 `/admin/diversity-config` UI
+- Wave C (조건부, 거래≥100건): C-1 K-6 AI 가격 추천 (alembic 0086)
+- Wave D (Wave A 후 Wave B 병행): D-1 키보드 단축키 + D-2 audit_logs (alembic 0084) + D-3 이메일+비밀번호 가입 (alembic 0085)
+
+**alembic 사전 배정**: 0084(audit_logs) 0085(email_auth 컬럼) 0086(K-6 조건부)
+
+**Phase 11 OQ-1~OQ-13**: 권장 default 표 포함.
+
+**Phase 11 plan**: `/Users/sangincha/dev/domo/v1/docs/01-plan/features/domo-phase11-roadmap.plan.md`
+
+**Why:** Phase 10 백엔드 완성 → Admin 콘솔 UI 격차 해소. 가입 다양화로 글로벌 접근성 확대. audit_logs로 규정 준수 실현.
+
+**How to apply:**
+- Phase 10 archived: `/Users/sangincha/dev/domo/v1/docs/archive/2026-05/domo-phase10-roadmap/`
+- Phase 11 plan: `/Users/sangincha/dev/domo/v1/docs/01-plan/features/domo-phase11-roadmap.plan.md`

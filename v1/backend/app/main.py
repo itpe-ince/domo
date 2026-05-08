@@ -100,6 +100,7 @@ from app.services.ml_feed_training import ml_training_cron_loop
 from app.services.artwork_caption_jobs import artwork_caption_cron_loop
 from app.services.featured_artist_jobs import feature_artist_cron_loop
 from app.services.ai_curation_jobs import ai_curation_cron_loop
+from app.services.audit_log_cleanup_jobs import audit_log_cleanup_cron_loop
 from app.services.analytics import init_posthog, shutdown_posthog
 from app.services.cache import cache
 from app.services.otel_setup import init_otel, shutdown_otel
@@ -196,6 +197,17 @@ async def lifespan(app: FastAPI):
         _logging3.getLogger(__name__).info(
             "AI curation worker disabled (AI_CURATION_WORKER_ENABLED=false)"
         )
+    # 24th cron worker — audit_log_cleanup (D-2, 일 1회 86400s, 1년 보존)
+    if _os.getenv("AUDIT_LOG_CLEANUP_WORKER_ENABLED", "true").lower() != "false":
+        audit_log_cleanup_task = asyncio.create_task(
+            audit_log_cleanup_cron_loop(interval_seconds=86400)
+        )
+    else:
+        audit_log_cleanup_task = None
+        import logging as _logging4
+        _logging4.getLogger(__name__).info(
+            "Audit log cleanup worker disabled (AUDIT_LOG_CLEANUP_WORKER_ENABLED=false)"
+        )
 
     try:
         yield
@@ -216,6 +228,7 @@ async def lifespan(app: FastAPI):
             + ((artwork_caption_task,) if artwork_caption_task else ())
             + ((featured_artist_task,) if featured_artist_task else ())
             + ((ai_curation_task,) if ai_curation_task else ())
+            + ((audit_log_cleanup_task,) if audit_log_cleanup_task else ())
         )
         for task in all_tasks:
             task.cancel()

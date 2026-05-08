@@ -1660,6 +1660,18 @@
       "save_success": "저장되었습니다"
     }
   },
+  "preferences": {
+    "title": "환경 설정",
+    "currency": {
+      "label": "통화"
+    },
+    "locale": {
+      "label": "언어"
+    },
+    "simpleMode": {
+      "label": "단순 모드"
+    }
+  },
   "collections": {
     "editors_pick": "Editor's Pick",
     "subtitle": "AI가 큐레이션한 이번 주 주제별 컬렉션",
@@ -1671,5 +1683,55 @@
     "view_all": "모든 컬렉션 보기",
     "back": "컬렉션 목록으로",
     "generated_by_ai": "AI 큐레이션 컬렉션"
+  },
+  "keyboardShortcuts": {
+    "title": "키보드 단축키",
+    "close": "도움말 닫기",
+    "category": {
+      "feed": "피드",
+      "editor": "등록",
+      "general": "일반"
+    },
+    "action": {
+      "nextPost": "다음 게시물",
+      "prevPost": "이전 게시물",
+      "saveDraft": "임시저장",
+      "showHelp": "이 도움말 표시",
+      "closeModal": "모달 닫기"
+    }
+  },
+  "auth": {
+    "signup": {
+      "tab": "회원가입",
+      "emailPlaceholder": "이메일 주소",
+      "passwordPlaceholder": "비밀번호 (8자 이상)",
+      "displayNamePlaceholder": "활동 이름 (3~50자)",
+      "passwordHint": "대소문자, 숫자, 특수문자 중 3종 이상 필요",
+      "submit": "가입하기"
+    },
+    "login": {
+      "email": {
+        "tab": "로그인",
+        "emailPlaceholder": "이메일 주소",
+        "passwordPlaceholder": "비밀번호",
+        "forgotPassword": "비밀번호 찾기",
+        "forgotPasswordTooltip": "비밀번호 찾기는 Phase 12에서 지원 예정입니다",
+        "submit": "로그인"
+      }
+    },
+    "verify": {
+      "banner": "가입 이메일로 인증 링크를 발송했습니다. 24시간 내에 인증을 완료해주세요.",
+      "verifying": "이메일 인증 중...",
+      "success": "이메일 인증 완료!",
+      "redirecting": "잠시 후 홈으로 이동합니다...",
+      "alreadyVerified": "이미 인증된 계정입니다",
+      "expired": "인증 링크가 만료되었습니다",
+      "expiredDesc": "24시간이 경과하여 링크가 만료되었습니다. 새 인증 메일을 요청해주세요.",
+      "resend": "인증 메일 재발송",
+      "resendSuccess": "인증 메일이 재발송되었습니다. 메일함을 확인해주세요.",
+      "error": "인증에 실패했습니다",
+      "noToken": "인증 토큰이 없습니다. 이메일 링크를 다시 클릭해주세요.",
+      "goHome": "홈으로 이동"
+    }
   }
 }

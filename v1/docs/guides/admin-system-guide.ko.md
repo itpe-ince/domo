@@ -1,631 +1,888 @@
-# Domo 관리자 시스템 운영 가이드
+# Domo 관리자 시스템 운영 가이드 v2
 
-> 운영자 · 큐레이터 · 모더레이터를 위한 Domo Admin 콘솔 사용 가이드
-
-본 문서는 admin 권한을 가진 운영자가 Domo를 운영하는 방법을 설명합니다.
-사용자 가이드는 [user-system-guide.ko.md](./user-system-guide.ko.md)를 참고하세요.
-
-- 대상: admin / curator / moderator
-- 권한 모델: RBAC (admin / curator / moderator / user)
-- 최종 갱신: Phase 10 Wave A/B 종결 시점 (2026-05)
+> 운영자를 위한 Domo Admin 콘솔 사용 가이드 — 소스 검증 기반 재작성  
+> 대상: admin 계정 보유 운영자  
+> 검증 기준: alembic HEAD 0083, 소스 검증일 2026-05-08
 
 ---
 
 ## 목차
 
-1. [관리자 시스템 개요](#1-관리자-시스템-개요)
-2. [관리자 인증 — 2FA · WebAuthn](#2-관리자-인증--2fa--webauthn)
+1. [관리자 시스템 개요 — 실제 RBAC](#1-관리자-시스템-개요--실제-rbac)
+2. [관리자 인증 — 2FA · WebAuthn (Passkey)](#2-관리자-인증--2fa--webauthn-passkey)
 3. [사용자 관리](#3-사용자-관리)
-4. [콘텐츠 모더레이션](#4-콘텐츠-모더레이션)
-5. [Featured Artist 큐레이션](#5-featured-artist-큐레이션)
-6. [AI 컬렉션 검수 (K-7)](#6-ai-컬렉션-검수-k-7)
-7. [ML A/B 테스트 운영 (K-8)](#7-ml-ab-테스트-운영-k-8)
-8. [Diversity Reranking 튜닝 (K-2)](#8-diversity-reranking-튜닝-k-2)
-9. [분석 대시보드 · 코호트 알림](#9-분석-대시보드--코호트-알림)
-10. [정산 · KYC · Stripe Connect](#10-정산--kyc--stripe-connect)
-11. [외부 통합 — RSS · OG · Newsletter](#11-외부-통합--rss--og--newsletter)
-12. [데이터 보존 · GDPR · 운영 정책](#12-데이터-보존--gdpr--운영-정책)
-13. [트러블슈팅 · 로그 · cron 운영](#13-트러블슈팅--로그--cron-운영)
+4. [작가 심사 (Applications)](#4-작가-심사-applications)
+5. [학교 관리 (Schools)](#5-학교-관리-schools)
+6. [콘텐츠 관리 및 모더레이션](#6-콘텐츠-관리-및-모더레이션)
+7. [거래 관리 (Auctions · Orders)](#7-거래-관리-auctions--orders)
+8. [Featured Artist 큐레이션](#8-featured-artist-큐레이션)
+9. [AI 컬렉션 검수 (K-7)](#9-ai-컬렉션-검수-k-7)
+10. [ML A/B 테스트 운영 (K-8)](#10-ml-ab-테스트-운영-k-8)
+11. [Diversity Reranking 튜닝 (K-2)](#11-diversity-reranking-튜닝-k-2)
+12. [분석 대시보드 · 코호트 알림](#12-분석-대시보드--코호트-알림)
+13. [뉴스레터 운영](#13-뉴스레터-운영)
+14. [쿠폰 관리](#14-쿠폰-관리)
+15. [인터뷰 · Press Kit · Media Coverage](#15-인터뷰--press-kit--media-coverage)
+16. [외부 통합 — RSS · OG Auto-Thumbnail](#16-외부-통합--rss--og-auto-thumbnail)
+17. [데이터 보존 · GDPR · 운영 정책](#17-데이터-보존--gdpr--운영-정책)
+18. [cron worker 매트릭스 (23개)](#18-cron-worker-매트릭스-23개)
+19. [env 변수 카탈로그 (config.py 기반)](#19-env-변수-카탈로그-configpy-기반)
+20. [트러블슈팅](#20-트러블슈팅)
+21. [가이드 검증 메타](#21-가이드-검증-메타)
 
 ---
 
-## 1. 관리자 시스템 개요
+## 1. 관리자 시스템 개요 — 실제 RBAC
 
-Domo의 관리자 시스템은 다음 4가지 역할을 분리하여 권한을 부여합니다.
+### 1.1 역할 정의
 
-| 역할 | 권한 범위 |
-|------|----------|
-| **admin** | 모든 권한 (사용자 관리, 정산, ML 운영, 시스템 설정) |
-| **curator** | Featured Artist + AI 컬렉션 검수 / publish / archive |
-| **moderator** | 콘텐츠 신고 처리, 사용자 정지 (영구 ban 제외) |
-| **user** | 일반 사용자 (admin 콘솔 접근 불가) |
+Domo의 사용자 역할은 `user.role` 컬럼에 String(20) 값으로 저장된다.
 
-### 1.1 관리 콘솔 진입
+| 역할 | 권한 범위 | 비고 |
+|------|----------|------|
+| **admin** | Admin 콘솔 전체 + 모든 admin 엔드포인트 | 2FA 또는 Passkey 등록 필수 |
+| **artist** | 작가 전용 기능 (후원 수취, 경매 등록) | 작가 심사 승인 후 부여 |
+| **user** | 일반 사용자 기능 | 가입 시 기본값 |
 
-- URL: `/admin/dashboard` (admin / curator / moderator만 접근)
-- 일반 사용자가 진입 시도 시 → `403 FORBIDDEN`
-- 모든 admin 엔드포인트는 `require_admin_with_2fa` 의존성 적용
+> 소스: `app/core/admin_deps.py`, `app/models/user.py`, `app/api/admin/users.py:37`
 
-### 1.2 메뉴 구성
+`curator`, `moderator` 역할은 현재 소스에 정의되지 않는다. Admin 계정이 모든 운영 업무를 담당한다.
+
+### 1.2 관리자 의존성 함수
+
+`app/core/admin_deps.py`에 두 가지 의존성이 정의되어 있다.
+
+| 함수 | 조건 | 사용 상황 |
+|------|------|----------|
+| `require_admin` | `user.role == "admin"` 확인만 | TOTP 등록 전 허용 필요한 엔드포인트 (설정 화면 등) |
+| `require_admin_with_2fa` | role 확인 + TOTP 또는 Passkey 중 하나 이상 등록 | **모든 비즈니스 엔드포인트** |
+
+미등록 admin이 `require_admin_with_2fa` 엔드포인트를 호출하면 HTTP 403 `SECOND_FACTOR_REQUIRED` 에러를 반환하며 `{"setup_url": "/settings/totp-setup"}`를 detail에 포함한다.
+
+### 1.3 admin 콘솔 메뉴 구성 (port 3800)
 
 ```
-/admin/
-├── dashboard              # 핵심 KPI 요약
-├── users/                 # 사용자 관리
-├── moderation/            # 신고 / 자동 차단 큐
-├── featured-artist/       # Featured Artist (수동 + AI 자동) 큐레이션
-├── ai-collections/        # AI 컬렉션 검수 큐
-├── experiments/           # ML A/B 테스트
-├── diversity-config/      # 다양성 설정 튜닝
-├── analytics/             # 코호트 / engagement / newsletter 분석
-├── payouts/               # 정산 / Stripe Connect
-└── system/                # cron 모니터, 환경변수, 알림 webhook
+/login                        # 이메일 + 비밀번호 + TOTP 인증
+/dashboard                    # 핵심 KPI 대시보드
+/users                        # 사용자 관리
+/applications                 # 작가 심사
+/schools                      # 학교 관리
+/posts                        # 콘텐츠 관리 (디지털 아트 검수 포함)
+/transactions                 # 거래 관리 (경매 · 주문)
+/moderation                   # 신고 처리 · 경고 · 항소
+/settings                     # 시스템 설정 키-값
+/settings/totp-setup          # TOTP 초기 설정 (2FA 미등록 시 강제 리다이렉트)
+/settings/passkeys            # WebAuthn Passkey 관리
+/settings/recovery-codes      # 복구 코드 관리
 ```
+
+> 소스: `app/admin/src/components/AdminShell.tsx`, `app/admin/src/app/*/page.tsx`
 
 ---
 
-## 2. 관리자 인증 — 2FA · WebAuthn
+## 2. 관리자 인증 — 2FA · WebAuthn (Passkey)
 
-관리자 권한은 일반 사용자보다 강화된 인증을 강제합니다.
+### 2.1 인증 흐름
 
-### 2.1 2FA (TOTP)
+```
+1. POST /v1/auth/admin/login  { email, password }
+   → TOTP 등록된 경우: { totp_required: true, challenge_token: "..." }
+   → TOTP 미등록 (최초 로그인): { totp_required: false, totp_setup_required: true, tokens: {...} }
 
-- Google Authenticator / Authy / 1Password 등 호환
-- 등록: `/me/security/2fa` → QR 코드 스캔 → 6자리 코드 입력
-- 로그인 시 비밀번호 + 6자리 코드
-- 백업 코드 8개 발급 (1회용)
+2. POST /v1/auth/admin/login/verify  { challenge_token, totp_code }
+   또는                               { challenge_token, recovery_code }
+   → { tokens: { access_token, refresh_token }, user: {...} }
+```
 
-### 2.2 WebAuthn (보안 키 / 지문)
+- 5회 연속 실패 시 15분 잠금 (HTTP 423 `ADMIN_LOCKED`)
+- SNS 로그인(Google 등)은 admin 역할에 차단됨 (`app/api/auth.py:69`)
 
-- USB 보안 키(YubiKey, Solo Key) 또는 플랫폼 인증(Touch ID, Windows Hello)
-- 등록: `/admin/auth/webauthn/register` → 보안 키 / 지문 등록
-- 로그인 시 비밀번호 + 보안 키 터치 / 지문
-- WebAuthn 라이브러리 미설치 시 graceful skip (admin_webauthn router 자동 비활성화)
+> 소스: `app/api/admin_auth.py:127, 189`
 
-### 2.3 admin_dependencies
+### 2.2 TOTP 설정
 
-- `require_admin`: 일반 admin 검증 (2FA 우회 가능)
-- `require_admin_with_2fa`: 2FA 강제 — 모든 민감 작업
-- 세션 만료: 30분 미사용 시 재인증
+```
+GET  /v1/auth/admin/totp/setup      # QR 코드 + secret 발급
+POST /v1/auth/admin/totp/enable     { totp_code }
+POST /v1/auth/admin/totp/disable    { password }   # 비밀번호 재확인 후 비활성화
+```
 
-### 2.4 배포 환경
+- Google Authenticator / Authy / 1Password 호환
+- 복구 코드 8개 일괄 발급 (1회용)
+- TOTP secret은 Fernet 대칭 암호화로 DB 저장 (`TOTP_ENCRYPTION_KEY` env)
 
-- production: WebAuthn 강제 활성화
-- staging: 2FA 권장
-- 자세한 내용: [admin-auth-production-deployment.md](./admin-auth-production-deployment.md)
+> 소스: `app/api/admin_auth.py:356, 389, 426`
+
+### 2.3 복구 코드
+
+```
+GET  /v1/auth/admin/recovery-codes/status        # 잔여 코드 수 확인
+POST /v1/auth/admin/recovery-codes/regenerate   { password }  # 전체 재발급
+```
+
+> 소스: `app/api/admin_auth.py:450, 479`
+
+### 2.4 WebAuthn Passkey
+
+- USB 보안 키(YubiKey 등) 또는 플랫폼 인증(Touch ID, Windows Hello) 지원
+- webauthn 라이브러리 미설치 시 graceful skip — 엔드포인트 비활성화, 서버 부팅 경고만 출력
+
+```
+POST /v1/auth/admin/webauthn/register/begin
+POST /v1/auth/admin/webauthn/register/finish
+POST /v1/auth/admin/webauthn/authenticate/begin
+POST /v1/auth/admin/webauthn/authenticate/finish
+GET  /v1/auth/admin/webauthn/credentials
+DELETE /v1/auth/admin/webauthn/credentials/{credential_id}
+```
+
+> 소스: `app/api/admin_webauthn.py:174, 223, 283, 336, 418, 447`  
+> 환경설정: `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_RP_ORIGIN`
+
+### 2.5 2FA 없이 접근 가능한 경로
+
+프론트엔드(`AdminShell.tsx`)에서 2FA 미등록 admin도 접근 가능한 경로:
+
+```
+/login
+/settings/totp-setup
+/settings/passkeys
+/settings/recovery-codes
+```
+
+나머지 모든 경로는 `require_admin_with_2fa` 백엔드 API가 최종 차단한다.
+
+### 2.6 Access Token 만료
+
+- access_token: **60분** (`config.py: access_token_expire_minutes=60`)
+- refresh_token: 30일 (`refresh_token_expire_days=30`)
+- 세션 타임아웃(비활성 30분 자동 만료) 기능은 구현되지 않음
 
 ---
 
 ## 3. 사용자 관리
 
-`/admin/users`
+### 3.1 사용자 목록 조회
 
-### 3.1 사용자 검색
+```
+GET /v1/admin/users
+  ?q=<이름 또는 이메일 부분검색>
+  &role=user|artist|admin
+  &status=active|suspended
+  &country=KR
+  &limit=20&offset=0
+```
 
-- 이름 / 이메일 / ID로 검색
-- 필터: 상태(active/suspended/deleted), 역할, 가입일, KYC 상태
-- 정렬: 가입일 / 후원 누적 / engagement
+응답 필드: `id, email, display_name, avatar_url, role, status, country_code, warning_count, created_at`
 
-### 3.2 사용자 상세 (`/admin/users/[id]`)
+> 소스: `app/api/admin/users.py:188`
 
-확인 가능한 정보:
-- 프로필, 가입 경로, 최근 로그인 IP
-- 활동 통계 (포스트 수, 후원 수, 경매 참여 수)
-- KYC 상태 + 제출 서류 (관리자만 열람 가능)
-- 신고 이력 (받은/한 신고)
-- artist_index_rank (글로벌 작가 인덱스 순위)
+### 3.2 사용자 상태 및 역할 변경
 
-### 3.3 상태 변경
+```
+PATCH /v1/admin/users/{user_id}
+Body: { status?: "active"|"suspended", role?: "user"|"artist"|"admin", badge_level?: string }
+```
 
-| 상태 | 의미 | 효과 |
-|------|------|------|
-| `active` | 정상 | 모든 기능 사용 가능 |
-| `suspended` | 일시 정지 | 로그인 가능, 게시 / 후원 / 경매 불가 |
-| `banned` | 영구 차단 | 로그인 불가, 모든 콘텐츠 비공개 |
-| `deleted` | GDPR 삭제 | 30일 grace 후 영구 삭제 |
-
-상태 변경 시:
-- 사유 입력 필수 (감사 로그)
-- 사용자에게 이메일 알림 발송 (선택)
-- 활성 후원 / 경매 자동 처리 (환불 또는 보류)
-
-### 3.4 KYC 승인
-
-- KYC 제출 사용자 큐 (`/admin/users/kyc-pending`)
-- 신분증 / 본인 사진 검토 → 승인 / 거부
-- 승인 시 정산 활성화 (Stripe Connect onboarding 자동 트리거)
-- 거부 시 사유 + 재제출 안내
-
----
-
-## 4. 콘텐츠 모더레이션
-
-`/admin/moderation`
-
-### 4.1 신고 큐
-
-사용자 신고 우선순위:
-1. **자동 감지 (auto_block)**: profanity / spam / NSFW 자동 비공개 → 검토 큐 진입
-2. **사용자 신고**: 신고 사유별 (스팸 / 욕설 / 저작권 / NSFW / 기타)
-
-### 4.2 처리 액션
-
-| 액션 | 효과 |
+| 상태 | 의미 |
 |------|------|
-| **승인 (정상)** | 신고 무효 처리, 콘텐츠 정상 노출 |
-| **숨김** | `visibility=private` 강제, 작가는 알림 받음 |
-| **삭제** | soft delete (deleted_at), 복구 가능 (30일) |
-| **사용자 경고** | 작가에게 경고 메시지 + 1회 경고 카운트 |
-| **사용자 정지** | 7일 / 30일 / 영구 정지 (3.3 참고) |
+| `active` | 정상 |
+| `suspended` | 일시 정지 |
 
-### 4.3 자동 차단 규칙
+> `banned`, `deleted` 상태는 현재 PATCH API에서 지원하지 않는다.
 
-`/admin/moderation/rules` — 정규식 / ML 기반 룰 관리:
-- profanity 사전 (한국어 + 영어 + 5개 언어)
-- 스팸 패턴 (URL 무한 반복, 동일 작가에게 동일 메시지 N회 등)
-- NSFW 이미지 분류 (외부 ML 서비스 통합, 옵션)
+**Self-modify 차단 (자가 수정 방지)**:
+- admin이 본인 `role` 변경 시 → `400 SELF_MODIFY_FORBIDDEN`
+- admin이 본인 `status=suspended` 변경 시 → `400 SELF_MODIFY_FORBIDDEN`
 
-### 4.4 댓글 / DM 모더레이션
+상태 변경 시 해당 사용자에게 인앱 `Notification` 생성됨. 이메일 알림은 별도 구현 필요.
 
-- 댓글: 동일 처리 흐름
-- DM: 신고 시에만 모더레이터 검토 (privacy 우선, 일반 모더레이터는 메시지 본문 직접 열람 불가)
-- WebAuthn 인증된 admin만 DM 본문 열람 가능
+역할 변경 시 해당 사용자의 모든 기존 토큰이 자동 폐기된다(`revoke_user_tokens`).
 
----
+> 소스: `app/api/admin/users.py:309`
 
-## 5. Featured Artist 큐레이션
+### 3.3 admin이 직접 사용자 생성
 
-홈 / 탐색 페이지 상단 추천 작가 운영.
+```
+POST /v1/admin/users
+Body: {
+  email: string,          # 이메일 (중복 불가)
+  display_name: string,   # 3~50자
+  role: "user"|"artist"|"admin",  # 기본값 "user"
+  send_magic_link: boolean,       # 기본값 true
+  country_code?: string   # ISO 2자리 국가 코드
+}
+```
 
-### 5.1 수동 큐레이션 (Phase 8 G'-7)
+- `send_magic_link=true` (기본): 24시간 유효한 초대 링크 이메일 자동 발송
+- 임시 비밀번호는 bcrypt hash만 저장, 평문 즉시 폐기 — admin이 볼 수 없음
+- 이메일 설정 미완료 시 graceful (로그만, `sent: false` 응답)
+- 감사 로그: Python 구조화 로그 `AUDIT action=admin_create_user`
 
-`/admin/featured-artist/manual`
-
-- 작가 검색 → "Featured에 추가" → 노출 기간 / 우선순위 설정
-- 5명 동시 노출 (회전 알고리즘)
-- 다양성 자동 보정 (동일 장르 / 지역 중복 방지)
-
-### 5.2 AI 자동 추천 (Phase 10 K-4)
-
-`/admin/featured-artist/queue` — 매주 월요일 06:00 UTC 자동 생성된 후보 5명 검수
-
-**선정 기준** (composite_score):
-- 30% × engagement (post_engagement_cache 최근 14일)
-- 30% × artist_index_rank (신진작가 우선)
-- 20% × diversity (장르/지역 분산)
-- 20% × new_artist_bonus (후원자 0건 우선)
-
-**검수 워크플로우**:
-1. 큐에서 후보 5명 확인 (선정 사유 JSONB 함께 표시)
-2. 각 후보별 액션:
-   - **Approve**: status='approved' (publish 별도)
-   - **Publish**: G'-7 featured_artists 테이블에 INSERT (즉시 노출)
-   - **Reject**: 사유 입력 → status='rejected' + reasoning JSONB merge
-3. autopublish=OFF (기본): 안전 우선, admin 명시 승인 필수
-
-**Slack 알림**:
-- 후보 < 3명 시 자동 Slack 알림 (manual 모드 제안)
-- 임계값 미달 시 cohort_alert_jobs와 통합 (Phase 9 L-F)
-
-### 5.3 노출 정책 튜닝
-
-`/admin/featured-artist/policy`:
-- 회전 주기 (7일 / 14일)
-- 동일 작가 재노출 cooldown (4주)
-- 지역 다양성 강제 (≥ 2개 국가 동시 노출)
+> 소스: `app/api/admin/users.py:229`, `app/services/magic_link.py`
 
 ---
 
-## 6. AI 컬렉션 검수 (K-7)
+## 4. 작가 심사 (Applications)
 
-`/admin/ai-collections/queue` — Editor's Pick 자동 컬렉션 검수
+`/applications` 페이지
 
-### 6.1 자동 생성 사이클
+### 4.1 심사 대기 목록
 
-- 매주 월요일 09:00 UTC (K-4 06:00 UTC 후 3시간)
-- 5개 컬렉션 자동 생성:
-  1. post_embeddings 클러스터링 (sklearn KMeans 또는 metadata grouping fallback)
-  2. 클러스터별 주제 추출 (장르/지역/신진성 분석)
-  3. LLM 호출 → 제목/설명 생성 (한국어, gemma4-e4b)
-  4. translation cache 활용 → 5개 언어 자동 번역
-  5. 대표 작품 + 작품 10~20개 매핑
+```
+GET /v1/admin/artists/applications?status=pending|approved|rejected
+```
 
-### 6.2 검수 작업
+### 4.2 심사 액션
 
-각 컬렉션 카드에서:
-- 제목 / 설명 미리보기 (5개 언어 토글)
-- 포함 작품 그리드 (cover_post_id + 10~20 작품)
-- LLM 모델 버전 + 생성 시각
+```
+POST /v1/admin/artists/applications/{application_id}/approve
+Body: { note?: string }
+```
+- 신청자의 `role`을 `"artist"`로 변경
+- `ArtistProfile` 자동 생성 (badge_level: 재학 중 → `student`, 졸업 → `emerging`)
+- 기존 토큰 자동 폐기
+- 인앱 알림 발송
 
-**액션**:
-- **Publish**: status='published' → 공개 (즉시 `/explore/collections` 노출)
-- **Edit**: 제목 / 설명 수동 수정 (한국어 원본 + 5 locale 재번역 트리거)
-- **Archive**: status='archived' (숨김, 통계 보존)
-- **Reject**: 완전 삭제 (사유 입력 → 향후 ML 학습 negative signal)
+```
+POST /v1/admin/artists/applications/{application_id}/reject
+Body: { note?: string }
+```
+- 인앱 알림 발송 (재신청 안내)
 
-### 6.3 LLM 비용 한도
-
-- 일 한도: $5 (`AI_CURATION_DAILY_BUDGET` env)
-- 한도 초과 시 cron skip + Slack alert
-- translation_cache 재사용으로 비용 절감 (K-3 / K-5와 공유)
-
-### 6.4 수동 컬렉션 생성
-
-- `/admin/ai-collections/new`에서 admin이 직접 컬렉션 생성 가능
-- 작품 검색 → 추가 → 제목/설명 직접 작성 → publish
-- AI 자동 생성과 동일하게 노출
+> 소스: `app/api/admin/users.py:64, 83, 148`
 
 ---
 
-## 7. ML A/B 테스트 운영 (K-8)
+## 5. 학교 관리 (Schools)
 
-`/admin/experiments`
+```
+GET    /v1/admin/schools          # 목록 조회
+POST   /v1/admin/schools          # 학교 추가
+PATCH  /v1/admin/schools/{id}     # 학교 정보 수정
+```
 
-### 7.1 활성 실험 목록
-
-기본 운영 실험: `feed_v2_rollout`
-- v1 (legacy chronological) vs v2 (K-1 ML)
-- 분배: 50:50 (PostHog feature flag)
-- 측정 기간: 14일
-- 측정 지표: feed_ctr, precision_at_10, session_duration, sponsorship_conversion
-
-### 7.2 실험 생성
-
-`POST /api/admin/experiments`
-- 이름 (UNIQUE), 분배 비율 (JSONB: `{"v1": 0.5, "v2": 0.5}`)
-- 가설 (hypothesis) 자유 텍스트
-- 측정 지표 (target_metric)
-- 시작 / 종료 일시 (자동 또는 수동)
-
-### 7.3 실험 결과 분석
-
-`GET /api/admin/experiments/{name}/results`:
-- variant별 사용자 수, 이벤트 수, 전환율
-- PostHog Insights URL (외부 dashboard 링크)
-- 통계적 유의성 (p-value, chi-square 또는 t-test)
-
-### 7.4 결과 해석 가이드
-
-| 지표 | 목표 | 해석 |
-|------|------|------|
-| feed_ctr | v2 ≥ v1 + 10% | 피드 클릭률 |
-| precision_at_10 | v2 ≥ v1 + 5% | 상위 10개 중 사용자 관심 비율 |
-| session_duration | v2 ≥ v1 | 세션 체류 시간 |
-| sponsorship_conversion | v2 ≥ v1 | 후원 전환율 (가장 중요) |
-| p < 0.05 | 통계 유의성 | 통과 시 v2 100% rollout 권장 |
-
-### 7.5 실험 종료 후 운영
-
-- 결과 양호 시: `ML_FEED_DEFAULT_ALGO=v2`로 전체 rollout
-- 결과 부진 시: v1 유지 + 가설 재검토 → 새 실험
-- 90일 후 ml_experiments 자동 archive (운영 정책)
+> 소스: `app/api/admin/schools.py:34, 71, 87`
 
 ---
 
-## 8. Diversity Reranking 튜닝 (K-2)
+## 6. 콘텐츠 관리 및 모더레이션
 
-`/admin/diversity-config`
+### 6.1 디지털 아트 검수 큐
 
-### 8.1 활성 설정 (`feed_default`)
+```
+GET  /v1/admin/posts/digital-art-queue?limit=50    # status=pending_review, check=pending
+POST /v1/admin/posts/{post_id}/digital-art-verdict
+Body: { verdict: "approved"|"rejected", note?: string }
+```
 
-기본값:
-| 파라미터 | 기본값 | 의미 |
-|---------|--------|------|
-| `emerging_artist_boost` | 1.20 | 신진작가 score × 1.20 |
-| `genre_min_diversity` | 3 | top-20 unique genres ≥ 3종 강제 |
-| `region_min_diversity` | 2 | top-20 unique regions ≥ 2종 강제 |
-| `top_k_window` | 20 | reranking 적용 윈도우 |
+### 6.2 전체 게시물 관리
 
-### 8.2 튜닝 워크플로우
+```
+GET   /v1/admin/posts/list         # 전체 게시물 목록
+PATCH /v1/admin/posts/{post_id}/status
+Body: { status: string, reason?: string }
+```
 
-1. PostHog 분석으로 다양성 지표 측정:
-   - `diversity_emerging_artist_ratio` (목표: ≥ 30%)
-   - `diversity_genre_count_top20` (목표: ≥ 3)
-   - `diversity_region_count_top20` (목표: ≥ 2)
-2. 지표 미달 시 boost 또는 quota 증가
-3. 14일 운영 후 결과 검토
+### 6.3 신고 처리
 
-### 8.3 PATCH 엔드포인트
+```
+GET  /v1/admin/reports             # 신고 목록
+POST /v1/admin/reports/{report_id}/resolve
+Body: ReportResolveRequest
+```
 
-`PATCH /api/admin/diversity-config/{name}`
-- body: `{emerging_artist_boost, genre_min_diversity, region_min_diversity, top_k_window}`
-- 유효성:
-  - boost: 1.0 ~ 2.0
-  - genre/region: 1 ~ 10
-  - window: 10 ~ 50
-- Redis 캐시 5분 TTL → 5분 후 자동 적용
+### 6.4 경고 및 항소
 
-### 8.4 실험적 설정
+```
+GET  /v1/admin/appeals                              # 항소 목록
+POST /v1/admin/warnings/{warning_id}/cancel         # 경고 취소
+POST /v1/admin/warnings/{warning_id}/reject-appeal  # 항소 거절
+```
 
-- `DIVERSITY_RERANKING_ENABLED=false` env로 전체 비활성화 (긴급 fallback)
-- 새 설정명 (예: `feed_experimental`)을 만들어 A/B 테스트 가능 (K-8 통합)
+> 소스: `app/api/admin/content.py:71, 92, 147, 196, 217, 236, 285, 304, 323`
 
 ---
 
-## 9. 분석 대시보드 · 코호트 알림
+## 7. 거래 관리 (Auctions · Orders)
 
-`/admin/analytics`
+`/transactions` 페이지
 
-### 9.1 핵심 KPI 대시보드
+### 7.1 경매 관리
 
-- DAU / MAU
-- 신규 가입 (일/주/월)
-- 후원 통계 (활성 후원자, 신규 후원, 해지율)
-- 경매 통계 (입찰 / 낙찰 / 환불)
-- Feed CTR (algo별)
-- AI 캡션 / 도슨트 / 컬렉션 클릭률
+```
+POST /v1/admin/auctions/process-expired   # 만료 경매 수동 처리 트리거
+GET  /v1/admin/auctions/list              # 경매 목록
+```
 
-### 9.2 코호트 분석 (Phase 8 G''-4)
+### 7.2 주문 및 환불
 
-`post_engagement_cache` + cohort retention metric:
-- D1 / D7 / D30 retention
-- 가입 코호트별 활성 사용자 비율
-- Featured Artist 노출 코호트 분석
+```
+GET  /v1/admin/orders/list                # 주문 목록
+POST /v1/admin/orders/{order_id}/refund   # 환불 처리
+```
 
-### 9.3 코호트 자동 알림 (Phase 9 L-F)
-
-매일 06:00 UTC 자동 측정:
-- D7 retention < 30% → Slack 자동 알림 (`status='sent'`)
-- D30 retention < 15% → Slack 알림
-- min_cohort_size = 10 (통계 신뢰도)
-- 24h cooldown UNIQUE INDEX → 같은 날 중복 알림 차단
-
-`/admin/analytics/cohort-alerts` — 알림 이력 조회 + 임계값 튜닝
-
-env 변수:
-- `COHORT_ALERT_7D_THRESHOLD` (기본 0.30)
-- `COHORT_ALERT_30D_THRESHOLD` (기본 0.15)
-- `SLACK_WEBHOOK_URL` (미설정 시 log-only Mock 모드)
-
-### 9.4 Newsletter Open Rate (Phase 9 L-B)
-
-`/admin/analytics/newsletter`:
-- 발송 수 / open / click
-- 1x1 픽셀 트래킹 + 클릭 트래킹
-- 사용자별 open rate (high engagement 식별)
-- newsletter_events 테이블 90일 보존
-
-### 9.5 OpenTelemetry 트레이싱 (Phase 8 G''-1)
-
-운영 환경에서 분산 트레이싱:
-- 모든 API endpoint span 자동 생성
-- DB query / Redis / 외부 API span
-- Jaeger / Tempo / Honeycomb 연동 (OTEL_EXPORTER_OTLP_ENDPOINT)
-- 미설정 시 NoOp tracer (graceful)
+> 소스: `app/api/admin/transactions.py:45, 55, 93, 136`
 
 ---
 
-## 10. 정산 · KYC · Stripe Connect
+## 8. Featured Artist 큐레이션
 
-`/admin/payouts`
+### 8.1 수동 Featured 관리
 
-### 10.1 KYC 큐 (`/admin/users/kyc-pending`)
+```
+POST   /v1/admin/featured    Body: { artist_id, ... }
+GET    /v1/admin/featured
+DELETE /v1/admin/featured/{entry_id}
+```
 
-3.4 참고. 신분증 검토 + 승인.
+> 소스: `app/api/admin_featured.py:41, 103, 133`
 
-### 10.2 정산 운영
+### 8.2 AI 자동 후보 검수 큐 (K-4)
 
-매월 1일 자동 정산 cron:
-- KYC 승인된 작가 대상
-- 후원금 + 경매 낙찰액 합산
-- Stripe Connect transfer 자동 실행
-- 환불 / 분쟁 차감 후 net 금액
+매주 **월요일 09:00 UTC** 자동 생성된 후보 목록을 admin이 검수한다.
 
-### 10.3 Stripe Connect onboarding
+```
+GET  /v1/admin/featured-artist/candidates
+     ?week_start=YYYY-MM-DD     # 기본: 이번 주 월요일
+     &status=pending|approved|rejected|published
 
-작가가 KYC 승인 후:
-- Stripe Connect Express 계정 자동 생성
-- 작가에게 onboarding 링크 이메일 발송
-- 은행 계좌 / 신분증 추가 검증 (Stripe 직접 처리)
-- 완료 후 정산 활성화 (`account.charges_enabled=true`)
+POST /v1/admin/featured-artist/candidates/{id}/approve
+POST /v1/admin/featured-artist/candidates/{id}/publish   Body: { notes?: string }
+POST /v1/admin/featured-artist/candidates/{id}/reject    Body: { reason: string }
+```
 
-### 10.4 환불 / 분쟁
+**워크플로우**:
+1. `GET /candidates` — pending 후보 확인 (composite_score + reasoning JSONB 포함)
+2. 검토 후 `approve` → 별도로 `publish` (자동 발행 OFF 정책)
+3. 부적합 시 `reject` (사유 입력 필수)
 
-- 사용자 환불 요청 → admin 검토 → Stripe refund 발행
-- 분쟁 (chargeback) 자동 알림 → 작가 정산 보류 → 증빙 제출
-- 분쟁 해결 시 자동 재정산
+**후보 미달 알림**: 후보 3명 미만 시 `SLACK_WEBHOOK_URL` 설정된 경우 Slack 알림 발송
 
-### 10.5 정산 보고서
-
-월별 PDF / CSV 자동 생성:
-- 작가별 후원 / 경매 / 수수료 / net 금액
-- 세금 신고용 (1099-K 등 — 미국 작가)
-- AWS SES로 작가에게 자동 발송
-
----
-
-## 11. 외부 통합 — RSS · OG · Newsletter
-
-### 11.1 RSS Auto-Fetch (Phase 9 L-B)
-
-`/admin/external/rss`:
-- 외부 매체 RSS 소스 등록 (블로그, 매거진, 포털)
-- 1시간 주기 자동 수집 (rss_fetch_worker)
-- 작가 이름 매칭 (단순 검색 + LLM 보조 옵션)
-- 매칭된 기사 작가 프로필에 자동 표시
-
-env: `RSS_FETCH_WORKER_ENABLED`, `LLM_ARTIST_MATCH_ENABLED`
-
-### 11.2 OG Auto-Thumbnail (Phase 9 L-B)
-
-`POST /api/og/preview` — 외부 링크 OG 메타 자동 추출:
-- 작가가 본문에 외부 링크 첨부 시 자동 미리보기
-- httpx + beautifulsoup4 (미설치 시 graceful)
-- Redis 24h cache (LRU 512 entries fallback)
-
-### 11.3 Newsletter 운영 (Phase 7 C-5)
-
-`/admin/newsletter`:
-- 주간 / 격주 자동 발송
-- 사용자 세그먼트별 콘텐츠 (팔로우 작가 신작 등)
-- 1x1 픽셀 + 클릭 트래킹 (L-B 통합)
-- AWS SES 발송 (`AWS_SES_REGION` env)
-- 발송 실패 / bounce 자동 처리 (Phase 8 H'-5)
-
-### 11.4 Press Kit (Phase 7 C-2)
-
-작가별 보도자료 자동 생성:
-- 작가 bio + 대표작 + 매체 노출 이력 + 인터뷰
-- PDF 다운로드 (Phase 8 추가)
-- 외부 매체 직접 링크 가능
+> 소스: `app/api/admin_featured_artist.py:87, 163, 224, 310`  
+> Worker: `app/services/featured_artist_jobs.py` (22번 cron)
 
 ---
 
-## 12. 데이터 보존 · GDPR · 운영 정책
+## 9. AI 컬렉션 검수 (K-7)
 
-### 12.1 데이터 보존 정책
+매주 **월요일 09:00 UTC** LLM이 자동 생성한 Editor's Pick 컬렉션 5개를 검수한다.
 
-| 데이터 | 보존 기간 | 처리 |
-|--------|----------|------|
-| user activity log | 90일 | 자동 삭제 (gdpr_cron) |
-| ml_experiments | 90일 | archive 후 영구 삭제 (cleanup_old_experiments) |
-| translation_cache | 90일 미사용 시 | cleanup cron |
-| newsletter_events | 90일 | 자동 삭제 |
-| dm_messages | 사용자 삭제 시 | soft delete (deleted_at) |
+```
+GET  /v1/admin/ai-collections/queue       # generating 상태 컬렉션 목록
+POST /v1/admin/ai-collections/{id}/publish   Body: { admin_note?: string }
+POST /v1/admin/ai-collections/{id}/archive   Body: { admin_note?: string }
+```
+
+**컬렉션 생성 파이프라인**:
+1. post_embeddings 클러스터링 (KMeans 또는 metadata grouping fallback)
+2. LLM 호출로 제목/설명 생성 (한국어 기준, `LLM_MODEL_NAME` env)
+3. translation_cache 활용 → 다국어 번역
+4. `status='generating'` 상태로 저장 → admin 검수 대기
+
+**LLM 비용 한도**: `AI_CURATION_DAILY_BUDGET_USD` env (기본 `5.0` USD)  
+한도 초과 시 해당 주 skip + 로그 기록
+
+> 소스: `app/api/admin_ai_collections.py:36, 85, 136`  
+> Worker: `app/services/ai_curation_jobs.py` (23번 cron)
+
+---
+
+## 10. ML A/B 테스트 운영 (K-8)
+
+```
+GET  /v1/admin/experiments               # 실험 목록
+POST /v1/admin/experiments               # 새 실험 생성
+GET  /v1/admin/experiments/{name}/results  # 실험 결과 (PostHog 연동)
+```
+
+**실험 생성 body**:
+```json
+{
+  "name": "feed_v2_rollout",
+  "allocation": {"v1": 0.5, "v2": 0.5},
+  "hypothesis": "자유 텍스트",
+  "target_metric": "sponsorship_conversion",
+  "start_at": "2026-05-10T00:00:00Z",
+  "end_at": "2026-05-24T00:00:00Z"
+}
+```
+
+**권한**: `require_admin` (2FA 체크 없음 — 실험 관리는 상대적으로 저위험)
+
+> 소스: `app/api/admin_experiments.py:74, 111, 174`
+
+---
+
+## 11. Diversity Reranking 튜닝 (K-2)
+
+```
+GET   /v1/admin/diversity-config              # 모든 설정 목록
+PATCH /v1/admin/diversity-config/{name}       # 특정 설정 수정
+```
+
+**PATCH body (모두 선택적)**:
+```json
+{
+  "emerging_artist_boost": 1.20,   // 1.0 ~ 2.0
+  "genre_min_diversity": 3,        // 1 ~ 10
+  "region_min_diversity": 2,       // 1 ~ 10
+  "top_k_window": 20               // 10 ~ 50
+}
+```
+
+기본 설정명: `feed_default`
+
+> 소스: `app/api/admin_diversity.py:103, 127`
+
+---
+
+## 12. 분석 대시보드 · 코호트 알림
+
+### 12.1 대시보드 KPI
+
+```
+GET /v1/admin/dashboard/stats?days=7|30|90   # 핵심 KPI (사용자, 후원, 경매, 모더레이션)
+GET /v1/admin/dashboard/revenue?days=7|30|90 # 매출 분석
+```
+
+> 소스: `app/api/admin_dashboard.py:32, 121`
+
+### 12.2 코호트 자동 알림 (L-F)
+
+매일 자동 측정 (24h cron):
+- D7 retention < `COHORT_ALERT_7D_THRESHOLD` (기본 0.30) → Slack 알림
+- D30 retention < `COHORT_ALERT_30D_THRESHOLD` (기본 0.15) → Slack 알림
+- `cohort_alert_min_cohort_size` 미만 코호트는 측정 skip (기본 10명)
+- `SLACK_WEBHOOK_URL` 미설정 시 로그 출력만 (Mock 모드)
+
+> 소스: `app/services/cohort_alert_jobs.py`, `app/core/config.py:171~178`
+
+---
+
+## 13. 뉴스레터 운영
+
+```
+POST  /v1/admin/newsletter/issues/compose       # 이슈 초안 작성
+GET   /v1/admin/newsletter/issues               # 이슈 목록
+PATCH /v1/admin/newsletter/issues/{issue_id}    # 이슈 수정
+POST  /v1/admin/newsletter/issues/{issue_id}/send  # 발송
+```
+
+- 이메일 발송: `EMAIL_PROVIDER` 설정에 따라 Resend / SMTP / Mock 모드
+- AWS SES 사용 시: `AWS_SES_ACCESS_KEY_ID`, `AWS_SES_SECRET_ACCESS_KEY`, `AWS_SES_REGION` 설정 필요
+- SES bounce/complaint: SNS → `POST /v1/webhooks/ses-bounce` 처리 (`AWS_SNS_TOPIC_ARN` env)
+
+> 소스: `app/api/admin_newsletter.py:60, 94, 120, 175`
+
+---
+
+## 14. 쿠폰 관리
+
+```
+POST   /v1/admin/coupons              # 쿠폰 생성
+GET    /v1/admin/coupons              # 쿠폰 목록
+DELETE /v1/admin/coupons/{coupon_id}  # 쿠폰 삭제
+```
+
+> 소스: `app/api/admin_coupons.py:43, 82, 107`
+
+---
+
+## 15. 인터뷰 · Press Kit · Media Coverage
+
+### 15.1 AI 인터뷰 (C-1)
+
+```
+POST /v1/admin/interviews/generate         { user_id }  # LLM으로 인터뷰 초안 생성
+GET  /v1/admin/interviews                  # 목록
+PATCH /v1/admin/interviews/{id}            # 수동 수정
+POST /v1/admin/interviews/{id}/publish     # 공개
+POST /v1/admin/interviews/{id}/translate   # 다국어 번역 트리거
+```
+
+> 소스: `app/api/admin_interviews.py:59, 84, 122, 191, 261`
+
+### 15.2 Press Kit
+
+```
+POST /v1/admin/users/{user_id}/press-kit/generate   # 보도자료 자동 생성
+GET  /v1/admin/users/{user_id}/press-kit/history    # 생성 이력
+```
+
+> 소스: `app/api/admin_press_kits.py:34, 74`
+
+### 15.3 Media Coverage
+
+```
+POST   /v1/admin/media-coverage/{user_id}           # 수동 등록
+GET    /v1/admin/media-coverage/{user_id}           # 목록
+PATCH  /v1/admin/media-coverage/{user_id}/{entry_id}  # 수정
+DELETE /v1/admin/media-coverage/{user_id}/{entry_id}  # 삭제
+```
+
+> 소스: `app/api/admin_media_coverage.py:38, 77, 123, 161`
+
+---
+
+## 16. 외부 통합 — RSS · OG Auto-Thumbnail
+
+### 16.1 RSS Auto-Fetch (L-B)
+
+- 1시간 주기 자동 수집 (`rss_fetch_cron_loop`, main.py line 154)
+- env: `RSS_FETCH_WORKER_ENABLED` (기본 `true`)
+- 미설정 시 자동 수집 비활성화
+
+### 16.2 OG Auto-Thumbnail (L-B)
+
+외부 링크 OG 메타 자동 추출 — httpx + beautifulsoup4 (미설치 시 graceful)
+
+> env: Redis 설정 시 24h 캐시 활성화
+
+---
+
+## 17. 데이터 보존 · GDPR · 운영 정책
+
+### 17.1 데이터 보존 정책
+
+| 데이터 | 보존 기간 | cron 처리 |
+|--------|----------|----------|
+| newsletter_events | 90일 | `gdpr_cron_loop` |
+| ml_experiments | 90일 | cleanup 쿼리 |
+| translation_cache | 90일 미사용 시 | cleanup |
+| dm_messages | 사용자 삭제 시 soft delete | - |
 | posts | 사용자 삭제 시 | soft delete + 30일 grace |
-| user accounts | GDPR 삭제 요청 시 | 30일 grace 후 영구 삭제 |
+| user accounts | GDPR 삭제 요청 시 | gdpr_cron_loop |
 
-상세: [../operations/ml-experiments-policy.md](../operations/ml-experiments-policy.md)
+### 17.2 감사 로그
 
-### 12.2 GDPR 요청 처리
+별도 `audit_logs` DB 테이블은 없다. 모든 admin 액션은 Python 구조화 로그(`log.info("AUDIT action=...")`)로 기록된다. 로그 집계는 운영 환경의 로그 수집 인프라에 위임한다.
 
-`/admin/privacy/requests`:
-- 사용자 데이터 export 요청 → JSON ZIP 생성 → 이메일 발송
-- 계정 삭제 요청 → 30일 grace 알림 → 자동 영구 삭제
-- 동의 철회 → 마케팅 / 분석 / 쿠키 옵트아웃 즉시 적용
+```bash
+# 사용자 생성 로그 조회 예시
+grep "AUDIT action=admin_create_user" /app/logs/backend.log
 
-### 12.3 감사 로그
+# 역할 변경 감사
+grep "AUDIT action=admin_role_change" /app/logs/backend.log
+```
 
-- 모든 admin 액션은 `audit_logs` 테이블에 기록
-- 사용자 정지 / 삭제 / Featured publish / 환불 / KYC 승인 등
-- 보존 기간: 7년 (한국 개인정보보호법)
-- admin 본인이 본인 액션 확인 가능 (다른 admin은 super_admin만)
+### 17.3 시스템 설정
+
+```
+GET   /v1/admin/settings         # 설정 목록
+PATCH /v1/admin/settings/{key}   # 키-값 업데이트
+```
+
+> 소스: `app/api/admin_dashboard.py:227, 246`
 
 ---
 
-## 13. 트러블슈팅 · 로그 · cron 운영
+## 18. cron worker 매트릭스 (23개)
 
-### 13.1 cron worker 모니터링
+`main.py` `asyncio.create_task` 기준 전체 목록. 모든 worker는 R-5 isolation 패턴 (독립 `AsyncSessionLocal`) 적용.
 
-`/admin/system/crons` — 21개 worker 실시간 상태:
+| # | Worker | 주기 | env guard | 설명 |
+|:-:|--------|------|-----------|------|
+| 1 | `auction_cron_loop` | 5분 | - | 경매 만료/낙찰 처리 |
+| 2 | `gdpr_cron_loop` | 1시간 | - | GDPR 삭제, 만료 데이터 정리 |
+| 3 | `schedule_cron_loop` | 1분 | - | 예약 발행 처리 |
+| 4 | `badge_cron_loop` | 24시간 | - | 배지 갱신 |
+| 5 | `settlement_cron_loop` | 24시간 | - | 정산 처리 |
+| 6 | `webhook_cleanup_cron_loop` | 24시간 | - | webhook 로그 정리 |
+| 7 | `draft_cleanup_cron_loop` | 24시간 | - | 임시저장 정리 |
+| 8 | `tier_release_cron_loop` | 1분 | - | 티어 공개 처리 |
+| 9 | `auction_promotion_cron_loop` | 1분 | - | 경매 프로모션 처리 |
+| 10 | `artist_index_cron_loop` | 1시간 | - | 작가 인덱스 갱신 |
+| 11 | `post_engagement_cron_loop` | 1시간 | - | post_engagement_cache 갱신 |
+| 12 | `subscription_expiry_cron_loop` | 1시간 | - | 구독 만료 처리 |
+| 13 | `newsletter_cron_loop` | 1시간 | - | 뉴스레터 예약 발송 |
+| 14 | `exchange_rate_cron_loop` | 1시간 | - | 환율 캐시 갱신 |
+| 15 | `email_digest_cron_loop` | 1시간 | - | 이메일 다이제스트 (B'-3) |
+| 16 | `auto_renewal_cron_loop` | 1시간 | - | 구독 자동 갱신 (B'-4) |
+| 17 | `embedding_cron_loop` | 60초 quick + 24h batch | `EMBEDDING_WORKER_ENABLED` | 게시물 임베딩 생성 (L-A) |
+| 18 | `rss_fetch_cron_loop` | 1시간 | `RSS_FETCH_WORKER_ENABLED` | 외부 RSS 수집 (L-B) |
+| 19 | `cohort_alert_cron_loop` | 24시간 | `COHORT_ALERT_WORKER_ENABLED` | 코호트 retention 알림 (L-F) |
+| 20 | `ml_training_cron_loop` | 24시간 (내부 스케줄링) | `ML_TRAINING_WORKER_ENABLED` | ML 피드 모델 학습 (K-1) |
+| 21 | `artwork_caption_cron_loop` | 60초 quick + 24h batch | `ARTWORK_CAPTION_WORKER_ENABLED` (settings) | AI 작품 캡션 생성 (K-3) |
+| 22 | `feature_artist_cron_loop` | 매주 월요일 09:00 UTC | `FEATURED_ARTIST_WORKER_ENABLED` | AI 추천 작가 후보 선정 (K-4) |
+| 23 | `ai_curation_cron_loop` | 매주 월요일 09:00 UTC | `AI_CURATION_WORKER_ENABLED` | AI 컬렉션 자동 생성 (K-7) |
 
-| # | worker | 주기 | env guard |
-|:-:|--------|------|-----------|
-| 1 | auction_cron_loop | 5min | - |
-| 2 | gdpr_cron_loop | 1h | - |
-| ... | (16개 생략) | ... | ... |
-| 17 | embedding_cron_loop (L-A) | 60s + 24h | EMBEDDING_WORKER_ENABLED |
-| 18 | rss_fetch_cron_loop (L-B) | 1h | RSS_FETCH_WORKER_ENABLED |
-| 19 | cohort_alert_cron_loop (L-F) | 24h | COHORT_ALERT_WORKER_ENABLED |
-| 20 | ml_training_cron_loop (K-1) | 24h | ML_TRAINING_WORKER_ENABLED |
-| 21 | artwork_caption_cron_loop (K-3) | 60s + 24h | ARTWORK_CAPTION_WORKER_ENABLED |
-| 22 | featured_artist_cron_loop (K-4) | 7d | FEATURED_ARTIST_WORKER_ENABLED |
-| 23 | ai_curation_cron_loop (K-7) | 7d | AI_CURATION_WORKER_ENABLED |
+**모든 env guard 기본값: `true`** (false로 설정 시 해당 worker 비활성화)
 
-각 worker:
-- R-5 isolation 패턴 (독립 AsyncSessionLocal)
-- env 변수로 disable 가능 (graceful degradation)
-- 로그 + Slack 알림 (실패 시)
+**artwork_caption**은 `os.getenv` 대신 `settings.artwork_caption_worker_enabled` (Pydantic Settings)를 사용한다.
 
-### 13.2 환경변수 관리
+> 소스: `app/main.py:127~194`
 
-`/admin/system/env` (super_admin만):
-- 일부 토글성 env 변수는 UI에서 직접 변경 가능
-- 변경 시 즉시 cron worker / API 재로드
-- 민감 정보 (API 키 등)는 UI 노출 안 함, .env 파일 직접 수정 필수
+---
 
-주요 env:
-```
-# 인증
-JWT_SECRET, REFRESH_SECRET
-WEBAUTHN_RP_ID, WEBAUTHN_ORIGIN
+## 19. env 변수 카탈로그 (config.py 기반)
 
-# 결제
-STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
-STRIPE_CONNECT_CLIENT_ID
+`app/core/config.py`의 Pydantic Settings 필드 전체 목록. env 변수명은 대문자 변환 규칙을 따른다 (예: `jwt_secret` → `JWT_SECRET`).
 
-# 외부 서비스
-LLM_GATEWAY_API_KEY, LLM_GATEWAY_URL  # tuzigroup
-POSTHOG_API_KEY, POSTHOG_HOST
-SLACK_WEBHOOK_URL
-AWS_SES_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
-OPEN_EXCHANGE_RATES_APP_ID
-FCM_SERVER_KEY, APNS_KEY_ID
+### 기본 인프라
 
-# Cron toggles (모두 default true, false로 disable)
-EMBEDDING_WORKER_ENABLED, RSS_FETCH_WORKER_ENABLED
-COHORT_ALERT_WORKER_ENABLED, ML_TRAINING_WORKER_ENABLED
-ARTWORK_CAPTION_WORKER_ENABLED, FEATURED_ARTIST_WORKER_ENABLED
-AI_CURATION_WORKER_ENABLED
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `ENVIRONMENT` | `development` | 실행 환경 |
+| `DATABASE_URL` | `postgresql+asyncpg://...` | PostgreSQL 연결 URL |
+| `REDIS_URL` | (미설정) | Redis URL — 미설정 시 in-memory fallback |
+| `REDIS_PASSWORD` | - | Redis 비밀번호 |
+| `REDIS_MAX_CONNECTIONS` | `50` | Redis 연결 풀 크기 |
 
-# ML 토글
-ML_FEED_DEFAULT_ALGO=v1  # or v2 or auto
-ML_FEED_V2_ENABLED=false
-DIVERSITY_RERANKING_ENABLED=true
+### 인증
 
-# 비용 한도
-AI_CURATION_DAILY_BUDGET=5  # USD
-COHORT_ALERT_7D_THRESHOLD=0.30
-COHORT_ALERT_30D_THRESHOLD=0.15
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `JWT_SECRET` | `change_me` | JWT 서명 비밀키 (운영 필수 변경) |
+| `JWT_ALGORITHM` | `HS256` | JWT 알고리즘 |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | access token 유효 시간 |
+| `REFRESH_TOKEN_EXPIRE_DAYS` | `30` | refresh token 유효 시간 |
+| `TOTP_ENCRYPTION_KEY` | (미설정) | TOTP secret Fernet 암호화 키 — 미설정 시 평문 저장 경고 |
+| `WEBAUTHN_RP_ID` | `localhost` | WebAuthn Relying Party ID (도메인, scheme 제외) |
+| `WEBAUTHN_RP_NAME` | `Domo Admin` | 표시 이름 |
+| `WEBAUTHN_RP_ORIGIN` | `http://localhost:3800` | scheme + port 포함 origin |
 
-# 인프라
-REDIS_URL, DATABASE_URL
-EMBEDDING_MODEL_PATH  # sentence-transformers
-```
+### 소셜 로그인
 
-### 13.3 로그 분석
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `GOOGLE_CLIENT_ID` | `""` | Google OAuth Client ID |
+| `GOOGLE_CLIENT_SECRET` | `""` | Google OAuth Client Secret |
 
-운영 환경에서 로그 위치:
-- API: stdout (Docker 로그) + Sentry (옵션)
-- DB: PostgreSQL slow query log
-- Cron: stdout + 실패 시 Slack 알림
+### 결제 (Stripe)
 
-zero-script QA 방식 (Phase 4):
-- 구조화 JSON 로그 (logfmt 또는 JSON)
-- Docker compose logs 실시간 모니터링
-- LLM 비용 / API latency / DB query duration 모두 로그
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `PAYMENT_PROVIDER` | `mock_stripe` | `mock_stripe` 또는 `stripe` |
+| `STRIPE_SECRET_KEY` | `""` | Stripe Secret Key |
+| `STRIPE_WEBHOOK_SECRET` | `""` | Stripe Webhook 서명 검증 |
+| `KYC_PROVIDER` | `mock` | `mock` \| `toss` \| `stripe` |
+| `TOSS_CLIENT_ID` | `""` | Toss KYC Client ID |
+| `TOSS_CLIENT_SECRET` | `""` | Toss KYC Client Secret |
 
-### 13.4 일반 트러블슈팅
+### 스토리지 (S3)
+
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `STORAGE_PROVIDER` | `local` | `local` 또는 `s3` |
+| `UPLOAD_DIR` | `/app/uploads` | 로컬 스토리지 경로 |
+| `S3_BUCKET` | `""` | S3 버킷명 |
+| `S3_REGION` | `ap-northeast-2` | S3 리전 |
+| `CDN_BASE_URL` | `""` | CDN URL |
+| `AWS_ACCESS_KEY_ID` | `""` | S3용 AWS 자격증명 |
+| `AWS_SECRET_ACCESS_KEY` | `""` | S3용 AWS 자격증명 |
+
+### 이메일
+
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `EMAIL_PROVIDER` | `mock` | `mock` \| `resend` \| `smtp` |
+| `RESEND_API_KEY` | `""` | Resend API Key |
+| `EMAIL_FROM` | `noreply@domo.tuzigroup.com` | 발신자 주소 |
+| `EMAIL_FROM_NAME` | `Domo` | 발신자 이름 |
+| `SMTP_HOST` | `""` | SMTP 호스트 (e.g. smtp.gmail.com) |
+| `SMTP_PORT` | `587` | SMTP 포트 |
+| `SMTP_USER` | `""` | SMTP 사용자 |
+| `SMTP_PASSWORD` | `""` | SMTP 비밀번호 (Gmail App Password 등) |
+| `SMTP_USE_TLS` | `true` | STARTTLS on 587 |
+| `SMTP_USE_SSL` | `false` | SSL on 465 |
+
+### AWS SES (뉴스레터)
+
+> S3용 `AWS_ACCESS_KEY_ID`와 **별도** 자격증명 — least-privilege 분리
+
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `AWS_SES_REGION` | `us-east-1` | SES 리전 |
+| `AWS_SES_ACCESS_KEY_ID` | `""` | SES 전용 AWS 자격증명 |
+| `AWS_SES_SECRET_ACCESS_KEY` | `""` | SES 전용 AWS 자격증명 |
+| `AWS_SES_FROM_ADDRESS` | `noreply@domo.art` | SES 발신자 주소 |
+| `AWS_SNS_TOPIC_ARN` | `""` | SES bounce → SNS topic ARN |
+| `ADMIN_ALERT_EMAIL` | `""` | complaint 수신 시 alert 이메일 |
+
+### LLM Gateway (tuzigroup)
+
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `LLM_GATEWAY_URL` | `https://llm.tuzigroup.com/v1` | LLM 게이트웨이 URL |
+| `LLM_GATEWAY_API_KEY` | `""` | LLM API Key — 미설정 시 Mock 모드 |
+| `LLM_MODEL_NAME` | `gemma4-e4b` | 사용 모델명 |
+
+### 번역
+
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `TRANSLATION_PROVIDER` | `auto` | `auto` \| `ollama` \| `google` \| `mock` |
+| `GOOGLE_TRANSLATE_API_KEY` | `""` | Google Translate API Key |
+| `OLLAMA_URL` | `http://100.75.139.86:11434` | Ollama 서버 URL |
+| `OLLAMA_TRANSLATION_MODEL` | `gemma4:latest` | 번역용 모델 |
+
+### 분석 (PostHog)
+
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `POSTHOG_API_KEY` | `""` | PostHog Server-Side API Key — 미설정 시 Mock |
+| `POSTHOG_HOST` | `https://us.i.posthog.com` | PostHog 호스트 |
+
+### 관측성 (OpenTelemetry)
+
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `OTEL_ENABLED` | `false` | 분산 트레이싱 활성화 |
+| `OTEL_SERVICE_NAME` | `domo-backend` | 서비스 이름 |
+| `OTEL_OTLP_ENDPOINT` | (미설정) | OTLP 수집기 주소 (e.g. `localhost:4317`) |
+| `OTEL_SAMPLING_RATE` | `0.1` | 샘플링 비율 (운영 10%, 스테이징 1.0 권장) |
+| `METRICS_ENABLED` | `false` | Prometheus `/metrics` 활성화 |
+| `METRICS_TOKEN` | `""` | /metrics Bearer 토큰 |
+
+### 환율
+
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `EXCHANGE_RATE_API_KEY` | `""` | Open Exchange Rates API Key — 미설정 시 Mock (하드코딩 환율) |
+
+### 푸시 알림 (Firebase FCM · APNs)
+
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `FIREBASE_CREDENTIALS_JSON` | `""` | Firebase 서비스 계정 JSON — 미설정 시 Mock |
+| `APNS_KEY_ID` | `""` | APNs 10자리 Key ID |
+| `APNS_TEAM_ID` | `""` | APNs 10자리 Team ID |
+| `APNS_AUTH_KEY_P8` | `""` | AuthKey_XXXX.p8 파일 내용 |
+| `APNS_BUNDLE_ID` | `art.domo.app` | 앱 Bundle ID |
+| `APNS_SANDBOX` | `true` | true=샌드박스, false=운영 |
+
+### Cron Worker 토글
+
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `EMBEDDING_WORKER_ENABLED` | `true` | 임베딩 worker (#17) |
+| `RSS_FETCH_WORKER_ENABLED` | `true` | RSS 수집 worker (#18) |
+| `COHORT_ALERT_WORKER_ENABLED` | `true` | 코호트 알림 worker (#19) |
+| `ML_TRAINING_WORKER_ENABLED` | `true` | ML 학습 worker (#20) |
+| `ARTWORK_CAPTION_WORKER_ENABLED` | `true` | 캡션 생성 worker (#21) — Settings 객체 사용 |
+| `FEATURED_ARTIST_WORKER_ENABLED` | `true` | Featured Artist worker (#22) |
+| `AI_CURATION_WORKER_ENABLED` | `true` | AI 컬렉션 worker (#23) |
+
+### ML / AI 파라미터
+
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `AI_CURATION_DAILY_BUDGET_USD` | `5.0` | AI 컬렉션 LLM 일 비용 한도 (USD) |
+| `CAPTION_BATCH_SIZE_QUICK` | `20` | 캡션 quick sweep 배치 크기 |
+| `CAPTION_BATCH_SIZE_BATCH` | `100` | 캡션 batch sweep 배치 크기 |
+| `ARTWORK_CAPTION_DAILY_LIMIT_PER_POST` | `3` | 포스트당 하루 캡션 재생성 한도 |
+
+### 코호트 알림 파라미터
+
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `SLACK_WEBHOOK_URL` | `""` | Slack Incoming Webhook — 미설정 시 로그만 |
+| `COHORT_ALERT_7D_THRESHOLD` | `0.30` | D7 retention 경고 임계값 |
+| `COHORT_ALERT_30D_THRESHOLD` | `0.15` | D30 retention 경고 임계값 |
+| `COHORT_ALERT_MIN_COHORT_SIZE` | `10` | 통계 신뢰도용 최소 코호트 크기 |
+
+### URL / CORS
+
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `FRONTEND_URL` | `http://localhost:3700` | 프론트엔드 URL (CORS allowlist) |
+| `ADMIN_URL` | `http://localhost:3800` | Admin 콘솔 URL (CORS allowlist) |
+| `API_URL` | `http://localhost:3710/v1` | 백엔드 API 외부 접속 URL |
+| `EXTRA_CORS_ORIGINS` | `""` | 추가 CORS 허용 origin (쉼표 구분) |
+
+### DB Connection Pool
+
+| env 변수 | 기본값 | 설명 |
+|---------|--------|------|
+| `DB_POOL_SIZE` | `20` | 풀 크기 (dev: 5, staging: 10 권장) |
+| `DB_MAX_OVERFLOW` | `30` | 초과 연결 허용 수 |
+| `DB_POOL_RECYCLE` | `3600` | stale 연결 재생성 주기 (초) |
+| `DB_POOL_TIMEOUT` | `30` | 연결 대기 타임아웃 (초) |
+
+---
+
+## 20. 트러블슈팅
+
+### 20.1 일반 장애 대응
 
 | 증상 | 원인 | 해결 |
 |------|------|------|
-| ML 피드가 v2로 안 바뀜 | `ML_FEED_DEFAULT_ALGO=v1` | env `=v2` 또는 PostHog flag |
-| AI 컬렉션 안 생성됨 | LLM Gateway 미설정 | LLM_GATEWAY_API_KEY 확인 |
-| Featured Artist 후보 < 3 | 데이터 부족 | manual 모드 + 작가 인덱스 갱신 |
-| 코호트 알림 미발송 | Slack webhook 미설정 | SLACK_WEBHOOK_URL 확인 |
-| WebSocket 메시지 지연 | Redis 미연결 (multi-pod) | REDIS_URL 설정 |
-| 정산 실패 | KYC 미승인 또는 Stripe Connect 미완료 | KYC 큐 + Stripe onboarding 확인 |
-| 환율 환산 오류 | exchange_rates 캐시 만료 | exchange_rate_cron 강제 재실행 |
-| 임베딩 미생성 | EMBEDDING_MODEL_PATH 미설정 | sentence-transformers 모델 경로 확인 |
+| admin 로그인 불가 (423) | 5회 실패 잠금 | 15분 대기 또는 DB `locked_until` 직접 초기화 |
+| `SECOND_FACTOR_REQUIRED` 403 | TOTP/Passkey 미등록 | `/settings/totp-setup` 또는 `/settings/passkeys` 등록 |
+| AI 컬렉션 생성 안 됨 | LLM Gateway 미설정 | `LLM_GATEWAY_API_KEY` 확인 |
+| Featured Artist 후보 < 3명 | 데이터 부족 | 수동 featured 추가 + 작가 인덱스 갱신 대기 |
+| 코호트 알림 미발송 | Slack webhook 미설정 | `SLACK_WEBHOOK_URL` 설정 |
+| RSS 수집 중단 | worker disabled | `RSS_FETCH_WORKER_ENABLED=true` 확인 |
+| 임베딩 미생성 | worker disabled 또는 LLM 미설정 | `EMBEDDING_WORKER_ENABLED` + LLM 설정 확인 |
+| 환율 환산 오류 | exchange_rate worker 장애 | 로그 확인 후 `EXCHANGE_RATE_API_KEY` 점검 |
 
-### 13.5 긴급 fallback
+### 20.2 긴급 fallback env 토글
 
-서비스 장애 시 즉시 적용 가능한 env 토글:
-- `ML_FEED_V2_ENABLED=false` → v1 chronological만 사용
-- `DIVERSITY_RERANKING_ENABLED=false` → K-2 비활성
-- `RSS_FETCH_WORKER_ENABLED=false` → 외부 fetch 중단
-- `AI_CURATION_DAILY_BUDGET=0` → LLM 비용 0
-- `COHORT_ALERT_WORKER_ENABLED=false` → Slack 알림 중단
+서비스 안정성 우선 시 즉시 적용 가능한 env 변경:
 
-ML 모델 / LLM / 외부 서비스 모두 graceful degradation 설계되어 있어,
-**서비스 핵심 (회원가입 / 게시 / 후원 / 경매)은 외부 의존성 없이 동작 가능**.
+```bash
+# AI/ML 비활성화
+AI_CURATION_WORKER_ENABLED=false
+ML_TRAINING_WORKER_ENABLED=false
+ARTWORK_CAPTION_WORKER_ENABLED=false
+FEATURED_ARTIST_WORKER_ENABLED=false
+
+# LLM 비용 0으로 제한 (컬렉션 생성 skip)
+AI_CURATION_DAILY_BUDGET_USD=0
+
+# 외부 수집 중단
+RSS_FETCH_WORKER_ENABLED=false
+
+# Slack 알림 중단
+COHORT_ALERT_WORKER_ENABLED=false
+```
+
+서비스 핵심 기능 (회원가입 / 게시 / 후원 / 경매)은 외부 의존성 없이 동작한다.
+
+### 20.3 cron worker 상태 확인
+
+```bash
+# 실행 중 worker 확인 (Docker 환경)
+docker logs domo-backend --since 5m | grep "cron_loop"
+
+# 특정 worker 실패 확인
+docker logs domo-backend --since 24h | grep "ERROR\|WARNING" | grep "cron"
+```
 
 ---
 
-## 14. 추가 자료
+## 21. 가이드 검증 메타
 
+- **검증 일시**: 2026-05-08
+- **Alembic HEAD**: 0083 (`ai_collections`)
+- **검증 admin endpoint 수**: 76개 (`grep -rn "@router\."` 결과)
+- **검증 파일**:
+  - `app/core/admin_deps.py` — RBAC 의존성 정의
+  - `app/core/config.py` — env 변수 59개 필드
+  - `app/main.py` — cron worker 23개 등록
+  - `app/api/admin_auth.py` — 7개 endpoint
+  - `app/api/admin_webauthn.py` — 6개 endpoint
+  - `app/api/admin_dashboard.py` — 4개 endpoint
+  - `app/api/admin/users.py` — 7개 endpoint
+  - `app/api/admin/content.py` — 9개 endpoint
+  - `app/api/admin/transactions.py` — 4개 endpoint
+  - `app/api/admin/schools.py` — 3개 endpoint
+  - `app/api/admin_featured.py` — 3개 endpoint
+  - `app/api/admin_featured_artist.py` — 4개 endpoint
+  - `app/api/admin_ai_collections.py` — 3개 endpoint
+  - `app/api/admin_experiments.py` — 3개 endpoint
+  - `app/api/admin_diversity.py` — 2개 endpoint
+  - `app/api/admin_newsletter.py` — 4개 endpoint
+  - `app/api/admin_coupons.py` — 3개 endpoint
+  - `app/api/admin_interviews.py` — 5개 endpoint
+  - `app/api/admin_press_kits.py` — 2개 endpoint
+  - `app/api/admin_media_coverage.py` — 4개 endpoint
+  - `app/admin/src/app/*/page.tsx` — 13개 콘솔 페이지
+  - `app/admin/src/components/AdminShell.tsx` — 메뉴 + ALLOW_WITHOUT_2FA
+
+---
+
+**추가 자료**:
 - 사용자 시스템 가이드: [user-system-guide.ko.md](./user-system-guide.ko.md)
-- 어드민 인증 배포: [admin-auth-production-deployment.md](./admin-auth-production-deployment.md)
-- ML 운영 정책: [../operations/ml-experiments-policy.md](../operations/ml-experiments-policy.md)
-- Phase 10 Plan: [../01-plan/features/domo-phase10-roadmap.plan.md](../01-plan/features/domo-phase10-roadmap.plan.md)
-- TESTING_NOTES (skipped 사유): [../../backend/docs/TESTING_NOTES.md](../../backend/docs/TESTING_NOTES.md)
-
-문의 / 이슈: ops@domo.example (실제 운영 채널은 별도 안내)
-
----
-
-**버전 이력**
-
-| 버전 | 날짜 | 변경 |
-|------|------|------|
-| 1.0 | 2026-05-06 | Phase 10 Wave A/B 종결 시점 초기 작성. 13개 운영 섹션 통합. 21개 cron worker 매트릭스 + env 변수 카탈로그 포함. |
+- Gap 분석 보고서: [admin-system-guide.gap-analysis.md](./admin-system-guide.gap-analysis.md)

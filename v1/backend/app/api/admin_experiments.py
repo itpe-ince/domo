@@ -14,7 +14,7 @@ import os
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,6 +23,7 @@ from app.core.admin_deps import require_admin
 from app.core.errors import ApiError
 from app.db.session import get_db
 from app.models.user import User
+from app.services.audit_log import record_audit
 
 log = logging.getLogger(__name__)
 
@@ -111,6 +112,7 @@ async def list_experiments(
 @router.post("/experiments", status_code=201)
 async def create_or_update_experiment(
     body: ExperimentCreateRequest,
+    request: Request,
     admin: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
@@ -164,6 +166,15 @@ async def create_or_update_experiment(
     item = _row_to_dict(row)
     item["id"] = str(item["id"])
     item["assignment_counts"] = {}
+
+    await record_audit(
+        db,
+        actor=admin,
+        action="admin.experiment_create",
+        target_type="experiment",
+        metadata={"name": body.name, "status": body.status},
+        request=request,
+    )
 
     return {"data": item}
 

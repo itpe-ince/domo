@@ -16,7 +16,7 @@ import uuid
 from datetime import date, datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,6 +25,7 @@ from app.core.admin_deps import require_admin_with_2fa
 from app.core.errors import ApiError
 from app.db.session import get_db
 from app.models.user import User
+from app.services.audit_log import record_audit
 
 log = logging.getLogger(__name__)
 
@@ -163,6 +164,7 @@ async def list_candidates(
 @router.post("/candidates/{candidate_id}/approve")
 async def approve_candidate(
     candidate_id: str,
+    request: Request,
     admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
 ):
@@ -209,6 +211,15 @@ async def approve_candidate(
         admin.id,
         cid,
     )
+    await record_audit(
+        db,
+        actor=admin,
+        action="admin.featured_artist_approve",
+        target_type="featured_artist_candidate",
+        target_id=cid,
+        metadata={"candidate_id": str(cid)},
+        request=request,
+    )
     return {
         "data": {
             "id": str(cid),
@@ -224,6 +235,7 @@ async def approve_candidate(
 @router.post("/candidates/{candidate_id}/publish")
 async def publish_candidate(
     candidate_id: str,
+    request: Request,
     body: PublishRequest = PublishRequest(),
     admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
@@ -295,6 +307,15 @@ async def publish_candidate(
         cid,
         featured_artist_id,
     )
+    await record_audit(
+        db,
+        actor=admin,
+        action="admin.featured_artist_publish",
+        target_type="featured_artist_candidate",
+        target_id=cid,
+        metadata={"candidate_id": str(cid), "featured_artist_id": featured_artist_id},
+        request=request,
+    )
     return {
         "data": {
             "id": str(cid),
@@ -311,6 +332,7 @@ async def publish_candidate(
 async def reject_candidate(
     candidate_id: str,
     body: RejectRequest,
+    request: Request,
     admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
 ):
@@ -373,6 +395,15 @@ async def reject_candidate(
         admin.id,
         cid,
         body.reason,
+    )
+    await record_audit(
+        db,
+        actor=admin,
+        action="admin.featured_artist_reject",
+        target_type="featured_artist_candidate",
+        target_id=cid,
+        metadata={"candidate_id": str(cid), "reason": body.reason},
+        request=request,
     )
     return {
         "data": {

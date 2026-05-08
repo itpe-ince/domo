@@ -6,7 +6,7 @@ import io
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, Request, UploadFile
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 from app.schemas.user import UserSponsorSettingsRequest
@@ -28,6 +28,7 @@ from app.models.notification import Notification
 from app.models.post import Comment, Follow, Like, Post
 from app.models.sponsorship import Sponsorship, Subscription
 from app.models.user import ArtistApplication, ArtistProfile, User
+from app.services.audit_log import record_audit
 from app.services.auth_tokens import revoke_user_tokens
 from app.services.email import get_email_provider
 from app.services.email.templates import account_deleted as account_deleted_tpl
@@ -354,6 +355,7 @@ class DeleteRequest(BaseModel):
 @router.post("/delete")
 async def request_deletion(
     body: DeleteRequest,
+    request: Request,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -394,6 +396,17 @@ async def request_deletion(
     )
 
     await db.commit()
+
+    # Audit log — user.account_delete_request (요청 단계, 실제 삭제 아님)
+    await record_audit(
+        db,
+        actor=user,
+        action="user.account_delete_request",
+        target_type="user",
+        target_id=user.id,
+        request=request,
+        status="success",
+    )
 
     # Send account deletion confirmation email
     try:

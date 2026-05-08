@@ -1660,6 +1660,18 @@
       "save_success": "已保存"
     }
   },
+  "preferences": {
+    "title": "偏好设置",
+    "currency": {
+      "label": "货币"
+    },
+    "locale": {
+      "label": "语言"
+    },
+    "simpleMode": {
+      "label": "简单模式"
+    }
+  },
   "collections": {
     "editors_pick": "Editor's Pick",
     "subtitle": "AI策划的本周主题系列",
@@ -1671,5 +1683,55 @@
     "view_all": "查看所有系列",
     "back": "返回系列列表",
     "generated_by_ai": "AI策划系列"
+  },
+  "keyboardShortcuts": {
+    "title": "键盘快捷键",
+    "close": "关闭帮助",
+    "category": {
+      "feed": "动态",
+      "editor": "发布",
+      "general": "通用"
+    },
+    "action": {
+      "nextPost": "下一篇",
+      "prevPost": "上一篇",
+      "saveDraft": "保存草稿",
+      "showHelp": "显示此帮助",
+      "closeModal": "关闭弹窗"
+    }
+  },
+  "auth": {
+    "signup": {
+      "tab": "註冊",
+      "emailPlaceholder": "電子郵件",
+      "passwordPlaceholder": "密碼（8字以上）",
+      "displayNamePlaceholder": "顯示名稱（3～50字）",
+      "passwordHint": "需包含大寫、小寫、數字、特殊字元中的3種",
+      "submit": "建立帳號"
+    },
+    "login": {
+      "email": {
+        "tab": "登入",
+        "emailPlaceholder": "電子郵件",
+        "passwordPlaceholder": "密碼",
+        "forgotPassword": "忘記密碼？",
+        "forgotPasswordTooltip": "密碼重設將於 Phase 12 提供",
+        "submit": "登入"
+      }
+    },
+    "verify": {
+      "banner": "驗證連結已寄送至您的信箱，請在24小時內完成驗證。",
+      "verifying": "正在驗證電子郵件...",
+      "success": "電子郵件驗證成功！",
+      "redirecting": "即將跳轉至首頁...",
+      "alreadyVerified": "此帳號已完成驗證",
+      "expired": "驗證連結已過期",
+      "expiredDesc": "連結已超過24小時失效，請重新申請驗證信件。",
+      "resend": "重新發送驗證信",
+      "resendSuccess": "驗證信已重新發送，請查看信箱。",
+      "error": "驗證失敗",
+      "noToken": "找不到驗證憑證，請重新點擊信件中的連結。",
+      "goHome": "返回首頁"
+    }
   }
 }

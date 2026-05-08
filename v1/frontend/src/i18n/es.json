@@ -1660,6 +1660,18 @@
       "save_success": "Guardado"
     }
   },
+  "preferences": {
+    "title": "Preferencias",
+    "currency": {
+      "label": "Moneda"
+    },
+    "locale": {
+      "label": "Idioma"
+    },
+    "simpleMode": {
+      "label": "Modo simple"
+    }
+  },
   "collections": {
     "editors_pick": "Editor's Pick",
     "subtitle": "Colecciones temáticas semanales curadas por IA",
@@ -1671,5 +1683,55 @@
     "view_all": "Ver todas las colecciones",
     "back": "Volver a colecciones",
     "generated_by_ai": "Colección curada por IA"
+  },
+  "keyboardShortcuts": {
+    "title": "Atajos de teclado",
+    "close": "Cerrar ayuda",
+    "category": {
+      "feed": "Feed",
+      "editor": "Editor",
+      "general": "General"
+    },
+    "action": {
+      "nextPost": "Siguiente publicación",
+      "prevPost": "Publicación anterior",
+      "saveDraft": "Guardar borrador",
+      "showHelp": "Mostrar esta ayuda",
+      "closeModal": "Cerrar modal"
+    }
+  },
+  "auth": {
+    "signup": {
+      "tab": "Registrarse",
+      "emailPlaceholder": "Correo electrónico",
+      "passwordPlaceholder": "Contraseña (mín. 8 caracteres)",
+      "displayNamePlaceholder": "Nombre de usuario (3–50 caracteres)",
+      "passwordHint": "Debe incluir 3 de: mayúsculas, minúsculas, números, caracteres especiales",
+      "submit": "Crear cuenta"
+    },
+    "login": {
+      "email": {
+        "tab": "Iniciar sesión",
+        "emailPlaceholder": "Correo electrónico",
+        "passwordPlaceholder": "Contraseña",
+        "forgotPassword": "¿Olvidaste tu contraseña?",
+        "forgotPasswordTooltip": "El restablecimiento de contraseña estará disponible en Phase 12",
+        "submit": "Iniciar sesión"
+      }
+    },
+    "verify": {
+      "banner": "Se ha enviado un enlace de verificación a tu correo. Por favor verifica en 24 horas.",
+      "verifying": "Verificando tu correo electrónico...",
+      "success": "¡Correo verificado!",
+      "redirecting": "Redirigiendo al inicio...",
+      "alreadyVerified": "Tu cuenta ya está verificada",
+      "expired": "El enlace de verificación ha caducado",
+      "expiredDesc": "El enlace expiró (24 horas). Por favor solicita un nuevo correo de verificación.",
+      "resend": "Reenviar correo de verificación",
+      "resendSuccess": "Correo de verificación reenviado. Revisa tu bandeja de entrada.",
+      "error": "Error en la verificación",
+      "noToken": "No se encontró el token de verificación. Haz clic en el enlace del correo nuevamente.",
+      "goHome": "Ir al inicio"
+    }
   }
 }

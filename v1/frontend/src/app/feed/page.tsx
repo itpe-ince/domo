@@ -177,7 +177,10 @@ export default function FeedPage() {
         <ul className="divide-y divide-border" aria-label={t("feed.title")}>
           {posts.map((post) => (
             <li key={post.id}>
-              <FeedItem post={post} source="feed" />
+              {/* Phase 11 D-1: data-feed-item + tabIndex={0} for j/k keyboard navigation */}
+              <div data-feed-item tabIndex={0} className="outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded">
+                <FeedItem post={post} source="feed" />
+              </div>
             </li>
           ))}
         </ul>

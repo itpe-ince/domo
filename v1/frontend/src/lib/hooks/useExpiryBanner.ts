@@ -10,7 +10,7 @@
  * Mirrors useWinbackBanner cooldown pattern (B-5).
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
 const COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const STORAGE_KEY_PREFIX = "domo_expiry_dismiss_";
@@ -73,6 +73,13 @@ export function useExpiryBanner({
   // dismissed set is hydrated from localStorage after mount (SSR-safe)
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
+  // Stable dependency key — caller가 매 렌더마다 새 array를 전달해도
+  // 실제 subscription id 집합이 같으면 effect 재실행 방지 (무한 루프 차단)
+  const idsKey = useMemo(
+    () => subscriptions.map((s) => s.id).join("|"),
+    [subscriptions],
+  );
+
   useEffect(() => {
     // Hydrate on client
     const dismissed = new Set<string>();
@@ -81,8 +88,19 @@ export function useExpiryBanner({
         dismissed.add(sub.id);
       }
     }
-    setDismissedIds(dismissed);
-  }, [subscriptions]);
+    setDismissedIds((prev) => {
+      // 동등 비교: 같은 set이면 setState skip — 무한 루프 차단
+      if (
+        prev.size === dismissed.size &&
+        [...prev].every((id) => dismissed.has(id))
+      ) {
+        return prev;
+      }
+      return dismissed;
+    });
+    // subscriptions reference 대신 idsKey 사용 (eslint disable는 의도된 것)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsKey]);
 
   const dismiss = useCallback((subscriptionId: string) => {
     setDismissedLocally(subscriptionId);

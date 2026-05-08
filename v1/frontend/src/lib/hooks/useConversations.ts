@@ -38,9 +38,9 @@ export function useConversations(): UseConversationsReturn {
     try {
       const resp = await listConversations(null, 20);
       if (!mountedRef.current) return;
-      setConversations(resp.data);
-      setCursor(resp.next_cursor);
-      setHasMore(resp.next_cursor !== null);
+      setConversations(resp.data ?? []);
+      setCursor(resp.next_cursor ?? null);
+      setHasMore((resp.next_cursor ?? null) !== null);
     } catch (e) {
       if (!mountedRef.current) return;
       setError(e instanceof Error ? e.message : "Failed to load conversations");
@@ -60,11 +60,11 @@ export function useConversations(): UseConversationsReturn {
       if (!mountedRef.current) return;
       setConversations((prev) => {
         const ids = new Set(prev.map((c) => c.id));
-        const newItems = resp.data.filter((c) => !ids.has(c.id));
+        const newItems = (resp.data ?? []).filter((c) => !ids.has(c.id));
         return [...prev, ...newItems];
       });
-      setCursor(resp.next_cursor);
-      setHasMore(resp.next_cursor !== null);
+      setCursor(resp.next_cursor ?? null);
+      setHasMore((resp.next_cursor ?? null) !== null);
     } catch {
       // Ignore pagination errors silently
     }

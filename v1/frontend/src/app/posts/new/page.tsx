@@ -24,6 +24,7 @@ import {
 } from "@/lib/hooks/useDraftAutosave";
 import { usePostFormState } from "@/lib/hooks/usePostFormState";
 import { useArtistGate } from "@/lib/hooks/useArtistGate";
+import { useGlobalHotkeys } from "@/lib/hooks/useGlobalHotkeys";
 import { useMediaUploadQueue } from "@/lib/hooks/useMediaUploadQueue";
 import { useMySeries } from "@/lib/hooks/useMySeries";
 import { LoginModal } from "@/components/LoginModal";
@@ -270,6 +271,20 @@ function CreatePostPageInner() {
     const id = await saveToServer();
     if (id) setCurrentDraftId(id);
   }
+
+  // Phase 11 D-1: ⌘S / Ctrl+S 전역 단축키 → 임시저장
+  // preventInInputs: false — 폼(textarea 등) 포커스 중에도 동작해야 함
+  useGlobalHotkeys([
+    {
+      key: "s",
+      modifier: "cmd",
+      handler: (e) => {
+        e.preventDefault(); // 브라우저 기본 "저장" 다이얼로그 차단
+        void handleManualSave();
+      },
+      preventInInputs: false,
+    },
+  ]);
 
   // AC-7: detect multi-tab editing via localStorage `storage` event.
   // When another tab writes the same key, browsers fire `storage` here.

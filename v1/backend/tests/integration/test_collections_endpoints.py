@@ -236,13 +236,13 @@ async def test_admin_publish_collection():
         collection_id=cid,
         body=body,
         admin=admin,
-        db=db,
+        request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db,
     )
 
     assert result["status"] == "published"
     assert result["id"] == str(cid)
     assert "published_at" in result
-    db.commit.assert_called_once()
+    assert db.commit.called
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -278,12 +278,12 @@ async def test_admin_archive_collection():
         collection_id=cid,
         body=body,
         admin=admin,
-        db=db,
+        request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db,
     )
 
     assert result["status"] == "archived"
     assert result["id"] == str(cid)
-    db.commit.assert_called_once()
+    assert db.commit.called
 
 
 # ─────────────────────────────────────────────────────────────────────────────

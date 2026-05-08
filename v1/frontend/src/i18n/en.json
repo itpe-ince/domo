@@ -1660,6 +1660,18 @@
       "save_success": "Saved"
     }
   },
+  "preferences": {
+    "title": "Preferences",
+    "currency": {
+      "label": "Currency"
+    },
+    "locale": {
+      "label": "Language"
+    },
+    "simpleMode": {
+      "label": "Simple Mode"
+    }
+  },
   "collections": {
     "editors_pick": "Editor's Pick",
     "subtitle": "AI-curated weekly collections",
@@ -1671,5 +1683,55 @@
     "view_all": "View all collections",
     "back": "Back to collections",
     "generated_by_ai": "AI-curated collection"
+  },
+  "keyboardShortcuts": {
+    "title": "Keyboard Shortcuts",
+    "close": "Close help",
+    "category": {
+      "feed": "Feed",
+      "editor": "Editor",
+      "general": "General"
+    },
+    "action": {
+      "nextPost": "Next post",
+      "prevPost": "Previous post",
+      "saveDraft": "Save draft",
+      "showHelp": "Show this help",
+      "closeModal": "Close modal"
+    }
+  },
+  "auth": {
+    "signup": {
+      "tab": "Sign Up",
+      "emailPlaceholder": "Email address",
+      "passwordPlaceholder": "Password (8+ characters)",
+      "displayNamePlaceholder": "Display name (3–50 chars)",
+      "passwordHint": "Must include 3 of: uppercase, lowercase, numbers, special chars",
+      "submit": "Create Account"
+    },
+    "login": {
+      "email": {
+        "tab": "Login",
+        "emailPlaceholder": "Email address",
+        "passwordPlaceholder": "Password",
+        "forgotPassword": "Forgot password?",
+        "forgotPasswordTooltip": "Password reset will be available in Phase 12",
+        "submit": "Log In"
+      }
+    },
+    "verify": {
+      "banner": "A verification link has been sent to your email. Please verify within 24 hours.",
+      "verifying": "Verifying your email...",
+      "success": "Email Verified!",
+      "redirecting": "Redirecting to home shortly...",
+      "alreadyVerified": "Your account is already verified",
+      "expired": "Verification link expired",
+      "expiredDesc": "The link has expired (24 hours). Please request a new verification email.",
+      "resend": "Resend Verification Email",
+      "resendSuccess": "Verification email resent. Please check your inbox.",
+      "error": "Verification Failed",
+      "noToken": "No verification token found. Please click the link in your email again.",
+      "goHome": "Go to Home"
+    }
   }
 }

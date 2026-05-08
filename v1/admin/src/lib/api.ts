@@ -1285,3 +1285,295 @@ export class ApiClientError extends Error {
     this.name = "ApiClientError";
   }
 }
+
+// ─── Experiments (Phase 11 B-1 / K-8) ───────────────────────────────────────
+
+export type ExperimentStatus = "draft" | "running" | "paused" | "completed";
+
+export interface Experiment {
+  id: string;
+  name: string;
+  status: ExperimentStatus;
+  variant_distribution: Record<string, number>; // { v1: 0.5, v2: 0.5 }
+  started_at: string | null;
+  ended_at: string | null;
+  target_metric: string | null;
+  hypothesis: string | null;
+  assignment_counts: Record<string, number>; // { v1: 1234, v2: 1198 }
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ExperimentResults {
+  experiment_name: string;
+  status: ExperimentStatus;
+  days_running: number | null;
+  assignment_counts: Record<string, number>;
+  newsletter_open_rate: Record<string, number> | null;
+  posthog_insights_url: string;
+  note: string;
+}
+
+export interface CreateExperimentPayload {
+  name: string;
+  status: ExperimentStatus;
+  variant_distribution: Record<string, number>;
+  target_metric?: string;
+  hypothesis?: string;
+}
+
+export async function listExperiments(): Promise<Experiment[]> {
+  return apiFetch<Experiment[]>("/admin/experiments");
+}
+
+export async function createExperiment(
+  payload: CreateExperimentPayload
+): Promise<Experiment> {
+  return apiFetch<Experiment>("/admin/experiments", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getExperimentResults(
+  name: string
+): Promise<ExperimentResults> {
+  return apiFetch<ExperimentResults>(
+    `/admin/experiments/${encodeURIComponent(name)}/results`
+  );
+}
+
+// ─── AI Collections Queue (Phase 11 A-2) ─────────────────────────────────────
+
+export type CollectionStatus = "generating" | "pending" | "published" | "archived";
+
+export interface CollectionPostThumb {
+  post_id: string;
+  thumbnail_url: string | null;
+  position: number;
+}
+
+export interface AICollection {
+  id: string;
+  week_start: string;
+  theme: string;
+  title: string | null;
+  description: string | null;
+  title_translations: Record<string, string>;
+  description_translations: Record<string, string>;
+  cover_post_id: string | null;
+  post_count: number;
+  posts: CollectionPostThumb[];
+  llm_model_version: string | null;
+  cluster_k: number | null;
+  generated_at: string;
+  status: CollectionStatus;
+}
+
+export interface AICollectionQueueResponse {
+  items: AICollection[];
+}
+
+export interface CollectionResponse {
+  id: string;
+  status?: CollectionStatus;
+  published_at?: string;
+  title?: string | null;
+  description?: string | null;
+  title_translations?: Record<string, string>;
+  description_translations?: Record<string, string>;
+}
+
+export async function fetchAICollectionsQueue(
+  weekStart?: string
+): Promise<AICollectionQueueResponse> {
+  const qs = weekStart ? `?week_start=${weekStart}` : "";
+  return apiFetch<AICollectionQueueResponse>(`/admin/ai-collections/queue${qs}`);
+}
+
+export async function publishCollection(
+  id: string,
+  note?: string
+): Promise<CollectionResponse> {
+  return apiFetch<CollectionResponse>(`/admin/ai-collections/${id}/publish`, {
+    method: "POST",
+    body: JSON.stringify({ admin_note: note ?? null }),
+  });
+}
+
+export async function archiveCollection(
+  id: string,
+  note?: string
+): Promise<CollectionResponse> {
+  return apiFetch<CollectionResponse>(`/admin/ai-collections/${id}/archive`, {
+    method: "POST",
+    body: JSON.stringify({ admin_note: note ?? null }),
+  });
+}
+
+export async function patchCollection(
+  id: string,
+  patch: { title?: string; description?: string },
+  retranslate = true
+): Promise<CollectionResponse> {
+  const qs = retranslate ? "?retranslate=true" : "";
+  return apiFetch<CollectionResponse>(`/admin/collections/${id}${qs}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+}
+
+export async function rejectCollection(
+  id: string,
+  reason: string
+): Promise<void> {
+  return apiFetch<void>(`/admin/collections/${id}`, {
+    method: "DELETE",
+    body: JSON.stringify({ reason }),
+  });
+}
+
+// ─── Featured Artist Queue (Phase 11 A-1) ────────────────────────────────────
+
+export type CandidateStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "published"
+  | "expired";
+
+export type CandidateReasoning = {
+  engagement: number;       // 0.0~1.0, w=0.30
+  rank: number;             // 0.0~1.0, w=0.30
+  diversity: number;        // 0.0~1.0, w=0.20
+  new_artist_bonus: number; // 0.0 or 0.20
+  sponsor_count: number;
+  follower_count: number;
+  region: string | null;
+  genre: string | null;
+  reject_reason?: string;
+};
+
+export type FeaturedArtistCandidate = {
+  id: string;
+  artist_id: string;
+  artist_name: string;
+  artist_avatar_url: string | null;
+  follower_count: number;
+  week_start: string;        // "YYYY-MM-DD"
+  composite_score: number;   // 0.0~1.0
+  reasoning: CandidateReasoning;
+  status: CandidateStatus;
+  created_at: string;
+  reviewed_at?: string | null;
+  published_at?: string | null;
+};
+
+export type FeaturedArtistCandidatesResponse = {
+  week_start: string;
+  candidates: FeaturedArtistCandidate[];
+  total: number;
+};
+
+export type CandidateApproveResponse = {
+  id: string;
+  status: "approved";
+  admin_id: string;
+  reviewed_at: string;
+};
+
+export type CandidatePublishResponse = {
+  id: string;
+  status: "published";
+  featured_artist_id: string | null;
+  published_at: string;
+};
+
+export type CandidateRejectResponse = {
+  id: string;
+  status: "rejected";
+  reviewed_at: string;
+};
+
+export async function fetchFeaturedArtistCandidates(
+  weekStart?: string,
+  status?: CandidateStatus
+): Promise<FeaturedArtistCandidatesResponse> {
+  const qs = new URLSearchParams();
+  if (weekStart) qs.set("week_start", weekStart);
+  if (status) qs.set("status", status);
+  return apiFetch<FeaturedArtistCandidatesResponse>(
+    `/admin/featured-artist/candidates?${qs}`
+  );
+}
+
+export async function approveCandidate(
+  id: string
+): Promise<CandidateApproveResponse> {
+  return apiFetch<CandidateApproveResponse>(
+    `/admin/featured-artist/candidates/${id}/approve`,
+    { method: "POST", body: JSON.stringify({}) }
+  );
+}
+
+export async function publishCandidate(
+  id: string,
+  notes?: string
+): Promise<CandidatePublishResponse> {
+  return apiFetch<CandidatePublishResponse>(
+    `/admin/featured-artist/candidates/${id}/publish`,
+    { method: "POST", body: JSON.stringify({ notes: notes ?? "" }) }
+  );
+}
+
+export async function rejectCandidate(
+  id: string,
+  reason: string
+): Promise<CandidateRejectResponse> {
+  return apiFetch<CandidateRejectResponse>(
+    `/admin/featured-artist/candidates/${id}/reject`,
+    { method: "POST", body: JSON.stringify({ reason }) }
+  );
+}
+
+// ─── Admin Diversity Config (Phase 11 B-2) ───────────────────────────────────
+
+/** GET /admin/diversity-config 응답 단일 항목 */
+export interface DiversityConfigOut {
+  id: string;
+  name: string;
+  emerging_artist_boost: number;
+  genre_min_diversity: number;
+  region_min_diversity: number;
+  top_k_window: number;
+  candidate_pool_size: number;
+  status: "active" | "archived";
+  created_at: string;
+  updated_at: string;
+}
+
+/** PATCH /admin/diversity-config/{name} 요청 본문
+ *  candidate_pool_size 는 운영자 실수 방지를 위해 UI에서 노출하지 않음 */
+export interface DiversityConfigPatch {
+  emerging_artist_boost?: number;  // 1.0 ~ 2.0
+  genre_min_diversity?: number;    // 1 ~ 10 (정수)
+  region_min_diversity?: number;   // 1 ~ 10 (정수)
+  top_k_window?: number;           // 10 ~ 50 (정수)
+}
+
+/** 모든 diversity_configs 목록 조회 (admin 전용). */
+export async function adminListDiversityConfigs(): Promise<DiversityConfigOut[]> {
+  return apiFetch<DiversityConfigOut[]>("/admin/diversity-config");
+}
+
+/** 특정 config 부분 수정 (admin 전용). */
+export async function adminPatchDiversityConfig(
+  name: string,
+  patch: DiversityConfigPatch
+): Promise<DiversityConfigOut> {
+  return apiFetch<DiversityConfigOut>(`/admin/diversity-config/${name}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+}

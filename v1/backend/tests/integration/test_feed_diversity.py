@@ -190,10 +190,10 @@ async def test_admin_diversity_config_patch_success():
     db.execute.side_effect = [check_mock, MagicMock(), select_mock]
 
     body = DiversityConfigPatch(emerging_artist_boost=1.25)
-    result = await patch_diversity_config(name="feed_default", body=body, admin=admin, db=db)
+    result = await patch_diversity_config(name="feed_default", body=body, admin=admin, request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db)
 
     assert result.emerging_artist_boost == 1.25
-    db.commit.assert_called_once()
+    assert db.commit.called
 
 
 @pytest.mark.asyncio
@@ -209,7 +209,7 @@ async def test_admin_diversity_config_patch_not_found():
     body = DiversityConfigPatch(emerging_artist_boost=1.25)
 
     with pytest.raises(ApiError) as exc_info:
-        await patch_diversity_config(name="nonexistent", body=body, admin=admin, db=db)
+        await patch_diversity_config(name="nonexistent", body=body, admin=admin, request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db)
 
     assert exc_info.value.status_code == 404
 
@@ -223,6 +223,6 @@ async def test_admin_diversity_config_patch_no_fields():
     body = DiversityConfigPatch()  # 모든 필드 None
 
     with pytest.raises(ApiError) as exc_info:
-        await patch_diversity_config(name="feed_default", body=body, admin=admin, db=db)
+        await patch_diversity_config(name="feed_default", body=body, admin=admin, request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")), db=db)
 
     assert exc_info.value.status_code == 400

@@ -205,6 +205,81 @@ export async function logout(): Promise<void> {
   tokenStore.clear();
 }
 
+// ─── D-3: 이메일+비밀번호 인증 헬퍼 ─────────────────────────────────────────
+
+export type RegisterBody = {
+  email: string;
+  password: string;
+  display_name: string;
+};
+
+export type LoginEmailBody = {
+  email: string;
+  password: string;
+};
+
+export type AuthResult = {
+  tokens: { access_token: string; refresh_token: string };
+  user: ApiUser;
+  email_verified?: boolean;
+  email_verification_sent?: boolean;
+};
+
+/**
+ * 이메일+비밀번호 회원가입.
+ * 성공 시 토큰을 localStorage에 저장하고 User를 반환한다.
+ */
+export async function registerWithPassword(body: RegisterBody): Promise<ApiUser> {
+  const data = await apiFetch<AuthResult>("/auth/register", {
+    method: "POST",
+    body: JSON.stringify(body),
+    auth: false,
+  });
+  tokenStore.set(data.tokens.access_token, data.tokens.refresh_token);
+  return data.user;
+}
+
+/**
+ * 이메일+비밀번호 로그인.
+ * 성공 시 토큰을 localStorage에 저장하고 { user, email_verified }를 반환한다.
+ */
+export async function loginWithEmailPassword(
+  body: LoginEmailBody
+): Promise<{ user: ApiUser; email_verified: boolean }> {
+  const data = await apiFetch<AuthResult>("/auth/login/email", {
+    method: "POST",
+    body: JSON.stringify(body),
+    auth: false,
+  });
+  tokenStore.set(data.tokens.access_token, data.tokens.refresh_token);
+  return { user: data.user, email_verified: data.email_verified ?? false };
+}
+
+/**
+ * 이메일 인증 토큰 검증 (이메일 링크 클릭 시).
+ */
+export async function verifyEmail(
+  token: string
+): Promise<{ verified: boolean; already_verified?: boolean }> {
+  return apiFetch<{ verified: boolean; already_verified?: boolean }>(
+    "/auth/email/verify",
+    {
+      method: "POST",
+      body: JSON.stringify({ token }),
+      auth: false,
+    }
+  );
+}
+
+/**
+ * 이메일 인증 메일 재발송 (로그인 상태 필요, 5분 cooldown).
+ */
+export async function resendVerificationEmail(): Promise<{ sent: boolean }> {
+  return apiFetch<{ sent: boolean }>("/auth/email/verify/resend", {
+    method: "POST",
+  });
+}
+
 // ─── Admin helpers ───────────────────────────────────────────────────────
 export type ArtistApplication = {
   id: string;

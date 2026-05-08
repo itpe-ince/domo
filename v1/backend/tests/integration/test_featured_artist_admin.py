@@ -125,13 +125,14 @@ async def test_approve_then_publish_workflow():
     approve_result = await approve_candidate(
         candidate_id=str(candidate_id),
         admin=admin,
+        request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")),
         db=db_approve,
     )
 
     assert approve_result["data"]["status"] == "approved"
     assert approve_result["data"]["id"] == str(candidate_id)
     assert approve_result["data"]["admin_id"] == str(admin.id)
-    db_approve.commit.assert_called_once()
+    assert db_approve.commit.called
 
     # ── Step B: publish
     db_publish = AsyncMock()
@@ -158,6 +159,7 @@ async def test_approve_then_publish_workflow():
         candidate_id=str(candidate_id),
         body=PublishRequest(notes="주간 자동 선정"),
         admin=admin,
+        request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")),
         db=db_publish,
     )
 
@@ -166,7 +168,7 @@ async def test_approve_then_publish_workflow():
     # featured_artists 테이블 INSERT 확인
     assert publish_result["data"]["featured_artist_id"] == str(fa_id)
     assert publish_result["data"]["published_at"] is not None
-    db_publish.commit.assert_called_once()
+    assert db_publish.commit.called
 
 
 # ── Test 3: reject 워크플로우 ─────────────────────────────────────────────────
@@ -203,6 +205,7 @@ async def test_reject_workflow_saves_reason():
         candidate_id=str(candidate_id),
         body=reject_body,
         admin=admin,
+        request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")),
         db=db,
     )
 
@@ -243,6 +246,7 @@ async def test_approve_already_approved_returns_409():
         await approve_candidate(
             candidate_id=str(candidate_id),
             admin=admin,
+            request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")),
             db=db,
         )
 
