@@ -58,7 +58,9 @@ export function PreviewPane({
       aria-hidden={!isVisible}
       className={
         isVisible
-          ? "hidden md:block w-96 border-l border-border bg-background overflow-y-auto transition-[width] duration-150"
+          ? // sticky: 스크롤 시 상단 고정. self-start + max-h-screen 으로 내부 스크롤 허용.
+            // border-l 이 스크롤 위치마다 따라 그려져 border 끊김도 해소.
+            "hidden md:block md:sticky md:top-0 md:self-start md:max-h-screen w-96 border-l border-border bg-background overflow-y-auto transition-[width] duration-150"
           : "hidden md:block w-0 overflow-hidden opacity-0 pointer-events-none border-l-0 transition-[width] duration-150"
       }
     >

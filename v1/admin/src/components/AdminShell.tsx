@@ -157,7 +157,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 overflow-y-auto py-4 px-2">
           {NAV_GROUPS.map((group) => (
             <div key={group.label} className="mb-5">
-              <div className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-admin-muted">
+              <div className="px-3 mb-1.5 text-[11px] font-bold uppercase tracking-widest text-admin-fg-soft">
                 {group.label}
               </div>
               <div className="space-y-0.5">
@@ -165,10 +165,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`block px-3 py-1.5 rounded-md text-[13px] transition-colors ${
+                    className={`block px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors ${
                       isActive(item.href)
-                        ? "bg-admin-accent/10 text-admin-accent font-medium border-l-2 border-admin-accent pl-[10px]"
-                        : "text-admin-fg-soft hover:bg-admin-surface-2 hover:text-admin-fg"
+                        ? "bg-admin-accent/10 text-admin-accent border-l-2 border-admin-accent pl-[10px]"
+                        : "text-admin-fg hover:bg-admin-surface-2 hover:text-admin-accent"
                     }`}
                   >
                     {item.label}

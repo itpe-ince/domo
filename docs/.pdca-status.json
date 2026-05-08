@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-06T12:29:59.695Z",
+  "lastUpdated": "2026-05-08T03:04:47.159Z",
   "activeFeatures": [
     "core",
     "db",
@@ -143,7 +143,8 @@
     "edit",
     "featured_artist_jobs.py",
     "ai_curation_jobs.py",
-    "collections"
+    "collections",
+    "magic_link.py"
   ],
   "primaryFeature": "api",
   "phase8ArchivedAt": "2026-05-05T22:00:00.000Z",
@@ -592,7 +593,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:35:13.871Z",
-        "lastUpdated": "2026-05-06T11:49:00.362Z"
+        "lastUpdated": "2026-05-07T09:44:22.070Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0083_ai_collections.py"
     },
@@ -605,9 +606,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-05-06T11:56:08.852Z"
+        "lastUpdated": "2026-05-08T00:00:03.635Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/api.ts"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/hooks/useAutoResizeTextarea.ts"
     },
     "applications": {
       "phase": "do",
@@ -800,7 +801,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:41:45.679Z",
-        "lastUpdated": "2026-05-05T20:46:17.335Z"
+        "lastUpdated": "2026-05-08T00:25:52.157Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/new/page.tsx"
     },
@@ -1034,9 +1035,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T01:31:08.565Z",
-        "lastUpdated": "2026-05-05T07:54:49.595Z"
+        "lastUpdated": "2026-05-08T03:04:47.159Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/PostPreviewCard.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/PreviewToggleButton.tsx"
     },
     "feed": {
       "phase": "do",
@@ -1060,9 +1061,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T20:50:53.213Z",
-        "lastUpdated": "2026-05-05T11:50:49.541Z"
+        "lastUpdated": "2026-05-07T22:42:41.297Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/users/UserMediaCoverage.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/app/users/page.tsx"
     },
     "schools": {
       "phase": "do",
@@ -1112,9 +1113,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T22:41:17.631Z",
-        "lastUpdated": "2026-05-05T10:40:21.459Z"
+        "lastUpdated": "2026-05-07T22:42:11.637Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/admin/NewsletterIssuesList.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/admin/users.py"
     },
     "artist-apply": {
       "phase": "do",
@@ -1468,9 +1469,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T11:40:14.639Z",
-        "lastUpdated": "2026-05-06T11:53:08.318Z"
+        "lastUpdated": "2026-05-07T23:07:51.190Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/integration/test_collections_endpoints.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/integration/test_admin_create_user.py"
     },
     "image-editor": {
       "phase": "do",
@@ -2405,6 +2406,19 @@
         "lastUpdated": "2026-05-06T11:55:02.096Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/explore/collections/page.tsx"
+    },
+    "magic_link.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-07T22:41:20.258Z",
+        "lastUpdated": "2026-05-07T22:41:20.258Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/magic_link.py"
     }
   },
   "pipeline": {
@@ -2415,7 +2429,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-05-06T12:29:59.695Z"
+    "lastActivity": "2026-05-08T03:04:47.159Z"
   },
   "history": [
     {
@@ -18705,6 +18719,174 @@
     {
       "timestamp": "2026-05-06T12:29:59.695Z",
       "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-07T08:07:58.896Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-07T09:44:22.070Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-07T10:35:14.287Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-07T10:35:20.807Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-07T22:41:20.258Z",
+      "feature": "magic_link.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-07T22:41:57.196Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-07T22:42:04.771Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-07T22:42:11.637Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-07T22:42:41.297Z",
+      "feature": "users",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-07T22:42:50.049Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-07T22:43:13.682Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-07T23:07:51.190Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T00:00:03.635Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T00:00:13.789Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T00:00:27.524Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T00:00:34.452Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T00:00:43.974Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T00:00:54.384Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T00:00:58.967Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T00:01:03.555Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T00:01:15.901Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T00:25:22.632Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T00:25:28.970Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T00:25:36.973Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T00:25:43.373Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T00:25:52.157Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T03:04:27.125Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T03:04:47.159Z",
+      "feature": "post-editor",
       "phase": "do",
       "action": "updated"
     }

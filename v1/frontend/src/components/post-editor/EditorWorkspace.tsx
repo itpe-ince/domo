@@ -43,6 +43,7 @@ import { ProductFields } from "@/components/post-editor/ProductFields";
 import { PreviewToggleButton } from "@/components/post-editor/PreviewToggleButton";
 import { TagAutocomplete } from "@/components/post-editor/TagAutocomplete";
 import { PublishOptionsPanel } from "@/components/post-editor/PublishOptionsPanel";
+import { useAutoResizeTextarea } from "@/lib/hooks/useAutoResizeTextarea";
 
 export interface EditorWorkspaceProps {
   // Form state (read)
@@ -82,6 +83,8 @@ export interface EditorWorkspaceProps {
   // Preview toggle (desktop only)
   isPreviewVisible: boolean;
   onTogglePreview: () => void;
+  // B1: 발행 옵션 Drawer 열기 트리거 (desktop only)
+  onPublishOptionsClick: () => void;
   // Multi-tab warning
   multiTabWarning: boolean;
   onDismissWarning: () => void;
@@ -118,6 +121,13 @@ export interface EditorWorkspaceProps {
 
 export function EditorWorkspace(props: EditorWorkspaceProps) {
   const { t, locale } = useI18n();
+
+  // A1 — textarea auto-resize: 내용이 바뀔 때마다 height를 scrollHeight 에 맞춤
+  useAutoResizeTextarea(
+    props.textareaRef as React.RefObject<HTMLTextAreaElement | null>,
+    props.content,
+  );
+
   const {
     type,
     title,
@@ -149,6 +159,7 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
     onSubmit,
     isPreviewVisible,
     onTogglePreview,
+    onPublishOptionsClick,
     multiTabWarning,
     onDismissWarning,
     onFiles,
@@ -196,6 +207,14 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
               onToggle={onTogglePreview}
             />
           </div>
+          {/* B1: 발행 옵션 Drawer 트리거 (desktop only) — page.tsx 가 isPublishDrawerOpen 관리 */}
+          <button
+            type="button"
+            onClick={onPublishOptionsClick}
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border text-sm font-medium hover:bg-surface-hover transition-colors"
+          >
+            ⚙️ {t("post.editor.publishOptions.title")}
+          </button>
           <Link
             href="/posts/drafts"
             className="text-xs text-text-muted hover:text-primary transition-colors hidden sm:inline"
@@ -272,14 +291,15 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
             className="w-full bg-transparent text-xl font-bold text-text-primary placeholder:text-text-muted outline-none border-none"
           />
 
-          {/* Content */}
+          {/* Content — A1: rows 고정 제거, min-h-[180px] + useAutoResizeTextarea 로 자동 확장.
+               max-h-[55vh] + overflow-y-auto: 본문이 길어져도 textarea 내부 스크롤로 처리,
+               툴바·태그 영역이 화면 밖으로 밀리지 않음 (개선 1). */}
           <textarea
             ref={textareaRef as React.Ref<HTMLTextAreaElement>}
             value={content}
             onChange={(e) => setters.setContent(e.target.value)}
             placeholder={t("post.contentPlaceholder")}
-            rows={6}
-            className="w-full bg-transparent text-text-primary placeholder:text-text-muted outline-none border-none resize-none text-sm leading-relaxed"
+            className="w-full bg-transparent text-text-primary placeholder:text-text-muted outline-none border-none resize-none text-sm leading-relaxed min-h-[180px] max-h-[55vh] overflow-y-auto"
           />
 
           {/* Media Preview — dnd-kit drag-reorder + caption (PDCA #4) */}
@@ -406,28 +426,8 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
           <p className="text-text-muted text-xs">
             {t("post.artCheckNote")}
           </p>
-
-          {/* publish-controls PDCA #8 — PublishOptionsPanel (desktop inline) */}
-          <div className="rounded-lg bg-surface border border-border overflow-hidden">
-            <PublishOptionsPanel
-              visibility={visibility}
-              setVisibility={setVisibility}
-              commentsEnabled={commentsEnabled}
-              setCommentsEnabled={setCommentsEnabled}
-              seriesIds={seriesIds}
-              setSeriesIds={setSeriesIds}
-              scheduledAt={scheduledAt}
-              setScheduledAt={setters.setScheduledAt}
-              mySeries={mySeries}
-              seriesLoading={mySeriesLoading}
-              disabled={uploading || submitting}
-              onCreateSeriesClick={onCreateSeriesClick}
-              earlyAccessDuration={earlyAccessDuration}
-              setEarlyAccessDuration={setEarlyAccessDuration}
-              earlyAccessTier={earlyAccessTier}
-              setEarlyAccessTier={setEarlyAccessTier}
-            />
-          </div>
+          {/* B1: PublishOptionsPanel 은 page.tsx 의 PublishDrawer 로 이동.
+               inline 박스 제거 — 데스크탑에서 헤더 "⚙️ 발행 옵션" 버튼으로 Drawer 열기. */}
         </div>
       )}
     </>

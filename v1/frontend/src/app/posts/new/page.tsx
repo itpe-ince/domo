@@ -34,6 +34,7 @@ import {
 import { EditorMobileWizard } from "@/components/post-editor/EditorMobileWizard";
 import { EditorWorkspace } from "@/components/post-editor/EditorWorkspace";
 import { PreviewPane } from "@/components/post-editor/PreviewPane";
+import { PublishDrawer } from "@/components/post-editor/PublishDrawer";
 import { ImageEditorLazy } from "@/components/post-editor/ImageEditorLazy";
 import nextDynamic from "next/dynamic";
 
@@ -181,6 +182,9 @@ function CreatePostPageInner() {
   // Default visible on desktop. Hidden on mobile via PreviewPane's own
   // `hidden md:block` classes; toggle below only matters when ≥ md.
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
+
+  // B1: 발행 옵션 Drawer (desktop only) — 헤더 버튼으로 열기
+  const [isPublishDrawerOpen, setIsPublishDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (!meLoading && !me) {
@@ -641,6 +645,7 @@ function CreatePostPageInner() {
             onSubmit={handleSubmit}
             isPreviewVisible={isPreviewVisible}
             onTogglePreview={() => setIsPreviewVisible((v) => !v)}
+            onPublishOptionsClick={() => setIsPublishDrawerOpen(true)}
             multiTabWarning={multiTabWarning}
             onDismissWarning={() => setMultiTabWarning(false)}
             onFiles={handleFiles}
@@ -708,6 +713,28 @@ function CreatePostPageInner() {
           onCancel={() => setEditingMediaId(null)}
         />
       )}
+
+      {/* B1: 발행 옵션 Drawer (desktop only, z-50). 모바일은 wizard step 그대로. */}
+      <PublishDrawer
+        isOpen={isPublishDrawerOpen}
+        onClose={() => setIsPublishDrawerOpen(false)}
+        visibility={visibility}
+        setVisibility={setVisibility}
+        commentsEnabled={commentsEnabled}
+        setCommentsEnabled={setCommentsEnabled}
+        seriesIds={seriesIds}
+        setSeriesIds={setSeriesIds}
+        scheduledAt={scheduledAt}
+        setScheduledAt={setters.setScheduledAt}
+        mySeries={mySeries}
+        seriesLoading={mySeriesLoading}
+        disabled={uploading || submitting}
+        onCreateSeriesClick={() => setSeriesCreateModalOpen(true)}
+        earlyAccessDuration={earlyAccessDuration}
+        setEarlyAccessDuration={setEarlyAccessDuration}
+        earlyAccessTier={earlyAccessTier}
+        setEarlyAccessTier={setEarlyAccessTier}
+      />
 
       {/* publish-controls PDCA #8 — series create modal (z-[60]) */}
       <SeriesCreateModal

@@ -367,6 +367,36 @@ export async function logout(): Promise<void> {
   tokenStore.clear();
 }
 
+// ─── Admin User Management ──────────────────────────────────────────────
+export interface AdminUserCreated {
+  id: string;
+  email: string;
+  display_name: string;
+  role: string;
+  status: string;
+  magic_link_sent: boolean;
+  created_at: string;
+}
+
+export interface AdminCreateUserBody {
+  email: string;
+  display_name: string;
+  role: "user" | "artist" | "admin";
+  send_magic_link?: boolean;
+  country_code?: string | null;
+}
+
+export async function createUserByAdmin(
+  body: AdminCreateUserBody
+): Promise<AdminUserCreated> {
+  const res = await apiFetch<{ data: AdminUserCreated }>("/admin/users", {
+    method: "POST",
+    body: JSON.stringify(body),
+    raw: true,
+  });
+  return (res as any).data;
+}
+
 // ─── Admin helpers ───────────────────────────────────────────────────────
 export type ArtistApplication = {
   id: string;

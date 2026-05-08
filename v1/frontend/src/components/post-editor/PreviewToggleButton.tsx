@@ -30,10 +30,10 @@ export function PreviewToggleButton({
     <button
       type="button"
       onClick={onToggle}
-      aria-pressed={isVisible}
+      aria-expanded={isVisible}
       aria-controls="post-preview-pane"
       title={label}
-      className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-primary px-2 py-1 rounded-md hover:bg-surface-hover transition-colors"
+      className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-primary px-2 py-1 rounded-md hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-primary transition-colors"
     >
       {isVisible ? <EyeIcon size={16} /> : <EyeOffIcon size={16} />}
       <span className="hidden sm:inline">{label}</span>

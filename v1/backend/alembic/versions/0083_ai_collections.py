@@ -59,9 +59,9 @@ def upgrade() -> None:
                   comment="컬렉션 생성에 사용한 LLM 모델 식별자"),
         sa.Column("admin_note", sa.TEXT(), nullable=True,
                   comment="admin 검수 메모"),
-        sa.Column("generated_at", postgresql.TIMESTAMPTZ(), nullable=False,
+        sa.Column("generated_at", postgresql.TIMESTAMP(timezone=True), nullable=False,
                   server_default=sa.text("now()")),
-        sa.Column("published_at", postgresql.TIMESTAMPTZ(), nullable=True),
+        sa.Column("published_at", postgresql.TIMESTAMP(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(
             ["cover_post_id"], ["posts.id"], ondelete="SET NULL"
         ),
