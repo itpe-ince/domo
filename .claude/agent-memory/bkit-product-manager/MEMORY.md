@@ -1,7 +1,7 @@
 # Memory Index
 
 ## Project
-- [domo Phase 4~11 로드맵 상태](project_editor_revamp.md) — Phase 10 종결(96.4%, K-6 이월). Phase 11: Admin UI 4개+Carry-over 3개+K-6 조건부=8 sub-PDCA, 6~8주, OQ-13개 권장 default
+- [domo Phase 4~12 로드맵 상태](project_editor_revamp.md) — Phase 11 종결(96.9%, 12 carry-over). Phase 12: Wave A/B/C 옵션D, ~10주, 7~8 sub-PDCA, OQ-13개 권장 default
 
 ## Feedback
 - [PDCA Open Questions에 권장값 명시](feedback_pdca_oq_recommendations.md) — OQ 제시 시 권장 default 표로 함께 제공 → 사용자 "권장대로" 한 번에 수락 가능

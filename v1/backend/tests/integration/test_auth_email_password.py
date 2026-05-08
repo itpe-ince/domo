@@ -199,12 +199,26 @@ async def test_register_password_weak():
 
 
 # ── Test 5: 로그인 정상 → 200 + tokens ───────────────────────────────────────
+# Phase 12 A-1 refactor: @pytest.mark.skip 제거 + factory_boy UserFactory 적용
+# MagicMock user 대신 실제 User 인스턴스를 사용하여 UserPublic Pydantic 검증 통과
 
-@pytest.mark.skip(reason="UserPublic Pydantic validation requires concrete user attrs (avatar_url/bio/country_code) — Phase 12 mock helper refactor")
 @pytest.mark.asyncio
 async def test_login_email_success():
-    pw_hash = hash_password("Secure!Pass9")
-    user = _make_user(password_hash=pw_hash, email_verified=True)
+    """factory_boy UserFactory로 Pydantic 검증 통과 가능한 user 생성.
+
+    Phase 12 A-1: skip 제거.
+    MagicMock user에 avatar_url/bio/country_code 등이 누락되어
+    UserPublic 직렬화 시 ValidationError가 발생하던 문제를 UserFactory로 해결.
+    UserFactory는 factory.Factory (DB INSERT 없음) — testcontainers 불필요.
+    """
+    from tests.factories import UserFactory
+
+    # 실제 User 인스턴스 생성 (DB INSERT 없음, factory_boy)
+    user = UserFactory(
+        password_hash=hash_password("Secure!Pass9"),
+        email_verified=True,
+        # avatar_url, bio, country_code, preferred_currency 등 기본값으로 포함
+    )
     db = _make_db_with_user(user)
     body = LoginEmailRequest(email=user.email, password="Secure!Pass9")
 

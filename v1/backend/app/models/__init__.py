@@ -35,6 +35,7 @@ from app.models.device_token import DeviceToken
 from app.models.notification_preferences import NotificationPreferences
 from app.models.translation_cache import TranslationCache
 from app.models.cohort_alert import CohortAlert
+from app.models.password_reset_token import PasswordResetToken
 
 __all__ = [
     "User",
@@ -88,4 +89,5 @@ __all__ = [
     "NotificationPreferences",
     "TranslationCache",
     "CohortAlert",
+    "PasswordResetToken",
 ]

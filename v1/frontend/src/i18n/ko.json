@@ -1688,6 +1688,7 @@
     "title": "키보드 단축키",
     "close": "도움말 닫기",
     "category": {
+      "navigation": "Navigation",
       "feed": "피드",
       "editor": "등록",
       "general": "일반"
@@ -1697,10 +1698,48 @@
       "prevPost": "이전 게시물",
       "saveDraft": "임시저장",
       "showHelp": "이 도움말 표시",
-      "closeModal": "모달 닫기"
+      "closeModal": "모달 닫기",
+      "gotoHome": "홈",
+      "gotoFeed": "피드",
+      "gotoExplore": "탐색",
+      "gotoMessages": "메시지",
+      "gotoNotifications": "알림",
+      "gotoProfile": "프로필",
+      "newPost": "새 포스트",
+      "searchFocus": "검색 포커스",
+      "bookmarkToggle": "북마크 토글"
     }
   },
   "auth": {
+    "github": {
+      "button": "GitHub로 계속하기",
+      "connecting": "GitHub 연결 중...",
+      "conflict": "해당 이메일로 이미 비밀번호 가입된 계정이 있습니다.",
+      "conflictHint": "로그인 후 설정에서 GitHub 계정을 연동하세요.",
+      "noEmail": "GitHub 계정에 인증된 이메일이 없습니다.",
+      "mergeSuccess": "GitHub 계정이 연결되었습니다."
+    },
+    "magic_link": {
+      "request": {
+        "tab": "이메일로 로그인",
+        "description": "비밀번호 없이 이메일 링크 하나로 간편 로그인",
+        "emailPlaceholder": "이메일 주소",
+        "submit": "로그인 링크 보내기",
+        "sent": "이메일을 확인해주세요. 24시간 내에 링크를 클릭해주세요.",
+        "cooldown": "5분 후 다시 요청할 수 있습니다."
+      },
+      "verify": {
+        "verifying": "매직링크 확인 중...",
+        "setupTitle": "활동 이름을 입력해주세요",
+        "setupPlaceholder": "활동 이름 (3~50자)",
+        "setupSubmit": "가입 완료",
+        "success": "로그인 완료! 잠시 후 이동합니다.",
+        "expired": "만료된 링크입니다. 새 링크를 요청해주세요.",
+        "used": "이미 사용된 링크입니다.",
+        "ipWarning": "다른 네트워크에서 접근이 감지되었습니다. 본인이 맞으면 계속하세요.",
+        "requestNew": "새 링크 요청"
+      }
+    },
     "signup": {
       "tab": "회원가입",
       "emailPlaceholder": "이메일 주소",
@@ -1732,6 +1771,71 @@
       "error": "인증에 실패했습니다",
       "noToken": "인증 토큰이 없습니다. 이메일 링크를 다시 클릭해주세요.",
       "goHome": "홈으로 이동"
+    },
+    "password_reset": {
+      "request": {
+        "title": "비밀번호 찾기",
+        "subtitle": "가입한 이메일을 입력하면 재설정 링크를 보내드립니다.",
+        "email_label": "이메일",
+        "submit": "재설정 링크 보내기",
+        "sent_title": "이메일을 확인해주세요",
+        "sent_body": "재설정 링크를 발송했습니다. 1시간 이내에 확인해주세요.",
+        "too_soon": "{{seconds}}초 후 다시 요청할 수 있습니다.",
+        "back_to_login": "로그인으로 돌아가기",
+        "error": "요청 중 오류가 발생했습니다. 다시 시도해주세요."
+      },
+      "token": {
+        "title": "새 비밀번호 설정",
+        "new_password_label": "새 비밀번호",
+        "confirm_label": "새 비밀번호 확인",
+        "submit": "비밀번호 변경하기",
+        "mismatch": "비밀번호가 일치하지 않습니다.",
+        "expired": "재설정 링크가 만료되었습니다. 새로 요청해주세요.",
+        "already_used": "이미 사용된 링크입니다. 새로 요청해주세요.",
+        "invalid": "유효하지 않은 링크입니다.",
+        "request_again": "재설정 링크 다시 요청"
+      },
+      "success": {
+        "title": "비밀번호 변경 완료",
+        "body": "비밀번호가 변경되었습니다. 잠시 후 로그인 페이지로 이동합니다."
+      }
+    }
+  },
+  "admin": {
+    "analytics": {
+      "pageTitle": "분석 대시보드",
+      "period": {
+        "7d": "최근 7일",
+        "30d": "최근 30일",
+        "90d": "최근 90일"
+      },
+      "refresh": "새로고침",
+      "cachedAt": "캐시: {{time}} 기준",
+      "loading": "로딩 중...",
+      "error": "데이터를 불러오지 못했습니다",
+      "retry": "다시 시도",
+      "cohortRetention": {
+        "title": "코호트 Retention",
+        "d7": "D7 잔존율",
+        "d30": "D30 잔존율",
+        "belowThreshold": "임계치 미달 기록 기준"
+      },
+      "newsletter": {
+        "title": "Newsletter Open Rate",
+        "openRate": "오픈율",
+        "clickRate": "클릭율",
+        "issued": "발송 호수"
+      },
+      "feedCtr": {
+        "title": "Feed CTR by Algorithm",
+        "delta": "v2 vs v1 차이"
+      },
+      "aiFeatures": {
+        "title": "AI 기능 사용률",
+        "caption": "AI 캡션",
+        "docent": "AI 도슨트",
+        "collection": "AI 컬렉션"
+      }
     }
   }
 }

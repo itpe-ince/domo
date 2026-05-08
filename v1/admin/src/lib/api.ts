@@ -1343,6 +1343,28 @@ export async function getExperimentResults(
   );
 }
 
+// ── Experiment PATCH (Phase 12 A-2) ──────────────────────────────────────────
+
+export interface ExperimentPatchPayload {
+  status?: ExperimentStatus;
+  variant_distribution?: Record<string, number>;
+  target_metric?: string;
+  hypothesis?: string;
+}
+
+export async function patchExperiment(
+  name: string,
+  body: ExperimentPatchPayload,
+): Promise<Experiment> {
+  return apiFetch<Experiment>(
+    `/admin/experiments/${encodeURIComponent(name)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }
+  );
+}
+
 // ─── AI Collections Queue (Phase 11 A-2) ─────────────────────────────────────
 
 export type CollectionStatus = "generating" | "pending" | "published" | "archived";
@@ -1576,4 +1598,355 @@ export async function adminPatchDiversityConfig(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
   });
+}
+
+// ─── Admin Payouts — KYC + Settlements + Stripe Connect (Phase 12 B-3) ──────
+
+export interface KYCPendingItem {
+  kyc_session_id: string;
+  user_id: string;
+  user_email: string;
+  user_display_name: string;
+  provider: string;
+  created_at: string;
+  identity_verified_at: string | null;
+  stripe_customer_id: string | null;
+}
+
+export interface KYCPendingResponse {
+  data: KYCPendingItem[];
+  pagination: { total: number; offset: number; limit: number };
+}
+
+export interface KYCApproveResult {
+  user_id: string;
+  kyc_approved_at: string;
+  stripe_connect_onboarding_url: string | null;
+  provider: string;
+}
+
+export interface KYCRejectResult {
+  user_id: string;
+  kyc_rejected_at: string;
+  reason: string;
+}
+
+export interface SettlementListItem {
+  id: string;
+  artist_id: string;
+  artist_name: string;
+  artist_email: string;
+  period_start: string;
+  period_end: string;
+  order_count: number;
+  gross_amount: string;
+  platform_fee: string;
+  net_amount: string;
+  currency: string;
+  status: string;
+  approved_at: string | null;
+  paid_at: string | null;
+  payout_reference: string | null;
+  created_at: string;
+}
+
+export interface SettlementsResponse {
+  data: SettlementListItem[];
+  pagination: { total: number; offset: number; limit: number };
+  export_url: string;
+}
+
+export interface SettlementOrderItem {
+  order_id: string;
+}
+
+export interface StripeTransferInfo {
+  transfer_id: string;
+  amount: number;
+  currency: string;
+  created: number;
+  destination: string;
+}
+
+export interface SettlementDetail extends SettlementListItem {
+  items: SettlementOrderItem[];
+  stripe_transfer: StripeTransferInfo | null;
+}
+
+export interface StripeConnectStatus {
+  artist_id: string;
+  artist_name: string;
+  stripe_customer_id: string | null;
+  stripe_connect_account_id: string | null;
+  charges_enabled: boolean;
+  payouts_enabled: boolean;
+  requirements: {
+    currently_due: string[];
+    eventually_due: string[];
+    disabled_reason: string | null;
+  };
+  mock_mode: boolean;
+}
+
+export async function adminGetKycPending(params?: {
+  limit?: number;
+  offset?: number;
+}): Promise<KYCPendingResponse> {
+  const qs = new URLSearchParams();
+  if (params?.limit != null) qs.set("limit", String(params.limit));
+  if (params?.offset != null) qs.set("offset", String(params.offset));
+  return apiFetch<KYCPendingResponse>(`/admin/kyc/pending?${qs}`, {
+    raw: true,
+  }) as Promise<KYCPendingResponse>;
+}
+
+export async function adminApproveKyc(userId: string): Promise<KYCApproveResult> {
+  return apiFetch<KYCApproveResult>(`/admin/kyc/${userId}/approve`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
+
+export async function adminRejectKyc(
+  userId: string,
+  reason: string
+): Promise<KYCRejectResult> {
+  return apiFetch<KYCRejectResult>(`/admin/kyc/${userId}/reject`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function adminGetSettlements(params?: {
+  month?: string;
+  artist_id?: string;
+  status?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<SettlementsResponse> {
+  const qs = new URLSearchParams();
+  if (params?.month) qs.set("month", params.month);
+  if (params?.artist_id) qs.set("artist_id", params.artist_id);
+  if (params?.status) qs.set("status", params.status);
+  if (params?.limit != null) qs.set("limit", String(params.limit));
+  if (params?.offset != null) qs.set("offset", String(params.offset));
+  return apiFetch<SettlementsResponse>(`/admin/settlements?${qs}`, {
+    raw: true,
+  }) as Promise<SettlementsResponse>;
+}
+
+export async function adminGetSettlementDetail(id: string): Promise<SettlementDetail> {
+  return apiFetch<SettlementDetail>(`/admin/settlements/${id}`);
+}
+
+export async function adminGetStripeConnectStatus(
+  artistId: string
+): Promise<StripeConnectStatus> {
+  return apiFetch<StripeConnectStatus>(
+    `/admin/stripe-connect/${artistId}/status`
+  );
+}
+
+// ─── Audit Logs (Phase 12 B-1a) ──────────────────────────────────────────────
+
+export interface AuditLogItem {
+  id: string;
+  actor_id: string | null;
+  actor_role: string | null;
+  action: string;
+  target_type: string | null;
+  target_id: string | null;
+  audit_metadata: Record<string, unknown> | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  status: string;
+  created_at: string;
+}
+
+export interface AuditLogFilter {
+  actor_id?: string;
+  action?: string;
+  target_type?: string;
+  target_id?: string;
+  period_start?: string;  // YYYY-MM-DD
+  period_end?: string;    // YYYY-MM-DD
+}
+
+export interface AuditLogListResponse {
+  data: AuditLogItem[];
+  pagination: {
+    next_cursor: string | null;
+    has_more: boolean;
+  };
+}
+
+function _buildAuditLogsUrl(
+  params: AuditLogFilter & { cursor?: string; limit?: number }
+): string {
+  const qs = new URLSearchParams();
+  if (params.actor_id) qs.set("actor_id", params.actor_id);
+  if (params.action) qs.set("action", params.action);
+  if (params.target_type) qs.set("target_type", params.target_type);
+  if (params.target_id) qs.set("target_id", params.target_id);
+  if (params.period_start) qs.set("period_start", params.period_start);
+  if (params.period_end) qs.set("period_end", params.period_end);
+  if (params.cursor) qs.set("cursor", params.cursor);
+  if (params.limit != null) qs.set("limit", String(params.limit));
+  const query = qs.toString();
+  return query ? `/admin/audit-logs?${query}` : "/admin/audit-logs";
+}
+
+/** GET /admin/audit-logs — cursor-based, 5종 필터 지원. */
+export async function fetchAuditLogs(
+  params: AuditLogFilter & { cursor?: string; limit?: number }
+): Promise<AuditLogListResponse> {
+  const url = _buildAuditLogsUrl(params);
+  // raw: true — envelope 전체 반환 (data + pagination)
+  return apiFetch<AuditLogListResponse>(url, { raw: true });
+}
+
+// ─── Analytics Dashboard (Phase 12 B-2) ─────────────────────────────────────
+
+export type AnalyticsPeriod = "7d" | "30d" | "90d";
+
+// Cohort Retention
+export interface CohortRetentionPoint {
+  date: string;
+  d7_retention?: number;
+  d30_retention?: number;
+}
+
+export interface CohortRetentionResponse {
+  data: {
+    series: CohortRetentionPoint[];
+    summary: {
+      latest_d7: number | null;
+      latest_d30: number | null;
+      threshold_d7: number;
+      threshold_d30: number;
+    };
+    meta?: {
+      below_threshold_only: boolean;
+      note: string;
+    };
+  };
+}
+
+// Newsletter Open Rate
+export interface NewsletterOpenRatePoint {
+  date: string;
+  issues_sent: number;
+  unique_opens: number;
+  unique_clicks: number;
+  open_rate: number;
+  click_rate: number;
+}
+
+export interface NewsletterOpenRateResponse {
+  data: {
+    series: NewsletterOpenRatePoint[];
+    summary: {
+      avg_open_rate: number;
+      avg_click_rate: number;
+      total_issues: number;
+    };
+  };
+}
+
+// Feed CTR
+export interface FeedCTRAlgo {
+  name: string;
+  ctr: number;
+  user_count: number;
+}
+
+export interface FeedCTRResponse {
+  data: {
+    algos: FeedCTRAlgo[];
+    summary: {
+      best_algo: string | null;
+      delta_v2_vs_v1: number;
+    };
+  };
+}
+
+// AI Features Usage
+export interface AIFeatureUsage {
+  name: "caption" | "docent" | "collection";
+  usage_count: number;
+  rate: number;
+}
+
+export interface AIFeaturesUsageResponse {
+  data: {
+    features: AIFeatureUsage[];
+    summary: {
+      total_ai_usages: number;
+    };
+  };
+}
+
+async function _analyticsRawFetch<T>(
+  path: string,
+  bust = false
+): Promise<T & { _cachedAt?: string }> {
+  const url = bust ? `${path}${path.includes("?") ? "&" : "?"}bust=1` : path;
+  const token = tokenStore.get();
+  const res = await fetch(`${API_BASE}${url}`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    const err =
+      "error" in json
+        ? (json as { error: { code: string; message: string; details?: Record<string, unknown> } }).error
+        : { code: "UNKNOWN", message: res.statusText, details: undefined };
+    throw new ApiClientError(err.code, err.message, err.details);
+  }
+  const cachedAt = res.headers.get("X-Cache-At") ?? undefined;
+  const json = (await res.json()) as T;
+  return { ...json, _cachedAt: cachedAt };
+}
+
+export async function fetchCohortRetention(
+  period: AnalyticsPeriod,
+  bust = false
+): Promise<CohortRetentionResponse & { _cachedAt?: string }> {
+  return _analyticsRawFetch<CohortRetentionResponse>(
+    `/admin/analytics/cohort-retention?period=${period}`,
+    bust
+  );
+}
+
+export async function fetchNewsletterOpenRate(
+  period: AnalyticsPeriod,
+  bust = false
+): Promise<NewsletterOpenRateResponse & { _cachedAt?: string }> {
+  return _analyticsRawFetch<NewsletterOpenRateResponse>(
+    `/admin/analytics/newsletter-open-rate?period=${period}`,
+    bust
+  );
+}
+
+export async function fetchFeedCTR(
+  period: AnalyticsPeriod,
+  bust = false
+): Promise<FeedCTRResponse & { _cachedAt?: string }> {
+  return _analyticsRawFetch<FeedCTRResponse>(
+    `/admin/analytics/feed-ctr?period=${period}`,
+    bust
+  );
+}
+
+export async function fetchAIFeaturesUsage(
+  period: AnalyticsPeriod,
+  bust = false
+): Promise<AIFeaturesUsageResponse & { _cachedAt?: string }> {
+  return _analyticsRawFetch<AIFeaturesUsageResponse>(
+    `/admin/analytics/ai-features-usage?period=${period}`,
+    bust
+  );
 }

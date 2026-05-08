@@ -70,9 +70,11 @@ from app.api import websocket_dm as websocket_dm_router
 from app.api import og as og_router
 from app.api import newsletter_tracking as newsletter_tracking_router
 from app.api import admin_experiments as admin_experiments_router
+from app.api import admin_analytics as admin_analytics_router
 from app.api import admin_featured_artist as admin_featured_artist_router
 from app.api import ai_collections as ai_collections_router
 from app.api import admin_ai_collections as admin_ai_collections_router
+from app.api import admin_payouts as admin_payouts_router  # Phase 12 B-3
 from app.core.config import get_settings
 from app.core.errors import register_error_handlers
 from app.db.session import AsyncSessionLocal, engine
@@ -359,11 +361,15 @@ api_v1.include_router(newsletter_tracking_router.router)
 api_v1.include_router(admin_experiments_router.router)
 # Phase 10 K-2: Diversity Reranking 설정 관리 API
 api_v1.include_router(admin_diversity_router.router)
+# Phase 12 B-2: 통합 Analytics 대시보드 API
+api_v1.include_router(admin_analytics_router.router)
 # Phase 10 K-4: AI Featured Artist 주간 자동 선정 admin 검수 큐 API
 api_v1.include_router(admin_featured_artist_router.router)
 # Phase 10 K-7: AI 큐레이션 컬렉션 (Editor's Pick 자동 생성)
 api_v1.include_router(ai_collections_router.router)
 api_v1.include_router(admin_ai_collections_router.router)
+# Phase 12 B-3: KYC 검수 큐 + 정산 이력 + Stripe Connect 상태 admin API
+api_v1.include_router(admin_payouts_router.router)
 api_v1.include_router(health_router)
 
 

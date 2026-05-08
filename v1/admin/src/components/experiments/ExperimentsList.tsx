@@ -6,7 +6,7 @@ import { ExperimentCard } from "./ExperimentCard";
 interface ExperimentsListProps {
   experiments: Experiment[];
   onCreateClick: () => void;
-  onStatusChange: (name: string, status: "paused" | "completed") => Promise<void>;
+  onStatusChange: (name: string, status: "paused" | "completed" | "running") => Promise<void>;
 }
 
 export function ExperimentsList({

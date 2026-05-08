@@ -1688,6 +1688,7 @@
     "title": "Atajos de teclado",
     "close": "Cerrar ayuda",
     "category": {
+      "navigation": "Navigation",
       "feed": "Feed",
       "editor": "Editor",
       "general": "General"
@@ -1697,10 +1698,48 @@
       "prevPost": "Publicación anterior",
       "saveDraft": "Guardar borrador",
       "showHelp": "Mostrar esta ayuda",
-      "closeModal": "Cerrar modal"
+      "closeModal": "Cerrar modal",
+      "gotoHome": "Inicio",
+      "gotoFeed": "Feed",
+      "gotoExplore": "Explorar",
+      "gotoMessages": "Mensajes",
+      "gotoNotifications": "Notificaciones",
+      "gotoProfile": "Mi perfil",
+      "newPost": "Nueva publicación",
+      "searchFocus": "Enfocar búsqueda",
+      "bookmarkToggle": "Alternar marcador"
     }
   },
   "auth": {
+    "github": {
+      "button": "Continuar con GitHub",
+      "connecting": "Conectando con GitHub...",
+      "conflict": "Ya existe una cuenta con este correo electrónico.",
+      "conflictHint": "Inicia sesión y vincula GitHub en Configuración.",
+      "noEmail": "No se encontró un correo verificado en tu cuenta de GitHub.",
+      "mergeSuccess": "Cuenta de GitHub vinculada exitosamente."
+    },
+    "magic_link": {
+      "request": {
+        "tab": "Entrar con correo",
+        "description": "Inicia sesión al instante con un enlace enviado a tu correo",
+        "emailPlaceholder": "Correo electrónico",
+        "submit": "Enviar enlace de acceso",
+        "sent": "Revisa tu correo. Haz clic en el enlace dentro de las 24 horas.",
+        "cooldown": "Puedes solicitar de nuevo en 5 minutos."
+      },
+      "verify": {
+        "verifying": "Verificando enlace mágico...",
+        "setupTitle": "Ingresa tu nombre de usuario",
+        "setupPlaceholder": "Nombre de usuario (3–50 caracteres)",
+        "setupSubmit": "Completar registro",
+        "success": "¡Sesión iniciada! Redirigiendo...",
+        "expired": "Enlace expirado. Por favor solicita uno nuevo.",
+        "used": "Este enlace ya fue utilizado.",
+        "ipWarning": "Se detectó acceso desde una red diferente. Continúa si eres tú.",
+        "requestNew": "Solicitar nuevo enlace"
+      }
+    },
     "signup": {
       "tab": "Registrarse",
       "emailPlaceholder": "Correo electrónico",
@@ -1732,6 +1771,71 @@
       "error": "Error en la verificación",
       "noToken": "No se encontró el token de verificación. Haz clic en el enlace del correo nuevamente.",
       "goHome": "Ir al inicio"
+    },
+    "password_reset": {
+      "request": {
+        "title": "¿Olvidaste tu contraseña?",
+        "subtitle": "Ingresa tu correo y te enviaremos un enlace para restablecerla.",
+        "email_label": "Correo electrónico",
+        "submit": "Enviar enlace de restablecimiento",
+        "sent_title": "Revisa tu correo",
+        "sent_body": "Se envió un enlace de restablecimiento. Por favor verifica en 1 hora.",
+        "too_soon": "Intenta de nuevo en {{seconds}} segundos.",
+        "back_to_login": "Volver al inicio de sesión",
+        "error": "Ocurrió un error. Por favor intenta de nuevo."
+      },
+      "token": {
+        "title": "Establecer nueva contraseña",
+        "new_password_label": "Nueva contraseña",
+        "confirm_label": "Confirmar nueva contraseña",
+        "submit": "Cambiar contraseña",
+        "mismatch": "Las contraseñas no coinciden.",
+        "expired": "El enlace ha expirado. Por favor solicita uno nuevo.",
+        "already_used": "El enlace ya fue usado. Por favor solicita uno nuevo.",
+        "invalid": "Enlace de restablecimiento inválido.",
+        "request_again": "Solicitar nuevo enlace"
+      },
+      "success": {
+        "title": "Contraseña cambiada",
+        "body": "Tu contraseña fue actualizada. Redirigiendo al inicio de sesión..."
+      }
+    }
+  },
+  "admin": {
+    "analytics": {
+      "pageTitle": "Panel de análisis",
+      "period": {
+        "7d": "Últimos 7 días",
+        "30d": "Últimos 30 días",
+        "90d": "Últimos 90 días"
+      },
+      "refresh": "Actualizar",
+      "cachedAt": "Caché: desde {{time}}",
+      "loading": "Cargando...",
+      "error": "No se pudieron cargar los datos",
+      "retry": "Reintentar",
+      "cohortRetention": {
+        "title": "Retención de cohorte",
+        "d7": "Retención D7",
+        "d30": "Retención D30",
+        "belowThreshold": "Solo registros por debajo del umbral"
+      },
+      "newsletter": {
+        "title": "Tasa de apertura del boletín",
+        "openRate": "Tasa de apertura",
+        "clickRate": "Tasa de clics",
+        "issued": "Boletines enviados"
+      },
+      "feedCtr": {
+        "title": "CTR del Feed por algoritmo",
+        "delta": "Delta v2 vs v1"
+      },
+      "aiFeatures": {
+        "title": "Uso de funciones de IA",
+        "caption": "Subtítulo IA",
+        "docent": "Docente IA",
+        "collection": "Colección IA"
+      }
     }
   }
 }

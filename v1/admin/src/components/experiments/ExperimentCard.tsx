@@ -4,10 +4,18 @@ import { useState } from "react";
 import { Experiment, ExperimentStatus } from "@/lib/api";
 import { useExperimentResults } from "@/lib/hooks/useExperiments";
 import { PostHogEmbed } from "./PostHogEmbed";
+import {
+  CompleteConfirmModal,
+  PauseConfirmModal,
+} from "./ExperimentStatusModals";
 
 interface ExperimentCardProps {
   experiment: Experiment;
-  onStatusChange: (name: string, status: "paused" | "completed") => Promise<void>;
+  /** 상태 변경 콜백 — ExperimentsShell에서 주입 (patch + refetch) */
+  onStatusChange: (
+    name: string,
+    status: "paused" | "completed" | "running"
+  ) => Promise<void>;
 }
 
 function StatusBadge({ status }: { status: ExperimentStatus }) {
@@ -46,8 +54,12 @@ function calcDaysRunning(startedAt: string | null, endedAt: string | null): numb
 export function ExperimentCard({ experiment, onStatusChange }: ExperimentCardProps) {
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [hypothesisExpanded, setHypothesisExpanded] = useState(false);
-  const [confirmComplete, setConfirmComplete] = useState(false);
   const [actionPending, setActionPending] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  // Confirm 모달 상태
+  const [showPauseConfirm, setShowPauseConfirm] = useState(false);
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
 
   const { results, isLoading: resultsLoading } = useExperimentResults(
     experiment.name,
@@ -59,31 +71,23 @@ export function ExperimentCard({ experiment, onStatusChange }: ExperimentCardPro
   const distributionEntries = Object.entries(experiment.variant_distribution);
   const assignmentEntries = Object.entries(experiment.assignment_counts);
 
-  const isPauseable = experiment.status === "running";
-  const isCompletable = experiment.status === "running" || experiment.status === "paused";
-
-  async function handlePause() {
+  async function handleAction(status: "paused" | "completed" | "running") {
     setActionPending(true);
+    setActionError(null);
     try {
-      await onStatusChange(experiment.name, "paused");
+      await onStatusChange(experiment.name, status);
+    } catch (err) {
+      if (err instanceof Error) {
+        setActionError(err.message);
+      } else {
+        setActionError("작업 처리 중 오류가 발생했습니다.");
+      }
     } finally {
       setActionPending(false);
     }
   }
 
-  async function handleComplete() {
-    if (!confirmComplete) {
-      setConfirmComplete(true);
-      return;
-    }
-    setActionPending(true);
-    setConfirmComplete(false);
-    try {
-      await onStatusChange(experiment.name, "completed");
-    } finally {
-      setActionPending(false);
-    }
-  }
+  const isCompleted = experiment.status === "completed";
 
   return (
     <div className="bg-admin-surface rounded-xl border border-admin-border overflow-hidden">
@@ -188,6 +192,13 @@ export function ExperimentCard({ experiment, onStatusChange }: ExperimentCardPro
         </div>
       </div>
 
+      {/* 에러 메시지 */}
+      {actionError && (
+        <div className="mx-5 mb-3 px-3 py-2 bg-admin-danger/10 border border-admin-danger/30 rounded-lg text-[12px] text-admin-danger">
+          {actionError}
+        </div>
+      )}
+
       {/* 액션 버튼 */}
       <div className="px-5 pb-4 flex items-center gap-2 flex-wrap border-t border-admin-border pt-3">
         {/* 결과 분석 토글 */}
@@ -199,59 +210,51 @@ export function ExperimentCard({ experiment, onStatusChange }: ExperimentCardPro
           {showAnalysis ? "결과 분석 닫기" : "결과 분석 열기"}
         </button>
 
-        {/* 일시정지 — PATCH 미구현: disabled + 안내 */}
-        <div className="relative group">
-          <button
-            disabled={!isPauseable || actionPending}
-            onClick={handlePause}
-            className="text-[12px] font-medium text-orange-600 border border-orange-500/30 rounded-md px-3 py-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:bg-orange-500/5"
-            aria-disabled={!isPauseable}
-            title="Phase 12 후속 백엔드 작업 필요 (PATCH endpoint 미구현)"
-          >
-            일시정지
-          </button>
-          {isPauseable && (
-            <div className="absolute bottom-full left-0 mb-1 hidden group-hover:block z-10 w-60 text-[11px] text-admin-fg bg-admin-surface border border-admin-border rounded-md px-2.5 py-2 shadow-lg pointer-events-none">
-              Phase 12 후속 백엔드 작업 필요 (PATCH /admin/experiments/&#123;name&#125; 미구현)
-            </div>
-          )}
-        </div>
-
-        {/* 실험 종료 — PATCH 미구현: disabled + 안내 */}
-        {confirmComplete ? (
-          <div className="flex items-center gap-1.5">
-            <span className="text-[12px] text-admin-fg">종료하시겠습니까?</span>
+        {/* running 상태 — 일시정지 / 종료 */}
+        {experiment.status === "running" && (
+          <>
             <button
-              onClick={handleComplete}
               disabled={actionPending}
-              className="text-[12px] font-medium text-admin-danger border border-admin-danger/30 rounded-md px-2.5 py-1 hover:bg-admin-danger/5 disabled:opacity-40"
+              onClick={() => setShowPauseConfirm(true)}
+              className="text-[12px] font-medium text-orange-600 border border-orange-500/30 rounded-md px-3 py-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:bg-orange-500/5"
             >
-              확인
+              일시정지
             </button>
             <button
-              onClick={() => setConfirmComplete(false)}
-              className="text-[12px] text-admin-muted border border-admin-border rounded-md px-2.5 py-1 hover:bg-admin-surface-2"
-            >
-              취소
-            </button>
-          </div>
-        ) : (
-          <div className="relative group">
-            <button
-              disabled={!isCompletable || actionPending}
-              onClick={handleComplete}
+              disabled={actionPending}
+              onClick={() => setShowCompleteConfirm(true)}
               className="text-[12px] font-medium text-admin-danger border border-admin-danger/30 rounded-md px-3 py-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:bg-admin-danger/5"
-              aria-disabled={!isCompletable}
-              title="Phase 12 후속 백엔드 작업 필요 (PATCH endpoint 미구현)"
             >
               실험 종료
             </button>
-            {isCompletable && (
-              <div className="absolute bottom-full left-0 mb-1 hidden group-hover:block z-10 w-60 text-[11px] text-admin-fg bg-admin-surface border border-admin-border rounded-md px-2.5 py-2 shadow-lg pointer-events-none">
-                Phase 12 후속 백엔드 작업 필요 (PATCH /admin/experiments/&#123;name&#125; 미구현)
-              </div>
-            )}
-          </div>
+          </>
+        )}
+
+        {/* paused 상태 — 재개 / 종료 */}
+        {experiment.status === "paused" && (
+          <>
+            <button
+              disabled={actionPending}
+              onClick={() => handleAction("running")}
+              className="text-[12px] font-medium text-green-600 border border-green-500/30 rounded-md px-3 py-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:bg-green-500/5"
+            >
+              {actionPending ? "처리 중..." : "재개"}
+            </button>
+            <button
+              disabled={actionPending}
+              onClick={() => setShowCompleteConfirm(true)}
+              className="text-[12px] font-medium text-admin-danger border border-admin-danger/30 rounded-md px-3 py-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:bg-admin-danger/5"
+            >
+              실험 종료
+            </button>
+          </>
+        )}
+
+        {/* completed 상태 — 영구 보존 안내 */}
+        {isCompleted && (
+          <span className="text-[12px] text-admin-muted italic">
+            완료된 실험 (영구 보존)
+          </span>
         )}
       </div>
 
@@ -273,6 +276,26 @@ export function ExperimentCard({ experiment, onStatusChange }: ExperimentCardPro
           )}
         </div>
       )}
+
+      {/* Confirm 모달 */}
+      <PauseConfirmModal
+        open={showPauseConfirm}
+        experimentName={experiment.name}
+        onConfirm={() => {
+          setShowPauseConfirm(false);
+          void handleAction("paused");
+        }}
+        onCancel={() => setShowPauseConfirm(false)}
+      />
+      <CompleteConfirmModal
+        open={showCompleteConfirm}
+        experimentName={experiment.name}
+        onConfirm={() => {
+          setShowCompleteConfirm(false);
+          void handleAction("completed");
+        }}
+        onCancel={() => setShowCompleteConfirm(false)}
+      />
     </div>
   );
 }

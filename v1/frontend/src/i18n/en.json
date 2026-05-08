@@ -1688,6 +1688,7 @@
     "title": "Keyboard Shortcuts",
     "close": "Close help",
     "category": {
+      "navigation": "Navigation",
       "feed": "Feed",
       "editor": "Editor",
       "general": "General"
@@ -1697,10 +1698,48 @@
       "prevPost": "Previous post",
       "saveDraft": "Save draft",
       "showHelp": "Show this help",
-      "closeModal": "Close modal"
+      "closeModal": "Close modal",
+      "gotoHome": "Home",
+      "gotoFeed": "Feed",
+      "gotoExplore": "Explore",
+      "gotoMessages": "Messages",
+      "gotoNotifications": "Notifications",
+      "gotoProfile": "My profile",
+      "newPost": "New post",
+      "searchFocus": "Focus search",
+      "bookmarkToggle": "Toggle bookmark"
     }
   },
   "auth": {
+    "github": {
+      "button": "Continue with GitHub",
+      "connecting": "Connecting to GitHub...",
+      "conflict": "An account with this email already exists.",
+      "conflictHint": "Sign in and link GitHub in Settings.",
+      "noEmail": "No verified email found on your GitHub account.",
+      "mergeSuccess": "GitHub account linked successfully."
+    },
+    "magic_link": {
+      "request": {
+        "tab": "Sign in with Email",
+        "description": "Sign in instantly with a link sent to your email",
+        "emailPlaceholder": "Email address",
+        "submit": "Send login link",
+        "sent": "Check your email. Click the link within 24 hours.",
+        "cooldown": "You can request again in 5 minutes."
+      },
+      "verify": {
+        "verifying": "Verifying magic link...",
+        "setupTitle": "Enter your display name",
+        "setupPlaceholder": "Display name (3–50 chars)",
+        "setupSubmit": "Complete Sign Up",
+        "success": "Signed in! Redirecting...",
+        "expired": "Link expired. Please request a new one.",
+        "used": "This link has already been used.",
+        "ipWarning": "Access from a different network detected. Continue if this is you.",
+        "requestNew": "Request new link"
+      }
+    },
     "signup": {
       "tab": "Sign Up",
       "emailPlaceholder": "Email address",
@@ -1732,6 +1771,71 @@
       "error": "Verification Failed",
       "noToken": "No verification token found. Please click the link in your email again.",
       "goHome": "Go to Home"
+    },
+    "password_reset": {
+      "request": {
+        "title": "Forgot Password",
+        "subtitle": "Enter your email to receive a reset link.",
+        "email_label": "Email",
+        "submit": "Send Reset Link",
+        "sent_title": "Check your email",
+        "sent_body": "A reset link has been sent. Please check within 1 hour.",
+        "too_soon": "Try again after {{seconds}} seconds.",
+        "back_to_login": "Back to Login",
+        "error": "An error occurred. Please try again."
+      },
+      "token": {
+        "title": "Set New Password",
+        "new_password_label": "New Password",
+        "confirm_label": "Confirm New Password",
+        "submit": "Change Password",
+        "mismatch": "Passwords do not match.",
+        "expired": "Reset link has expired. Please request again.",
+        "already_used": "Link already used. Please request again.",
+        "invalid": "Invalid reset link.",
+        "request_again": "Request New Link"
+      },
+      "success": {
+        "title": "Password Changed",
+        "body": "Password updated. Redirecting to login..."
+      }
+    }
+  },
+  "admin": {
+    "analytics": {
+      "pageTitle": "Analytics Dashboard",
+      "period": {
+        "7d": "Last 7 days",
+        "30d": "Last 30 days",
+        "90d": "Last 90 days"
+      },
+      "refresh": "Refresh",
+      "cachedAt": "Cache: as of {{time}}",
+      "loading": "Loading...",
+      "error": "Failed to load data",
+      "retry": "Try again",
+      "cohortRetention": {
+        "title": "Cohort Retention",
+        "d7": "D7 Retention",
+        "d30": "D30 Retention",
+        "belowThreshold": "Below-threshold records only"
+      },
+      "newsletter": {
+        "title": "Newsletter Open Rate",
+        "openRate": "Open Rate",
+        "clickRate": "Click Rate",
+        "issued": "Issues sent"
+      },
+      "feedCtr": {
+        "title": "Feed CTR by Algorithm",
+        "delta": "v2 vs v1 delta"
+      },
+      "aiFeatures": {
+        "title": "AI Features Usage",
+        "caption": "AI Caption",
+        "docent": "AI Docent",
+        "collection": "AI Collection"
+      }
     }
   }
 }

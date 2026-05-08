@@ -35,15 +35,23 @@ const NAV_GROUPS: { label: string; items: { href: string; label: string }[] }[] 
     ],
   },
   {
+    label: "Finance",
+    items: [
+      { href: "/payouts", label: "정산 관리" },
+    ],
+  },
+  {
     label: "ML Operations",
     items: [
       { href: "/experiments", label: "A/B 테스트 (K-8)" },
       { href: "/diversity-config", label: "다양성 설정 (K-2)" },
+      { href: "/analytics", label: "분석 대시보드" },
     ],
   },
   {
     label: "Security",
     items: [
+      { href: "/audit-logs", label: "감사 로그" },          // Phase 12 B-1a
       { href: "/settings/passkeys", label: "패스키" },
       { href: "/settings/recovery-codes", label: "복구 코드" },
     ],

@@ -280,6 +280,113 @@ export async function resendVerificationEmail(): Promise<{ sent: boolean }> {
   });
 }
 
+// ─── C-1: 비밀번호 재설정 API ────────────────────────────────────────────────
+
+/**
+ * 비밀번호 재설정 이메일 발송 요청.
+ * 이메일 존재 여부와 무관하게 200 반환 (enumeration 방지).
+ * 5분 cooldown 위반 시 ApiClientError (429 RESET_TOO_SOON).
+ */
+export async function requestPasswordReset(
+  email: string
+): Promise<{ sent: boolean; message: string }> {
+  return apiFetch<{ sent: boolean; message: string }>(
+    "/auth/password/reset-request",
+    {
+      method: "POST",
+      body: JSON.stringify({ email }),
+      auth: false,
+    }
+  );
+}
+
+/**
+ * 비밀번호 재설정 토큰 검증 + 새 비밀번호 설정.
+ * 만료/사용된 토큰 → ApiClientError (400 TOKEN_EXPIRED / TOKEN_ALREADY_USED).
+ */
+export async function resetPassword(
+  token: string,
+  newPassword: string
+): Promise<{ success: boolean; message: string }> {
+  return apiFetch<{ success: boolean; message: string }>(
+    "/auth/password/reset",
+    {
+      method: "POST",
+      body: JSON.stringify({ token, new_password: newPassword }),
+      auth: false,
+    }
+  );
+}
+
+// ─── C-2: GitHub OAuth + 매직링크 API ────────────────────────────────────────
+
+/**
+ * GitHub OAuth code를 백엔드에 전달해 로그인/가입 처리.
+ * 성공 시 토큰을 localStorage에 저장하고 User를 반환한다.
+ */
+export async function loginWithGitHub(
+  code: string,
+  redirectUri: string
+): Promise<ApiUser> {
+  const data = await apiFetch<{
+    tokens: { access_token: string; refresh_token: string };
+    user: ApiUser;
+  }>("/auth/sns/github", {
+    method: "POST",
+    body: JSON.stringify({ code, redirect_uri: redirectUri }),
+    auth: false,
+  });
+  tokenStore.set(data.tokens.access_token, data.tokens.refresh_token);
+  return data.user;
+}
+
+/**
+ * 매직링크 요청 — 이메일 발송.
+ * 이메일 존재 여부와 무관하게 200 반환.
+ * 5분 cooldown 위반 시 ApiClientError (429 MAGIC_LINK_COOLDOWN).
+ */
+export async function requestMagicLink(
+  email: string
+): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>("/auth/magic-link/request", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+    auth: false,
+  });
+}
+
+export type MagicLinkVerifyResult =
+  | { setup_required: true; email: string; message: string }
+  | {
+      tokens: { access_token: string; refresh_token: string };
+      user: ApiUser;
+      ip_warning: boolean;
+    };
+
+/**
+ * 매직링크 토큰 검증.
+ * 신규 사용자 첫 호출: setup_required: true 반환.
+ * 신규 사용자 두 번째 호출 (display_name 포함): JWT 발급.
+ * 기존 사용자: JWT 즉시 발급.
+ */
+export async function verifyMagicLink(
+  token: string,
+  displayName?: string
+): Promise<MagicLinkVerifyResult> {
+  const data = await apiFetch<MagicLinkVerifyResult>("/auth/magic-link/verify", {
+    method: "POST",
+    body: JSON.stringify({ token, display_name: displayName ?? null }),
+    auth: false,
+  });
+
+  // JWT가 포함된 경우 저장
+  if ("tokens" in data) {
+    tokenStore.set(data.tokens.access_token, data.tokens.refresh_token);
+  }
+
+  return data;
+}
+
 // ─── Admin helpers ───────────────────────────────────────────────────────
 export type ArtistApplication = {
   id: string;

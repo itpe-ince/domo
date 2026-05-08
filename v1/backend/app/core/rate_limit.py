@@ -29,6 +29,8 @@ RATE_LIMIT_MODE = os.environ.get("RATE_LIMIT_MODE", "enforce").lower()
 DEFAULT_LIMITS: dict[str, dict] = {
     "auth_login": {"limit": 10, "window_sec": 60, "by": "ip"},
     "auth_refresh": {"limit": 30, "window_sec": 60, "by": "user"},
+    # C-2 매직링크 요청 — IP당 10회/시간 (이메일 폭탄 방지)
+    "auth_magic_link": {"limit": 10, "window_sec": 3600, "by": "ip"},
     "sponsorship_create": {"limit": 30, "window_sec": 60, "by": "user"},
     "subscription_create": {"limit": 10, "window_sec": 60, "by": "user"},
     "payments_setup_intent": {"limit": 10, "window_sec": 60, "by": "user"},

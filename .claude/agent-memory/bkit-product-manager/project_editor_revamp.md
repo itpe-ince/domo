@@ -1,6 +1,6 @@
 ---
-name: domo Phase 4~11 로드맵 상태
-description: Phase 4~10 종결 현황 + Phase 11 로드맵 계획 (2026-05-08 기준)
+name: domo Phase 4~12 로드맵 상태
+description: Phase 4~11 종결 현황 + Phase 12 로드맵 계획 (2026-05-08 기준)
 type: project
 ---
 
@@ -108,4 +108,44 @@ editor-revamp-roadmap 11/11 sub-PDCA 모두 archived. Match Rate 평균 ~98%.
 
 **How to apply:**
 - Phase 10 archived: `/Users/sangincha/dev/domo/v1/docs/archive/2026-05/domo-phase10-roadmap/`
-- Phase 11 plan: `/Users/sangincha/dev/domo/v1/docs/01-plan/features/domo-phase11-roadmap.plan.md`
+- Phase 11 plan: `/Users/sangincha/dev/domo/v1/docs/archive/2026-05/domo-phase11-roadmap/plan.md`
+
+---
+
+**Phase 11 종결 (2026-05-08 기준)**
+
+총 7/8 sub-PDCAs 완료. C-1(K-6) 거래 < 100건으로 정당 이월. 가중 Match Rate 96.9%.
+
+- A-1: `/admin/featured-artist/queue` UI (K-4 검수 큐) 97%
+- A-2: `/admin/ai-collections/queue` UI (K-7 검수 큐) 96%
+- B-1: `/admin/experiments` UI (A/B 결과, PATCH 미구현 88%)
+- B-2: `/admin/diversity-config` UI 96%
+- D-1: 전역 단축키 (j/k/⌘S/?) 97%
+- D-2: audit_logs (alembic 0084) 94%
+- D-3: 이메일+비밀번호 가입 (alembic 0085, password reset 미구현 93%)
+- 누적: 테스트 657→694(+37), alembic 0083→0085, cron 23→24, AdminShell 신규 그룹 2개
+- Phase 12 carry-over 12개 식별
+
+---
+
+**Phase 12 계획 (2026-05-08 초안, 옵션 D 균형 진행)**
+
+총 7~8 sub-PDCAs, ~10주 예정. Wave A/B/C 3단계.
+
+- Wave A (즉시, 병렬): A-1 17 tests refactor (freezegun+testcontainers) + A-2 B-1 PATCH endpoint (pause/complete)
+- Wave B (조건부 분기, 거래 카운트 기준):
+  - ≥ 100건: B-1k K-6 AI 가격 추천 (alembic 0086)
+  - < 100건 (예상): B-1a admin audit log 조회 UI + B-2 analytics 대시보드 + B-3 payouts 관리 UI
+- Wave C: C-1 password reset (alembic 0086/0087) + C-2 GitHub OAuth+매직링크 + C-3 단축키 확장
+
+**alembic 사전 배정**: 0086~0088 (시나리오에 따라 번호 조정)
+
+**Phase 12 OQ-1~OQ-13**: 권장 default 표 포함.
+
+**Phase 12 plan**: `/Users/sangincha/dev/domo/v1/docs/01-plan/features/domo-phase12-roadmap.plan.md`
+
+**Why:** Phase 11 안정성 부채(17 skipped tests + password reset 미구현) 청산. Admin 콘솔 마지막 3개 메뉴 완성(거래 < 100건 시). 인증 플로우 4종 완성.
+
+**How to apply:**
+- Phase 11 archived: `/Users/sangincha/dev/domo/v1/docs/archive/2026-05/domo-phase11-roadmap/`
+- Phase 12 plan: `/Users/sangincha/dev/domo/v1/docs/01-plan/features/domo-phase12-roadmap.plan.md`

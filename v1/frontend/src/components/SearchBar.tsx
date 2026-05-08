@@ -108,6 +108,7 @@ export function SearchBar({ compact = false, className = "" }: SearchBarProps) {
           }}
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
+          data-search-input
           className="w-full bg-surface rounded-full pl-10 pr-10 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
         />
         {value && (

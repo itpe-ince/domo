@@ -1,8 +1,12 @@
+import logging
+import secrets
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Request
-from sqlalchemy import select
+
+log = logging.getLogger(__name__)
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
@@ -11,10 +15,17 @@ from app.core.rate_limit import rate_limit
 from app.core.security import hash_password, verify_password
 from app.db.session import get_db
 from app.models.auth_token import RefreshToken
+from app.models.magic_link_token import MagicLinkToken
+from app.models.password_reset_token import PasswordResetToken
 from app.models.user import User
 from app.schemas.auth import (
+    GitHubLoginRequest,
     GoogleLoginRequest,
     LoginEmailRequest,
+    MagicLinkRequest,
+    MagicLinkVerifyRequest,
+    PasswordResetBody,
+    PasswordResetRequestBody,
     RefreshRequest,
     RegisterRequest,
     TokenPair,
@@ -33,6 +44,13 @@ from app.services.email_verification import (
     send_verification_email,
     verification_expires_at,
 )
+from app.services.password_reset import send_password_reset_email
+from app.services.github_oauth import (
+    exchange_github_code,
+    fetch_github_primary_email,
+    fetch_github_user,
+)
+from app.services.magic_link_auth import send_magic_link_email
 from app.services.google_auth import verify_google_id_token
 from app.services.analytics import capture_event
 from app.services.audit_log import record_audit
@@ -602,3 +620,507 @@ async def resend_verification_email(
     )
 
     return {"data": {"sent": send_result.get("sent", False)}}
+
+
+# ─── C-1: 비밀번호 재설정 엔드포인트 ────────────────────────────────────────
+
+_RESET_COOLDOWN_MINUTES = 5
+_RESET_EXPIRE_HOURS = 1
+
+
+@router.post("/password/reset-request")
+async def request_password_reset(
+    body: PasswordResetRequestBody,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("auth_login"),
+):
+    """비밀번호 재설정 요청 (이메일 발송).
+
+    - 이메일 존재 확인 → 존재하지 않아도 200 (enumeration 방지)
+    - Google OAuth 전용 계정 (password_hash IS NULL) → 200 + log warning
+    - 5분 cooldown 검증 (password_reset_tokens.created_at 기준)
+    - 기존 미사용 토큰 전체 무효화 후 신규 토큰 발급
+    - audit_log: action="user.password_reset_request"
+    """
+    email = body.email.lower().strip()
+
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+
+    ip = request.client.host if request.client else None
+
+    # 이메일 미존재: enumeration 방지 — 동일 200 반환
+    if not user:
+        return {"data": {"sent": False, "message": "처리되었습니다."}}
+
+    # Google OAuth 전용 계정: password_hash IS NULL
+    if not user.password_hash:
+        log.warning(
+            "password_reset_requested_for_google_account | user_id=%s email=%s",
+            user.id,
+            email,
+        )
+        return {"data": {"sent": False, "message": "처리되었습니다."}}
+
+    now = datetime.now(timezone.utc)
+    cooldown_boundary = now - timedelta(minutes=_RESET_COOLDOWN_MINUTES)
+
+    # 5분 cooldown 검증 — 미사용 토큰이 cooldown 내에 존재하면 429
+    recent_result = await db.execute(
+        select(PasswordResetToken)
+        .where(
+            PasswordResetToken.user_id == user.id,
+            PasswordResetToken.used_at.is_(None),
+            PasswordResetToken.created_at > cooldown_boundary,
+        )
+        .limit(1)
+    )
+    recent = recent_result.scalar_one_or_none()
+    if recent:
+        elapsed = (now - recent.created_at.replace(tzinfo=timezone.utc) if recent.created_at.tzinfo is None else now - recent.created_at).total_seconds()
+        wait_seconds = max(int(_RESET_COOLDOWN_MINUTES * 60 - elapsed), 0)
+        raise ApiError(
+            "RESET_TOO_SOON",
+            f"비밀번호 재설정 메일은 5분 후 다시 요청할 수 있습니다.",
+            http_status=429,
+            details={"retry_after_seconds": wait_seconds},
+        )
+
+    # 기존 미사용 토큰 전체 무효화
+    await db.execute(
+        update(PasswordResetToken)
+        .where(
+            PasswordResetToken.user_id == user.id,
+            PasswordResetToken.used_at.is_(None),
+        )
+        .values(used_at=now)
+    )
+
+    # 신규 토큰 발급
+    token_str = generate_verification_token()  # secrets.token_urlsafe(32)
+    reset_token = PasswordResetToken(
+        user_id=user.id,
+        token=token_str,
+        ip_address=ip,
+        expires_at=now + timedelta(hours=_RESET_EXPIRE_HOURS),
+        created_at=now,
+    )
+    db.add(reset_token)
+    await db.commit()
+
+    # 이메일 발송 (graceful)
+    language = getattr(user, "language", "ko") or "ko"
+    send_result = await send_password_reset_email(
+        email=user.email,
+        display_name=user.display_name,
+        token=token_str,
+        language=language,
+    )
+
+    await record_audit(
+        db,
+        actor=user,
+        action="user.password_reset_request",
+        metadata={"ip": ip},
+        request=request,
+        status="success",
+    )
+
+    return {"data": {"sent": send_result.get("sent", False), "message": "처리되었습니다."}}
+
+
+@router.post("/password/reset")
+async def reset_password(
+    body: PasswordResetBody,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """비밀번호 재설정 토큰 검증 + 새 비밀번호 설정.
+
+    - 토큰 조회 → used_at / expires_at 검증
+    - validate_password (D-3 동일 정책)
+    - bcrypt hash 갱신
+    - 잠금 해제 (failed_login_count=0, failed_login_locked_until=NULL)
+    - used_at 기록 + refresh_tokens 전체 revoke (모든 세션 강제 로그아웃)
+    - audit_log: action="user.password_reset_complete"
+    """
+    token_result = await db.execute(
+        select(PasswordResetToken).where(PasswordResetToken.token == body.token)
+    )
+    reset_token = token_result.scalar_one_or_none()
+
+    if not reset_token:
+        raise ApiError(
+            "INVALID_RESET_TOKEN",
+            "유효하지 않은 재설정 토큰입니다.",
+            http_status=400,
+        )
+
+    if reset_token.used_at is not None:
+        raise ApiError(
+            "TOKEN_ALREADY_USED",
+            "이미 사용된 재설정 토큰입니다.",
+            http_status=400,
+        )
+
+    now = datetime.now(timezone.utc)
+    expires_at = reset_token.expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at < now:
+        raise ApiError(
+            "TOKEN_EXPIRED",
+            "재설정 링크가 만료되었습니다. 새로 요청해주세요.",
+            http_status=400,
+        )
+
+    # 비밀번호 정책 검증 (D-3 동일)
+    validate_password(body.new_password)
+
+    # 사용자 조회
+    user_result = await db.execute(select(User).where(User.id == reset_token.user_id))
+    user = user_result.scalar_one()
+
+    # 새 비밀번호 해시 + 잠금 해제
+    user.password_hash = hash_password(body.new_password)
+    user.failed_login_count = 0
+    user.failed_login_locked_until = None
+
+    # 토큰 1회용 무효화
+    reset_token.used_at = now
+
+    # 기존 refresh token 전체 revoke (모든 세션 강제 로그아웃)
+    await db.execute(
+        update(RefreshToken)
+        .where(
+            RefreshToken.user_id == user.id,
+            RefreshToken.revoked_at.is_(None),
+        )
+        .values(revoked_at=now, revoked_reason="password_reset")
+    )
+
+    await db.commit()
+
+    ip = request.client.host if request.client else None
+    await record_audit(
+        db,
+        actor=user,
+        action="user.password_reset_complete",
+        metadata={"ip": ip},
+        request=request,
+        status="success",
+    )
+
+    return {
+        "data": {
+            "success": True,
+            "message": "비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.",
+        }
+    }
+
+
+# ─── C-2: GitHub OAuth 엔드포인트 ─────────────────────────────────────────────
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+@router.post("/sns/github")
+async def github_login(
+    body: GitHubLoginRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("auth_login"),
+):
+    """GitHub OAuth 로그인/가입.
+
+    1. body.code -> GitHub access_token 교환
+    2. access_token -> /user + /user/emails 조회
+    3. github_id로 기존 계정 조회
+    4. 이메일 중복 처리:
+       - Google 계정 -> 통합 (github_id 추가)
+       - 비밀번호 가입 -> 409 GITHUB_EMAIL_CONFLICT
+    5. 신규: User 생성
+    6. audit_log 기록
+    7. JWT 발급
+    """
+    # Step 1: code -> access_token
+    gh_token = await exchange_github_code(body.code, body.redirect_uri)
+
+    # Step 2: access_token -> user info
+    gh_user = await fetch_github_user(gh_token)
+    github_id: int = gh_user["id"]
+    name: str = gh_user.get("name") or gh_user.get("login") or "user"
+    avatar: str | None = gh_user.get("avatar_url")
+
+    # GitHub 이메일: primary + verified 우선
+    email: str | None = await fetch_github_primary_email(gh_token)
+    if not email:
+        raise ApiError(
+            "GITHUB_EMAIL_REQUIRED",
+            "GitHub 계정에 인증된 이메일이 없습니다. GitHub 설정에서 이메일을 인증해주세요.",
+            http_status=400,
+        )
+    email = email.lower().strip()
+
+    # Step 3: github_id로 기존 계정 조회
+    result = await db.execute(select(User).where(User.github_id == github_id))
+    user = result.scalar_one_or_none()
+
+    is_new_user = False
+
+    if not user:
+        # Step 4: 이메일로 기존 계정 조회
+        result = await db.execute(select(User).where(User.email == email))
+        existing = result.scalar_one_or_none()
+
+        if existing:
+            if existing.role == "admin":
+                raise ApiError(
+                    "ADMIN_SNS_FORBIDDEN",
+                    "관리자 계정은 /auth/admin/login을 사용해주세요.",
+                    http_status=403,
+                )
+
+            if existing.sns_provider == "google":
+                # Google 계정 -> GitHub 통합 (github_id 추가)
+                existing.github_id = github_id
+                if not existing.avatar_url and avatar:
+                    existing.avatar_url = avatar
+                await db.commit()
+                await db.refresh(existing)
+                user = existing
+            elif existing.password_hash is not None:
+                # 비밀번호 가입 계정 -> 409 충돌
+                raise ApiError(
+                    "GITHUB_EMAIL_CONFLICT",
+                    "해당 이메일로 이미 비밀번호 가입된 계정이 있습니다. 로그인 후 설정에서 GitHub 계정을 연동해주세요.",
+                    http_status=409,
+                    details={"merge_hint": "/settings/security"},
+                )
+            else:
+                # 기타 SNS 계정 (예외적 케이스)
+                existing.github_id = github_id
+                await db.commit()
+                await db.refresh(existing)
+                user = existing
+        else:
+            # Step 5: 신규 사용자 생성
+            is_new_user = True
+            user = User(
+                email=email,
+                sns_provider="github",
+                github_id=github_id,
+                display_name=name,
+                avatar_url=avatar,
+                role="user",
+                status="active",
+                email_verified=True,
+            )
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
+
+    ua, ip = _client_info(request)
+    access, refresh = await issue_initial_tokens(db, user, user_agent=ua, ip_address=ip)
+    await db.commit()
+
+    if is_new_user:
+        capture_event(str(user.id), "user_signup_confirmed", {"method": "github"})
+
+    action = "auth.github_signup" if is_new_user else "auth.github_login"
+    await record_audit(
+        db,
+        actor=user,
+        action=action,
+        metadata={"ip": ip},
+        request=request,
+        status="success",
+    )
+
+    return {
+        "data": {
+            "tokens": TokenPair(access_token=access, refresh_token=refresh).model_dump(),
+            "user": UserPublic.model_validate(user).model_dump(mode="json"),
+        }
+    }
+
+
+# ─── C-2: 매직링크 엔드포인트 ─────────────────────────────────────────────────
+
+@router.post("/magic-link/request")
+async def request_magic_link(
+    body: MagicLinkRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("auth_magic_link"),
+):
+    """매직링크 요청 - 이메일 입력만으로 가입/로그인 링크 발송.
+
+    보안:
+    - 이메일 존재 여부를 응답에서 노출하지 않음 (항상 200 반환)
+    - 5분 cooldown (이메일 폭탄 방지)
+    - IP 기록 (감사 목적)
+    """
+    from app.core.config import get_settings as _get_settings
+
+    email = body.email.lower().strip()
+
+    # 5분 cooldown 확인
+    result = await db.execute(
+        select(MagicLinkToken)
+        .where(
+            MagicLinkToken.email == email,
+            MagicLinkToken.is_used == False,  # noqa: E712
+            MagicLinkToken.created_at > (_utcnow() - timedelta(minutes=5)),
+        )
+        .order_by(MagicLinkToken.created_at.desc())
+    )
+    recent = result.scalar_one_or_none()
+    if recent:
+        raise ApiError(
+            "MAGIC_LINK_COOLDOWN",
+            "매직링크는 5분에 한 번만 요청할 수 있습니다.",
+            http_status=429,
+            details={"retry_after_seconds": 300},
+        )
+
+    # 토큰 생성
+    token = secrets.token_urlsafe(32)
+    ip = request.client.host if request.client else None
+    expires_at = _utcnow() + timedelta(hours=24)
+
+    magic = MagicLinkToken(
+        email=email,
+        token=token,
+        ip_address=ip,
+        is_used=False,
+        expires_at=expires_at,
+    )
+    db.add(magic)
+    await db.commit()
+
+    # 이메일 발송 (graceful - 발송 실패해도 200 반환)
+    _settings = _get_settings()
+    magic_link_url = f"{_settings.frontend_url}/auth/magic-link/{token}"
+    await send_magic_link_email(email, magic_link_url)
+
+    # audit_log
+    await record_audit(
+        db,
+        actor=None,
+        action="auth.magic_link_request",
+        metadata={"email": email, "ip": ip},
+        request=request,
+        status="success",
+    )
+
+    return {"data": {"message": "매직링크를 이메일로 발송했습니다. 24시간 내에 클릭해주세요."}}
+
+
+@router.post("/magic-link/verify")
+async def verify_magic_link(
+    body: MagicLinkVerifyRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """매직링크 토큰 검증 + 가입/로그인.
+
+    신규 사용자:
+    - display_name 없음 -> setup_required: true 반환 (2단계)
+    - display_name 있음 -> 가입 완료 + JWT 발급
+
+    기존 사용자: JWT 즉시 발급
+
+    보안:
+    - 24h 만료 확인
+    - 1회용 (is_used = True)
+    - IP 불일치 시 경고 플래그 반환 (차단 아님)
+    """
+    # 토큰 조회
+    result = await db.execute(
+        select(MagicLinkToken).where(MagicLinkToken.token == body.token)
+    )
+    magic = result.scalar_one_or_none()
+
+    if not magic:
+        raise ApiError("MAGIC_LINK_INVALID", "유효하지 않은 매직링크입니다.", http_status=400)
+
+    if magic.is_used:
+        raise ApiError("MAGIC_LINK_USED", "이미 사용된 매직링크입니다.", http_status=400)
+
+    if magic.expires_at.tzinfo is None:
+        expires_at = magic.expires_at.replace(tzinfo=timezone.utc)
+    else:
+        expires_at = magic.expires_at
+
+    if expires_at < _utcnow():
+        raise ApiError(
+            "MAGIC_LINK_EXPIRED",
+            "만료된 매직링크입니다. 새로 요청해주세요.",
+            http_status=400,
+        )
+
+    # IP 검증 (차단 아님, 경고용)
+    current_ip = request.client.host if request.client else None
+    ip_warning = bool(magic.ip_address and current_ip and magic.ip_address != current_ip)
+
+    # 이메일로 기존 사용자 조회
+    result = await db.execute(select(User).where(User.email == magic.email))
+    user = result.scalar_one_or_none()
+
+    is_new_user = not user
+
+    if is_new_user:
+        # 신규: display_name 없으면 setup_required 반환 (토큰 아직 무효화 안 함)
+        if not body.display_name:
+            return {
+                "data": {
+                    "setup_required": True,
+                    "email": magic.email,
+                    "message": "활동 이름을 입력해주세요.",
+                }
+            }
+        # display_name 있으면 가입 완료
+        user = User(
+            email=magic.email,
+            sns_provider=None,
+            password_hash=None,
+            display_name=body.display_name,
+            role="user",
+            status="active",
+            email_verified=True,
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+
+    # 토큰 무효화 (1회용) - JWT 발급 직전
+    magic.is_used = True
+    await db.commit()
+
+    ua, ip = _client_info(request)
+    access, refresh = await issue_initial_tokens(db, user, user_agent=ua, ip_address=ip)
+    await db.commit()
+
+    if is_new_user:
+        capture_event(str(user.id), "user_signup_confirmed", {"method": "magic_link"})
+
+    action = "auth.magic_link_signup" if is_new_user else "auth.magic_link_login"
+    await record_audit(
+        db,
+        actor=user,
+        action=action,
+        metadata={"ip": current_ip, "ip_warning": ip_warning},
+        request=request,
+        status="success",
+    )
+
+    return {
+        "data": {
+            "tokens": TokenPair(access_token=access, refresh_token=refresh).model_dump(),
+            "user": UserPublic.model_validate(user).model_dump(mode="json"),
+            "ip_warning": ip_warning,
+        }
+    }

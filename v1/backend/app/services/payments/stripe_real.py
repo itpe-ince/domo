@@ -353,6 +353,73 @@ class StripeProvider(PaymentProvider):
             "status": refund_obj.status,
         }
 
+    # ─── Stripe Connect ─────────────────────────────────────────────────
+
+    async def get_or_create_connect_account(self, user_id: str, email: str) -> str:
+        """Stripe Connect Express 계정 생성 (KYC approve 시 호출)."""
+        stripe = self._stripe
+
+        def _create():
+            account = stripe.Account.create(
+                type="express",
+                email=email,
+                metadata={"user_id": user_id},
+            )
+            return account.id
+
+        return await asyncio.to_thread(_create)
+
+    async def create_account_link(
+        self, account_id: str, refresh_url: str, return_url: str
+    ) -> str:
+        """Stripe Connect onboarding URL 생성."""
+        stripe = self._stripe
+
+        def _create():
+            link = stripe.AccountLink.create(
+                account=account_id,
+                refresh_url=refresh_url,
+                return_url=return_url,
+                type="account_onboarding",
+            )
+            return link.url
+
+        return await asyncio.to_thread(_create)
+
+    async def get_connect_account_status(self, account_id: str) -> dict:
+        """charges_enabled, payouts_enabled, requirements 조회."""
+        stripe = self._stripe
+
+        def _retrieve():
+            acct = stripe.Account.retrieve(account_id)
+            return {
+                "charges_enabled": acct.charges_enabled,
+                "payouts_enabled": acct.payouts_enabled,
+                "requirements": {
+                    "currently_due": list(acct.requirements.currently_due or []),
+                    "eventually_due": list(acct.requirements.eventually_due or []),
+                    "disabled_reason": acct.requirements.disabled_reason,
+                },
+            }
+
+        return await asyncio.to_thread(_retrieve)
+
+    async def retrieve_transfer(self, transfer_id: str) -> dict:
+        """Stripe Transfer 조회."""
+        stripe = self._stripe
+
+        def _retrieve():
+            tr = stripe.Transfer.retrieve(transfer_id)
+            return {
+                "transfer_id": tr.id,
+                "amount": tr.amount,
+                "currency": tr.currency,
+                "created": tr.created,
+                "destination": tr.destination,
+            }
+
+        return await asyncio.to_thread(_retrieve)
+
     # ─── Webhooks ───────────────────────────────────────────────────────
 
     async def verify_webhook_signature(

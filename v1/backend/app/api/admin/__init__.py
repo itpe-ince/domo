@@ -9,10 +9,11 @@ Sub-modules:
   schools.py      — school management
   content.py      — post moderation, digital-art verdicts, reports/warnings
   transactions.py — auctions, orders, refunds
+  audit_logs.py   — GET /admin/audit-logs (Phase 12 B-1a)
 """
 from fastapi import APIRouter
 
-from app.api.admin import content, schools, transactions, users
+from app.api.admin import audit_logs, content, schools, transactions, users
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -20,3 +21,4 @@ router.include_router(users.router)
 router.include_router(schools.router)
 router.include_router(content.router)
 router.include_router(transactions.router)
+router.include_router(audit_logs.router)

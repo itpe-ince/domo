@@ -25,7 +25,11 @@ export function FeedItem({
   );
 
   return (
-    <article className="px-4 py-4 hover:bg-surface-hover/30 transition-colors">
+    <article
+      className="px-4 py-4 hover:bg-surface-hover/30 transition-colors"
+      data-feed-item
+      data-post-id={post.id}
+    >
       {/* Author header */}
       <Link
         href={`/users/${post.author.id}`}
@@ -151,8 +155,20 @@ export function FeedItem({
         <span className="flex items-center gap-1.5 hover:text-primary cursor-pointer transition-colors">
           🕊 {post.bluebird_count}
         </span>
+        {/* 북마크 버튼 — b 단축키(Phase 12 C-3)의 programmatic click 대상 */}
+        <button
+          type="button"
+          data-bookmark-btn
+          aria-label={t("keyboardShortcuts.action.bookmarkToggle")}
+          className="flex items-center gap-1.5 hover:text-primary cursor-pointer transition-colors ml-auto"
+          onClick={() => {
+            /* TODO: bookmark API 연동 (Phase 13) — 현재 UI 반응만 처리 */
+          }}
+        >
+          🔖
+        </button>
         {post.product && post.product.buy_now_price != null && post.product.buy_now_price > 0 && (
-          <span className="ml-auto text-primary font-semibold text-xs">
+          <span className="text-primary font-semibold text-xs">
             {convertAndFormat(
               post.product.buy_now_price,
               post.product.buy_now_currency || post.product.currency || "USD",

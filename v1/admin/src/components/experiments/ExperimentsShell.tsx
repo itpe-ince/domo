@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ExperimentStatus, tokenStore } from "@/lib/api";
-import { useExperiments } from "@/lib/hooks/useExperiments";
+import { useExperiments, usePatchExperiment } from "@/lib/hooks/useExperiments";
 import { CreateExperimentModal } from "./CreateExperimentModal";
 import { ExperimentsList, FilterTabs } from "./ExperimentsList";
 
@@ -21,6 +21,11 @@ export function ExperimentsShell() {
 
   const { experiments, isLoading, error, refetch } = useExperiments();
 
+  // 실험 상태 변경 뮤테이션 (Phase 12 A-2)
+  const { patch: patchExp } = usePatchExperiment(() => {
+    void refetch();
+  });
+
   // 클라이언트 사이드 필터링
   const filtered = useMemo(() => {
     if (filterStatus === "all") return experiments;
@@ -36,14 +41,12 @@ export function ExperimentsShell() {
     return c;
   }, [experiments]);
 
-  // 상태 변경 핸들러 — PATCH 미구현 안내
+  // 상태 변경 핸들러 — PATCH /admin/experiments/{name} (Phase 12 A-2)
   async function handleStatusChange(
-    _name: string,
-    _status: "paused" | "completed"
+    name: string,
+    status: "paused" | "completed" | "running"
   ): Promise<void> {
-    // PATCH /admin/experiments/{name} 미구현
-    // Phase 12 후속 백엔드 작업 필요
-    throw new Error("PATCH endpoint not implemented");
+    await patchExp(name, { status });
   }
 
   return (
@@ -54,7 +57,7 @@ export function ExperimentsShell() {
           <div>
             <h1 className="text-lg font-semibold text-admin-fg">A/B 테스트 관리</h1>
             <p className="text-[12px] text-admin-muted mt-0.5">
-              ML 실험 생성 · 조회 · 결과 분석 (K-8)
+              ML 실험 생성 · 조회 · 결과 분석 (K-8 / A-2)
             </p>
           </div>
           <button

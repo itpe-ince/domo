@@ -1688,6 +1688,7 @@
     "title": "キーボードショートカット",
     "close": "ヘルプを閉じる",
     "category": {
+      "navigation": "Navigation",
       "feed": "フィード",
       "editor": "投稿",
       "general": "一般"
@@ -1697,10 +1698,48 @@
       "prevPost": "前の投稿",
       "saveDraft": "下書き保存",
       "showHelp": "このヘルプを表示",
-      "closeModal": "モーダルを閉じる"
+      "closeModal": "モーダルを閉じる",
+      "gotoHome": "ホーム",
+      "gotoFeed": "フィード",
+      "gotoExplore": "探索",
+      "gotoMessages": "メッセージ",
+      "gotoNotifications": "通知",
+      "gotoProfile": "プロフィール",
+      "newPost": "新規投稿",
+      "searchFocus": "検索フォーカス",
+      "bookmarkToggle": "ブックマーク切替"
     }
   },
   "auth": {
+    "github": {
+      "button": "GitHubで続ける",
+      "connecting": "GitHubに接続中...",
+      "conflict": "このメールアドレスはすでにパスワードで登録されています。",
+      "conflictHint": "ログイン後、設定でGitHubアカウントを連携してください。",
+      "noEmail": "GitHubアカウントに認証済みメールがありません。",
+      "mergeSuccess": "GitHubアカウントが連携されました。"
+    },
+    "magic_link": {
+      "request": {
+        "tab": "メールでログイン",
+        "description": "パスワード不要！メールのリンクで簡単ログイン",
+        "emailPlaceholder": "メールアドレス",
+        "submit": "ログインリンクを送信",
+        "sent": "メールをご確認ください。24時間以内にリンクをクリックしてください。",
+        "cooldown": "5分後に再リクエストできます。"
+      },
+      "verify": {
+        "verifying": "マジックリンク確認中...",
+        "setupTitle": "表示名を入力してください",
+        "setupPlaceholder": "表示名（3〜50文字）",
+        "setupSubmit": "登録完了",
+        "success": "ログイン完了！まもなく移動します。",
+        "expired": "リンクの有効期限が切れました。新しいリンクをリクエストしてください。",
+        "used": "このリンクはすでに使用されています。",
+        "ipWarning": "異なるネットワークからのアクセスが検出されました。本人であれば続行してください。",
+        "requestNew": "新しいリンクをリクエスト"
+      }
+    },
     "signup": {
       "tab": "新規登録",
       "emailPlaceholder": "メールアドレス",
@@ -1732,6 +1771,71 @@
       "error": "認証に失敗しました",
       "noToken": "認証トークンが見つかりません。メール内のリンクを再度クリックしてください。",
       "goHome": "ホームへ"
+    },
+    "password_reset": {
+      "request": {
+        "title": "パスワードを忘れた方",
+        "subtitle": "登録したメールアドレスを入力すると、再設定リンクをお送りします。",
+        "email_label": "メールアドレス",
+        "submit": "再設定リンクを送信",
+        "sent_title": "メールをご確認ください",
+        "sent_body": "再設定リンクを送信しました。1時間以内にご確認ください。",
+        "too_soon": "{{seconds}}秒後に再度お試しください。",
+        "back_to_login": "ログインに戻る",
+        "error": "エラーが発生しました。再度お試しください。"
+      },
+      "token": {
+        "title": "新しいパスワードを設定",
+        "new_password_label": "新しいパスワード",
+        "confirm_label": "新しいパスワード（確認）",
+        "submit": "パスワードを変更",
+        "mismatch": "パスワードが一致しません。",
+        "expired": "再設定リンクの有効期限が切れています。新しくリクエストしてください。",
+        "already_used": "このリンクはすでに使用済みです。新しくリクエストしてください。",
+        "invalid": "無効な再設定リンクです。",
+        "request_again": "再設定リンクを再リクエスト"
+      },
+      "success": {
+        "title": "パスワードの変更完了",
+        "body": "パスワードが変更されました。まもなくログインページへ移動します。"
+      }
+    }
+  },
+  "admin": {
+    "analytics": {
+      "pageTitle": "分析ダッシュボード",
+      "period": {
+        "7d": "過去7日間",
+        "30d": "過去30日間",
+        "90d": "過去90日間"
+      },
+      "refresh": "更新",
+      "cachedAt": "キャッシュ: {{time}} 時点",
+      "loading": "読み込み中...",
+      "error": "データの読み込みに失敗しました",
+      "retry": "再試行",
+      "cohortRetention": {
+        "title": "コホートリテンション",
+        "d7": "D7 残存率",
+        "d30": "D30 残存率",
+        "belowThreshold": "閾値未満の記録のみ"
+      },
+      "newsletter": {
+        "title": "ニュースレター開封率",
+        "openRate": "開封率",
+        "clickRate": "クリック率",
+        "issued": "配信号数"
+      },
+      "feedCtr": {
+        "title": "アルゴリズム別 Feed CTR",
+        "delta": "v2 vs v1 差分"
+      },
+      "aiFeatures": {
+        "title": "AI機能使用率",
+        "caption": "AIキャプション",
+        "docent": "AIドーセント",
+        "collection": "AIコレクション"
+      }
     }
   }
 }

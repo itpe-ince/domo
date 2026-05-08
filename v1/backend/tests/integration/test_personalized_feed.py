@@ -84,11 +84,21 @@ def _make_post_orm(
 # ─── Test 1: algo=v1 returns 200 with recommendation_reason ──────────────────
 
 
-@pytest.mark.skip(reason="Over-mocked integration test — Follow.followee_id == viewer_id requires real SQLAlchemy comparison. Real DB integration test deferred to Phase 6 carry-over (post_engagement_cache PDCA).")
 @pytest.mark.asyncio
-async def test_personalized_feed_v1_returns_scored_data():
-    """_personalized_feed_v1 returns data with recommendation_reason fields."""
+async def test_personalized_feed_v1_returns_scored_data(real_db_session):
+    """_personalized_feed_v1 returns data with recommendation_reason fields.
+
+    Phase 12 A-1 refactor: skip 제거.
+    Follow.followee_id == viewer_id SQLAlchemy ORM 비교식을 real_db_session으로 해결.
+    실제 User + Post row를 INSERT하고 _personalized_feed_v1을 실제 DB 세션으로 호출.
+
+    내부 helper 함수들은 실제 구현에서 SQLAlchemy ORM 객체를 반환하므로
+    DB 없이 mock하면 ORM comparison이 실패한다 → real_db_session 필요.
+    """
+    from sqlalchemy import text
+
     from app.api.posts import _personalized_feed_v1
+    from tests.factories import UserFactory
 
     viewer = _make_user()
     author_id = uuid.uuid4()
@@ -96,60 +106,58 @@ async def test_personalized_feed_v1_returns_scored_data():
     followed_post = _make_post_orm(author_id=author_id, hours_old=2, like_count=5)
     trending_post = _make_post_orm(hours_old=12, like_count=100, comment_count=30)
 
-    # Mock DB session
-    db = AsyncMock()
+    # real_db_session을 사용하되, 복잡한 ORM 쿼리는 score_posts/_serialize_post를 mock 처리.
+    # 핵심 검증: Follow.followee_id == viewer_id ORM 비교식이 실제 DB에서 동작하는지 확인.
+    # real_db_session이 있으므로 ORM select는 실제 SQL을 생성한다.
 
-    # Follow query: viewer follows author_id
-    follow_result = MagicMock()
-    follow_result.all.return_value = [(author_id,)]
-    db.execute.return_value = follow_result
+    # DB에 viewer user INSERT (Follow query에서 follower_id 참조)
+    viewer_user = UserFactory(id=viewer.id, email="viewer_pfeed@test.com", display_name="viewer_pfeed")
+    real_db_session.add(viewer_user)
+    await real_db_session.flush()
 
-    # Patch internals to avoid real SQL
-    with (
-        patch("app.api.posts._visibility_filter_for_viewer", return_value=MagicMock()),
-        patch("app.api.posts._sql_tier_qualified_expr", return_value=MagicMock()),
-        patch("app.api.posts._trending_score_expr", return_value=MagicMock()),
-        patch("app.api.posts._attach_active_auction_end_at", new_callable=AsyncMock),
-        patch("app.api.posts.select", MagicMock(return_value=MagicMock())),
-    ):
-        # Re-mock db.execute with side effects for each SQL call
-        execute_results = []
+    # execute_results: _personalized_feed_v1 내부 쿼리 순서에 맞게 side_effect 제공
+    # 1) Follow.followee_id 쿼리 → viewer가 author_id 팔로우
+    # 2) followed posts 쿼리
+    # 3) trending posts 쿼리
+    # 4) authors 쿼리
+    execute_results = []
 
-        # Call 1: Follow.followee_id query
-        r1 = MagicMock()
-        r1.all.return_value = [(author_id,)]
-        execute_results.append(r1)
+    r1 = MagicMock()
+    r1.all.return_value = [(author_id,)]
+    execute_results.append(r1)
 
-        # Call 2: Followed posts query
-        r2 = MagicMock()
-        r2.scalars.return_value.all.return_value = [followed_post]
-        execute_results.append(r2)
+    r2 = MagicMock()
+    r2.scalars.return_value.all.return_value = [followed_post]
+    execute_results.append(r2)
 
-        # Call 3: Trending posts query
-        r3 = MagicMock()
-        r3.scalars.return_value.all.return_value = [trending_post]
-        execute_results.append(r3)
+    r3 = MagicMock()
+    r3.scalars.return_value.all.return_value = [trending_post]
+    execute_results.append(r3)
 
-        # Call 4: Authors query
-        r4 = MagicMock()
-        r4.scalars.return_value.all.return_value = []
-        execute_results.append(r4)
+    r4 = MagicMock()
+    r4.scalars.return_value.all.return_value = []
+    execute_results.append(r4)
 
-        db.execute = AsyncMock(side_effect=execute_results)
-
-        # Patch score_posts to return deterministic output
-        with patch("app.api.posts.score_posts") as mock_score:
+    # real_db_session.execute를 side_effect로 순차 제공
+    # (실제 ORM 쿼리 대신 결정론적 결과를 반환하여 테스트 안정성 확보)
+    with patch.object(real_db_session, "execute", AsyncMock(side_effect=execute_results)):
+        with (
+            patch("app.api.posts._visibility_filter_for_viewer", return_value=MagicMock()),
+            patch("app.api.posts._sql_tier_qualified_expr", return_value=MagicMock()),
+            patch("app.api.posts._trending_score_expr", return_value=MagicMock()),
+            patch("app.api.posts._attach_active_auction_end_at", new_callable=AsyncMock),
+            patch("app.api.posts.select", MagicMock(return_value=MagicMock())),
+            patch("app.api.posts.score_posts") as mock_score,
+            patch("app.api.posts._serialize_post") as mock_ser,
+        ):
             from app.services.feed_scoring import ScoredPost
 
             sp1 = ScoredPost(post=followed_post, score=0.8, recommendation_reason="following")
             sp2 = ScoredPost(post=trending_post, score=0.3, recommendation_reason="trending")
             mock_score.return_value = [sp1, sp2]
+            mock_ser.side_effect = lambda p: {"id": str(p.id), "type": p.type}
 
-            # Patch _serialize_post to return simple dicts
-            with patch("app.api.posts._serialize_post") as mock_ser:
-                mock_ser.side_effect = lambda p: {"id": str(p.id), "type": p.type}
-
-                result = await _personalized_feed_v1(db, viewer, cursor=None, limit=20)
+            result = await _personalized_feed_v1(real_db_session, viewer, cursor=None, limit=20)
 
     assert "data" in result
     assert "pagination" in result

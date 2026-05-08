@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -70,6 +70,10 @@ class User(Base):
     gdpr_consent_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+
+    # C-2 GitHub OAuth 필드 (alembic 0087)
+    # sns_id는 VARCHAR(255)로 Google sub 문자열 저장 — GitHub ID는 BIGINT 별도 관리
+    github_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True, unique=True)
 
     # D-3 이메일+비밀번호 인증 컬럼 (alembic 0085)
     # Google OAuth 사용자는 alembic 마이그레이션 시 email_verified=True 일괄 설정됨.
@@ -164,6 +168,12 @@ class User(Base):
 
     artist_profile: Mapped["ArtistProfile | None"] = relationship(
         back_populates="user", uselist=False, foreign_keys="ArtistProfile.user_id"
+    )
+
+    # C-1: password reset tokens (별도 테이블)
+    password_reset_tokens: Mapped[list["PasswordResetToken"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
 
 

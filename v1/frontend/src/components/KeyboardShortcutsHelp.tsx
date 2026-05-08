@@ -1,13 +1,18 @@
 "use client";
 
 /**
- * KeyboardShortcutsHelp — Phase 11 D-1
+ * KeyboardShortcutsHelp — Phase 12 C-3
  *
  * 전역 ? 키로 열리는 단축키 도움말 모달.
- * - 카테고리별 표 (피드 / 등록 / 일반)
- * - ESC 닫기: 배경 클릭 + ESC 키이벤트로 처리
+ * Phase 11 D-1: 3개 카테고리 (feed/editor/general)
+ * Phase 12 C-3: 4개 카테고리로 확장 (navigation/feed/editor/general)
+ * - Navigation 섹션 신규 추가 (g-시퀀스 6개)
+ * - Feed 섹션에 b (북마크 토글) 추가
+ * - Editor 섹션에 n (새 포스트) 추가
+ * - General 섹션에 / (검색 포커스) 추가
+ * - g-시퀀스는 두 <Kbd> 요소를 나란히 표시
  * - 5 locale i18n (keyboardShortcuts.* 네임스페이스)
- * - aria-modal 접근성
+ * - aria-modal 접근성 유지
  */
 
 import { useEffect, useRef } from "react";
@@ -54,6 +59,16 @@ function ShortcutRow({ keys, description }: ShortcutRowProps) {
         {description}
       </td>
     </tr>
+  );
+}
+
+/** g-시퀀스 키 표기: 두 Kbd를 나란히 표시 */
+function SequenceKeys({ first, second }: { first: string; second: string }) {
+  return (
+    <span className="inline-flex items-center gap-0.5">
+      <Kbd>{first}</Kbd>
+      <Kbd>{second}</Kbd>
+    </span>
   );
 }
 
@@ -105,11 +120,11 @@ export function KeyboardShortcutsHelp({
         aria-label={t("keyboardShortcuts.title")}
         tabIndex={-1}
         className="w-full max-w-sm bg-surface border border-border rounded-2xl shadow-2xl
-                   overflow-hidden outline-none"
+                   overflow-hidden outline-none max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 헤더 */}
-        <header className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-border">
+        <header className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-border sticky top-0 bg-surface z-10">
           <h2 className="text-base font-bold text-text-primary">
             {t("keyboardShortcuts.title")}
           </h2>
@@ -140,6 +155,44 @@ export function KeyboardShortcutsHelp({
 
         {/* 단축키 목록 */}
         <div className="px-5 py-4 space-y-5">
+          {/* Navigation 카테고리 (Phase 12 C-3 신규) */}
+          <section aria-labelledby="shortcut-category-navigation">
+            <h3
+              id="shortcut-category-navigation"
+              className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2"
+            >
+              {t("keyboardShortcuts.category.navigation")}
+            </h3>
+            <table className="w-full">
+              <tbody>
+                <ShortcutRow
+                  keys={[<SequenceKeys key="g-h" first="g" second="h" />]}
+                  description={t("keyboardShortcuts.action.gotoHome")}
+                />
+                <ShortcutRow
+                  keys={[<SequenceKeys key="g-f" first="g" second="f" />]}
+                  description={t("keyboardShortcuts.action.gotoFeed")}
+                />
+                <ShortcutRow
+                  keys={[<SequenceKeys key="g-e" first="g" second="e" />]}
+                  description={t("keyboardShortcuts.action.gotoExplore")}
+                />
+                <ShortcutRow
+                  keys={[<SequenceKeys key="g-m" first="g" second="m" />]}
+                  description={t("keyboardShortcuts.action.gotoMessages")}
+                />
+                <ShortcutRow
+                  keys={[<SequenceKeys key="g-n" first="g" second="n" />]}
+                  description={t("keyboardShortcuts.action.gotoNotifications")}
+                />
+                <ShortcutRow
+                  keys={[<SequenceKeys key="g-p" first="g" second="p" />]}
+                  description={t("keyboardShortcuts.action.gotoProfile")}
+                />
+              </tbody>
+            </table>
+          </section>
+
           {/* 피드 카테고리 */}
           <section aria-labelledby="shortcut-category-feed">
             <h3
@@ -157,6 +210,10 @@ export function KeyboardShortcutsHelp({
                 <ShortcutRow
                   keys={[<Kbd key="k">k</Kbd>]}
                   description={t("keyboardShortcuts.action.prevPost")}
+                />
+                <ShortcutRow
+                  keys={[<Kbd key="b">b</Kbd>]}
+                  description={t("keyboardShortcuts.action.bookmarkToggle")}
                 />
               </tbody>
             </table>
@@ -185,6 +242,10 @@ export function KeyboardShortcutsHelp({
                   ]}
                   description={t("keyboardShortcuts.action.saveDraft")}
                 />
+                <ShortcutRow
+                  keys={[<Kbd key="n">n</Kbd>]}
+                  description={t("keyboardShortcuts.action.newPost")}
+                />
               </tbody>
             </table>
           </section>
@@ -199,6 +260,10 @@ export function KeyboardShortcutsHelp({
             </h3>
             <table className="w-full">
               <tbody>
+                <ShortcutRow
+                  keys={[<Kbd key="slash">/</Kbd>]}
+                  description={t("keyboardShortcuts.action.searchFocus")}
+                />
                 <ShortcutRow
                   keys={[<Kbd key="q">?</Kbd>]}
                   description={t("keyboardShortcuts.action.showHelp")}

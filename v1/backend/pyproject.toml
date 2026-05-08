@@ -41,6 +41,13 @@ test = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
 ]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "testcontainers[postgresql,redis]>=4.0",
+    "freezegun>=1.4",
+    "factory-boy>=3.3",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

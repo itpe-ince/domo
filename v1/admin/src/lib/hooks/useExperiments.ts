@@ -5,10 +5,12 @@ import {
   ApiClientError,
   CreateExperimentPayload,
   Experiment,
+  ExperimentPatchPayload,
   ExperimentResults,
   createExperiment,
   getExperimentResults,
   listExperiments,
+  patchExperiment,
 } from "@/lib/api";
 
 // ── useExperiments: 목록 조회 (30초 자동 갱신) ──────────────────────────────
@@ -75,6 +77,45 @@ export function useCreateExperiment(onSuccess: () => void) {
   );
 
   return { submit, isSubmitting, submitError, setSubmitError };
+}
+
+// ── usePatchExperiment: 실험 상태/메타데이터 변경 뮤테이션 (Phase 12 A-2) ────
+
+export function usePatchExperiment(onSuccess: () => void) {
+  const [isPending, setIsPending] = useState(false);
+  const [patchError, setPatchError] = useState<string | null>(null);
+
+  const patch = useCallback(
+    async (name: string, body: ExperimentPatchPayload) => {
+      setIsPending(true);
+      setPatchError(null);
+      try {
+        await patchExperiment(name, body);
+        onSuccess();
+      } catch (err) {
+        if (err instanceof ApiClientError) {
+          const code = err.code;
+          if (code === "IMMUTABLE") {
+            setPatchError("완료된 실험은 수정할 수 없습니다.");
+          } else if (code === "INVALID_TRANSITION") {
+            setPatchError("허용되지 않은 상태 전이입니다.");
+          } else if (code === "ASSIGNMENTS_EXIST") {
+            setPatchError("배정된 사용자가 있는 variant는 삭제할 수 없습니다.");
+          } else {
+            setPatchError(err.message || "실험 수정에 실패했습니다.");
+          }
+        } else {
+          setPatchError("실험 수정에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        }
+        throw err;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [onSuccess]
+  );
+
+  return { patch, isPending, patchError, setPatchError };
 }
 
 // ── useExperimentResults: 실험 결과 (lazy fetch, enabled 제어) ──────────────

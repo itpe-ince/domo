@@ -54,82 +54,18 @@ def _make_row(**kwargs) -> MagicMock:
 
 
 # ─── Feed v2 + Diversity 통합 ─────────────────────────────────────────────────
-
-
-@pytest.mark.asyncio
-@pytest.mark.skip(reason="Tests internal _personalized_feed_v2 function that doesn't exist — diversity is embedded in ml_feed_inference. unit tests cover diversity logic directly.")
-async def test_feed_v2_diversity_applied():
-    """/api/feed?algo=v2 — diversity reranking 활성 상태에서 정상 응답."""
-    from app.api.posts import home_feed
-
-    user = MagicMock()
-    user.id = uuid.uuid4()
-    user.role = "user"
-    user.display_name = "Test User"
-    user.avatar_url = None
-    user.status = "active"
-    user.sponsor_validity_days = None
-
-    db = AsyncMock()
-
-    expected_result = {
-        "data": [],
-        "pagination": {"next_cursor": None, "has_more": False},
-    }
-
-    with patch("app.api.posts._personalized_feed_v2", new_callable=AsyncMock, return_value=expected_result):
-        result = await home_feed(
-            limit=20,
-            following_only=False,
-            algo="v2",
-            cursor=None,
-            genre=None,
-            tags=None,
-            db=db,
-            current_user=user,
-        )
-
-    assert result is not None
-    assert "data" in result
-    assert isinstance(result["data"], list)
-
-
-@pytest.mark.asyncio
-@pytest.mark.skip(reason="Tests internal _personalized_feed_v2 function that doesn't exist — diversity env disable is verified via unit tests in test_diversity_reranking.py.")
-async def test_feed_v2_diversity_disabled_fallback():
-    """DIVERSITY_RERANKING_ENABLED=false → K-1 결과 그대로 반환 (200 OK)."""
-    from app.api.posts import home_feed
-
-    user = MagicMock()
-    user.id = uuid.uuid4()
-    user.role = "user"
-    user.display_name = "Test User"
-    user.avatar_url = None
-    user.status = "active"
-    user.sponsor_validity_days = None
-
-    db = AsyncMock()
-
-    expected_result = {
-        "data": [],
-        "pagination": {"next_cursor": None, "has_more": False},
-    }
-
-    with patch.dict("os.environ", {"DIVERSITY_RERANKING_ENABLED": "false"}):
-        with patch("app.api.posts._personalized_feed_v2", new_callable=AsyncMock, return_value=expected_result):
-            result = await home_feed(
-                limit=20,
-                following_only=False,
-                algo="v2",
-                cursor=None,
-                genre=None,
-                tags=None,
-                db=db,
-                current_user=user,
-            )
-
-    assert result is not None
-    assert "data" in result
+#
+# ADR (Phase 12 A-1 결정): test_feed_v2_diversity_applied, test_feed_v2_diversity_disabled_fallback 제거
+#
+# 제거 이유:
+#   - `_personalized_feed_v2` 내부 함수는 존재하지 않음 (Phase 10 K-2 구현 시 ml_feed_inference 내부에 통합됨)
+#   - diversity 로직은 `tests/unit/test_diversity_reranking.py`의 unit tests가 충분히 커버
+#   - 존재하지 않는 내부 함수를 patch하는 것은 의미 없는 검증 (항상 pass)
+#   - 추후 `_personalized_feed_v2`가 독립 함수로 분리된다면 이 파일에 새로운 테스트 추가
+#
+# 대체 커버리지:
+#   - tests/unit/test_diversity_reranking.py — diversity reranking 알고리즘 unit 검증
+#   - tests/unit/test_ml_feed_inference.py — ml_feed_inference 통합 검증
 
 
 # ─── Admin Diversity Config API ───────────────────────────────────────────────

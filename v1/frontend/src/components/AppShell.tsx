@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { MobileTabBar } from "./MobileTabBar";
 import { Sidebar } from "./Sidebar";
 import { SkipLink } from "./SkipLink";
@@ -10,6 +10,7 @@ import { CognitiveSimpleModeProvider } from "./CognitiveSimpleModeProvider";
 import { KeyboardShortcutsHelp } from "./KeyboardShortcutsHelp";
 import { useOnboarding } from "@/lib/hooks/useOnboarding";
 import { useGlobalHotkeys } from "@/lib/hooks/useGlobalHotkeys";
+import { useSequenceHotkeys } from "@/lib/hooks/useSequenceHotkeys";
 import { useMe } from "@/lib/useMe";
 
 /**
@@ -36,6 +37,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { me } = useMe();
   const { wizardStep, finish } = useOnboarding();
   const pathname = usePathname();
+  const router = useRouter();
   const [helpOpen, setHelpOpen] = useState(false);
 
   // 피드 페이지 여부 — j/k 단축키 활성 조건
@@ -63,8 +65,71 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     cards[targetIdx].focus({ preventScroll: true });
   }, []);
 
-  // 전역 단축키 등록
+  // Phase 12 C-3: / 단축키 — SearchBar 포커스
+  const focusSearchBar = useCallback(() => {
+    const searchInput = document.querySelector<HTMLElement>("[data-search-input]");
+    if (searchInput) {
+      searchInput.focus();
+    }
+  }, []);
+
+  // Phase 12 C-3: b 단축키 — 뷰포트 중앙 활성 포스트 북마크 토글
+  // D-1의 getActiveIndex 헬퍼 함수 재사용, data-post-id/data-bookmark-btn 속성 준용
+  const toggleActivePostBookmark = useCallback(() => {
+    const cards = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-feed-item]")
+    );
+    if (cards.length === 0) return;
+
+    const activeIdx = getActiveIndex(cards);
+    const activeCard = cards[activeIdx];
+
+    // 북마크 버튼을 프로그래매틱하게 클릭 (기존 북마크 로직 재활용)
+    const bookmarkBtn = activeCard.querySelector<HTMLElement>("[data-bookmark-btn]");
+    if (bookmarkBtn) {
+      bookmarkBtn.click();
+    }
+  }, []);
+
+  // Phase 12 C-3: g-시퀀스 navigation 단축키 (useSequenceHotkeys)
+  useSequenceHotkeys([
+    {
+      sequence: ["g", "h"],
+      handler: () => router.push("/"),
+      enabled: !helpOpen,
+    },
+    {
+      sequence: ["g", "f"],
+      handler: () => router.push("/feed"),
+      enabled: !helpOpen,
+    },
+    {
+      sequence: ["g", "e"],
+      handler: () => router.push("/explore"),
+      enabled: !helpOpen,
+    },
+    {
+      sequence: ["g", "m"],
+      handler: () => router.push("/me/messages"),
+      enabled: !helpOpen,
+    },
+    {
+      sequence: ["g", "n"],
+      handler: () => router.push("/notifications"),
+      enabled: !helpOpen,
+    },
+    {
+      sequence: ["g", "p"],
+      handler: () => {
+        if (me?.id) router.push(`/users/${me.id}`);
+      },
+      enabled: !helpOpen && !!me,
+    },
+  ]);
+
+  // 전역 단축키 등록 (D-1 기존 + C-3 신규)
   useGlobalHotkeys([
+    // D-1 기존 단축키 (변경 없음)
     {
       key: "j",
       handler: () => navigateFeed("next"),
@@ -79,6 +144,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       key: "?",
       handler: () => setHelpOpen(true),
       enabled: !helpOpen,
+    },
+    // Phase 12 C-3 신규 단축키
+    {
+      key: "n",
+      handler: () => router.push("/posts/new"),
+      enabled: !helpOpen,
+      // preventInInputs: true (default) — input 포커스 시 자동 비활성
+    },
+    {
+      key: "/",
+      handler: (e) => {
+        e.preventDefault();
+        focusSearchBar();
+      },
+      enabled: !helpOpen,
+    },
+    {
+      key: "b",
+      handler: () => toggleActivePostBookmark(),
+      enabled: !helpOpen,
+      // preventInInputs: true (default)
     },
   ]);
 
@@ -101,7 +187,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* A-2: Growth-funnel onboarding wizard — shown on first session after login */}
       {showWizard && <OnboardingWizard onClose={handleWizardClose} />}
 
-      {/* Phase 11 D-1: 키보드 단축키 도움말 모달 */}
+      {/* Phase 11 D-1 / Phase 12 C-3: 키보드 단축키 도움말 모달 */}
       <KeyboardShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
     </CognitiveSimpleModeProvider>
   );

@@ -16,3 +16,4 @@
 - [phase11-B-1 experiments UI complete](project_phase11_b1.md) — /experiments 6 컴포넌트 + 3 hooks + api.ts 타입/함수; PATCH 미구현 disabled 처리; tsc 0 errors
 - [phase11-B-2 diversity config UI](project_phase11_b2_diversity_config.md) — 4 슬라이더 + KPI 위젯 + AdminShell ML Operations 그룹; admin app TanStack Query 없음 주의
 - [phase11-D-1 keyboard shortcuts complete](project_phase11_d1_keyboard.md) — useGlobalHotkeys + KeyboardShortcutsHelp + j/k feed nav + ⌘S draft save + 10 i18n keys × 5; tsc 0 errors
+- [phase12-C-3 keyboard expansion complete](project_phase12_c3_keyboard.md) — useSequenceHotkeys + g-시퀀스 6개 + n/slash/b + 4 카테고리 모달 + i18n 9 keys × 5; tsc 0 errors

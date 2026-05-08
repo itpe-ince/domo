@@ -1688,6 +1688,7 @@
     "title": "键盘快捷键",
     "close": "关闭帮助",
     "category": {
+      "navigation": "Navigation",
       "feed": "动态",
       "editor": "发布",
       "general": "通用"
@@ -1697,10 +1698,48 @@
       "prevPost": "上一篇",
       "saveDraft": "保存草稿",
       "showHelp": "显示此帮助",
-      "closeModal": "关闭弹窗"
+      "closeModal": "关闭弹窗",
+      "gotoHome": "首页",
+      "gotoFeed": "动态",
+      "gotoExplore": "探索",
+      "gotoMessages": "消息",
+      "gotoNotifications": "通知",
+      "gotoProfile": "我的主页",
+      "newPost": "新建帖子",
+      "searchFocus": "聚焦搜索",
+      "bookmarkToggle": "切换收藏"
     }
   },
   "auth": {
+    "github": {
+      "button": "使用 GitHub 繼續",
+      "connecting": "正在連接 GitHub...",
+      "conflict": "此電子郵件已有密碼帳號。",
+      "conflictHint": "登入後在設定中連結 GitHub 帳號。",
+      "noEmail": "您的 GitHub 帳號沒有已驗證的電子郵件。",
+      "mergeSuccess": "GitHub 帳號已成功連結。"
+    },
+    "magic_link": {
+      "request": {
+        "tab": "郵件登入",
+        "description": "無需密碼，通過電子郵件鏈接即可登入",
+        "emailPlaceholder": "電子郵件",
+        "submit": "發送登入鏈接",
+        "sent": "請查看您的電子郵件，請在24小時內點擊鏈接。",
+        "cooldown": "您可以在5分鐘後再次請求。"
+      },
+      "verify": {
+        "verifying": "正在驗證魔法鏈接...",
+        "setupTitle": "請輸入您的顯示名稱",
+        "setupPlaceholder": "顯示名稱（3～50字）",
+        "setupSubmit": "完成註冊",
+        "success": "登入成功！即將跳轉...",
+        "expired": "鏈接已過期，請重新申請。",
+        "used": "此鏈接已被使用。",
+        "ipWarning": "檢測到來自不同網路的訪問，如果是您本人請繼續。",
+        "requestNew": "申請新鏈接"
+      }
+    },
     "signup": {
       "tab": "註冊",
       "emailPlaceholder": "電子郵件",
@@ -1732,6 +1771,71 @@
       "error": "驗證失敗",
       "noToken": "找不到驗證憑證，請重新點擊信件中的連結。",
       "goHome": "返回首頁"
+    },
+    "password_reset": {
+      "request": {
+        "title": "忘記密碼",
+        "subtitle": "輸入您的電子郵件，我們將寄送重設連結。",
+        "email_label": "電子郵件",
+        "submit": "發送重設連結",
+        "sent_title": "請查看您的信箱",
+        "sent_body": "重設連結已發送，請在1小時內完成操作。",
+        "too_soon": "請在{{seconds}}秒後再試。",
+        "back_to_login": "返回登入",
+        "error": "發生錯誤，請重試。"
+      },
+      "token": {
+        "title": "設定新密碼",
+        "new_password_label": "新密碼",
+        "confirm_label": "確認新密碼",
+        "submit": "變更密碼",
+        "mismatch": "密碼不一致。",
+        "expired": "重設連結已過期，請重新申請。",
+        "already_used": "此連結已使用，請重新申請。",
+        "invalid": "無效的重設連結。",
+        "request_again": "重新申請重設連結"
+      },
+      "success": {
+        "title": "密碼變更完成",
+        "body": "密碼已成功變更，即將跳轉至登入頁面。"
+      }
+    }
+  },
+  "admin": {
+    "analytics": {
+      "pageTitle": "分析儀表板",
+      "period": {
+        "7d": "最近7天",
+        "30d": "最近30天",
+        "90d": "最近90天"
+      },
+      "refresh": "重新整理",
+      "cachedAt": "快取: {{time}} 基準",
+      "loading": "載入中...",
+      "error": "無法載入資料",
+      "retry": "重試",
+      "cohortRetention": {
+        "title": "同期群留存率",
+        "d7": "D7 留存率",
+        "d30": "D30 留存率",
+        "belowThreshold": "僅顯示低於閾值的記錄"
+      },
+      "newsletter": {
+        "title": "電子報開信率",
+        "openRate": "開信率",
+        "clickRate": "點擊率",
+        "issued": "發送期數"
+      },
+      "feedCtr": {
+        "title": "演算法別 Feed CTR",
+        "delta": "v2 vs v1 差異"
+      },
+      "aiFeatures": {
+        "title": "AI 功能使用率",
+        "caption": "AI 說明文字",
+        "docent": "AI 導覽",
+        "collection": "AI 精選集"
+      }
     }
   }
 }

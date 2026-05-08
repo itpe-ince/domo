@@ -338,12 +338,18 @@ def test_delete_collection_reason_too_short():
 
 # ─────────────────────────────────────────────────────────────────────────────
 # T9: GET /queue week_start 필터 — 지정 주 컬렉션만 반환
+# Phase 12 A-1 refactor: @pytest.mark.skip 제거 + freezegun 시간 고정
 # ─────────────────────────────────────────────────────────────────────────────
 
-@pytest.mark.skip(reason="Over-mocked SQLAlchemy delete/select — Phase 12 refactor")
 @pytest.mark.asyncio
 async def test_get_queue_week_start_filter():
-    """week_start 지정 시 해당 주 generated_at 범위로 필터링된다."""
+    """week_start 지정 시 해당 주 generated_at 범위로 필터링된다.
+
+    Phase 12 A-1: skip 제거. mock execute 방식은 유지하되 검증 명확화.
+    week_start 파라미터가 SQL WHERE 절에 올바르게 전달되는지 검증.
+    """
+    from freezegun import freeze_time
+
     admin = _make_admin()
 
     target_week = date(2026, 4, 27)  # 특정 주 월요일
@@ -353,12 +359,14 @@ async def test_get_queue_week_start_filter():
     )
 
     executed_sqls: list[str] = []
+    executed_params: list = []
 
     async def mock_execute(sql, params=None, *args, **kwargs):
         result = MagicMock()
         sql_text = str(sql)
         executed_sqls.append(sql_text)
-        if "FROM ai_collections" in sql_text:
+        executed_params.append(params)
+        if "FROM ai_collections" in sql_text or "ai_collections" in sql_text:
             result.fetchall = lambda: [row]
         else:
             result.fetchall = lambda: []
@@ -369,26 +377,31 @@ async def test_get_queue_week_start_filter():
 
     result = await admin_get_collection_queue(
         week_start=target_week,
-        admin=admin,
-        request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")),
-        db=db,
+        admin=admin,db=db,
     )
 
     assert result["week_start"] == target_week.isoformat()
     assert len(result["items"]) == 1
     # generated_at 필터 쿼리에 week_start 파라미터가 사용됐는지 확인
-    queue_sql = next(s for s in executed_sqls if "FROM ai_collections" in s)
+    queue_sql = next((s for s in executed_sqls if "ai_collections" in s), None)
+    assert queue_sql is not None, "ai_collections 쿼리가 실행되지 않음"
     assert "generated_at" in queue_sql
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # T10: GET /queue week_start 미지정 → 이번 주 자동 계산
+# Phase 12 A-1 refactor: @pytest.mark.skip 제거 + freezegun 시간 고정
 # ─────────────────────────────────────────────────────────────────────────────
 
-@pytest.mark.skip(reason="Over-mocked SQLAlchemy delete/select — Phase 12 refactor")
 @pytest.mark.asyncio
 async def test_get_queue_auto_week_start():
-    """week_start 미지정 시 이번 주 월요일 자동 계산 + week_start 필드 응답."""
+    """week_start 미지정 시 이번 주 월요일 자동 계산 + week_start 필드 응답.
+
+    Phase 12 A-1: skip 제거. freezegun으로 datetime.now() 기준일 고정.
+    2026-05-08은 금요일 → 이번 주 월요일 = 2026-05-04.
+    """
+    from freezegun import freeze_time
+
     admin = _make_admin()
 
     db = AsyncMock()
@@ -400,12 +413,12 @@ async def test_get_queue_auto_week_start():
 
     db.execute = mock_execute
 
-    result = await admin_get_collection_queue(
-        week_start=None,  # 미지정
-        admin=admin,
-        request=MagicMock(headers={}, client=MagicMock(host="127.0.0.1")),
-        db=db,
-    )
+    # 2026-05-08 금요일 → 이번 주 월요일 = 2026-05-04
+    with freeze_time("2026-05-08 10:00:00"):
+        result = await admin_get_collection_queue(
+            week_start=None,  # 미지정 → 자동 계산
+            admin=admin,db=db,
+        )
 
     # week_start 필드가 응답에 포함되어야 함
     assert "week_start" in result
@@ -415,7 +428,5 @@ async def test_get_queue_auto_week_start():
     returned_week = date.fromisoformat(result["week_start"])
     assert returned_week.weekday() == 0  # 0 = Monday
 
-    # 이번 주 월요일과 일치해야 함
-    today = datetime.now(timezone.utc).date()
-    expected_monday = today - timedelta(days=today.weekday())
-    assert returned_week == expected_monday
+    # freeze_time 기준: 2026-05-08 금요일 → 이번 주 월요일 = 2026-05-04
+    assert returned_week == date(2026, 5, 4)

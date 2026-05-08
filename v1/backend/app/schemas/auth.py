@@ -62,5 +62,43 @@ class UserPublic(BaseModel):
         from_attributes = True
 
 
+# ─── C-1: 비밀번호 재설정 스키마 ───────────────────────────────────────────
+
+class PasswordResetRequestBody(BaseModel):
+    """비밀번호 재설정 요청 (이메일 발송)."""
+    email: EmailStr
+
+
+class PasswordResetBody(BaseModel):
+    """비밀번호 재설정 토큰 검증 + 새 비밀번호 설정."""
+    token: str = Field(min_length=10, max_length=64)
+    new_password: str = Field(min_length=8, max_length=200)
+
+
 class StandardResponse(BaseModel):
     data: dict | list | None = None
+
+
+# ─── C-2: GitHub OAuth + 매직링크 스키마 ───────────────────────────────────────
+
+class GitHubLoginRequest(BaseModel):
+    """GitHub OAuth 로그인 요청."""
+
+    code: str
+    redirect_uri: str
+
+
+class MagicLinkRequest(BaseModel):
+    """매직링크 요청 (이메일 입력만으로 발송)."""
+
+    email: EmailStr
+
+
+class MagicLinkVerifyRequest(BaseModel):
+    """매직링크 토큰 검증 요청.
+
+    display_name: 신규 사용자만 필수. 기존 사용자는 null 허용.
+    """
+
+    token: str = Field(min_length=10, max_length=64)
+    display_name: str | None = Field(default=None, min_length=3, max_length=50)
