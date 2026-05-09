@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import AsyncSessionLocal
 from app.models.webhook_event import WebhookEvent
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 
 log = logging.getLogger(__name__)
 
@@ -40,9 +41,12 @@ async def webhook_cleanup_cron_loop(interval_seconds: int = 86400) -> None:
     """Background task — runs once per day."""
     log.info("webhook_cleanup_cron_loop started (interval=%ss)", interval_seconds)
     while True:
+        await _push_cron_status("webhook_cleanup", "running")
         try:
             async with AsyncSessionLocal() as db:
                 await cleanup_old_webhook_events(db)
+            await _push_cron_status("webhook_cleanup", "success")
         except Exception as e:  # noqa: BLE001
             log.exception("webhook cleanup cron failed: %s", e)
+            await _push_cron_status("webhook_cleanup", "failed", error=str(e)[:500])
         await asyncio.sleep(interval_seconds)

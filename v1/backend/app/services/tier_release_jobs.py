@@ -19,6 +19,7 @@ from app.core.metrics import cron_rows_processed_total, record_cron_run, tier_re
 from app.db.session import AsyncSessionLocal
 from app.models.post import Post
 from app.services.analytics import capture_event
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 from app.services.otel_setup import get_tracer
 
 log = logging.getLogger(__name__)
@@ -49,6 +50,7 @@ async def tier_release_cron_loop(interval_seconds: int = 60) -> None:
     """OQ-5=A: 60s cron loop — schedule_jobs pattern."""
     log.info("tier_release_cron_loop started (interval=%ss)", interval_seconds)
     while True:
+        await _push_cron_status("tier_release", "running")
         try:
             with tracer.start_as_current_span("cron.tier_release") as span:
                 with record_cron_run("tier_release"):
@@ -65,6 +67,8 @@ async def tier_release_cron_loop(interval_seconds: int = 60) -> None:
                             "cron_run_completed_server",
                             {"worker": "tier_release", "rows_processed": count},
                         )
-        except Exception:
+            await _push_cron_status("tier_release", "success")
+        except Exception as _e:
             log.exception("tier_release cron sweep failed")
+            await _push_cron_status("tier_release", "failed", error=str(_e)[:500])
         await asyncio.sleep(interval_seconds)

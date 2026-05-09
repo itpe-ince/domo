@@ -67,7 +67,7 @@ def test_init_otel_mock_mode_no_sdk_loaded():
 # ─── Test 2: init_otel with OTEL_ENABLED=True ────────────────────────────────
 
 
-@pytest.mark.skip(reason="Requires opentelemetry SDK installed — production environment only. Mock mode test (test_init_otel_mock_mode_no_sdk_loaded) covers default path.")
+@pytest.mark.skip(reason="Phase 14 carry-over: SDK 실설치 환경에서 sys.modules patch 무효 — importlib.reload 패턴 재설계 필요")
 def test_init_otel_enabled_initializes_sdk():
     """When OTEL_ENABLED=True with endpoint, TracerProvider + instrumentors are set up."""
     import importlib
@@ -152,7 +152,7 @@ def test_init_otel_enabled_initializes_sdk():
 # ─── Test 3: shutdown_otel graceful ───────────────────────────────────────────
 
 
-@pytest.mark.skip(reason="Requires opentelemetry SDK installed — production environment only.")
+@pytest.mark.skip(reason="Phase 14 carry-over: SDK 실설치 환경에서 sys.modules patch 무효 — importlib.reload 패턴 재설계 필요")
 def test_shutdown_otel_calls_provider_shutdown_when_enabled():
     """shutdown_otel calls provider.shutdown() when OTEL_ENABLED=True."""
     import importlib

@@ -27,6 +27,7 @@ from app.core.metrics import (
 from app.db.session import AsyncSessionLocal
 from app.models.notification import Notification
 from app.models.sponsorship import Subscription
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 from app.services.analytics import capture_event
 from app.services.otel_setup import get_tracer
 from app.services.push_notifier import push_notifier
@@ -139,6 +140,7 @@ async def subscription_expiry_cron_loop(interval_seconds: int = 3600) -> None:
         _NOTIFY_WINDOW_DAYS,
     )
     while True:
+        await _push_cron_status("subscription_expiry", "running")
         try:
             with tracer.start_as_current_span("cron.subscription_expiry") as span:
                 with record_cron_run("subscription_expiry"):
@@ -150,6 +152,8 @@ async def subscription_expiry_cron_loop(interval_seconds: int = 3600) -> None:
                         cron_rows_processed_total.labels(worker="subscription_expiry").inc(count)
                     else:
                         subscription_expiry_notif_total.labels(result="skipped").inc(1)
+            await _push_cron_status("subscription_expiry", "success")
         except Exception as e:
             log.exception("subscription_expiry cron sweep failed: %s", e)
+            await _push_cron_status("subscription_expiry", "failed", error=str(e)[:500])
         await asyncio.sleep(interval_seconds)

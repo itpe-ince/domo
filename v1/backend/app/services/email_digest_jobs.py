@@ -27,6 +27,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.metrics import cron_rows_processed_total, record_cron_run
 from app.db.session import AsyncSessionLocal
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 from app.services.email_ses import ses_client
 from app.services.otel_setup import get_tracer
 
@@ -301,6 +302,7 @@ async def email_digest_cron_loop(interval_seconds: int = 3600) -> None:
     """1-hour cron loop — R-5 격리: 10th worker, separate AsyncSessionLocal."""
     log.info("email_digest_cron_loop started (interval=%ss)", interval_seconds)
     while True:
+        await _push_cron_status("email_digest", "running")
         try:
             with tracer.start_as_current_span("cron.email_digest") as span:
                 with record_cron_run("email_digest"):
@@ -309,6 +311,8 @@ async def email_digest_cron_loop(interval_seconds: int = 3600) -> None:
                     if total:
                         log.info("email_digest: sent %d digest email(s)", total)
                         cron_rows_processed_total.labels(worker="email_digest").inc(total)
-        except Exception:
+            await _push_cron_status("email_digest", "success")
+        except Exception as _e:
             log.exception("email_digest cron sweep failed")
+            await _push_cron_status("email_digest", "failed", error=str(_e)[:500])
         await asyncio.sleep(interval_seconds)

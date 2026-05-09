@@ -27,6 +27,8 @@ import os
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from app.services.cron_monitor import record_cron_run as _push_cron_status
+
 log = logging.getLogger(__name__)
 
 _TRAINING_DAYS = int(os.getenv("ML_TRAINING_DAYS", "90"))
@@ -301,21 +303,26 @@ async def ml_training_cron_loop(
     log.info("ml_training_cron_loop: 시작 (interval=%ds)", _interval)
     while True:
         await asyncio.sleep(_interval)
+        await _push_cron_status("ml_training", "running")
         async with AsyncSessionLocal() as db:
             try:
                 log.info("ml_training_cron_loop: 학습 시작")
                 interactions = await collect_interactions(db)
                 if not interactions:
                     log.warning("ml_training_cron_loop: 데이터 없음 — 스킵")
+                    await _push_cron_status("ml_training", "success")
                     continue
 
                 model_result = train_mf_model(interactions)
                 if model_result is None:
                     log.warning("ml_training_cron_loop: 학습 실패 — 스킵")
+                    await _push_cron_status("ml_training", "success")
                     continue
 
                 model_id = await save_model_artifacts(db, model_result, interactions)
                 log.info("ml_training_cron_loop: 완료 (model_id=%s)", model_id)
+                await _push_cron_status("ml_training", "success")
 
             except Exception as exc:  # noqa: BLE001
                 log.warning("ml_training_cron_loop: 오류 — %s", exc)
+                await _push_cron_status("ml_training", "failed", error=str(exc)[:500])

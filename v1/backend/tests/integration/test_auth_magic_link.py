@@ -1,4 +1,4 @@
-"""Integration tests — 매직링크 인증 API (Phase 12 C-2).
+"""Integration tests — 매직링크 인증 API (Phase 12 C-2 / Phase 13 A-1).
 
 테스트 항목:
   1.  POST /auth/magic-link/request 정상 -> 200 + DB 토큰 생성
@@ -13,7 +13,7 @@
   10. POST /auth/magic-link/verify IP 동일 -> 200 + ip_warning: false
 
 전략: endpoint 함수 직접 호출 + AsyncMock DB + MagicMock 토큰/사용자.
-실제 DB/이메일 서버 불필요.
+실제 DB/이메일 서버 불필요. (Phase 13 A-1: skip 제거 + mock 정확화)
 """
 from __future__ import annotations
 
@@ -139,10 +139,17 @@ async def test_magic_link_request_success(mock_audit, mock_send_email):
     mock_send_email.assert_called_once()
 
 
-@pytest.mark.skip(reason="env mock + token mock 정확화 필요 — Phase 13 carry-over")
 @pytest.mark.asyncio
-async def test_magic_link_request_cooldown():
-    """5분 내 재요청 -> 429 MAGIC_LINK_COOLDOWN."""
+@patch("app.api.auth.send_magic_link_email", new_callable=AsyncMock)
+@patch("app.api.auth.record_audit", new_callable=AsyncMock)
+async def test_magic_link_request_cooldown(mock_audit, mock_send_email):
+    """5분 내 재요청 -> 429 MAGIC_LINK_COOLDOWN.
+
+    Phase 13 A-1: skip 제거. _make_request_db(recent_cooldown=True)로
+    cooldown 토큰 존재 상황을 재현.
+    """
+    mock_send_email.return_value = None
+
     db = _make_request_db(recent_cooldown=True)
     body = MagicLinkRequest(email="user@example.com")
     req = _make_request()
@@ -151,7 +158,9 @@ async def test_magic_link_request_cooldown():
         await request_magic_link(body=body, request=req, db=db, _rl=None)
 
     assert exc_info.value.code == "MAGIC_LINK_COOLDOWN"
-    assert exc_info.value.http_status == 429
+    assert exc_info.value.status_code == 429
+    # cooldown 상태에서 이메일 발송 없어야 함
+    mock_send_email.assert_not_called()
 
 
 # ── Verify tests ──────────────────────────────────────────────────────────────
@@ -178,10 +187,18 @@ async def test_magic_link_verify_new_user_needs_display_name():
 @patch("app.api.auth.record_audit", new_callable=AsyncMock)
 @patch("app.api.auth.capture_event")
 @patch("app.api.auth.issue_initial_tokens", new_callable=AsyncMock)
-@pytest.mark.skip(reason="env mock + token mock 정확화 필요 — Phase 13 carry-over")
-async def test_magic_link_verify_new_user_complete(mock_issue, mock_capture, mock_audit):
-    """신규 이메일 + display_name -> 200 + JWT + email_verified=True."""
+@patch("app.api.auth.UserPublic")
+async def test_magic_link_verify_new_user_complete(mock_user_public, mock_issue, mock_capture, mock_audit):
+    """신규 이메일 + display_name -> 200 + JWT + email_verified=True.
+
+    Phase 13 A-2: UserPublic.model_validate 패치로 Pydantic 검증 우회.
+    신규 User 인스턴스는 language/is_minor 등 DB 기본값이 없어 검증 실패 가능.
+    """
     mock_issue.return_value = _FAKE_TOKEN_PAIR
+    mock_user_public.model_validate.return_value.model_dump.return_value = {
+        "id": "brand-new-user-123",
+        "email": "brand_new@example.com",
+    }
 
     magic = _make_magic_token(email="brand_new@example.com")
     db = _make_verify_db(magic_token=magic, existing_user=None)
@@ -227,10 +244,12 @@ async def test_magic_link_verify_existing_user(mock_issue, mock_capture, mock_au
     assert audit_kwargs["action"] == "auth.magic_link_login"
 
 
-@pytest.mark.skip(reason="env mock + token mock 정확화 필요 — Phase 13 carry-over")
 @pytest.mark.asyncio
 async def test_magic_link_verify_expired():
-    """24h 경과 토큰 -> 400 MAGIC_LINK_EXPIRED."""
+    """24h 경과 토큰 -> 400 MAGIC_LINK_EXPIRED.
+
+    Phase 13 A-1: skip 제거. hours_offset=-1 로 이미 만료된 토큰 생성.
+    """
     expired_magic = _make_magic_token(hours_offset=-1)  # 1시간 전에 만료
     db = _make_verify_db(magic_token=expired_magic)
 
@@ -241,13 +260,15 @@ async def test_magic_link_verify_expired():
         await verify_magic_link(body=body, request=req, db=db)
 
     assert exc_info.value.code == "MAGIC_LINK_EXPIRED"
-    assert exc_info.value.http_status == 400
+    assert exc_info.value.status_code == 400
 
 
-@pytest.mark.skip(reason="env mock + token mock 정확화 필요 — Phase 13 carry-over")
 @pytest.mark.asyncio
 async def test_magic_link_verify_already_used():
-    """is_used=True 토큰 -> 400 MAGIC_LINK_USED."""
+    """is_used=True 토큰 -> 400 MAGIC_LINK_USED.
+
+    Phase 13 A-1: skip 제거. is_used=True 토큰으로 이미 사용된 상태 재현.
+    """
     used_magic = _make_magic_token(is_used=True)
     db = _make_verify_db(magic_token=used_magic)
 
@@ -258,13 +279,15 @@ async def test_magic_link_verify_already_used():
         await verify_magic_link(body=body, request=req, db=db)
 
     assert exc_info.value.code == "MAGIC_LINK_USED"
-    assert exc_info.value.http_status == 400
+    assert exc_info.value.status_code == 400
 
 
-@pytest.mark.skip(reason="env mock + token mock 정확화 필요 — Phase 13 carry-over")
 @pytest.mark.asyncio
 async def test_magic_link_verify_invalid_token():
-    """존재하지 않는 토큰 -> 400 MAGIC_LINK_INVALID."""
+    """존재하지 않는 토큰 -> 400 MAGIC_LINK_INVALID.
+
+    Phase 13 A-1: skip 제거. magic_token=None 으로 DB 조회 결과 없음 재현.
+    """
     db = _make_verify_db(magic_token=None)
 
     body = MagicLinkVerifyRequest(token="nonexistent_token_zzz", display_name=None)
@@ -274,7 +297,7 @@ async def test_magic_link_verify_invalid_token():
         await verify_magic_link(body=body, request=req, db=db)
 
     assert exc_info.value.code == "MAGIC_LINK_INVALID"
-    assert exc_info.value.http_status == 400
+    assert exc_info.value.status_code == 400
 
 
 @pytest.mark.asyncio

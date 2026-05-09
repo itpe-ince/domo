@@ -75,6 +75,7 @@ from app.api import admin_featured_artist as admin_featured_artist_router
 from app.api import ai_collections as ai_collections_router
 from app.api import admin_ai_collections as admin_ai_collections_router
 from app.api import admin_payouts as admin_payouts_router  # Phase 12 B-3
+from app.api import admin_system as admin_system_router  # Phase 13 C-1
 from app.core.config import get_settings
 from app.core.errors import register_error_handlers
 from app.db.session import AsyncSessionLocal, engine
@@ -103,6 +104,8 @@ from app.services.artwork_caption_jobs import artwork_caption_cron_loop
 from app.services.featured_artist_jobs import feature_artist_cron_loop
 from app.services.ai_curation_jobs import ai_curation_cron_loop
 from app.services.audit_log_cleanup_jobs import audit_log_cleanup_cron_loop
+from app.services.audit_partition_cron import audit_partition_cron_loop
+from app.services.slack_alert_cron import slack_alert_cron_loop  # Phase 13 C-1
 from app.services.analytics import init_posthog, shutdown_posthog
 from app.services.cache import cache
 from app.services.otel_setup import init_otel, shutdown_otel
@@ -210,6 +213,28 @@ async def lifespan(app: FastAPI):
         _logging4.getLogger(__name__).info(
             "Audit log cleanup worker disabled (AUDIT_LOG_CLEANUP_WORKER_ENABLED=false)"
         )
+    # 25th cron worker — audit_partition (B-2, 일 1회 86400s, 다음 달 파티션 생성)
+    if _os.getenv("AUDIT_PARTITION_WORKER_ENABLED", "true").lower() != "false":
+        audit_partition_task = asyncio.create_task(
+            audit_partition_cron_loop(interval_seconds=86400)
+        )
+    else:
+        audit_partition_task = None
+        import logging as _logging5
+        _logging5.getLogger(__name__).info(
+            "Audit partition worker disabled (AUDIT_PARTITION_WORKER_ENABLED=false)"
+        )
+    # 26th cron worker — slack_alert (C-1, 1분 interval, overdue Slack alert)
+    if _os.getenv("SLACK_ALERT_WORKER_ENABLED", "true").lower() != "false":
+        slack_alert_task = asyncio.create_task(
+            slack_alert_cron_loop(interval_seconds=60)
+        )
+    else:
+        slack_alert_task = None
+        import logging as _logging6
+        _logging6.getLogger(__name__).info(
+            "Slack alert worker disabled (SLACK_ALERT_WORKER_ENABLED=false)"
+        )
 
     try:
         yield
@@ -231,6 +256,8 @@ async def lifespan(app: FastAPI):
             + ((featured_artist_task,) if featured_artist_task else ())
             + ((ai_curation_task,) if ai_curation_task else ())
             + ((audit_log_cleanup_task,) if audit_log_cleanup_task else ())
+            + ((audit_partition_task,) if audit_partition_task else ())
+            + ((slack_alert_task,) if slack_alert_task else ())
         )
         for task in all_tasks:
             task.cancel()
@@ -370,6 +397,8 @@ api_v1.include_router(ai_collections_router.router)
 api_v1.include_router(admin_ai_collections_router.router)
 # Phase 12 B-3: KYC 검수 큐 + 정산 이력 + Stripe Connect 상태 admin API
 api_v1.include_router(admin_payouts_router.router)
+# Phase 13 C-1: cron 모니터 admin API
+api_v1.include_router(admin_system_router.router)
 api_v1.include_router(health_router)
 
 

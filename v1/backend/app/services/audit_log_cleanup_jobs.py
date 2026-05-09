@@ -17,6 +17,7 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import AsyncSessionLocal
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 
 log = logging.getLogger(__name__)
 
@@ -53,9 +54,12 @@ async def audit_log_cleanup_cron_loop(interval_seconds: int = 86400) -> None:
         _RETENTION_DAYS,
     )
     while True:
+        await _push_cron_status("audit_log_cleanup", "running")
         try:
             async with AsyncSessionLocal() as db:
                 await cleanup_old_audit_logs(db)
+            await _push_cron_status("audit_log_cleanup", "success")
         except Exception as e:  # noqa: BLE001
             log.exception("audit_log cleanup cron failed: %s", e)
+            await _push_cron_status("audit_log_cleanup", "failed", error=str(e)[:500])
         await asyncio.sleep(interval_seconds)

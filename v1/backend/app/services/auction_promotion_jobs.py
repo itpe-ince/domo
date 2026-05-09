@@ -28,6 +28,7 @@ from app.models.auction import Auction
 from app.models.notification import Notification
 from app.models.user import User
 from app.services.analytics import capture_event
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 from app.services.i18n import t as _t
 from app.services.otel_setup import get_tracer
 from app.services.push_notifier import push_notifier
@@ -282,6 +283,7 @@ async def auction_promotion_cron_loop(interval_seconds: int = 60) -> None:
     """60s cron loop — tier_release_jobs.py pattern mirror (R-5 격리)."""
     log.info("auction_promotion_cron_loop started (interval=%ss)", interval_seconds)
     while True:
+        await _push_cron_status("auction_promotion", "running")
         try:
             with tracer.start_as_current_span("cron.auction_promotion") as span:
                 with record_cron_run("auction_promotion"):
@@ -291,6 +293,8 @@ async def auction_promotion_cron_loop(interval_seconds: int = 60) -> None:
                     if total_rows:
                         cron_rows_processed_total.labels(worker="auction_promotion").inc(total_rows)
                     span.set_attribute("rows_processed", total_rows)
-        except Exception:
+            await _push_cron_status("auction_promotion", "success")
+        except Exception as _e:
             log.exception("auction_promotion cron sweep failed")
+            await _push_cron_status("auction_promotion", "failed", error=str(_e)[:500])
         await asyncio.sleep(interval_seconds)

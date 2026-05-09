@@ -1,4 +1,4 @@
-"""Integration tests — GitHub OAuth API (Phase 12 C-2).
+"""Integration tests — GitHub OAuth API (Phase 12 C-2 / Phase 13 A-1).
 
 테스트 항목:
   1.  POST /auth/sns/github 신규 사용자 -> 200 + JWT + github_id 저장
@@ -6,10 +6,11 @@
   3.  GitHub email == 비밀번호 가입 -> 409 GITHUB_EMAIL_CONFLICT
   4.  GitHub email == admin 계정 -> 403 ADMIN_SNS_FORBIDDEN
   5.  GitHub 인증 이메일 없음 -> 400 GITHUB_EMAIL_REQUIRED
-  6.  유효하지 않은 code -> 400 GITHUB_TOKEN_EXCHANGE_FAILED (503 GitHub OAuth 미설정)
+  6.  유효하지 않은 code -> 400 GITHUB_TOKEN_EXCHANGE_FAILED
+  7.  기존 github_id 보유 사용자 -> 로그인 성공 + 신규 row 없음
 
 전략: endpoint 함수 직접 호출 + AsyncMock DB + MagicMock User.
-실제 DB/GitHub API 불필요.
+실제 DB/GitHub API 불필요. (Phase 13 A-1: skip 제거 + mock 정확화)
 """
 from __future__ import annotations
 
@@ -107,23 +108,37 @@ _FAKE_TOKEN_PAIR = ("access.token.here", "refresh.token.here")
 @patch("app.api.auth.record_audit", new_callable=AsyncMock)
 @patch("app.api.auth.capture_event")
 @patch("app.api.auth.issue_initial_tokens", new_callable=AsyncMock)
-@patch("app.services.github_oauth.fetch_github_primary_email", new_callable=AsyncMock)
-@patch("app.services.github_oauth.fetch_github_user", new_callable=AsyncMock)
-@patch("app.services.github_oauth.exchange_github_code", new_callable=AsyncMock)
-@pytest.mark.skip(reason="env mock + token mock 정확화 필요 — Phase 13 carry-over")
+@patch("app.api.auth.fetch_github_primary_email", new_callable=AsyncMock)
+@patch("app.api.auth.fetch_github_user", new_callable=AsyncMock)
+@patch("app.api.auth.exchange_github_code", new_callable=AsyncMock)
+@patch("app.api.auth.UserPublic")
 async def test_github_new_user_signup(
+    mock_user_public,
     mock_exchange,
     mock_fetch_user,
     mock_fetch_email,
     mock_issue,
     mock_capture,
     mock_audit,
+    monkeypatch,
 ):
-    """신규 GitHub 사용자 -> JWT + github_id 저장."""
+    """신규 GitHub 사용자 -> JWT + github_id 저장.
+
+    Phase 13 A-2: UserPublic.model_validate 패치.
+    신규 User 인스턴스는 server_default(created_at) 등이 None이어서 Pydantic 검증 실패 가능.
+    """
+    # Phase 13 A-1: env monkeypatch 추가
+    monkeypatch.setenv("GITHUB_CLIENT_ID", "test_client_id")
+    monkeypatch.setenv("GITHUB_CLIENT_SECRET", "test_client_secret")
+
     mock_exchange.return_value = "gh_access_token"
     mock_fetch_user.return_value = _GITHUB_USER_PAYLOAD.copy()
     mock_fetch_email.return_value = _GITHUB_EMAIL
     mock_issue.return_value = _FAKE_TOKEN_PAIR
+    mock_user_public.model_validate.return_value.model_dump.return_value = {
+        "id": "new-github-user-123",
+        "email": _GITHUB_EMAIL,
+    }
 
     db = _make_db(user_by_github_id=None, user_by_email=None)
 
@@ -145,10 +160,9 @@ async def test_github_new_user_signup(
 @patch("app.api.auth.record_audit", new_callable=AsyncMock)
 @patch("app.api.auth.capture_event")
 @patch("app.api.auth.issue_initial_tokens", new_callable=AsyncMock)
-@patch("app.services.github_oauth.fetch_github_primary_email", new_callable=AsyncMock)
-@patch("app.services.github_oauth.fetch_github_user", new_callable=AsyncMock)
-@patch("app.services.github_oauth.exchange_github_code", new_callable=AsyncMock)
-@pytest.mark.skip(reason="env mock + token mock 정확화 필요 — Phase 13 carry-over")
+@patch("app.api.auth.fetch_github_primary_email", new_callable=AsyncMock)
+@patch("app.api.auth.fetch_github_user", new_callable=AsyncMock)
+@patch("app.api.auth.exchange_github_code", new_callable=AsyncMock)
 async def test_github_existing_google_account_merge(
     mock_exchange,
     mock_fetch_user,
@@ -156,8 +170,12 @@ async def test_github_existing_google_account_merge(
     mock_issue,
     mock_capture,
     mock_audit,
+    monkeypatch,
 ):
     """GitHub email == Google email -> 계정 통합 (github_id 추가) + 200."""
+    monkeypatch.setenv("GITHUB_CLIENT_ID", "test_client_id")
+    monkeypatch.setenv("GITHUB_CLIENT_SECRET", "test_client_secret")
+
     mock_exchange.return_value = "gh_access_token"
     mock_fetch_user.return_value = _GITHUB_USER_PAYLOAD.copy()
     mock_fetch_email.return_value = _GITHUB_EMAIL
@@ -187,16 +205,19 @@ async def test_github_existing_google_account_merge(
 
 
 @pytest.mark.asyncio
-@patch("app.services.github_oauth.fetch_github_primary_email", new_callable=AsyncMock)
-@patch("app.services.github_oauth.fetch_github_user", new_callable=AsyncMock)
-@patch("app.services.github_oauth.exchange_github_code", new_callable=AsyncMock)
-@pytest.mark.skip(reason="env mock + token mock 정확화 필요 — Phase 13 carry-over")
+@patch("app.api.auth.fetch_github_primary_email", new_callable=AsyncMock)
+@patch("app.api.auth.fetch_github_user", new_callable=AsyncMock)
+@patch("app.api.auth.exchange_github_code", new_callable=AsyncMock)
 async def test_github_email_conflict_password_account(
     mock_exchange,
     mock_fetch_user,
     mock_fetch_email,
+    monkeypatch,
 ):
     """GitHub email == 비밀번호 가입 이메일 -> 409 GITHUB_EMAIL_CONFLICT."""
+    monkeypatch.setenv("GITHUB_CLIENT_ID", "test_client_id")
+    monkeypatch.setenv("GITHUB_CLIENT_SECRET", "test_client_secret")
+
     mock_exchange.return_value = "gh_access_token"
     mock_fetch_user.return_value = _GITHUB_USER_PAYLOAD.copy()
     mock_fetch_email.return_value = _GITHUB_EMAIL
@@ -216,20 +237,23 @@ async def test_github_email_conflict_password_account(
         await github_login(body=body, request=req, db=db, _rl=None)
 
     assert exc_info.value.code == "GITHUB_EMAIL_CONFLICT"
-    assert exc_info.value.http_status == 409
+    assert exc_info.value.status_code == 409
 
 
 @pytest.mark.asyncio
-@patch("app.services.github_oauth.fetch_github_primary_email", new_callable=AsyncMock)
-@patch("app.services.github_oauth.fetch_github_user", new_callable=AsyncMock)
-@patch("app.services.github_oauth.exchange_github_code", new_callable=AsyncMock)
-@pytest.mark.skip(reason="env mock + token mock 정확화 필요 — Phase 13 carry-over")
+@patch("app.api.auth.fetch_github_primary_email", new_callable=AsyncMock)
+@patch("app.api.auth.fetch_github_user", new_callable=AsyncMock)
+@patch("app.api.auth.exchange_github_code", new_callable=AsyncMock)
 async def test_github_admin_account_forbidden(
     mock_exchange,
     mock_fetch_user,
     mock_fetch_email,
+    monkeypatch,
 ):
     """GitHub email == admin 계정 -> 403 ADMIN_SNS_FORBIDDEN."""
+    monkeypatch.setenv("GITHUB_CLIENT_ID", "test_client_id")
+    monkeypatch.setenv("GITHUB_CLIENT_SECRET", "test_client_secret")
+
     mock_exchange.return_value = "gh_access_token"
     mock_fetch_user.return_value = _GITHUB_USER_PAYLOAD.copy()
     mock_fetch_email.return_value = "admin@domo.art"
@@ -249,20 +273,23 @@ async def test_github_admin_account_forbidden(
         await github_login(body=body, request=req, db=db, _rl=None)
 
     assert exc_info.value.code == "ADMIN_SNS_FORBIDDEN"
-    assert exc_info.value.http_status == 403
+    assert exc_info.value.status_code == 403
 
 
 @pytest.mark.asyncio
-@patch("app.services.github_oauth.fetch_github_primary_email", new_callable=AsyncMock)
-@patch("app.services.github_oauth.fetch_github_user", new_callable=AsyncMock)
-@patch("app.services.github_oauth.exchange_github_code", new_callable=AsyncMock)
-@pytest.mark.skip(reason="env mock + token mock 정확화 필요 — Phase 13 carry-over")
+@patch("app.api.auth.fetch_github_primary_email", new_callable=AsyncMock)
+@patch("app.api.auth.fetch_github_user", new_callable=AsyncMock)
+@patch("app.api.auth.exchange_github_code", new_callable=AsyncMock)
 async def test_github_no_verified_email(
     mock_exchange,
     mock_fetch_user,
     mock_fetch_email,
+    monkeypatch,
 ):
     """GitHub 인증 이메일 없음 -> 400 GITHUB_EMAIL_REQUIRED."""
+    monkeypatch.setenv("GITHUB_CLIENT_ID", "test_client_id")
+    monkeypatch.setenv("GITHUB_CLIENT_SECRET", "test_client_secret")
+
     mock_exchange.return_value = "gh_access_token"
     mock_fetch_user.return_value = _GITHUB_USER_PAYLOAD.copy()
     mock_fetch_email.return_value = None  # 인증된 이메일 없음
@@ -277,17 +304,17 @@ async def test_github_no_verified_email(
         await github_login(body=body, request=req, db=db, _rl=None)
 
     assert exc_info.value.code == "GITHUB_EMAIL_REQUIRED"
-    assert exc_info.value.http_status == 400
+    assert exc_info.value.status_code == 400
 
 
 @pytest.mark.asyncio
-@patch("app.services.github_oauth.exchange_github_code", new_callable=AsyncMock)
-@pytest.mark.skip(reason="env mock + token mock 정확화 필요 — Phase 13 carry-over")
-async def test_github_invalid_code(mock_exchange):
+@patch("app.api.auth.exchange_github_code", new_callable=AsyncMock)
+async def test_github_invalid_code(mock_exchange, monkeypatch):
     """유효하지 않은 code -> ApiError (GITHUB_TOKEN_EXCHANGE_FAILED 또는 GITHUB_OAUTH_DISABLED)."""
-    from app.core.errors import ApiError as _ApiError
+    monkeypatch.setenv("GITHUB_CLIENT_ID", "test_client_id")
+    monkeypatch.setenv("GITHUB_CLIENT_SECRET", "test_client_secret")
 
-    mock_exchange.side_effect = _ApiError(
+    mock_exchange.side_effect = ApiError(
         "GITHUB_TOKEN_EXCHANGE_FAILED",
         "code 교환 실패",
         http_status=400,
@@ -297,20 +324,19 @@ async def test_github_invalid_code(mock_exchange):
     body = GitHubLoginRequest(code="bad_code", redirect_uri="https://domo.art/callback")
     req = _make_request()
 
-    with pytest.raises(_ApiError) as exc_info:
+    with pytest.raises(ApiError) as exc_info:
         await github_login(body=body, request=req, db=db, _rl=None)
 
-    assert exc_info.value.http_status in (400, 503)
+    assert exc_info.value.status_code in (400, 503)
 
 
 @pytest.mark.asyncio
 @patch("app.api.auth.record_audit", new_callable=AsyncMock)
 @patch("app.api.auth.capture_event")
 @patch("app.api.auth.issue_initial_tokens", new_callable=AsyncMock)
-@patch("app.services.github_oauth.fetch_github_primary_email", new_callable=AsyncMock)
-@patch("app.services.github_oauth.fetch_github_user", new_callable=AsyncMock)
-@patch("app.services.github_oauth.exchange_github_code", new_callable=AsyncMock)
-@pytest.mark.skip(reason="env mock + token mock 정확화 필요 — Phase 13 carry-over")
+@patch("app.api.auth.fetch_github_primary_email", new_callable=AsyncMock)
+@patch("app.api.auth.fetch_github_user", new_callable=AsyncMock)
+@patch("app.api.auth.exchange_github_code", new_callable=AsyncMock)
 async def test_github_existing_user_by_github_id(
     mock_exchange,
     mock_fetch_user,
@@ -318,8 +344,12 @@ async def test_github_existing_user_by_github_id(
     mock_issue,
     mock_capture,
     mock_audit,
+    monkeypatch,
 ):
-    """기존 github_id 보유 사용자 -> 로그인 성공."""
+    """기존 github_id 보유 사용자 -> 로그인 성공 + 신규 row 없음."""
+    monkeypatch.setenv("GITHUB_CLIENT_ID", "test_client_id")
+    monkeypatch.setenv("GITHUB_CLIENT_SECRET", "test_client_secret")
+
     mock_exchange.return_value = "gh_access_token"
     mock_fetch_user.return_value = _GITHUB_USER_PAYLOAD.copy()
     mock_fetch_email.return_value = _GITHUB_EMAIL
@@ -331,13 +361,14 @@ async def test_github_existing_user_by_github_id(
         github_id=_GITHUB_USER_PAYLOAD["id"],
     )
 
-    # github_id로 첫 번째 조회에서 바로 반환
+    # github_id로 첫 번째 조회에서 바로 반환 → 이메일 조회 불필요
     db = AsyncMock()
     result_mock = MagicMock()
     result_mock.scalar_one_or_none = MagicMock(return_value=existing_gh_user)
     db.execute = AsyncMock(return_value=result_mock)
     db.commit = AsyncMock()
     db.refresh = AsyncMock()
+    db.add = MagicMock()
 
     body = GitHubLoginRequest(code="auth_code", redirect_uri="https://domo.art/callback")
     req = _make_request()
@@ -346,6 +377,9 @@ async def test_github_existing_user_by_github_id(
 
     data = result["data"]
     assert "tokens" in data
+    # 기존 사용자 → 신규 가입 이벤트 없음
     mock_capture.assert_not_called()
+    # add 호출 없음 → 신규 row 생성 없음
+    db.add.assert_not_called()
     _, audit_kwargs = mock_audit.call_args
     assert audit_kwargs["action"] == "auth.github_login"

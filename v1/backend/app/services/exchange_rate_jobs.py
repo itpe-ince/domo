@@ -23,6 +23,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.db.session import AsyncSessionLocal
 from app.models.exchange_rate import ExchangeRate
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 
 log = logging.getLogger(__name__)
 
@@ -160,14 +161,17 @@ async def exchange_rate_cron_loop(interval_seconds: int = 3600) -> None:
     """
     log.info("exchange_rate_cron_loop started (interval=%ds)", interval_seconds)
     while True:
+        await _push_cron_status("exchange_rate", "running")
         try:
             status = await run_exchange_rate_fetch()
             log.debug("exchange_rate_cron: status=%s", status)
+            await _push_cron_status("exchange_rate", "success")
         except asyncio.CancelledError:
             log.info("exchange_rate_cron_loop cancelled — shutting down")
             return
         except Exception as exc:  # noqa: BLE001
             log.error("exchange_rate_cron_loop unhandled: %s", exc, exc_info=True)
+            await _push_cron_status("exchange_rate", "failed", error=str(exc)[:500])
         try:
             await asyncio.sleep(interval_seconds)
         except asyncio.CancelledError:

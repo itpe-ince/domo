@@ -22,6 +22,7 @@ from typing import Any
 from sqlalchemy import text
 
 from app.db.session import AsyncSessionLocal
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 
 log = logging.getLogger(__name__)
 
@@ -346,6 +347,7 @@ async def feature_artist_cron_loop() -> None:
         if wait_seconds > 0:
             await asyncio.sleep(wait_seconds)
 
+        await _push_cron_status("featured_artist", "running")
         async with AsyncSessionLocal() as db:
             try:
                 week_start = _current_week_start()
@@ -361,5 +363,7 @@ async def feature_artist_cron_loop() -> None:
                 log.info(
                     "featured_artist_cron_loop: 완료 (후보 %d명)", len(candidates)
                 )
+                await _push_cron_status("featured_artist", "success")
             except Exception as exc:  # noqa: BLE001
                 log.warning("featured_artist_cron_loop: 오류 (무시): %s", exc)
+                await _push_cron_status("featured_artist", "failed", error=str(exc)[:500])

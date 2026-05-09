@@ -39,6 +39,7 @@ from app.db.session import AsyncSessionLocal
 from app.models.newsletter_issue import NewsletterIssue
 from app.models.newsletter_preferences import NewsletterPreferences
 from app.models.user import User
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 from app.services.email_ses import ses_client
 from app.services.otel_setup import get_tracer
 from app.services.push_notifier import push_notifier
@@ -202,12 +203,15 @@ async def newsletter_cron_loop(interval_seconds: int = 3600) -> None:
     """1-hour cron loop — R-5 격리: separate AsyncSessionLocal + separate metric label."""
     log.info("newsletter_cron_loop started (interval=%ss)", interval_seconds)
     while True:
+        await _push_cron_status("newsletter", "running")
         try:
             with tracer.start_as_current_span("cron.newsletter") as span:
                 with record_cron_run("newsletter"):
                     n = await process_sending_issues()
                     log.info("newsletter sweep complete: %d issues processed", n)
                 span.set_attribute("issues_processed", n)
-        except Exception:
+            await _push_cron_status("newsletter", "success")
+        except Exception as _e:
             log.exception("newsletter cron sweep failed")
+            await _push_cron_status("newsletter", "failed", error=str(_e)[:500])
         await asyncio.sleep(interval_seconds)

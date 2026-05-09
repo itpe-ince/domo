@@ -29,6 +29,7 @@ from app.db.session import AsyncSessionLocal
 from app.models.notification import Notification
 from app.models.sponsorship import Subscription
 from app.services.analytics import capture_event
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 from app.services.otel_setup import get_tracer
 
 log = logging.getLogger(__name__)
@@ -179,6 +180,7 @@ async def auto_renewal_cron_loop(interval_seconds: int = 3600) -> None:
         _PAST_DUE_ESCALATION_HOURS,
     )
     while True:
+        await _push_cron_status("auto_renewal", "running")
         try:
             with tracer.start_as_current_span("cron.auto_renewal") as span:
                 with record_cron_run("auto_renewal"):
@@ -198,6 +200,8 @@ async def auto_renewal_cron_loop(interval_seconds: int = 3600) -> None:
                         cron_rows_processed_total.labels(worker="auto_renewal").inc(
                             total_processed
                         )
+            await _push_cron_status("auto_renewal", "success")
         except Exception as e:
             log.exception("auto_renewal cron sweep failed: %s", e)
+            await _push_cron_status("auto_renewal", "failed", error=str(e)[:500])
         await asyncio.sleep(interval_seconds)

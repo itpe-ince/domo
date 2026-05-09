@@ -1,6 +1,6 @@
 ---
-name: domo Phase 4~12 로드맵 상태
-description: Phase 4~11 종결 현황 + Phase 12 로드맵 계획 (2026-05-08 기준)
+name: domo Phase 4~13 로드맵 상태
+description: Phase 4~12 종결 현황 + Phase 13 로드맵 계획 (2026-05-09 기준)
 type: project
 ---
 
@@ -149,3 +149,45 @@ editor-revamp-roadmap 11/11 sub-PDCA 모두 archived. Match Rate 평균 ~98%.
 **How to apply:**
 - Phase 11 archived: `/Users/sangincha/dev/domo/v1/docs/archive/2026-05/domo-phase11-roadmap/`
 - Phase 12 plan: `/Users/sangincha/dev/domo/v1/docs/01-plan/features/domo-phase12-roadmap.plan.md`
+
+---
+
+**Phase 12 종결 (2026-05-09 기준)**
+
+총 8/8 sub-PDCAs 완료. K-6 거래 < 100건으로 정당 이월. 통합 가중 Match Rate 92.1%.
+
+- A-1: freezegun+testcontainers+factory_boy 도입 80% (12 GitHub/매직링크 skip → Phase 13 carry-over)
+- A-2: PATCH /admin/experiments 엔드포인트 + ExperimentStatusModals 96%
+- B-1: /admin/audit-logs UI + cursor pagination + 5 필터 96%
+- B-2: /admin/analytics 통합 대시보드 + Redis 5분 캐시 95%
+- B-3: /admin/payouts KYC + Stripe Connect mock 97%
+- C-1: /auth/password-reset (alembic 0086) 92%
+- C-2: GitHub OAuth + 매직링크 88% (12 tests skip)
+- C-3: 단축키 9개(6 nav + 3 actions) + KeyboardShortcutsHelp 97%
+- 누적: 테스트 694→750(+56), alembic 0086(single head 패치 후), cron 24개, API 17개 신규
+- AdminShell 4개 메뉴 그룹: Curation + ML Operations + Security(신규) + Finance(신규)
+- Phase 13 carry-over 7개 식별
+
+---
+
+**Phase 13 계획 (2026-05-09 초안, 옵션 D 균형 진행)**
+
+총 5~6 sub-PDCAs, ~8주 예정. Wave A/B/C 3단계.
+
+- Wave A (~2주): A-1 12 GitHub/매직링크 tests → respx+moto mock + A-2 otel/redis/SES → LocalStack
+- Wave B (조건부, ~3주): Day 0 SQL sold_count 기준
+  - ≥ 100건: B-1k K-6 AI 가격 추천 (alembic 0088)
+  - < 100건 (가능성 높음): B-1p audit_logs 파티셔닝 (alembic 0088, 월별 DECLARATIVE)
+- Wave C (~3주): C-1 /admin/system cron 모니터 + C-2 ML 회귀 K-6 v2 (거래 ≥ 500건 시)
+
+**alembic 사전 배정**: 0088(B-1k 또는 B-1p), 0089(cron_status 선택), 0090(C-2 진입 시)
+
+**Phase 13 OQ-1~OQ-13**: 권장 default 표 포함.
+
+**Phase 13 plan**: `/Users/sangincha/dev/domo/v1/docs/01-plan/features/domo-phase13-roadmap.plan.md`
+
+**Why:** Phase 12 carry-over 7개 청산. 테스트 skip 24 → <6 목표. Wave B 조건부로 K-6 진입 또는 audit_logs 장기 보존 준비.
+
+**How to apply:**
+- Phase 12 archived: `/Users/sangincha/dev/domo/v1/docs/archive/2026-05/domo-phase12-roadmap/`
+- Phase 13 plan: `/Users/sangincha/dev/domo/v1/docs/01-plan/features/domo-phase13-roadmap.plan.md`

@@ -107,3 +107,31 @@ class UserFactory(factory.Factory):
     # 타임스탬프 (DB server_default 대신 Python 기본값)
     created_at = factory.LazyFunction(lambda: datetime.now(timezone.utc))
     updated_at = factory.LazyFunction(lambda: datetime.now(timezone.utc))
+
+
+class GoogleUserFactory(UserFactory):
+    """Google OAuth 사용자 Factory.
+
+    sns_provider="google", email_verified=True 고정.
+    password 인증 없이 SNS로만 가입한 사용자를 표현.
+    """
+
+    sns_provider = "google"
+    sns_id = factory.Sequence(lambda n: f"google_sub_{n:06d}")
+    password_hash = None           # SNS 전용 — 비밀번호 없음
+    email_verified = True          # Google은 verified 보장
+    github_id = None               # 초기에는 GitHub 연동 없음
+
+
+class GitHubUserFactory(UserFactory):
+    """GitHub OAuth 사용자 Factory.
+
+    sns_provider="github", email_verified=True 고정.
+    github_id는 Sequence로 자동 증가 (테스트 간 충돌 방지).
+    """
+
+    sns_provider = "github"
+    sns_id = None                  # GitHub은 sns_id 대신 github_id 사용
+    password_hash = None           # SNS 전용 — 비밀번호 없음
+    email_verified = True          # GitHub verified email 보장
+    github_id = factory.Sequence(lambda n: 10000 + n)

@@ -25,6 +25,7 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import AsyncSessionLocal
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 
 log = logging.getLogger(__name__)
 
@@ -269,9 +270,12 @@ async def rss_fetch_cron_loop(interval_seconds: int = 3600) -> None:
     """
     log.info("[RSS] rss_fetch_cron_loop started (interval=%ss)", interval_seconds)
     while True:
+        await _push_cron_status("rss_fetch", "running")
         try:
             async with AsyncSessionLocal() as db:
                 await fetch_all_feeds(db)
+            await _push_cron_status("rss_fetch", "success")
         except Exception as exc:  # noqa: BLE001
             log.exception("[RSS] rss fetch cron failed: %s", exc)
+            await _push_cron_status("rss_fetch", "failed", error=str(exc)[:500])
         await asyncio.sleep(interval_seconds)

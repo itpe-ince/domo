@@ -26,6 +26,7 @@ from sqlalchemy import text
 
 from app.db.session import AsyncSessionLocal
 from app.services import embedding_model
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 
 log = logging.getLogger(__name__)
 
@@ -311,6 +312,7 @@ async def embedding_cron_loop(
         await asyncio.sleep(quick_interval_seconds)
         batch_counter += quick_interval_seconds
 
+        await _push_cron_status("embedding", "running")
         try:
             async with AsyncSessionLocal() as db:
                 # 신규 감지: 임베딩 없는 최신 user/post 소수만 즉시 처리
@@ -320,5 +322,7 @@ async def embedding_cron_loop(
                 if batch_counter >= batch_interval_seconds:
                     await batch_sweep_once(db)
                     batch_counter = 0
+            await _push_cron_status("embedding", "success")
         except Exception as exc:  # noqa: BLE001
             log.warning("embedding_cron_loop error: %s", exc)
+            await _push_cron_status("embedding", "failed", error=str(exc)[:500])

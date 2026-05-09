@@ -27,6 +27,7 @@ from app.core.metrics import (
 from app.db.session import AsyncSessionLocal
 from app.models.user import User
 from app.services.artist_index_scoring import ScoreComponents, calc_artist_score, calc_genre_score, calc_region_score
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 from app.services.otel_setup import get_tracer
 
 log = logging.getLogger(__name__)
@@ -405,6 +406,7 @@ async def artist_index_cron_loop(interval_seconds: int = 3600) -> None:
     )
     while True:
         n = 0
+        await _push_cron_status("artist_index", "running")
         try:
             with tracer.start_as_current_span("cron.artist_index") as span:
                 with record_cron_run("artist_index"):
@@ -419,6 +421,8 @@ async def artist_index_cron_loop(interval_seconds: int = 3600) -> None:
             # Invalidate artist index cache — fresh rankings available (G''-2)
             deleted = await cache.delete_pattern("artists:index:*", reason="cron_artist_index")
             log.info("artist_index cache invalidated: %d keys deleted", deleted)
-        except Exception:
+            await _push_cron_status("artist_index", "success")
+        except Exception as _e:
             log.exception("artist_index cron sweep failed")
+            await _push_cron_status("artist_index", "failed", error=str(_e)[:500])
         await asyncio.sleep(interval_seconds)

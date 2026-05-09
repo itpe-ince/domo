@@ -34,6 +34,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import AsyncSessionLocal
 from app.models.cohort_alert import CohortAlert
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 
 log = logging.getLogger(__name__)
 
@@ -328,10 +329,13 @@ async def cohort_alert_cron_loop(interval_seconds: int = 86400) -> None:
     """
     log.info("cohort_alert_cron_loop started (interval=%ss)", interval_seconds)
     while True:
+        await _push_cron_status("cohort_alert", "running")
         try:
             async with AsyncSessionLocal() as db:
                 summary = await check_and_alert_once(db)
             log.info("cohort_alert sweep done: %s", summary)
+            await _push_cron_status("cohort_alert", "success")
         except Exception as exc:  # noqa: BLE001
             log.exception("cohort_alert cron sweep failed: %s", exc)
+            await _push_cron_status("cohort_alert", "failed", error=str(exc)[:500])
         await asyncio.sleep(interval_seconds)

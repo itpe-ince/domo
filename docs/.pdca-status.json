@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-08T15:07:32.003830Z",
+  "lastUpdated": "2026-05-08T16:57:05.140Z",
   "activeFeatures": [
     "core",
     "db",
@@ -163,9 +163,13 @@
     "magic_link_auth.py",
     "password_reset.py",
     "password-reset",
-    "github"
+    "github",
+    "audit_partition_cron.py",
+    "cron_monitor.py",
+    "slack_alert_cron.py",
+    "system"
   ],
-  "primaryFeature": null,
+  "primaryFeature": "domo-phase13-roadmap",
   "phase8ArchivedAt": "2026-05-05T22:00:00.000Z",
   "phase8ArchivedTo": "v1/docs/archive/2026-05/domo-phase8-roadmap/",
   "phase7ArchivedAt": "2026-05-05T11:00:00.000Z",
@@ -507,9 +511,9 @@
       "archivedAt": "2026-04-25T04:30:00.000Z",
       "archivedTo": "v1/docs/archive/2026-04/backend/",
       "phaseNumber": 3,
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/models/__init__.py",
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/main.py",
       "timestamps": {
-        "lastUpdated": "2026-05-08T14:50:55.576Z"
+        "lastUpdated": "2026-05-08T16:36:02.667Z"
       }
     },
     "core": {
@@ -547,9 +551,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:23.836Z",
-        "lastUpdated": "2026-05-08T14:50:36.917Z"
+        "lastUpdated": "2026-05-08T16:35:31.591Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/auth.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/admin_system.py"
     },
     "schemas": {
       "phase": "do",
@@ -612,9 +616,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:35:13.871Z",
-        "lastUpdated": "2026-05-08T15:02:49.204Z"
+        "lastUpdated": "2026-05-08T16:12:20.571Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0086_password_reset_tokens.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0088_audit_logs_partitioning.py"
     },
     "frontend": {
       "phase": "do",
@@ -716,7 +720,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:01:33.914Z",
-        "lastUpdated": "2026-05-05T11:22:35.423Z"
+        "lastUpdated": "2026-05-08T16:39:47.227Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/auction_jobs.py"
     },
@@ -846,7 +850,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T13:06:02.167Z",
-        "lastUpdated": "2026-04-25T01:05:36.608Z"
+        "lastUpdated": "2026-05-08T16:37:13.386Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/gdpr_jobs.py"
     },
@@ -1041,7 +1045,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T01:21:00.370Z",
-        "lastUpdated": "2026-05-05T11:22:23.517Z"
+        "lastUpdated": "2026-05-08T16:39:58.980Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/schedule_jobs.py"
     },
@@ -1158,7 +1162,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-14T09:26:25.213Z",
-        "lastUpdated": "2026-04-14T09:26:25.213Z"
+        "lastUpdated": "2026-05-08T16:37:25.810Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/badge_jobs.py"
     },
@@ -1223,7 +1227,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-18T12:49:00.952Z",
-        "lastUpdated": "2026-04-25T01:08:04.836Z"
+        "lastUpdated": "2026-05-08T16:38:11.566Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/settlement_jobs.py"
     },
@@ -1301,7 +1305,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-25T01:06:44.701Z",
-        "lastUpdated": "2026-04-25T01:06:44.701Z"
+        "lastUpdated": "2026-05-08T16:37:36.800Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/webhook_cleanup_jobs.py"
     },
@@ -1410,7 +1414,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-30T00:24:21.783Z",
-        "lastUpdated": "2026-04-30T00:24:21.783Z"
+        "lastUpdated": "2026-05-08T16:37:49.606Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/draft_cleanup_jobs.py"
     },
@@ -1462,9 +1466,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T11:12:43.615Z",
-        "lastUpdated": "2026-05-08T13:33:30.763Z"
+        "lastUpdated": "2026-05-08T15:54:28.557Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/factories.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/conftest.py"
     },
     "unit": {
       "phase": "do",
@@ -1475,9 +1479,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T11:12:44.673Z",
-        "lastUpdated": "2026-05-08T14:45:00.598Z"
+        "lastUpdated": "2026-05-08T16:57:05.140Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/unit/test_password_reset.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/unit/test_post_caption_override.py"
     },
     "integration": {
       "phase": "do",
@@ -1488,9 +1492,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T11:40:14.639Z",
-        "lastUpdated": "2026-05-08T14:49:52.068Z"
+        "lastUpdated": "2026-05-08T16:01:40.701Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/integration/test_auth_password_reset.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/integration/test_auth_github_oauth.py"
     },
     "image-editor": {
       "phase": "do",
@@ -1527,7 +1531,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T23:30:42.375Z",
-        "lastUpdated": "2026-05-05T11:22:43.447Z"
+        "lastUpdated": "2026-05-08T16:40:20.374Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/tier_release_jobs.py"
     },
@@ -1540,7 +1544,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-04T02:39:58.824Z",
-        "lastUpdated": "2026-05-05T13:04:52.240Z"
+        "lastUpdated": "2026-05-08T16:38:43.095Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/auction_promotion_jobs.py"
     },
@@ -1670,7 +1674,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-04T15:07:01.201Z",
-        "lastUpdated": "2026-05-05T11:17:19.865Z"
+        "lastUpdated": "2026-05-08T16:40:55.025Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/artist_index_jobs.py"
     },
@@ -1722,7 +1726,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-04T18:19:17.463Z",
-        "lastUpdated": "2026-05-05T13:11:51.702Z"
+        "lastUpdated": "2026-05-08T16:41:28.586Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/subscription_expiry_jobs.py"
     },
@@ -1800,7 +1804,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-05T07:52:45.845Z",
-        "lastUpdated": "2026-05-05T11:23:38.159Z"
+        "lastUpdated": "2026-05-08T16:40:38.134Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/post_engagement_jobs.py"
     },
@@ -1969,7 +1973,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-05T10:33:26.265Z",
-        "lastUpdated": "2026-05-05T13:11:40.960Z"
+        "lastUpdated": "2026-05-08T16:39:04.525Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/newsletter_jobs.py"
     },
@@ -2060,7 +2064,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-05T12:42:21.997Z",
-        "lastUpdated": "2026-05-05T12:50:02.915Z"
+        "lastUpdated": "2026-05-08T16:39:24.115Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/exchange_rate_jobs.py"
     },
@@ -2086,7 +2090,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-05T13:01:47.519Z",
-        "lastUpdated": "2026-05-05T13:01:47.519Z"
+        "lastUpdated": "2026-05-08T16:41:47.996Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/auto_renewal_jobs.py"
     },
@@ -2112,7 +2116,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-05T13:02:46.918Z",
-        "lastUpdated": "2026-05-05T13:12:49.870Z"
+        "lastUpdated": "2026-05-08T16:41:13.230Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/email_digest_jobs.py"
     },
@@ -2189,7 +2193,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-05T20:45:32.268Z",
-        "lastUpdated": "2026-05-05T20:45:32.268Z"
+        "lastUpdated": "2026-05-08T16:42:09.793Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/embedding_jobs.py"
     },
@@ -2202,7 +2206,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-05T22:27:43.315Z",
-        "lastUpdated": "2026-05-05T22:27:43.315Z"
+        "lastUpdated": "2026-05-08T16:42:32.885Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/rss_fetch_jobs.py"
     },
@@ -2267,7 +2271,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-05T22:44:22.905Z",
-        "lastUpdated": "2026-05-05T22:44:22.905Z"
+        "lastUpdated": "2026-05-08T16:42:53.697Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/cohort_alert_jobs.py"
     },
@@ -2280,7 +2284,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-06T03:20:14.707Z",
-        "lastUpdated": "2026-05-06T03:20:14.707Z"
+        "lastUpdated": "2026-05-08T16:43:18.362Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/ml_feed_training.py"
     },
@@ -2306,7 +2310,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-06T03:21:45.934Z",
-        "lastUpdated": "2026-05-06T03:21:45.934Z"
+        "lastUpdated": "2026-05-08T16:43:39.710Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/artwork_caption_jobs.py"
     },
@@ -2392,7 +2396,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-06T11:48:43.829Z",
-        "lastUpdated": "2026-05-06T11:48:43.829Z"
+        "lastUpdated": "2026-05-08T16:44:00.758Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/featured_artist_jobs.py"
     },
@@ -2405,7 +2409,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-06T11:50:13.152Z",
-        "lastUpdated": "2026-05-06T11:58:48.324Z"
+        "lastUpdated": "2026-05-08T16:44:25.817Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/ai_curation_jobs.py"
     },
@@ -2556,7 +2560,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-08T11:46:24.660Z",
-        "lastUpdated": "2026-05-08T11:46:24.660Z"
+        "lastUpdated": "2026-05-08T16:44:42.116Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/audit_log_cleanup_jobs.py"
     },
@@ -2697,6 +2701,77 @@
         "lastUpdated": "2026-05-08T14:50:56.073Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/auth/callback/github/page.tsx"
+    },
+    "domo-phase13-roadmap": {
+      "phase": "archived",
+      "startedAt": "2026-05-08T15:40:30.547394Z",
+      "updatedAt": "2026-05-09T02:15:00.000000Z",
+      "archivedAt": "2026-05-09T02:15:00.000000Z",
+      "archivedTo": "v1/docs/archive/2026-05/domo-phase13-roadmap/",
+      "planPath": "v1/docs/01-plan/features/domo-phase13-roadmap.plan.md",
+      "analysisPath": "v1/docs/03-analysis/domo-phase13-roadmap.analysis.md",
+      "matchRate": 97.6,
+      "iterationCount": 0,
+      "subPdcas": [
+        "A-1",
+        "A-2",
+        "B-1",
+        "C-1",
+        "C-2"
+      ],
+      "notes": "옥션 D 균형 - Wave A 2 (tests refactor) + Wave B 1 (K-6 또는 audit_logs 파티셔닝) + Wave C 2 (cron 모니터 + ML 회귀) = 5~6 sub-PDCAs. 13 OQ 권장 default."
+    },
+    "audit_partition_cron.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-08T16:12:47.167Z",
+        "lastUpdated": "2026-05-08T16:44:54.325Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/audit_partition_cron.py"
+    },
+    "cron_monitor.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-08T16:34:55.588Z",
+        "lastUpdated": "2026-05-08T16:45:04.330Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/cron_monitor.py"
+    },
+    "slack_alert_cron.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-08T16:35:17.428Z",
+        "lastUpdated": "2026-05-08T16:35:17.428Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/slack_alert_cron.py"
+    },
+    "system": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-08T16:45:48.594Z",
+        "lastUpdated": "2026-05-08T16:47:10.815Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/admin/system/page.tsx"
     }
   },
   "pipeline": {
@@ -2707,7 +2782,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-05-08T15:02:49.204Z"
+    "lastActivity": "2026-05-08T16:57:05.140Z"
   },
   "history": [
     {
@@ -20863,6 +20938,636 @@
     {
       "timestamp": "2026-05-08T15:02:49.204Z",
       "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:46:06.095Z",
+      "feature": "tests",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:46:19.829Z",
+      "feature": "tests",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:46:37.351Z",
+      "feature": "tests",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:46:55.401Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:46:59.342Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:47:09.529Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:47:37.169Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:47:57.547Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:48:10.889Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:48:19.219Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:48:26.120Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:48:32.540Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:49:23.503Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:49:48.051Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:49:52.698Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:50:24.456Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:50:31.478Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:50:36.621Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:50:40.380Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:50:44.119Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:53:59.157Z",
+      "feature": "tests",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:54:28.557Z",
+      "feature": "tests",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T15:56:17.009Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:01:39.151Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:01:40.701Z",
+      "feature": "integration",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:02:34.859Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:02:35.931Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:02:37.001Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:12:20.571Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:12:47.167Z",
+      "feature": "audit_partition_cron.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:13:25.683Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:13:32.705Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:13:41.983Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:13:46.148Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:14:07.887Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:14:18.695Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:14:41.300Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:14:49.085Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:34:55.588Z",
+      "feature": "cron_monitor.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:35:17.428Z",
+      "feature": "slack_alert_cron.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:35:31.591Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:35:38.441Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:35:43.646Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:35:53.753Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:35:57.620Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:36:02.667Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:37:06.401Z",
+      "feature": "gdpr_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:37:13.386Z",
+      "feature": "gdpr_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:37:18.660Z",
+      "feature": "badge_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:37:25.810Z",
+      "feature": "badge_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:37:30.281Z",
+      "feature": "webhook_cleanup_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:37:36.800Z",
+      "feature": "webhook_cleanup_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:37:43.602Z",
+      "feature": "draft_cleanup_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:37:49.606Z",
+      "feature": "draft_cleanup_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:38:01.306Z",
+      "feature": "settlement_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:38:11.566Z",
+      "feature": "settlement_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:38:35.955Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:38:43.095Z",
+      "feature": "auction_promotion_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:38:58.341Z",
+      "feature": "newsletter_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:39:04.525Z",
+      "feature": "newsletter_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:39:16.461Z",
+      "feature": "exchange_rate_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:39:24.115Z",
+      "feature": "exchange_rate_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:39:37.924Z",
+      "feature": "auction_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:39:47.227Z",
+      "feature": "auction_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:39:52.294Z",
+      "feature": "schedule_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:39:58.980Z",
+      "feature": "schedule_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:40:11.894Z",
+      "feature": "tier_release_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:40:20.374Z",
+      "feature": "tier_release_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:40:30.438Z",
+      "feature": "post_engagement_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:40:38.134Z",
+      "feature": "post_engagement_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:40:46.027Z",
+      "feature": "artist_index_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:40:55.025Z",
+      "feature": "artist_index_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:41:06.279Z",
+      "feature": "email_digest_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:41:13.230Z",
+      "feature": "email_digest_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:41:21.109Z",
+      "feature": "subscription_expiry_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:41:28.586Z",
+      "feature": "subscription_expiry_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:41:38.859Z",
+      "feature": "auto_renewal_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:41:47.996Z",
+      "feature": "auto_renewal_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:42:00.896Z",
+      "feature": "embedding_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:42:09.793Z",
+      "feature": "embedding_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:42:26.078Z",
+      "feature": "rss_fetch_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:42:32.885Z",
+      "feature": "rss_fetch_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:42:44.559Z",
+      "feature": "cohort_alert_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:42:53.697Z",
+      "feature": "cohort_alert_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:43:07.711Z",
+      "feature": "ml_feed_training.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:43:18.362Z",
+      "feature": "ml_feed_training.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:43:31.310Z",
+      "feature": "artwork_caption_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:43:39.710Z",
+      "feature": "artwork_caption_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:43:52.175Z",
+      "feature": "featured_artist_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:44:00.758Z",
+      "feature": "featured_artist_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:44:19.645Z",
+      "feature": "ai_curation_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:44:25.817Z",
+      "feature": "ai_curation_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:44:36.126Z",
+      "feature": "audit_log_cleanup_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:44:42.116Z",
+      "feature": "audit_log_cleanup_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:44:46.911Z",
+      "feature": "audit_partition_cron.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:44:54.325Z",
+      "feature": "audit_partition_cron.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:44:58.804Z",
+      "feature": "cron_monitor.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:45:04.330Z",
+      "feature": "cron_monitor.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:45:48.594Z",
+      "feature": "system",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:46:32.652Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:47:10.815Z",
+      "feature": "system",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:47:26.974Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:47:33.877Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:47:38.588Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-08T16:57:05.140Z",
+      "feature": "unit",
       "phase": "do",
       "action": "updated"
     }

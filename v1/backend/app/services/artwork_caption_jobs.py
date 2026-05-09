@@ -29,6 +29,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import AsyncSessionLocal
 from app.models.post import Post
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 from app.services.llm_gateway import LLMGatewayClient, VisionNotSupportedError
 from app.services.translation_cache import get_cached_translation, save_translation
 
@@ -390,6 +391,7 @@ async def artwork_caption_cron_loop(
     last_batch_at = datetime.min.replace(tzinfo=timezone.utc)
 
     while True:
+        await _push_cron_status("artwork_caption", "running")
         async with AsyncSessionLocal() as db:
             try:
                 await quick_sweep_once(db, batch_size=settings.caption_batch_size_quick)
@@ -399,9 +401,11 @@ async def artwork_caption_cron_loop(
                     await batch_sweep_once(db, batch_size=settings.caption_batch_size_batch)
                     last_batch_at = now
 
+                await _push_cron_status("artwork_caption", "success")
             except asyncio.CancelledError:
                 raise
             except Exception as exc:
                 log.error("[ArtworkCaptionCron] error: %s", exc, exc_info=True)
+                await _push_cron_status("artwork_caption", "failed", error=str(exc)[:500])
 
         await asyncio.sleep(quick_interval_seconds)

@@ -21,6 +21,7 @@ from app.core.metrics import cron_rows_processed_total, record_cron_run
 from app.db.session import AsyncSessionLocal
 from app.models.auction import Auction, Bid, Order
 from app.models.notification import Notification
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 from app.services.moderation import issue_warning
 from app.services.otel_setup import get_tracer
 from app.services.settings import get_setting
@@ -187,6 +188,7 @@ async def auction_cron_loop(interval_seconds: int = 300) -> None:
     """Background task — runs forever, sleeping `interval_seconds` between sweeps."""
     log.info("auction_cron_loop started (interval=%ss)", interval_seconds)
     while True:
+        await _push_cron_status("auction", "running")
         try:
             with tracer.start_as_current_span("cron.auction") as span:
                 with record_cron_run("auction"):
@@ -198,6 +200,8 @@ async def auction_cron_loop(interval_seconds: int = 300) -> None:
                     span.set_attribute("rows_processed", rows)
                     span.set_attribute("expired_orders", summary.get("expired", 0))
                     span.set_attribute("second_chance_offered", summary.get("second_chance_offered", 0))
+            await _push_cron_status("auction", "success")
         except Exception as e:  # noqa: BLE001 — never crash the loop
             log.exception("auction cron sweep failed: %s", e)
+            await _push_cron_status("auction", "failed", error=str(e)[:500])
         await asyncio.sleep(interval_seconds)

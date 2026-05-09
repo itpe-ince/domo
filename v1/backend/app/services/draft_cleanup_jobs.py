@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import AsyncSessionLocal
 from app.models.post import Post
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 
 log = logging.getLogger(__name__)
 
@@ -52,9 +53,12 @@ async def draft_cleanup_cron_loop(interval_seconds: int = 86400) -> None:
     """Background task — runs once per day."""
     log.info("draft_cleanup_cron_loop started (interval=%ss)", interval_seconds)
     while True:
+        await _push_cron_status("draft_cleanup", "running")
         try:
             async with AsyncSessionLocal() as db:
                 await cleanup_stale_drafts(db)
+            await _push_cron_status("draft_cleanup", "success")
         except Exception as e:  # noqa: BLE001
             log.exception("draft cleanup cron failed: %s", e)
+            await _push_cron_status("draft_cleanup", "failed", error=str(e)[:500])
         await asyncio.sleep(interval_seconds)

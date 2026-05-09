@@ -18,3 +18,4 @@
 - [Phase 9 L-B External Content Booster](project_phase9_lb_external_content.md) — L-B 완료: alembic 0067, rss_fetch 13번째 cron, og_scraper LRU, newsletter tracking 2 API, inject_tracking, 16 tests
 - [Phase 9 L-F Translation Memory + Cohort Alert](project_phase9_lf_translation_memory_cohort_alert.md) — L-F 완료: alembic 0071+0072, 번역 메모리 DB+Redis 2-tier, cohort_alert 14번째 cron, 17 tests
 - [Phase 9 L-C DM Expansion](project_phase9_lc_dm_expansion.md) — L-C 완료: alembic 0068+0069, Group DM 3테이블, ConnectionManager+RedisConnectionManager, WS /ws/dm, 9 endpoints, 23+13 tests
+- [Phase 13 C-1 Cron Monitor](project_phase13_c1_cron_monitor.md) — C-1 완료: Redis hash 26개 worker 상태, Slack overdue alert, admin API, frontend 모니터, 25개 cron 통합, 10 tests

@@ -40,6 +40,7 @@ from typing import Any
 from sqlalchemy import text
 
 from app.db.session import AsyncSessionLocal
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 from app.services.llm_gateway import LLMGatewayClient
 from app.services.translation_cache import get_cached_translation, save_translation
 
@@ -478,6 +479,7 @@ async def ai_curation_cron_loop() -> None:
         # week_start = 해당 주 월요일
         week_start = run_date - timedelta(days=run_date.weekday())
 
+        await _push_cron_status("ai_curation", "running")
         async with AsyncSessionLocal() as db:
             try:
                 created = await generate_collections_for_week(db, week_start)
@@ -485,7 +487,9 @@ async def ai_curation_cron_loop() -> None:
                     "ai_curation_cron: week=%s created %d collections: %s",
                     week_start, len(created), created,
                 )
+                await _push_cron_status("ai_curation", "success")
             except Exception as exc:
                 log.warning(
                     "ai_curation_cron: error for week=%s: %s", week_start, exc
                 )
+                await _push_cron_status("ai_curation", "failed", error=str(exc)[:500])
