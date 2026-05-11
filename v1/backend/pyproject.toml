@@ -53,6 +53,17 @@ dev = [
     "boto3>=1.34",
 ]
 
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+# setuptools 자동 검색은 'app/' 외에 'alembic/' 'tests/' 'scripts/'까지 top-level로
+# 잡으려 시도하여 "Multiple top-level packages discovered" 에러를 일으킴.
+# 패키지 디스트리뷰션 대상은 런타임 코드 'app/'만으로 명시.
+[tool.setuptools.packages.find]
+include = ["app*"]
+exclude = ["alembic*", "tests*", "scripts*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
