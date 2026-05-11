@@ -81,6 +81,13 @@ def upgrade() -> None:
     # ──────────────────────────────────────────────────────────────────────────
     # 4단계: 인덱스 생성 (부모 테이블 → 각 파티션 자동 상속)
     # ──────────────────────────────────────────────────────────────────────────
+    # 기존 audit_logs 단일 테이블 인덱스 이름과 동일한 이름을 새 파티션 부모에
+    # 재사용해야 하므로, 먼저 기존 인덱스를 제거한다. PostgreSQL 인덱스 이름은
+    # schema 단위로 유니크해서 old/new 테이블에 같은 이름을 동시에 둘 수 없다.
+    op.execute("DROP INDEX IF EXISTS ix_audit_logs_actor")
+    op.execute("DROP INDEX IF EXISTS ix_audit_logs_action")
+    op.execute("DROP INDEX IF EXISTS ix_audit_logs_target")
+    op.execute("DROP INDEX IF EXISTS ix_audit_logs_created")
 
     # 인덱스 1: actor_id + created_at DESC (actor별 최신 감사 조회)
     op.execute("""

@@ -1,5 +1,9 @@
+import logging
+
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.responses import JSONResponse
+
+log = logging.getLogger(__name__)
 
 
 class ApiError(HTTPException):
@@ -48,3 +52,16 @@ def register_error_handlers(app: FastAPI) -> None:
         elif exc.status_code == 422:
             code = "VALIDATION_ERROR"
         return _error_response(exc.status_code, code, str(exc.detail))
+
+    @app.exception_handler(Exception)
+    async def unhandled_exc_handler(request: Request, exc: Exception):
+        log.exception(
+            "Unhandled exception on %s %s",
+            request.method,
+            request.url.path,
+        )
+        return _error_response(
+            500,
+            "INTERNAL_ERROR",
+            "Internal server error. Please contact support if this persists.",
+        )

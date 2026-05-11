@@ -53,3 +53,9 @@ redis_data/
 coverage/
 .coverage
 htmlcov/
+
+# E2E artifacts
+e2e/.env.e2e
+e2e/playwright-report/
+e2e/test-results/
+e2e/playwright/.auth/

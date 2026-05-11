@@ -5,9 +5,7 @@ USE_TESTCONTAINERS=true 환경변수 설정 시에만 컨테이너 기동.
 미설정 환경(CI macOS 등)에서 graceful skip.
 
 Phase 13 A-1 추가:
-- github_oauth_mock: respx 기반 GitHub API HTTP mock fixture
 - magic_link_email_mock: 이메일 발송 함수 patch mock fixture
-- respx 미설치 시 graceful skip (RESPX_AVAILABLE guard)
 
 Phase 13 A-2 추가:
 - localstack_container: LocalStack SES/S3/Cognito-idp (session scope)
@@ -55,20 +53,6 @@ try:
     OTEL_AVAILABLE = True
 except ImportError:
     OTEL_AVAILABLE = False
-
-# ── respx graceful import (미설치 시 fixture 내에서 skip) ───────────────────
-try:
-    import respx as _respx_module
-    import httpx as _httpx
-    RESPX_AVAILABLE = True
-except ImportError:
-    RESPX_AVAILABLE = False
-
-
-def _skip_if_no_respx() -> None:
-    """respx 미설치 환경에서 테스트를 graceful skip."""
-    if not RESPX_AVAILABLE:
-        pytest.skip("respx 미설치 — GitHub OAuth mock 테스트 skip. pip install respx 후 재실행.")
 
 # USE_TESTCONTAINERS 환경변수로 옵트인 — 기본값 false (CI 미지원 환경 대응)
 USE_TESTCONTAINERS = os.getenv("USE_TESTCONTAINERS", "false").lower() == "true"
@@ -145,59 +129,6 @@ async def real_db_session(real_db_engine):
             yield session
             # 테스트 완료 후 항상 rollback — 격리 보장
             await session.rollback()
-
-
-# ── Phase 13 A-1: GitHub OAuth mock fixture ────────────────────────────────
-
-
-@pytest.fixture
-def github_oauth_mock():
-    """GitHub OAuth API 전체 HTTP mock (respx 기반).
-
-    mock 범위:
-    - POST https://github.com/login/oauth/access_token
-    - GET  https://api.github.com/user
-    - GET  https://api.github.com/user/emails
-
-    각 테스트에서 router를 직접 조작해 시나리오별 응답 override 가능.
-    respx 미설치 시 graceful skip.
-    """
-    _skip_if_no_respx()
-
-    with _respx_module.mock(assert_all_called=False) as router:
-        # 기본 성공 응답 — 각 테스트에서 시나리오별 override
-        router.post("https://github.com/login/oauth/access_token").mock(
-            return_value=_httpx.Response(
-                200,
-                json={"access_token": "github_token_test", "token_type": "bearer"},
-            )
-        )
-        router.get("https://api.github.com/user").mock(
-            return_value=_httpx.Response(
-                200,
-                json={
-                    "id": 12345,
-                    "login": "testuser",
-                    "name": "Test User",
-                    "email": "test@github.local",
-                    "avatar_url": "https://avatars.githubusercontent.com/u/12345",
-                },
-            )
-        )
-        router.get("https://api.github.com/user/emails").mock(
-            return_value=_httpx.Response(
-                200,
-                json=[
-                    {
-                        "email": "test@github.local",
-                        "primary": True,
-                        "verified": True,
-                        "visibility": "public",
-                    }
-                ],
-            )
-        )
-        yield router
 
 
 # ── Phase 13 A-1: 매직링크 이메일 발송 mock fixture ───────────────────────

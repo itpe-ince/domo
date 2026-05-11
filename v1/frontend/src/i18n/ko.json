@@ -45,7 +45,9 @@
     "tierBenefits": "후원 혜택 설정",
     "artistIndex": "신진작가 인덱스",
     "stories": "스토리 허브",
-    "accessibilitySettings": "접근성 설정"
+    "accessibilitySettings": "접근성 설정",
+    "displaySettings": "표시 설정",
+    "moreMenu": "더보기 메뉴"
   },
   "home": {
     "title": "Domo Lounge",
@@ -1559,12 +1561,6 @@
   },
   "accessibility": {
     "pageTitle": "접근성 설정",
-    "simpleMode": {
-      "label": "단순 모드",
-      "description": "텍스트 크기와 줄 간격을 늘리고 애니메이션을 줄여 읽기 편의성을 높입니다.",
-      "enabled": "단순 모드 켜짐",
-      "disabled": "단순 모드 꺼짐"
-    },
     "focusMode": {
       "label": "포커스 모드",
       "description": "키보드 내비게이션을 위해 인터랙티브 요소를 강조합니다."
@@ -1662,14 +1658,13 @@
   },
   "preferences": {
     "title": "환경 설정",
+    "pageTitle": "표시 설정",
+    "pageSubtitle": "표시 통화와 인터페이스 언어를 선택합니다.",
     "currency": {
       "label": "통화"
     },
     "locale": {
       "label": "언어"
-    },
-    "simpleMode": {
-      "label": "단순 모드"
     }
   },
   "collections": {
@@ -1711,14 +1706,6 @@
     }
   },
   "auth": {
-    "github": {
-      "button": "GitHub로 계속하기",
-      "connecting": "GitHub 연결 중...",
-      "conflict": "해당 이메일로 이미 비밀번호 가입된 계정이 있습니다.",
-      "conflictHint": "로그인 후 설정에서 GitHub 계정을 연동하세요.",
-      "noEmail": "GitHub 계정에 인증된 이메일이 없습니다.",
-      "mergeSuccess": "GitHub 계정이 연결되었습니다."
-    },
     "magic_link": {
       "request": {
         "tab": "이메일로 로그인",
@@ -1835,6 +1822,38 @@
         "caption": "AI 캡션",
         "docent": "AI 도슨트",
         "collection": "AI 컬렉션"
+      }
+    }
+  },
+  "settings": {
+    "hub": {
+      "title": "설정",
+      "subtitle": "프로필, 알림, 개인정보 등을 한 곳에서 관리합니다",
+      "category": {
+        "profile": {
+          "title": "프로필",
+          "description": "자기소개 및 다국어 아티스트 소개 편집"
+        },
+        "display": {
+          "title": "표시",
+          "description": "인터페이스 언어 및 통화 설정"
+        },
+        "accessibility": {
+          "title": "접근성",
+          "description": "고대비, 포커스 모드 등 접근성 옵션"
+        },
+        "notifications": {
+          "title": "알림",
+          "description": "푸시 · 이메일 알림 및 뉴스레터 구독"
+        },
+        "privacy": {
+          "title": "개인정보",
+          "description": "분석 데이터 수집 동의 및 쿠키 설정"
+        },
+        "account": {
+          "title": "계정",
+          "description": "계정 정보, 데이터 내보내기, 후원 유효기간"
+        }
       }
     }
   }

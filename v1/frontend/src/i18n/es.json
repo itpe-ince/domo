@@ -45,7 +45,9 @@
     "tierBenefits": "Configurar beneficios por nivel",
     "artistIndex": "Índice de artistas",
     "stories": "Hub de historias",
-    "accessibilitySettings": "Accesibilidad"
+    "accessibilitySettings": "Accesibilidad",
+    "displaySettings": "Pantalla",
+    "moreMenu": "Más opciones"
   },
   "home": {
     "title": "Domo Lounge",
@@ -1559,12 +1561,6 @@
   },
   "accessibility": {
     "pageTitle": "Configuración de accesibilidad",
-    "simpleMode": {
-      "label": "Modo simple",
-      "description": "Aumenta el tamaño del texto, el interlineado y reduce las animaciones para facilitar la lectura.",
-      "enabled": "Modo simple activado",
-      "disabled": "Modo simple desactivado"
-    },
     "focusMode": {
       "label": "Modo de enfoque",
       "description": "Resalta elementos interactivos para la navegación por teclado."
@@ -1662,14 +1658,13 @@
   },
   "preferences": {
     "title": "Preferencias",
+    "pageTitle": "Pantalla",
+    "pageSubtitle": "Elige la moneda de visualización y el idioma de la interfaz.",
     "currency": {
       "label": "Moneda"
     },
     "locale": {
       "label": "Idioma"
-    },
-    "simpleMode": {
-      "label": "Modo simple"
     }
   },
   "collections": {
@@ -1711,14 +1706,6 @@
     }
   },
   "auth": {
-    "github": {
-      "button": "Continuar con GitHub",
-      "connecting": "Conectando con GitHub...",
-      "conflict": "Ya existe una cuenta con este correo electrónico.",
-      "conflictHint": "Inicia sesión y vincula GitHub en Configuración.",
-      "noEmail": "No se encontró un correo verificado en tu cuenta de GitHub.",
-      "mergeSuccess": "Cuenta de GitHub vinculada exitosamente."
-    },
     "magic_link": {
       "request": {
         "tab": "Entrar con correo",
@@ -1835,6 +1822,38 @@
         "caption": "Subtítulo IA",
         "docent": "Docente IA",
         "collection": "Colección IA"
+      }
+    }
+  },
+  "settings": {
+    "hub": {
+      "title": "Configuración",
+      "subtitle": "Gestiona tu perfil, notificaciones, privacidad y más en un solo lugar",
+      "category": {
+        "profile": {
+          "title": "Perfil",
+          "description": "Edita tu biografía e introducción de artista multilingüe"
+        },
+        "display": {
+          "title": "Visualización",
+          "description": "Preferencias de idioma de interfaz y moneda"
+        },
+        "accessibility": {
+          "title": "Accesibilidad",
+          "description": "Alto contraste, modo de enfoque y otras opciones"
+        },
+        "notifications": {
+          "title": "Notificaciones",
+          "description": "Alertas push, correo electrónico y suscripción al boletín"
+        },
+        "privacy": {
+          "title": "Privacidad",
+          "description": "Consentimiento de análisis y configuración de cookies"
+        },
+        "account": {
+          "title": "Cuenta",
+          "description": "Información de cuenta, exportación de datos y validez de patrocinio"
+        }
       }
     }
   }

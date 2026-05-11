@@ -14,7 +14,6 @@ import {
 import { captureEvent, identifyUser } from "@/lib/analytics/capture";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
-const GITHUB_CLIENT_ID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID || "";
 
 // GIS global injected by https://accounts.google.com/gsi/client (loaded in layout.tsx)
 declare global {
@@ -145,9 +144,11 @@ export function LoginModal({
         Math.floor(buttonRef.current.clientWidth || 360),
         400
       );
+      // filled_black은 짙은 surface(#2A2018)와 톤이 겹쳐 라벨 대비가 나쁨.
+      // outline은 밝은 바탕 + 어두운 글자로 모달 톤과 맞음.
       gsi.renderButton(buttonRef.current, {
         type: "standard",
-        theme: "filled_black",
+        theme: "outline",
         size: "large",
         text: "continue_with",
         shape: "rectangular",
@@ -184,22 +185,6 @@ export function LoginModal({
     } finally {
       setBusy(false);
     }
-  }
-
-  function handleGitHubLogin() {
-    if (!GITHUB_CLIENT_ID) {
-      setError("NEXT_PUBLIC_GITHUB_CLIENT_ID 환경변수가 설정되지 않았습니다.");
-      return;
-    }
-    const state = crypto.randomUUID();
-    sessionStorage.setItem("github_oauth_state", state);
-    const params = new URLSearchParams({
-      client_id: GITHUB_CLIENT_ID,
-      redirect_uri: `${window.location.origin}/auth/callback/github`,
-      scope: "read:user user:email",
-      state,
-    });
-    window.location.href = `https://github.com/login/oauth/authorize?${params}`;
   }
 
   async function handleMagicLinkRequest(e: React.FormEvent) {
@@ -329,25 +314,12 @@ export function LoginModal({
           </div>
         )}
 
-        {/* SNS 버튼: Google + GitHub */}
-        <div className="px-5 pt-4 space-y-2">
-          {/* Google 로그인 */}
+        {/* Google 로그인 */}
+        <div className="px-5 pt-4">
           <div
-            className="flex justify-center min-h-[44px] [&>div]:!w-full"
+            className="flex justify-center min-h-[44px] w-full rounded-lg overflow-hidden ring-1 ring-border/80 [&>div]:!w-full"
             ref={buttonRef}
           />
-          {/* GitHub 로그인 */}
-          <button
-            type="button"
-            onClick={handleGitHubLogin}
-            disabled={busy}
-            className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-lg border border-border bg-surface-hover text-text-primary text-sm font-medium hover:bg-border/50 transition-colors disabled:opacity-50"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 0C5.37 0 0 5.373 0 12c0 5.303 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.09-.745.083-.729.083-.729 1.205.084 1.84 1.237 1.84 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.776.42-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.93 0-1.31.468-2.382 1.236-3.222-.124-.303-.535-1.524.118-3.176 0 0 1.008-.322 3.3 1.23a11.5 11.5 0 0 1 3.003-.404c1.02.005 2.047.138 3.003.404 2.29-1.552 3.297-1.23 3.297-1.23.654 1.653.243 2.874.12 3.176.77.84 1.234 1.911 1.234 3.222 0 4.61-2.807 5.624-5.48 5.921.43.372.814 1.103.814 2.222 0 1.606-.015 2.898-.015 3.293 0 .322.216.694.824.576C20.565 21.796 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
-            </svg>
-            {t("auth.github.button")}
-          </button>
         </div>
 
         {/* 구분선 */}

@@ -372,15 +372,23 @@ async def admin_totp_setup(
             "TOTP already enabled. Disable it first to re-enroll.",
             http_status=409,
         )
-    secret = generate_totp_secret()
-    # Store encrypted (auto-noop if no key) — but return plaintext to client
-    # for QR / manual entry. verify_totp auto-decrypts on read.
-    user.totp_secret = encrypt_totp_secret(secret)
-    await db.commit()
+    try:
+        secret = generate_totp_secret()
+        user.totp_secret = encrypt_totp_secret(secret)
+        await db.commit()
+        otpauth_uri = totp_provisioning_uri(secret, account_name=user.email)
+    except Exception as e:  # noqa: BLE001
+        await db.rollback()
+        log.exception("admin_totp_setup failed for user=%s", user.id)
+        raise ApiError(
+            "TOTP_SETUP_FAILED",
+            f"TOTP setup failed: {type(e).__name__}",
+            http_status=500,
+        ) from e
     return {
         "data": {
             "secret": secret,
-            "otpauth_uri": totp_provisioning_uri(secret, account_name=user.email),
+            "otpauth_uri": otpauth_uri,
             "issuer": "Domo Admin",
         }
     }

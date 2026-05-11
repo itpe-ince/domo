@@ -41,43 +41,6 @@
   }
 }
 
-/* ─── Phase 9 L-E: Cognitive Simple Mode ──────────────────────────────────── */
-[data-simple-mode="true"] {
-  /* 1. 폰트 크기 1.2× */
-  font-size: 120%;
-  /* CSS 변수 명도 상향 */
-  --color-text-subtle: #D4C9BE;
-}
-
-/* 2. 애니메이션 최소화 (prefers-reduced-motion 강제 동등) */
-[data-simple-mode="true"] *,
-[data-simple-mode="true"] *::before,
-[data-simple-mode="true"] *::after {
-  animation-duration: 0.01ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
-  scroll-behavior: auto !important;
-}
-
-/* 3. 줄 간격 1.5× */
-[data-simple-mode="true"] p,
-[data-simple-mode="true"] li,
-[data-simple-mode="true"] span {
-  line-height: 1.8;
-}
-
-/* 4. 장식 요소 제거 */
-[data-simple-mode="true"] .decorative {
-  display: none !important;
-}
-
-/* backdrop-blur 제거 */
-[data-simple-mode="true"] .backdrop-blur-md,
-[data-simple-mode="true"] .backdrop-blur-sm,
-[data-simple-mode="true"] .backdrop-blur {
-  backdrop-filter: none !important;
-}
-
 /* ─── 통합 스크롤바 스타일 (Phase 10 UX 개선) ────────────────────────────────
    Firefox + Chrome/Safari/Edge 양쪽 지원.
    색상: Tailwind 토큰 border(#6B5440), text-muted(#998F82) 하드코딩
@@ -111,15 +74,6 @@
 }
 
 /* .scrollbar-hide 클래스는 기존 동작 유지 (위 전역 규칙보다 우선) */
-
-/* Cognitive simple mode: 가독성을 위해 스크롤바 두께 증가 */
-[data-simple-mode="true"] *::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
-}
-[data-simple-mode="true"] *::-webkit-scrollbar-thumb {
-  border-width: 1px;
-}
 
 @layer components {
   .font-logo {

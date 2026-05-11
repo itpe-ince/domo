@@ -394,7 +394,7 @@ async def test_quick_sweep_processes_null_captions():
         stats = await quick_sweep_once(db, batch_size=20)
 
     assert stats["processed"] >= 1
-    mock_gen.assert_called_once_with(db, image_post.id)
+    mock_gen.assert_called_once_with(db, image_post.id, post=image_post)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -439,7 +439,7 @@ async def test_batch_sweep_stale_model():
     assert stats["processed"] == 1
     assert stats["succeeded"] == 1
     # force=True로 호출 확인
-    mock_gen.assert_called_once_with(db, stale_post.id, force=True)
+    mock_gen.assert_called_once_with(db, stale_post.id, force=True, post=stale_post)
 
 
 # ──────────────────────────────────────────────────────────────────────────────

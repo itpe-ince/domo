@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * PreferencesCard — Phase 10 통합 환경설정 카드
+ * PreferencesCard — 통화 / 인터페이스 언어
  *
- * 사이드바 하단의 통화 / 언어 / 단순 모드 컨트롤을 카드 하나로 통합.
+ * 표시 설정 페이지(`/me/settings/display`)에서 사용.
  *
- * Expanded (xl+): 3행 레이아웃 (아이콘 + 라벨 + 현재값 + chevron/toggle)
- * Collapsed (xl-): 아이콘 3개 가로 배치
+ * Expanded (xl+): 2행 (통화 · 언어)
+ * Collapsed (xl-): 아이콘 2개 가로 배치
  *
  * Popover 위치:
  *   - Expanded: 카드 우측 상단 (right-0 bottom-full mb-1)
@@ -18,7 +18,6 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useI18n, LOCALE_LABELS, Locale } from "@/i18n";
-import { useCognitiveSimpleMode } from "@/lib/hooks/useCognitiveSimpleMode";
 import {
   SUPPORTED_CURRENCIES,
   SupportedCurrency,
@@ -64,47 +63,6 @@ function ChevronDown({ open }: { open: boolean }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Compact inline toggle (no label, for the row's right side)          */
-/* ------------------------------------------------------------------ */
-
-function InlineToggle({
-  id,
-  checked,
-  onChange,
-  ariaLabel,
-}: {
-  id: string;
-  checked: boolean;
-  onChange: (next: boolean) => void;
-  ariaLabel: string;
-}) {
-  return (
-    <button
-      id={id}
-      role="switch"
-      type="button"
-      aria-checked={checked}
-      aria-label={ariaLabel}
-      onClick={() => onChange(!checked)}
-      className={[
-        "relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 transition-colors",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        checked ? "bg-primary border-primary" : "bg-surface border-border",
-      ].join(" ")}
-    >
-      <span
-        aria-hidden="true"
-        className={[
-          "pointer-events-none inline-block h-3.5 w-3.5 rounded-full bg-background shadow-sm",
-          "transform transition-transform duration-150 mt-px",
-          checked ? "translate-x-3.5" : "translate-x-0.5",
-        ].join(" ")}
-      />
-    </button>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /* Main component                                                       */
 /* ------------------------------------------------------------------ */
 
@@ -113,7 +71,6 @@ export function PreferencesCard({
   className = "",
 }: PreferencesCardProps) {
   const { t, locale, setLocale } = useI18n();
-  const { enabled: simpleMode, toggle: toggleSimpleMode } = useCognitiveSimpleMode();
 
   const [currency, setCurrency] = useState<SupportedCurrency>("USD");
   const [openPopover, setOpenPopover] = useState<PopoverTarget>(null);
@@ -267,7 +224,7 @@ export function PreferencesCard({
   return (
     <div ref={cardRef} className={`relative ${className}`}>
       {/* ============================================================ */}
-      {/* EXPANDED MODE (xl+): 3-row card                             */}
+      {/* EXPANDED MODE (xl+): 2-row card                             */}
       {/* ============================================================ */}
       <div className="hidden xl:block bg-surface border border-border rounded-xl overflow-hidden divide-y divide-border/50">
 
@@ -327,24 +284,10 @@ export function PreferencesCard({
             </div>
           )}
         </div>
-
-        {/* Row 3: Simple mode toggle */}
-        <div className="flex items-center gap-2 px-3 py-2">
-          <span className="text-base leading-none" aria-hidden="true">👁️</span>
-          <span className="text-xs text-text-secondary flex-1">
-            {t("preferences.simpleMode.label")}
-          </span>
-          <InlineToggle
-            id="preferences-simple-mode-expanded"
-            checked={simpleMode}
-            onChange={toggleSimpleMode}
-            ariaLabel={t("preferences.simpleMode.label")}
-          />
-        </div>
       </div>
 
       {/* ============================================================ */}
-      {/* COLLAPSED MODE (xl-): 3 icon buttons in a row               */}
+      {/* COLLAPSED MODE (xl-): 2 icon buttons in a row               */}
       {/* ============================================================ */}
       <div className="xl:hidden flex items-center justify-center gap-1 bg-surface border border-border rounded-xl px-1 py-1">
 
@@ -395,22 +338,6 @@ export function PreferencesCard({
             </div>
           )}
         </div>
-
-        {/* Simple mode toggle icon button */}
-        <button
-          type="button"
-          role="switch"
-          aria-checked={simpleMode}
-          aria-label={t("preferences.simpleMode.label")}
-          onClick={() => toggleSimpleMode(!simpleMode)}
-          className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-            simpleMode
-              ? "bg-primary/15 text-primary"
-              : "hover:bg-surface-hover text-text-muted"
-          }`}
-        >
-          <span className="text-base leading-none">👁️</span>
-        </button>
       </div>
     </div>
   );

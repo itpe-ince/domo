@@ -79,14 +79,7 @@ class StandardResponse(BaseModel):
     data: dict | list | None = None
 
 
-# ─── C-2: GitHub OAuth + 매직링크 스키마 ───────────────────────────────────────
-
-class GitHubLoginRequest(BaseModel):
-    """GitHub OAuth 로그인 요청."""
-
-    code: str
-    redirect_uri: str
-
+# ─── C-2: 매직링크 스키마 ─────────────────────────────────────────────────────
 
 class MagicLinkRequest(BaseModel):
     """매직링크 요청 (이메일 입력만으로 발송)."""

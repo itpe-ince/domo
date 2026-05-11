@@ -11,6 +11,7 @@ import { useUnreadCount } from "@/lib/useUnreadCount";
 import { useOnboarding } from "@/lib/hooks/useOnboarding";
 import { LoginModal } from "./LoginModal";
 import { SearchBar } from "./SearchBar";
+import { PreferencesCard } from "./PreferencesCard";
 import {
   BellIcon,
   BluebirdIcon,
@@ -32,7 +33,6 @@ import {
   UserIcon,
   UsersIcon,
 } from "./icons";
-import { PreferencesCard } from "./PreferencesCard";
 
 type NavItem = {
   href: string;
@@ -126,9 +126,7 @@ export function Sidebar() {
       Icon: ShieldAlertIcon,
       needsAuth: true,
     },
-    { href: "/me/account", label: t("nav.settings"), Icon: SettingsIcon, needsAuth: true },
-    // Phase 9 L-E: 접근성 설정
-    { href: "/me/settings/accessibility", label: t("nav.accessibilitySettings"), Icon: SettingsIcon, needsAuth: true },
+    { href: "/me/settings", label: t("nav.settings"), Icon: SettingsIcon, needsAuth: true },
   ];
 
   // Admin은 별도 앱 (포트 3800)
@@ -169,8 +167,10 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="hidden md:flex sticky top-0 h-screen overflow-y-auto flex-col justify-between py-4 px-2 xl:px-4 w-[80px] xl:w-[260px] border-r border-border bg-background flex-shrink-0">
-        <div className="flex flex-col gap-1">
+      <aside className="hidden md:flex sticky top-0 h-screen flex flex-col min-h-0 py-4 px-2 xl:px-4 w-[80px] xl:w-[260px] border-r border-border bg-background flex-shrink-0">
+        <div className="flex flex-col flex-1 min-h-0">
+          {/* 스크롤은 상단 내비만 — 프로필 메뉴는 하단 고정, 드롭다운이 overflow에 잘리지 않음 */}
+          <div className="flex-1 overflow-y-auto min-h-0 overscroll-contain flex flex-col gap-1">
           {/* Logo */}
           <Link
             href="/"
@@ -290,16 +290,25 @@ export function Sidebar() {
               <span className="hidden xl:inline text-lg font-medium">{t("common.login")}</span>
             </button>
           ) : null}
-        </div>
+          </div>
 
         {/* Profile card at bottom — meLoading 동안 placeholder로 layout shift 방지 */}
         {meLoading && (
-          <div className="mx-3 mb-2 h-14 rounded-full bg-surface-hover/40 animate-pulse" aria-hidden />
+          <div className="flex-shrink-0 mx-3 mt-2 mb-2 h-14 rounded-full bg-surface-hover/40 animate-pulse" aria-hidden />
+        )}
+        {/* 비로그인: 통화·언어도 바꿀 수 있어야 함 (로컬 + 로그인 시 서버 동기화) */}
+        {!meLoading && !me && (
+          <div className="flex-shrink-0 mt-auto pt-2 mx-3 mb-2">
+            <PreferencesCard isAuthenticated={false} />
+          </div>
         )}
         {!meLoading && me && (
-          <div className="relative">
+          <div className="relative flex-shrink-0 mt-auto pt-2">
             <details className="group">
-              <summary className="list-none cursor-pointer flex items-center gap-3 rounded-full px-3 py-3 hover:bg-surface-hover transition-colors">
+              <summary
+                className="list-none cursor-pointer flex items-center gap-3 rounded-full px-3 py-3 hover:bg-surface-hover transition-colors [&::-webkit-details-marker]:hidden"
+                aria-label={t("nav.moreMenu")}
+              >
                 <div className="w-10 h-10 rounded-full bg-surface-hover flex items-center justify-center text-sm flex-shrink-0">
                   {me.avatar_url ? (
                     <img
@@ -321,16 +330,15 @@ export function Sidebar() {
                     {me.role}
                   </span>
                 </div>
-                <span className="hidden xl:inline text-text-muted">
+                <span className="flex-shrink-0 text-text-muted ml-auto xl:ml-0" aria-hidden>
                   <MoreHorizontalIcon size={20} />
                 </span>
               </summary>
               {/* Dropdown
-                  - 축소 (xl 미만): 사이드바 폭이 좁아 안에 두면 글자가 세로로 쌓임
-                    → 사이드바 옆 (right side)으로 popover, 고정 너비 w-44 사용
-                  - 확장 (xl 이상): 사이드바 안에서 위로 펼침 (기존 패턴) */}
+                  - 축소 (xl 미만): 사이드바 옆(right)으로 펼침 — 상단 스크롤 영역과 분리해 overflow 클리핑 방지
+                  - 확장 (xl 이상): 사이드바 안에서 위로 펼침 */}
               <div
-                className="absolute z-40 card p-2 space-y-1 w-44 whitespace-nowrap
+                className="absolute z-[100] card p-2 space-y-1 w-44 whitespace-nowrap shadow-xl
                            bottom-0 left-full ml-2
                            xl:bottom-full xl:left-2 xl:right-2 xl:w-auto xl:ml-0 xl:mb-2"
               >
@@ -349,6 +357,13 @@ export function Sidebar() {
                   <DraftIcon />
                   <span>{t("nav.draftsList")}</span>
                 </Link>
+                <Link
+                  href="/me/settings/display"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-hover text-sm text-text-primary"
+                >
+                  <SettingsIcon />
+                  <span>{t("nav.displaySettings")}</span>
+                </Link>
                 <div className="border-t border-border my-1" />
                 <button
                   onClick={handleLogout}
@@ -361,10 +376,6 @@ export function Sidebar() {
             </details>
           </div>
         )}
-
-        {/* Phase 10: 통합 환경설정 카드 (통화 / 언어 / 단순 모드) */}
-        <div className="mx-3 mb-2">
-          <PreferencesCard isAuthenticated={!!me} />
         </div>
       </aside>
 

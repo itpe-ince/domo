@@ -45,7 +45,9 @@
     "tierBenefits": "Tier Benefits Settings",
     "artistIndex": "Artist Index",
     "stories": "Story Hub",
-    "accessibilitySettings": "Accessibility"
+    "accessibilitySettings": "Accessibility",
+    "displaySettings": "Display",
+    "moreMenu": "More menu"
   },
   "home": {
     "title": "Domo Lounge",
@@ -1559,12 +1561,6 @@
   },
   "accessibility": {
     "pageTitle": "Accessibility Settings",
-    "simpleMode": {
-      "label": "Simple Mode",
-      "description": "Increases text size, line spacing, and reduces animations for easier reading.",
-      "enabled": "Simple mode on",
-      "disabled": "Simple mode off"
-    },
     "focusMode": {
       "label": "Focus Mode",
       "description": "Highlights interactive elements for keyboard navigation."
@@ -1662,14 +1658,13 @@
   },
   "preferences": {
     "title": "Preferences",
+    "pageTitle": "Display",
+    "pageSubtitle": "Choose display currency and interface language.",
     "currency": {
       "label": "Currency"
     },
     "locale": {
       "label": "Language"
-    },
-    "simpleMode": {
-      "label": "Simple Mode"
     }
   },
   "collections": {
@@ -1711,14 +1706,6 @@
     }
   },
   "auth": {
-    "github": {
-      "button": "Continue with GitHub",
-      "connecting": "Connecting to GitHub...",
-      "conflict": "An account with this email already exists.",
-      "conflictHint": "Sign in and link GitHub in Settings.",
-      "noEmail": "No verified email found on your GitHub account.",
-      "mergeSuccess": "GitHub account linked successfully."
-    },
     "magic_link": {
       "request": {
         "tab": "Sign in with Email",
@@ -1835,6 +1822,38 @@
         "caption": "AI Caption",
         "docent": "AI Docent",
         "collection": "AI Collection"
+      }
+    }
+  },
+  "settings": {
+    "hub": {
+      "title": "Settings",
+      "subtitle": "Manage your profile, notifications, privacy, and more in one place",
+      "category": {
+        "profile": {
+          "title": "Profile",
+          "description": "Edit your bio and multilingual artist introduction"
+        },
+        "display": {
+          "title": "Display",
+          "description": "Interface language and currency preferences"
+        },
+        "accessibility": {
+          "title": "Accessibility",
+          "description": "High contrast, focus mode, and other accessibility options"
+        },
+        "notifications": {
+          "title": "Notifications",
+          "description": "Push, email alerts, and newsletter subscription"
+        },
+        "privacy": {
+          "title": "Privacy",
+          "description": "Analytics consent and cookie settings"
+        },
+        "account": {
+          "title": "Account",
+          "description": "Account info, data export, and sponsor validity"
+        }
       }
     }
   }

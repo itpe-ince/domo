@@ -95,7 +95,7 @@ export default function PrivacyPolicyPage() {
             <li>처리 제한 요청: 고객 지원으로 문의</li>
           </ul>
           <p className="mt-2">
-            <Link href="/me/account" className="text-primary underline">
+            <Link href="/me/settings/account" className="text-primary underline">
               계정 설정
             </Link>
             에서 위 권리를 즉시 행사할 수 있습니다.

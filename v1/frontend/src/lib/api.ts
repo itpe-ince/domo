@@ -318,27 +318,7 @@ export async function resetPassword(
   );
 }
 
-// ─── C-2: GitHub OAuth + 매직링크 API ────────────────────────────────────────
-
-/**
- * GitHub OAuth code를 백엔드에 전달해 로그인/가입 처리.
- * 성공 시 토큰을 localStorage에 저장하고 User를 반환한다.
- */
-export async function loginWithGitHub(
-  code: string,
-  redirectUri: string
-): Promise<ApiUser> {
-  const data = await apiFetch<{
-    tokens: { access_token: string; refresh_token: string };
-    user: ApiUser;
-  }>("/auth/sns/github", {
-    method: "POST",
-    body: JSON.stringify({ code, redirect_uri: redirectUri }),
-    auth: false,
-  });
-  tokenStore.set(data.tokens.access_token, data.tokens.refresh_token);
-  return data.user;
-}
+// ─── C-2: 매직링크 API ───────────────────────────────────────────────────────
 
 /**
  * 매직링크 요청 — 이메일 발송.

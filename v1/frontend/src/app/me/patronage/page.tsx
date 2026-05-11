@@ -105,7 +105,7 @@ export default function PatronageDashboardPage() {
           )}
         </div>
         <Link
-          href="/me/account"
+          href="/me/settings/account"
           className="flex items-center gap-2 text-sm text-text-muted hover:text-text-primary transition-colors"
         >
           <SettingsIcon size={16} />

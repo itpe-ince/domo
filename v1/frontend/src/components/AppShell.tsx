@@ -6,7 +6,6 @@ import { MobileTabBar } from "./MobileTabBar";
 import { Sidebar } from "./Sidebar";
 import { SkipLink } from "./SkipLink";
 import { OnboardingWizard } from "./onboarding/OnboardingWizard";
-import { CognitiveSimpleModeProvider } from "./CognitiveSimpleModeProvider";
 import { KeyboardShortcutsHelp } from "./KeyboardShortcutsHelp";
 import { useOnboarding } from "@/lib/hooks/useOnboarding";
 import { useGlobalHotkeys } from "@/lib/hooks/useGlobalHotkeys";
@@ -169,7 +168,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   ]);
 
   return (
-    <CognitiveSimpleModeProvider>
+    <>
       {/* H'-1: Skip navigation link — WCAG 2.4.1 Bypass Blocks (Level A) */}
       <SkipLink />
 
@@ -189,6 +188,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Phase 11 D-1 / Phase 12 C-3: 키보드 단축키 도움말 모달 */}
       <KeyboardShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
-    </CognitiveSimpleModeProvider>
+    </>
   );
 }

@@ -120,7 +120,16 @@ export async function apiFetch<T>(
     }
   }
 
-  const json = (await res.json()) as ApiResponse<T>;
+  let json: ApiResponse<T>;
+  try {
+    json = (await res.json()) as ApiResponse<T>;
+  } catch {
+    throw new ApiClientError(
+      "INTERNAL_ERROR",
+      res.statusText || `HTTP ${res.status}`,
+      { status: res.status }
+    );
+  }
   if (!res.ok || "error" in json) {
     const err =
       "error" in json ? json.error : { code: "UNKNOWN", message: res.statusText };

@@ -167,6 +167,7 @@ async def generate_for_post(
     db: AsyncSession,
     post_id: UUID,
     force: bool = False,
+    post: Post | None = None,
 ) -> bool:
     """단일 작품 포스트의 캡션 생성 + 5 locale 번역 저장.
 
@@ -188,13 +189,14 @@ async def generate_for_post(
     """
     from sqlalchemy.orm import selectinload
 
-    # post + media 조회
-    result = await db.execute(
-        select(Post)
-        .where(Post.id == post_id)
-        .options(selectinload(Post.media))
-    )
-    post = result.scalar_one_or_none()
+    # post + media 조회 (이미 로드된 경우 재사용 → N+1 회피)
+    if post is None:
+        result = await db.execute(
+            select(Post)
+            .where(Post.id == post_id)
+            .options(selectinload(Post.media))
+        )
+        post = result.scalar_one_or_none()
 
     if not post:
         log.warning("[ArtworkCaption] post_id=%s not found", post_id)
@@ -300,7 +302,7 @@ async def quick_sweep_once(
             continue
 
         processed += 1
-        ok = await generate_for_post(db, post.id)
+        ok = await generate_for_post(db, post.id, post=post)
         if ok:
             succeeded += 1
         else:
@@ -360,7 +362,12 @@ async def batch_sweep_once(
 
         processed += 1
         # force=True: stale_model_version 재생성 시 caption_override 무시
-        ok = await generate_for_post(db, post.id, force=stale_model_version is not None)
+        ok = await generate_for_post(
+            db,
+            post.id,
+            force=stale_model_version is not None,
+            post=post,
+        )
         if ok:
             succeeded += 1
         else:
@@ -390,8 +397,21 @@ async def artwork_caption_cron_loop(
     settings = get_settings()
     last_batch_at = datetime.min.replace(tzinfo=timezone.utc)
 
+    mock_log_emitted = False
+
     while True:
         await _push_cron_status("artwork_caption", "running")
+        if LLMGatewayClient().is_mock:
+            if not mock_log_emitted:
+                log.warning(
+                    "[ArtworkCaptionCron] LLM_GATEWAY_API_KEY 미설정 — Mock 모드. "
+                    "cron 작업 건너뜀 (key 설정 시 자동 재개)."
+                )
+                mock_log_emitted = True
+            await _push_cron_status("artwork_caption", "success")
+            await asyncio.sleep(quick_interval_seconds)
+            continue
+        mock_log_emitted = False
         async with AsyncSessionLocal() as db:
             try:
                 await quick_sweep_once(db, batch_size=settings.caption_batch_size_quick)

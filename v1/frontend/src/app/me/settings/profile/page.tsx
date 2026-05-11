@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * /me/bio — C-3 multi-language-story
+ * /me/settings/profile — 자기소개 다국어 편집
+ * (이전 경로: /me/bio)
  *
  * Artist bio editor for all 5 supported locales.
  *  - Locale tabs: ko / en / ja / zh / es
@@ -10,6 +11,7 @@
  *  - Shows is_machine_translated badge ("AI Translated" vs "Manually Edited")
  */
 
+import Link from "next/link";
 import { useState } from "react";
 import { useI18n } from "@/i18n";
 import { useMyBio } from "@/lib/hooks/useMyBio";
@@ -17,7 +19,7 @@ import { useMyBio } from "@/lib/hooks/useMyBio";
 const LOCALES = ["ko", "en", "ja", "zh", "es"] as const;
 type Locale = (typeof LOCALES)[number];
 
-export default function MyBioPage() {
+export default function ProfileSettingsPage() {
   const { t } = useI18n();
   const { loading, translating, saving, error, getBio, isMachineTranslated, triggerTranslate, saveLocale } =
     useMyBio();
@@ -39,8 +41,6 @@ export default function MyBioPage() {
     es: null,
   });
 
-  // Sync draft from fetched rows when loaded
-  // (only if the draft hasn't been edited by user yet)
   function getDisplayBio(locale: Locale): string {
     if (draftBio[locale]) return draftBio[locale];
     return getBio(locale);
@@ -50,7 +50,6 @@ export default function MyBioPage() {
     setTranslateMsg(null);
     const ok = await triggerTranslate("ko");
     setTranslateMsg(ok ? t("bio.translateSuccess") : t("bio.translateError"));
-    // Reset drafts so they reflect the new translations
     setDraftBio({ ko: "", en: "", ja: "", zh: "", es: "" });
   }
 
@@ -68,6 +67,16 @@ export default function MyBioPage() {
 
   return (
     <main className="flex-1 min-w-0 max-w-2xl mx-auto px-4 py-8" aria-label={t("bio.pageTitle")}>
+      {/* Breadcrumb */}
+      <nav aria-label="breadcrumb" className="mb-6">
+        <Link
+          href="/me/settings"
+          className="text-text-muted text-sm hover:text-primary"
+        >
+          ← {t("settings.hub.title")}
+        </Link>
+      </nav>
+
       {/* Header */}
       <header className="mb-8">
         <h1 className="text-2xl font-bold text-text-primary">{t("bio.pageTitle")}</h1>

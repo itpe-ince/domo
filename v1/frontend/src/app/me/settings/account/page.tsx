@@ -1,5 +1,17 @@
 "use client";
 
+/**
+ * /me/settings/account — 계정 설정 + 후원 유효기간 통합 페이지
+ * (이전 경로: /me/account + /me/settings/sponsor-validity)
+ *
+ * Sections:
+ *  1. 내 정보 (profile summary)
+ *  2. 정책 동의
+ *  3. 내 데이터 내보내기
+ *  4. 후원 유효기간 (artist only)
+ *  5. 계정 삭제
+ */
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
@@ -15,8 +27,13 @@ import {
   requestAccountDeletion,
   tokenStore,
 } from "@/lib/api";
+import { useI18n } from "@/i18n";
+import { useMe } from "@/lib/useMe";
+import { SponsorValiditySettings } from "@/components/sponsorships/SponsorValiditySettings";
 
-export default function MyAccountPage() {
+export default function AccountSettingsPage() {
+  const { t } = useI18n();
+  const { me: meFromHook } = useMe();
   const [me, setMe] = useState<ApiUser | null>(null);
   const [versions, setVersions] = useState<LegalVersions | null>(null);
   const [loading, setLoading] = useState(true);
@@ -143,21 +160,27 @@ export default function MyAccountPage() {
 
   return (
     <main className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8">
-      <header className="flex items-center justify-between mb-8">
-        <div>
-          <span className="badge-primary">My Account</span>
-          <h1 className="text-3xl font-bold mt-3">계정 설정</h1>
-          <p className="text-text-secondary text-sm mt-1">
-            개인정보 관리 및 GDPR 권리 행사
-          </p>
-        </div>
-        <Link href="/" className="btn-ghost text-sm">
-          ← 홈
+      {/* Breadcrumb */}
+      <nav aria-label="breadcrumb" className="mb-6">
+        <Link
+          href="/me/settings"
+          className="text-text-muted text-sm hover:text-primary"
+        >
+          ← {t("settings.hub.title")}
         </Link>
+      </nav>
+
+      <header className="mb-8">
+        <h1 className="text-2xl font-bold text-text-primary">
+          {t("settings.hub.category.account.title")}
+        </h1>
+        <p className="text-text-muted text-sm mt-1">
+          개인정보 관리 및 GDPR 권리 행사
+        </p>
       </header>
 
       {error && (
-        <div className="card border-danger p-3 text-danger text-sm mb-4">
+        <div className="card border-danger p-3 text-danger text-sm mb-4" role="alert">
           {error}
         </div>
       )}
@@ -171,6 +194,7 @@ export default function MyAccountPage() {
             value={loginEmail}
             onChange={(e) => setLoginEmail(e.target.value)}
             className="w-full bg-background border border-border rounded-lg px-4 py-2 mb-4 focus:border-primary outline-none"
+            aria-label="이메일"
           />
           <button onClick={handleLogin} className="btn-primary w-full">
             로그인
@@ -180,9 +204,9 @@ export default function MyAccountPage() {
 
       {me && (
         <div className="space-y-6">
-          {/* Profile summary */}
-          <section className="card p-5">
-            <h2 className="text-lg font-semibold mb-3">내 정보</h2>
+          {/* 1. Profile summary */}
+          <section className="card p-5" aria-labelledby="account-info-heading">
+            <h2 id="account-info-heading" className="text-lg font-semibold mb-3">내 정보</h2>
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
               <dt className="text-text-muted">이메일</dt>
               <dd>{me.email}</dd>
@@ -193,12 +217,23 @@ export default function MyAccountPage() {
               <dt className="text-text-muted">상태</dt>
               <dd>{me.status}</dd>
             </dl>
+            <div className="mt-4 pt-4 border-t border-border">
+              <Link
+                href="/me/settings/display"
+                className="text-sm text-primary hover:underline font-medium"
+              >
+                {t("nav.displaySettings")} →
+              </Link>
+              <p className="text-text-muted text-xs mt-1">
+                {t("preferences.pageSubtitle")}
+              </p>
+            </div>
           </section>
 
-          {/* Policy consent */}
+          {/* 2. Policy consent */}
           {versions && (
-            <section className="card p-5">
-              <h2 className="text-lg font-semibold mb-3">정책 동의</h2>
+            <section className="card p-5" aria-labelledby="policy-heading">
+              <h2 id="policy-heading" className="text-lg font-semibold mb-3">정책 동의</h2>
               <div className="text-sm space-y-2">
                 <div>
                   개인정보 처리방침:{" "}
@@ -233,10 +268,10 @@ export default function MyAccountPage() {
             </section>
           )}
 
-          {/* Data export */}
-          <section className="card p-5">
-            <h2 className="text-lg font-semibold mb-2">내 데이터 내보내기</h2>
-            <p className="text-text-secondary text-sm mb-4">
+          {/* 3. Data export */}
+          <section className="card p-5" aria-labelledby="export-heading">
+            <h2 id="export-heading" className="text-lg font-semibold mb-2">내 데이터 내보내기</h2>
+            <p className="text-text-muted text-sm mb-4">
               GDPR 이전권(Right to Data Portability)에 따라 가입 이후 모든 개인
               데이터를 JSON 파일로 다운로드할 수 있습니다.
             </p>
@@ -245,28 +280,41 @@ export default function MyAccountPage() {
               disabled={busy === "export"}
               className="btn-primary text-sm disabled:opacity-50"
             >
-              {busy === "export" ? "준비 중..." : "📦 내 데이터 다운로드"}
+              {busy === "export" ? "준비 중..." : "내 데이터 다운로드"}
             </button>
           </section>
 
-          {/* Account deletion */}
-          <section className="card border-danger p-5">
-            <h2 className="text-lg font-semibold text-danger mb-2">
+          {/* 4. 후원 유효기간 (artist only) */}
+          {(me.role === "artist" || meFromHook?.role === "artist") && (
+            <section className="card p-5" aria-labelledby="sponsor-validity-heading">
+              <h2 id="sponsor-validity-heading" className="text-lg font-semibold mb-2">
+                {t("me.settings.sponsorValidity.title")}
+              </h2>
+              <p className="text-text-muted text-sm mb-4">
+                {t("me.settings.sponsorValidity.hint")}
+              </p>
+              <SponsorValiditySettings />
+            </section>
+          )}
+
+          {/* 5. Account deletion */}
+          <section className="card border-danger p-5" aria-labelledby="delete-heading">
+            <h2 id="delete-heading" className="text-lg font-semibold text-danger mb-2">
               계정 삭제
             </h2>
-            <p className="text-text-secondary text-sm mb-4">
+            <p className="text-text-muted text-sm mb-4">
               계정 삭제를 요청하면 30일 유예 기간 후 영구적으로 개인정보가
               익명화됩니다. 유예 기간 내에는 취소할 수 있습니다.
             </p>
 
             {deletionInfo ? (
               <div className="card border-warning p-3 text-sm">
-                <p className="text-warning font-medium">⚠ 삭제 요청됨</p>
-                <p className="text-text-secondary mt-1">
+                <p className="text-warning font-medium">삭제 요청됨</p>
+                <p className="text-text-muted mt-1">
                   요청일:{" "}
                   {new Date(deletionInfo.deleted_at).toLocaleString("ko-KR")}
                 </p>
-                <p className="text-text-secondary">
+                <p className="text-text-muted">
                   영구 삭제 예정일:{" "}
                   {new Date(
                     deletionInfo.deletion_scheduled_for
@@ -292,6 +340,7 @@ export default function MyAccountPage() {
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
                   placeholder="DELETE MY ACCOUNT"
+                  aria-label="계정 삭제 확인 입력"
                   className="w-full bg-background border border-border rounded-lg px-4 py-2 mb-3 focus:border-danger outline-none font-mono text-sm"
                 />
                 <button
@@ -303,7 +352,7 @@ export default function MyAccountPage() {
                 >
                   {busy === "delete"
                     ? "처리 중..."
-                    : "⚠ 계정 삭제 요청 (30일 유예)"}
+                    : "계정 삭제 요청 (30일 유예)"}
                 </button>
               </>
             )}

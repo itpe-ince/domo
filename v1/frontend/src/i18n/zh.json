@@ -45,7 +45,9 @@
     "tierBenefits": "會員等級福利設定",
     "artistIndex": "藝術家指數",
     "stories": "故事中心",
-    "accessibilitySettings": "无障碍"
+    "accessibilitySettings": "无障碍",
+    "displaySettings": "显示",
+    "moreMenu": "更多菜单"
   },
   "home": {
     "title": "Domo Lounge",
@@ -1559,12 +1561,6 @@
   },
   "accessibility": {
     "pageTitle": "无障碍设置",
-    "simpleMode": {
-      "label": "简单模式",
-      "description": "增大文字大小和行距，减少动画以提升阅读便利性。",
-      "enabled": "简单模式已开启",
-      "disabled": "简单模式已关闭"
-    },
     "focusMode": {
       "label": "专注模式",
       "description": "突出显示交互元素以便键盘导航。"
@@ -1662,14 +1658,13 @@
   },
   "preferences": {
     "title": "偏好设置",
+    "pageTitle": "显示设置",
+    "pageSubtitle": "选择显示货币与界面语言。",
     "currency": {
       "label": "货币"
     },
     "locale": {
       "label": "语言"
-    },
-    "simpleMode": {
-      "label": "简单模式"
     }
   },
   "collections": {
@@ -1711,14 +1706,6 @@
     }
   },
   "auth": {
-    "github": {
-      "button": "使用 GitHub 繼續",
-      "connecting": "正在連接 GitHub...",
-      "conflict": "此電子郵件已有密碼帳號。",
-      "conflictHint": "登入後在設定中連結 GitHub 帳號。",
-      "noEmail": "您的 GitHub 帳號沒有已驗證的電子郵件。",
-      "mergeSuccess": "GitHub 帳號已成功連結。"
-    },
     "magic_link": {
       "request": {
         "tab": "郵件登入",
@@ -1835,6 +1822,38 @@
         "caption": "AI 說明文字",
         "docent": "AI 導覽",
         "collection": "AI 精選集"
+      }
+    }
+  },
+  "settings": {
+    "hub": {
+      "title": "设置",
+      "subtitle": "在一个地方管理个人资料、通知、隐私等设置",
+      "category": {
+        "profile": {
+          "title": "个人资料",
+          "description": "编辑自我介绍和多语言艺术家简介"
+        },
+        "display": {
+          "title": "显示",
+          "description": "界面语言和货币偏好设置"
+        },
+        "accessibility": {
+          "title": "无障碍",
+          "description": "高对比度、焦点模式等无障碍选项"
+        },
+        "notifications": {
+          "title": "通知",
+          "description": "推送、电子邮件通知和新闻订阅"
+        },
+        "privacy": {
+          "title": "隐私",
+          "description": "数据分析同意和Cookie设置"
+        },
+        "account": {
+          "title": "账号",
+          "description": "账号信息、数据导出和赞助有效期"
+        }
       }
     }
   }

@@ -120,18 +120,4 @@ class GoogleUserFactory(UserFactory):
     sns_id = factory.Sequence(lambda n: f"google_sub_{n:06d}")
     password_hash = None           # SNS 전용 — 비밀번호 없음
     email_verified = True          # Google은 verified 보장
-    github_id = None               # 초기에는 GitHub 연동 없음
-
-
-class GitHubUserFactory(UserFactory):
-    """GitHub OAuth 사용자 Factory.
-
-    sns_provider="github", email_verified=True 고정.
-    github_id는 Sequence로 자동 증가 (테스트 간 충돌 방지).
-    """
-
-    sns_provider = "github"
-    sns_id = None                  # GitHub은 sns_id 대신 github_id 사용
-    password_hash = None           # SNS 전용 — 비밀번호 없음
-    email_verified = True          # GitHub verified email 보장
-    github_id = factory.Sequence(lambda n: 10000 + n)
+    github_id = None               # 레거시 컬럼 — SNS GitHub 로그인 비활성화 시 미사용

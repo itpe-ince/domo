@@ -19,7 +19,6 @@ from app.models.magic_link_token import MagicLinkToken
 from app.models.password_reset_token import PasswordResetToken
 from app.models.user import User
 from app.schemas.auth import (
-    GitHubLoginRequest,
     GoogleLoginRequest,
     LoginEmailRequest,
     MagicLinkRequest,
@@ -45,11 +44,6 @@ from app.services.email_verification import (
     verification_expires_at,
 )
 from app.services.password_reset import send_password_reset_email
-from app.services.github_oauth import (
-    exchange_github_code,
-    fetch_github_primary_email,
-    fetch_github_user,
-)
 from app.services.magic_link_auth import send_magic_link_email
 from app.services.google_auth import verify_google_id_token
 from app.services.analytics import capture_event
@@ -820,134 +814,11 @@ async def reset_password(
     }
 
 
-# ─── C-2: GitHub OAuth 엔드포인트 ─────────────────────────────────────────────
+# ─── C-2: 매직링크 엔드포인트 ─────────────────────────────────────────────────
 
 def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
-
-@router.post("/sns/github")
-async def github_login(
-    body: GitHubLoginRequest,
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-    _rl=rate_limit("auth_login"),
-):
-    """GitHub OAuth 로그인/가입.
-
-    1. body.code -> GitHub access_token 교환
-    2. access_token -> /user + /user/emails 조회
-    3. github_id로 기존 계정 조회
-    4. 이메일 중복 처리:
-       - Google 계정 -> 통합 (github_id 추가)
-       - 비밀번호 가입 -> 409 GITHUB_EMAIL_CONFLICT
-    5. 신규: User 생성
-    6. audit_log 기록
-    7. JWT 발급
-    """
-    # Step 1: code -> access_token
-    gh_token = await exchange_github_code(body.code, body.redirect_uri)
-
-    # Step 2: access_token -> user info
-    gh_user = await fetch_github_user(gh_token)
-    github_id: int = gh_user["id"]
-    name: str = gh_user.get("name") or gh_user.get("login") or "user"
-    avatar: str | None = gh_user.get("avatar_url")
-
-    # GitHub 이메일: primary + verified 우선
-    email: str | None = await fetch_github_primary_email(gh_token)
-    if not email:
-        raise ApiError(
-            "GITHUB_EMAIL_REQUIRED",
-            "GitHub 계정에 인증된 이메일이 없습니다. GitHub 설정에서 이메일을 인증해주세요.",
-            http_status=400,
-        )
-    email = email.lower().strip()
-
-    # Step 3: github_id로 기존 계정 조회
-    result = await db.execute(select(User).where(User.github_id == github_id))
-    user = result.scalar_one_or_none()
-
-    is_new_user = False
-
-    if not user:
-        # Step 4: 이메일로 기존 계정 조회
-        result = await db.execute(select(User).where(User.email == email))
-        existing = result.scalar_one_or_none()
-
-        if existing:
-            if existing.role == "admin":
-                raise ApiError(
-                    "ADMIN_SNS_FORBIDDEN",
-                    "관리자 계정은 /auth/admin/login을 사용해주세요.",
-                    http_status=403,
-                )
-
-            if existing.sns_provider == "google":
-                # Google 계정 -> GitHub 통합 (github_id 추가)
-                existing.github_id = github_id
-                if not existing.avatar_url and avatar:
-                    existing.avatar_url = avatar
-                await db.commit()
-                await db.refresh(existing)
-                user = existing
-            elif existing.password_hash is not None:
-                # 비밀번호 가입 계정 -> 409 충돌
-                raise ApiError(
-                    "GITHUB_EMAIL_CONFLICT",
-                    "해당 이메일로 이미 비밀번호 가입된 계정이 있습니다. 로그인 후 설정에서 GitHub 계정을 연동해주세요.",
-                    http_status=409,
-                    details={"merge_hint": "/settings/security"},
-                )
-            else:
-                # 기타 SNS 계정 (예외적 케이스)
-                existing.github_id = github_id
-                await db.commit()
-                await db.refresh(existing)
-                user = existing
-        else:
-            # Step 5: 신규 사용자 생성
-            is_new_user = True
-            user = User(
-                email=email,
-                sns_provider="github",
-                github_id=github_id,
-                display_name=name,
-                avatar_url=avatar,
-                role="user",
-                status="active",
-                email_verified=True,
-            )
-            db.add(user)
-            await db.commit()
-            await db.refresh(user)
-
-    ua, ip = _client_info(request)
-    access, refresh = await issue_initial_tokens(db, user, user_agent=ua, ip_address=ip)
-    await db.commit()
-
-    if is_new_user:
-        capture_event(str(user.id), "user_signup_confirmed", {"method": "github"})
-
-    action = "auth.github_signup" if is_new_user else "auth.github_login"
-    await record_audit(
-        db,
-        actor=user,
-        action=action,
-        metadata={"ip": ip},
-        request=request,
-        status="success",
-    )
-
-    return {
-        "data": {
-            "tokens": TokenPair(access_token=access, refresh_token=refresh).model_dump(),
-            "user": UserPublic.model_validate(user).model_dump(mode="json"),
-        }
-    }
-
-
-# ─── C-2: 매직링크 엔드포인트 ─────────────────────────────────────────────────
 
 @router.post("/magic-link/request")
 async def request_magic_link(

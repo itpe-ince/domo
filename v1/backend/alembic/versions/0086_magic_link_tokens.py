@@ -21,7 +21,7 @@ def upgrade() -> None:
     op.create_table(
         "magic_link_tokens",
         sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column("email", sa.String(255), nullable=False, index=True),
+        sa.Column("email", sa.String(255), nullable=False),
         sa.Column("token", sa.String(64), nullable=False, unique=True),
         sa.Column("ip_address", sa.String(45), nullable=True),  # IPv4/IPv6 최대 45자
         sa.Column("is_used", sa.Boolean, default=False, nullable=False, server_default="false"),

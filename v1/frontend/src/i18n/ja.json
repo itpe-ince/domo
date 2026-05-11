@@ -45,7 +45,9 @@
     "tierBenefits": "ティア特典設定",
     "artistIndex": "アーティストインデックス",
     "stories": "ストーリーハブ",
-    "accessibilitySettings": "アクセシビリティ"
+    "accessibilitySettings": "アクセシビリティ",
+    "displaySettings": "表示設定",
+    "moreMenu": "その他のメニュー"
   },
   "home": {
     "title": "Domo Lounge",
@@ -1559,12 +1561,6 @@
   },
   "accessibility": {
     "pageTitle": "アクセシビリティ設定",
-    "simpleMode": {
-      "label": "シンプルモード",
-      "description": "テキストサイズと行間を広げ、アニメーションを減らして読みやすくします。",
-      "enabled": "シンプルモードオン",
-      "disabled": "シンプルモードオフ"
-    },
     "focusMode": {
       "label": "フォーカスモード",
       "description": "キーボードナビゲーション用にインタラクティブ要素を強調します。"
@@ -1662,14 +1658,13 @@
   },
   "preferences": {
     "title": "環境設定",
+    "pageTitle": "表示設定",
+    "pageSubtitle": "表示通貨とインターフェース言語を選びます。",
     "currency": {
       "label": "通貨"
     },
     "locale": {
       "label": "言語"
-    },
-    "simpleMode": {
-      "label": "シンプルモード"
     }
   },
   "collections": {
@@ -1711,14 +1706,6 @@
     }
   },
   "auth": {
-    "github": {
-      "button": "GitHubで続ける",
-      "connecting": "GitHubに接続中...",
-      "conflict": "このメールアドレスはすでにパスワードで登録されています。",
-      "conflictHint": "ログイン後、設定でGitHubアカウントを連携してください。",
-      "noEmail": "GitHubアカウントに認証済みメールがありません。",
-      "mergeSuccess": "GitHubアカウントが連携されました。"
-    },
     "magic_link": {
       "request": {
         "tab": "メールでログイン",
@@ -1835,6 +1822,38 @@
         "caption": "AIキャプション",
         "docent": "AIドーセント",
         "collection": "AIコレクション"
+      }
+    }
+  },
+  "settings": {
+    "hub": {
+      "title": "設定",
+      "subtitle": "プロフィール・通知・プライバシーなどをまとめて管理できます",
+      "category": {
+        "profile": {
+          "title": "プロフィール",
+          "description": "自己紹介と多言語アーティスト紹介を編集"
+        },
+        "display": {
+          "title": "表示",
+          "description": "インターフェース言語と通貨の設定"
+        },
+        "accessibility": {
+          "title": "アクセシビリティ",
+          "description": "ハイコントラスト・フォーカスモードなどのオプション"
+        },
+        "notifications": {
+          "title": "通知",
+          "description": "プッシュ・メール通知とニュースレター購読"
+        },
+        "privacy": {
+          "title": "プライバシー",
+          "description": "アナリティクス同意とCookie設定"
+        },
+        "account": {
+          "title": "アカウント",
+          "description": "アカウント情報・データエクスポート・後援有効期間"
+        }
       }
     }
   }

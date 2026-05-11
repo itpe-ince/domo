@@ -23,11 +23,6 @@ class Settings(BaseSettings):
     google_client_id: str = ""
     google_client_secret: str = ""
 
-    # C-2 GitHub OAuth — GitHub App에서 발급
-    # 미설정 시 /auth/sns/github 엔드포인트가 503 반환 (graceful)
-    github_client_id: str = ""
-    github_client_secret: str = ""
-
     payment_provider: str = "mock_stripe"  # 'mock_stripe' | 'stripe'
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""

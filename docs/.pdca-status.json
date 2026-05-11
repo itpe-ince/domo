@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-08T16:57:05.140Z",
+  "lastUpdated": "2026-05-11T12:41:38.719Z",
   "activeFeatures": [
     "core",
     "db",
@@ -167,9 +167,15 @@
     "audit_partition_cron.py",
     "cron_monitor.py",
     "slack_alert_cron.py",
-    "system"
+    "system",
+    "e2e",
+    "setup",
+    "user",
+    "cross-app",
+    "profile",
+    "display"
   ],
-  "primaryFeature": "domo-phase13-roadmap",
+  "primaryFeature": "settings-unification",
   "phase8ArchivedAt": "2026-05-05T22:00:00.000Z",
   "phase8ArchivedTo": "v1/docs/archive/2026-05/domo-phase8-roadmap/",
   "phase7ArchivedAt": "2026-05-05T11:00:00.000Z",
@@ -298,6 +304,15 @@
   },
   "criticalPathNext": "**Phase 5 종결 (12/12 = 100%, archived 2026-05-04)**. 다음 옵션: (1) Phase 6 신규 로드맵 정의 — A. Discovery & Growth Funnel (피드 알고리즘 + Explore + Search + Onboarding 깔때기) 또는 C. Artist Index & Storytelling (글로벌 신진작가 ranking + 스토리 페이지). (2) Phase 5 carry-over 정리 PDCA: D-7 #10.1 (POST_TIER_RESTRICTED CTA + sponsor N일 + SQL-only filter), alembic 0045 cancellation_reason+feedback, Stripe coupon 실제 발행, es.json artist.* 26 keys (Phase 6 i18n sprint), WCAG manual audit, PostHog/Amplitude 도입, multi-currency, push/email, DM messaging, OpenTelemetry. (3) P3-1 커뮤니티 로드맵 (별도 P3 진행). (4) editor-video-studio (#6-video, ffmpeg 차단 해제 후)",
   "features": {
+    "settings-unification": {
+      "phase": "archived",
+      "startedAt": "2026-05-11T00:00:00.000Z",
+      "completedAt": "2026-05-11T13:45:00.000Z",
+      "archivedAt": "2026-05-11T13:50:00.000Z",
+      "archivedTo": "v1/docs/archive/2026-05/settings-unification/",
+      "matchRate": 99,
+      "iterationCount": 0
+    },
     "editor-media-ux": {
       "phase": "archived",
       "matchRate": 95,
@@ -525,9 +540,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:32:03.535Z",
-        "lastUpdated": "2026-05-08T14:42:55.849Z"
+        "lastUpdated": "2026-05-11T06:04:47.125Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/core/rate_limit.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/core/config.py"
     },
     "db": {
       "phase": "do",
@@ -551,9 +566,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:23.836Z",
-        "lastUpdated": "2026-05-08T16:35:31.591Z"
+        "lastUpdated": "2026-05-11T06:04:50.473Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/admin_system.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/auth.py"
     },
     "schemas": {
       "phase": "do",
@@ -564,7 +579,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:30.319Z",
-        "lastUpdated": "2026-05-08T14:43:10.883Z"
+        "lastUpdated": "2026-05-11T06:04:46.524Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/auth.py"
     },
@@ -616,7 +631,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:35:13.871Z",
-        "lastUpdated": "2026-05-08T16:12:20.571Z"
+        "lastUpdated": "2026-05-11T05:33:27.236Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0088_audit_logs_partitioning.py"
     },
@@ -629,9 +644,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-05-08T14:50:27.396Z"
+        "lastUpdated": "2026-05-11T12:41:38.718Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/LoginModal.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/PreferencesCard.tsx"
     },
     "applications": {
       "phase": "do",
@@ -668,9 +683,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T09:22:43.092Z",
-        "lastUpdated": "2026-05-06T06:39:25.248Z"
+        "lastUpdated": "2026-05-11T05:40:35.701Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/scripts/i18n-key-audit.sh"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/scripts/seed_e2e.py"
     },
     "[id]": {
       "phase": "do",
@@ -798,9 +813,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:29:48.362Z",
-        "lastUpdated": "2026-04-18T06:19:13.191Z"
+        "lastUpdated": "2026-05-11T07:21:19.186Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/app/settings/page.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/settings/page.tsx"
     },
     "subscriptions": {
       "phase": "do",
@@ -863,9 +878,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T13:09:09.994Z",
-        "lastUpdated": "2026-05-04T14:52:57.896Z"
+        "lastUpdated": "2026-05-11T07:24:36.438Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/settings/privacy/page.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/legal/privacy/page.tsx"
     },
     "terms": {
       "phase": "do",
@@ -902,9 +917,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T13:10:37.708Z",
-        "lastUpdated": "2026-04-14T00:04:46.896Z"
+        "lastUpdated": "2026-05-11T07:23:27.474Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/account/page.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/settings/account/page.tsx"
     },
     "storage": {
       "phase": "do",
@@ -1006,9 +1021,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-12T02:33:38.475Z",
-        "lastUpdated": "2026-05-05T13:08:48.945Z"
+        "lastUpdated": "2026-05-11T07:22:40.060Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/notifications/page.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/settings/notifications/page.tsx"
     },
     "following": {
       "phase": "do",
@@ -1136,9 +1151,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T22:41:17.631Z",
-        "lastUpdated": "2026-05-08T14:28:37.802Z"
+        "lastUpdated": "2026-05-11T05:39:45.671Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/admin/src/components/AdminShell.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/e2e/tests/admin/admin-2fa.spec.ts"
     },
     "artist-apply": {
       "phase": "do",
@@ -1266,9 +1281,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-18T13:33:25.454Z",
-        "lastUpdated": "2026-05-04T12:00:50.464Z"
+        "lastUpdated": "2026-05-11T05:35:34.025Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/support/page.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/e2e/support/auth.ts"
     },
     "login": {
       "phase": "do",
@@ -1466,9 +1481,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T11:12:43.615Z",
-        "lastUpdated": "2026-05-08T15:54:28.557Z"
+        "lastUpdated": "2026-05-11T06:05:05.762Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/conftest.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/factories.py"
     },
     "unit": {
       "phase": "do",
@@ -1479,9 +1494,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-03T11:12:44.673Z",
-        "lastUpdated": "2026-05-08T16:57:05.140Z"
+        "lastUpdated": "2026-05-11T05:29:30.117Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/unit/test_post_caption_override.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/tests/unit/test_artwork_caption_jobs.py"
     },
     "integration": {
       "phase": "do",
@@ -1583,7 +1598,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-04T11:57:16.809Z",
-        "lastUpdated": "2026-05-05T20:45:44.222Z"
+        "lastUpdated": "2026-05-11T07:24:24.708Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/patronage/page.tsx"
     },
@@ -2155,9 +2170,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-05T13:09:34.499Z",
-        "lastUpdated": "2026-05-05T13:10:50.581Z"
+        "lastUpdated": "2026-05-11T06:11:45.978Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/notifications/preferences/page.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/settings/preferences/page.tsx"
     },
     "domo-phase9-roadmap": {
       "phase": "archived",
@@ -2232,7 +2247,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-05T22:29:43.110Z",
-        "lastUpdated": "2026-05-05T22:29:43.110Z"
+        "lastUpdated": "2026-05-11T07:23:34.092Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/settings/accessibility/page.tsx"
     },
@@ -2310,7 +2325,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-06T03:21:45.934Z",
-        "lastUpdated": "2026-05-08T16:43:39.710Z"
+        "lastUpdated": "2026-05-11T05:25:40.207Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/services/artwork_caption_jobs.py"
     },
@@ -2772,6 +2787,84 @@
         "lastUpdated": "2026-05-08T16:47:10.815Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/admin/system/page.tsx"
+    },
+    "e2e": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-11T04:22:56.864Z",
+        "lastUpdated": "2026-05-11T05:41:08.876Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/e2e/playwright.config.ts"
+    },
+    "setup": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-11T05:29:45.390Z",
+        "lastUpdated": "2026-05-11T05:31:19.623Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/e2e/tests/setup/admin-auth.setup.ts"
+    },
+    "user": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-11T05:30:03.341Z",
+        "lastUpdated": "2026-05-11T05:30:03.341Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/e2e/tests/user/user-smoke.spec.ts"
+    },
+    "cross-app": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-11T05:40:55.679Z",
+        "lastUpdated": "2026-05-11T05:40:55.679Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/e2e/tests/cross-app/artist-application-review.spec.ts"
+    },
+    "profile": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-11T07:21:46.541Z",
+        "lastUpdated": "2026-05-11T07:21:46.541Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/settings/profile/page.tsx"
+    },
+    "display": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-05-11T07:21:54.202Z",
+        "lastUpdated": "2026-05-11T07:21:54.202Z"
+      },
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/settings/display/page.tsx"
     }
   },
   "pipeline": {
@@ -2782,7 +2875,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-05-08T16:57:05.140Z"
+    "lastActivity": "2026-05-11T12:41:38.719Z"
   },
   "history": [
     {
@@ -21568,6 +21661,576 @@
     {
       "timestamp": "2026-05-08T16:57:05.140Z",
       "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T04:22:56.865Z",
+      "feature": "e2e",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T04:43:57.451Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T04:44:01.590Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T04:44:16.306Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T04:44:42.177Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T04:52:51.163Z",
+      "feature": "support",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T04:53:52.664Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T04:53:53.356Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:25:14.566Z",
+      "feature": "artwork_caption_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:25:22.125Z",
+      "feature": "artwork_caption_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:25:24.921Z",
+      "feature": "artwork_caption_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:25:31.877Z",
+      "feature": "artwork_caption_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:25:40.207Z",
+      "feature": "artwork_caption_jobs.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:29:06.111Z",
+      "feature": "support",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:29:28.847Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:29:30.117Z",
+      "feature": "unit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:29:33.149Z",
+      "feature": "support",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:29:45.390Z",
+      "feature": "setup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:29:50.100Z",
+      "feature": "setup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:30:03.341Z",
+      "feature": "user",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:30:13.595Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:31:12.586Z",
+      "feature": "setup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:31:19.623Z",
+      "feature": "setup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:32:40.220Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:33:06.130Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:33:27.236Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:34:14.526Z",
+      "feature": "support",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:34:25.395Z",
+      "feature": "support",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:34:42.310Z",
+      "feature": "support",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:35:04.938Z",
+      "feature": "support",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:35:34.025Z",
+      "feature": "support",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:35:37.072Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:39:45.671Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:40:35.701Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:40:55.679Z",
+      "feature": "cross-app",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T05:41:08.876Z",
+      "feature": "e2e",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:04:28.619Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:04:30.184Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:04:30.848Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:04:34.826Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:04:37.087Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:04:37.439Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:04:37.904Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:04:43.725Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:04:46.524Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:04:47.125Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:04:50.473Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:04:54.211Z",
+      "feature": "tests",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:04:54.609Z",
+      "feature": "tests",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:04:57.125Z",
+      "feature": "tests",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:05:04.377Z",
+      "feature": "tests",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:05:04.738Z",
+      "feature": "tests",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:05:05.762Z",
+      "feature": "tests",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:10:29.409Z",
+      "feature": "preferences",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:10:30.523Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:10:30.990Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:10:33.122Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:10:34.142Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:10:35.657Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:10:36.526Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:10:38.888Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:10:39.826Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:10:40.446Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:10:40.524Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:10:43.450Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:10:46.055Z",
+      "feature": "accessibility",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:11:45.978Z",
+      "feature": "preferences",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:11:46.465Z",
+      "feature": "accessibility",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:24:22.925Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:24:24.441Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:24:27.478Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:24:27.929Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:24:37.238Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:24:37.992Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:24:44.626Z",
+      "feature": "account",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:24:47.112Z",
+      "feature": "account",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:25:03.173Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:45:00.051Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:45:01.542Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:45:02.444Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:45:04.332Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T06:45:14.267Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T07:21:19.186Z",
+      "feature": "settings",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T07:21:46.541Z",
+      "feature": "profile",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T07:21:54.202Z",
+      "feature": "display",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T07:22:40.060Z",
+      "feature": "notifications",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T07:23:27.474Z",
+      "feature": "account",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T07:23:34.092Z",
+      "feature": "accessibility",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T07:23:39.494Z",
+      "feature": "privacy",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T07:24:08.854Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T07:24:14.492Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T07:24:20.557Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T07:24:24.708Z",
+      "feature": "patronage",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T07:24:36.438Z",
+      "feature": "privacy",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-11T12:41:38.718Z",
+      "feature": "frontend",
       "phase": "do",
       "action": "updated"
     }

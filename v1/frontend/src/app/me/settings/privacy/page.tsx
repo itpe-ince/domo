@@ -63,14 +63,14 @@ export default function PrivacySettingsPage() {
 
   return (
     <main className="flex-1 min-w-0 max-w-2xl mx-auto px-6 py-8 space-y-6">
-      <div>
+      <nav aria-label="breadcrumb">
         <Link
           href="/me/settings"
-          className="text-text-secondary text-sm hover:text-primary"
+          className="text-text-muted text-sm hover:text-primary"
         >
-          {t("common.back")}
+          ← {t("settings.hub.title")}
         </Link>
-      </div>
+      </nav>
 
       <div>
         <h1 className="text-2xl font-bold">{t("privacy.title")}</h1>
