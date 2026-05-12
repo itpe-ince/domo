@@ -84,7 +84,7 @@ export function EditorStepPublish({
         </p>
       )}
 
-      <p className="text-text-muted text-xs">{t("post.artCheckNote")}</p>
+      {/* ② artCheckNote 상시 표시 제거 — 등록 버튼 클릭 시 경고 모달로 대체 */}
 
       {error && (
         <div className="card border-danger p-3 text-danger text-sm">

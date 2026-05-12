@@ -233,6 +233,12 @@
     "tags": "タグ",
     "makingVideoLabel": "次のアップロードをメイキング動画として表示",
     "artCheckNote": "※ 画像/動画を含む投稿は審査キューに入ります。",
+    "digitalArtWarning": {
+      "title": "デジタルアート審査キューのご案内",
+      "body": "※ 画像/動画を含む投稿はデジタルアート審査キューに入ります（管理者承認が必要）。",
+      "confirm": "確認して投稿",
+      "cancel": "キャンセル"
+    },
     "productInfo": "商品情報",
     "genre": "ジャンル",
     "dimensions": "サイズ",

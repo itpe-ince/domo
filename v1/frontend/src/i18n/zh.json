@@ -233,6 +233,12 @@
     "tags": "標籤",
     "makingVideoLabel": "將下次上傳標記為製作過程影片",
     "artCheckNote": "※ 含圖片/影片的貼文將進入審核。",
+    "digitalArtWarning": {
+      "title": "數位藝術審核隊列通知",
+      "body": "※ 含圖片/影片的貼文將進入數位藝術審核隊列（需管理員審批）。",
+      "confirm": "確認並發布",
+      "cancel": "取消"
+    },
     "productInfo": "商品資訊",
     "genre": "類型",
     "dimensions": "尺寸",

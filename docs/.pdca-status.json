@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-12T05:57:11.323Z",
+  "lastUpdated": "2026-05-12T12:57:27.342Z",
   "activeFeatures": [
     "core",
     "db",
@@ -839,7 +839,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:41:45.679Z",
-        "lastUpdated": "2026-05-08T11:47:38.592Z"
+        "lastUpdated": "2026-05-12T12:49:18.668Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/posts/new/page.tsx"
     },
@@ -1073,9 +1073,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-13T01:31:08.565Z",
-        "lastUpdated": "2026-05-08T03:04:47.159Z"
+        "lastUpdated": "2026-05-12T12:57:27.342Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/PreviewToggleButton.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/PreviewPane.tsx"
     },
     "feed": {
       "phase": "do",
@@ -1455,9 +1455,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-01T02:01:35.488Z",
-        "lastUpdated": "2026-05-04T11:25:12.688Z"
+        "lastUpdated": "2026-05-12T12:32:45.361Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/wizard/EditorStepContent.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/post-editor/wizard/EditorStepPublish.tsx"
     },
     "image_transform.py": {
       "phase": "do",
@@ -2875,7 +2875,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-05-12T05:57:11.323Z"
+    "lastActivity": "2026-05-12T12:57:27.342Z"
   },
   "history": [
     {
@@ -22303,6 +22303,180 @@
     {
       "timestamp": "2026-05-12T05:57:11.323Z",
       "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:28:53.754Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:29:04.048Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:29:14.380Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:29:22.032Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:29:36.102Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:29:44.447Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:29:52.315Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:30:11.676Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:30:26.547Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:30:50.278Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:30:59.031Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:31:11.162Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:31:23.920Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:31:38.470Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:31:45.784Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:32:21.839Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:32:45.361Z",
+      "feature": "wizard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:43:42.818Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:43:46.914Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:43:56.426Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:44:14.905Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:48:20.498Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:48:39.073Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:48:50.448Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:49:00.780Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:49:05.740Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:49:18.668Z",
+      "feature": "new",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:57:24.553Z",
+      "feature": "post-editor",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T12:57:27.342Z",
+      "feature": "post-editor",
       "phase": "do",
       "action": "updated"
     }

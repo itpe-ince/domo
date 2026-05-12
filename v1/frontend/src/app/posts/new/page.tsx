@@ -33,10 +33,12 @@ import {
   type DraftRestoreSource,
 } from "@/components/DraftRestoreDialog";
 import { EditorMobileWizard } from "@/components/post-editor/EditorMobileWizard";
+import { EditorTopBar } from "@/components/post-editor/EditorTopBar";
 import { EditorWorkspace } from "@/components/post-editor/EditorWorkspace";
 import { PreviewPane } from "@/components/post-editor/PreviewPane";
 import { PublishDrawer } from "@/components/post-editor/PublishDrawer";
 import { ImageEditorLazy } from "@/components/post-editor/ImageEditorLazy";
+import { DigitalArtWarningModal } from "@/components/post-editor/DigitalArtWarningModal";
 import nextDynamic from "next/dynamic";
 
 // SeriesCreateModal — 시리즈 생성 모달. 에디터 페이지에서만 필요하며
@@ -186,6 +188,11 @@ function CreatePostPageInner() {
 
   // B1: 발행 옵션 Drawer (desktop only) — 헤더 버튼으로 열기
   const [isPublishDrawerOpen, setIsPublishDrawerOpen] = useState(false);
+
+  // ② 디지털 아트 판독 큐 경고 모달 — 미디어 첨부 시 등록 버튼 클릭하면 표시
+  const [digitalArtWarningOpen, setDigitalArtWarningOpen] = useState(false);
+  // 실제 등록 로직을 저장해두었다가 confirm 시 실행
+  const pendingSubmitRef = useRef<(() => Promise<void>) | null>(null);
 
   useEffect(() => {
     if (!meLoading && !me) {
@@ -493,6 +500,20 @@ function CreatePostPageInner() {
     }
   }
 
+  // ② 등록 버튼 클릭 시 미디어 첨부된 경우 경고 모달 경유
+  // 미디어 없으면 바로 handleSubmit 실행, 있으면 경고 모달 → 확인 시 handleSubmit.
+  async function handleSubmitWithWarning() {
+    const hasMedia = media.some(
+      (m) => m.type === "image" || m.type === "video"
+    );
+    if (hasMedia) {
+      pendingSubmitRef.current = handleSubmit;
+      setDigitalArtWarningOpen(true);
+    } else {
+      await handleSubmit();
+    }
+  }
+
   function mapPublishError(
     e: unknown,
     t: (key: string) => string
@@ -558,13 +579,9 @@ function CreatePostPageInner() {
         />
       )}
 
-      <main
-        className={`flex-1 min-w-0 md:grid md:items-start ${
-          isPreviewVisible
-            ? "md:grid-cols-[minmax(0,1fr)_24rem]"
-            : "md:grid-cols-1"
-        }`}
-      >
+      {/* ① Desktop 레이아웃: 좌(편집) / 우(미리보기) 2-col split.
+          페이지 폭 max-w-7xl로 확장 — 동시 작업 환경 제공. */}
+      <main className="flex-1 min-w-0 flex flex-col">
         {/* Mobile (< md): step wizard. Internally owns useEditorWizardStep
             and renders the four EditorStepXxx components plus a sticky
             footer with prev/next/submit + 임시저장 buttons. */}
@@ -596,7 +613,7 @@ function CreatePostPageInner() {
           draftStatus={draftStatus}
           lastSavedAt={lastSavedAt}
           onManualSave={handleManualSave}
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmitWithWarning}
           multiTabWarning={multiTabWarning}
           onDismissWarning={() => setMultiTabWarning(false)}
           onFiles={handleFiles}
@@ -624,11 +641,31 @@ function CreatePostPageInner() {
           setEarlyAccessTier={setEarlyAccessTier}
         />
 
-        {/* Desktop (≥ md): single-column workspace + side preview pane.
-            EditorMobileWizard above sets `display:none` on md+ so it is
-            removed from the CSS grid; grid placement falls to these
-            two children. */}
-        <div className="hidden md:block max-w-3xl mx-auto md:mx-0 md:max-w-none w-full">
+        {/* Desktop (≥ md) sticky toolbar — grid 전체 폭에 걸침.
+            모바일은 EditorMobileWizard 자체 sticky footer 사용하므로 hidden md:block. */}
+        <div className="hidden md:block w-full max-w-7xl mx-auto">
+          <EditorTopBar
+            me={me ?? null}
+            type={type}
+            setters={setters}
+            uploading={uploading}
+            submitting={submitting}
+            draftStatus={draftStatus}
+            lastSavedAt={lastSavedAt}
+            onManualSave={handleManualSave}
+            onSubmit={handleSubmitWithWarning}
+            scheduledAt={scheduledAt}
+            isPreviewVisible={isPreviewVisible}
+            onTogglePreview={() => setIsPreviewVisible((v) => !v)}
+            onPublishOptionsClick={() => setIsPublishDrawerOpen(true)}
+          />
+        </div>
+
+        {/* Desktop (≥ md): 좌(편집) + 우(미리보기) 좌우 split.
+            isPreviewVisible 토글 시 우측 패널 접기. 폭은 max-w-7xl까지 확장. */}
+        <div className="hidden md:grid w-full max-w-7xl mx-auto gap-6 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] data-[preview-hidden=true]:md:grid-cols-1"
+             data-preview-hidden={!isPreviewVisible}>
+          <div className="min-w-0">
           <EditorWorkspace
             type={type}
             title={title}
@@ -657,7 +694,7 @@ function CreatePostPageInner() {
             draftStatus={draftStatus}
             lastSavedAt={lastSavedAt}
             onManualSave={handleManualSave}
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmitWithWarning}
             isPreviewVisible={isPreviewVisible}
             onTogglePreview={() => setIsPreviewVisible((v) => !v)}
             onPublishOptionsClick={() => setIsPublishDrawerOpen(true)}
@@ -687,22 +724,29 @@ function CreatePostPageInner() {
             earlyAccessTier={earlyAccessTier}
             setEarlyAccessTier={setEarlyAccessTier}
           />
-        </div>
+          </div>
 
-        <PreviewPane
-          isVisible={isPreviewVisible}
-          type={type}
-          title={title}
-          content={content}
-          media={media}
-          embeds={embeds}
-          tags={tags}
-          genre={genre}
-          isAuction={isAuction}
-          isBuyNow={isBuyNow}
-          buyNowPrice={buyNowPrice}
-          me={me ?? null}
-        />
+        {/* ① PreviewPane 우측 — sticky로 스크롤 따라옴.
+            isPreviewVisible=false 시 위 grid가 1-col로 떨어지며 이 영역 숨김. */}
+        <aside className={`min-w-0 ${isPreviewVisible ? "block" : "hidden"}`}>
+          <div className="md:sticky md:top-4">
+          <PreviewPane
+            isVisible={isPreviewVisible}
+            type={type}
+            title={title}
+            content={content}
+            media={media}
+            embeds={embeds}
+            tags={tags}
+            genre={genre}
+            isAuction={isAuction}
+            isBuyNow={isBuyNow}
+            buyNowPrice={buyNowPrice}
+            me={me ?? null}
+          />
+          </div>
+        </aside>
+        </div>
       </main>
 
       {/* editor-image-studio PDCA #6-image — image editor modal (Konva, browser-only).
@@ -728,6 +772,22 @@ function CreatePostPageInner() {
           onCancel={() => setEditingMediaId(null)}
         />
       )}
+
+      {/* ② 디지털 아트 판독 큐 경고 모달 — 미디어 첨부 시 등록 직전 표시 */}
+      <DigitalArtWarningModal
+        open={digitalArtWarningOpen}
+        onConfirm={async () => {
+          setDigitalArtWarningOpen(false);
+          if (pendingSubmitRef.current) {
+            await pendingSubmitRef.current();
+            pendingSubmitRef.current = null;
+          }
+        }}
+        onCancel={() => {
+          setDigitalArtWarningOpen(false);
+          pendingSubmitRef.current = null;
+        }}
+      />
 
       {/* B1: 발행 옵션 Drawer (desktop only, z-50). 모바일은 wizard step 그대로. */}
       <PublishDrawer

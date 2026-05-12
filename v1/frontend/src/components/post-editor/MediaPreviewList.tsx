@@ -23,9 +23,10 @@
  * localStorage need a one-time backfill — see MediaPreviewList itself for
  * the index-based fallback id).
  */
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   DndContext,
+  DragOverlay,
   PointerSensor,
   TouchSensor,
   KeyboardSensor,
@@ -33,6 +34,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -100,6 +102,9 @@ export function MediaPreviewList({
     })
   );
 
+  // ④ DragOverlay: 드래그 중인 아이템 ID 추적 — 화면 하단 고정 버그 해결
+  const [activeId, setActiveId] = useState<string | null>(null);
+
   // Items array drives SortableContext; useMemo prevents identity churn on
   // unrelated re-renders.
   const itemIds = useMemo(() => media.map((m, i) => mediaId(m, i)), [media]);
@@ -111,10 +116,26 @@ export function MediaPreviewList({
     return m;
   }, [uploadQueue]);
 
+  // Map itemId → media item for DragOverlay lookup
+  const mediaById = useMemo(() => {
+    const m = new Map<string, CreatePostMedia>();
+    media.forEach((item, i) => m.set(itemIds[i], item));
+    return m;
+  }, [media, itemIds]);
+
+  function handleDragStart(event: DragStartEvent) {
+    setActiveId(String(event.active.id));
+  }
+
   function handleDragEnd(event: DragEndEvent) {
+    setActiveId(null);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     onReorder(String(active.id), String(over.id));
+  }
+
+  function handleDragCancel() {
+    setActiveId(null);
   }
 
   if (media.length === 0 && embeds.length === 0 && uploadQueue.length === 0) {
@@ -129,6 +150,8 @@ export function MediaPreviewList({
     if (idx >= 0) onRemoveMedia(idx);
   }
 
+  const activeMedia = activeId ? mediaById.get(activeId) : null;
+
   return (
     <div className="space-y-3">
       <MediaUploadProgress
@@ -141,7 +164,9 @@ export function MediaPreviewList({
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
         >
           <SortableContext items={itemIds} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -162,12 +187,45 @@ export function MediaPreviewList({
               })}
             </div>
           </SortableContext>
+
+          {/* ④ DragOverlay: 드래그 preview가 화면 하단 고정되는 버그 해결.
+              dnd-kit 표준 패턴: DragOverlay 가 pointer 위치를 추적하며
+              실제 DOM 위치와 무관하게 오버레이를 렌더링함. */}
+          <DragOverlay>
+            {activeId && activeMedia ? (
+              <DragOverlayCard media={activeMedia} />
+            ) : null}
+          </DragOverlay>
         </DndContext>
       )}
 
       {embeds.map((embed, i) => (
         <OEmbedCard key={i} data={embed} onRemove={() => onRemoveEmbed(i)} />
       ))}
+    </div>
+  );
+}
+
+/**
+ * DragOverlayCard — DragOverlay 내에서 렌더링되는 썸네일.
+ * 실제 SortableMediaCard 의 drag 중 시각(0.5 opacity)과 같은 느낌을 주되
+ * 가볍게 유지 (caption 등 인터랙티브 요소 제외).
+ */
+function DragOverlayCard({ media: m }: { media: CreatePostMedia }) {
+  return (
+    <div className="aspect-square rounded-lg overflow-hidden bg-surface-hover shadow-xl opacity-90 ring-2 ring-primary/40 pointer-events-none w-full">
+      {m.type === "image" ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={m.url} alt="" className="w-full h-full object-cover" />
+      ) : m.type === "video" ? (
+        <div className="w-full h-full flex items-center justify-center bg-black/30">
+          <span className="text-3xl text-white/80">▶</span>
+        </div>
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-text-muted text-xs p-2">
+          {m.external_source || m.type}
+        </div>
+      )}
     </div>
   );
 }

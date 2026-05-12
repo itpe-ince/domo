@@ -16,7 +16,6 @@
  * Pattern source: design §4.1 (EditorWorkspace).
  */
 
-import Link from "next/link";
 import { useI18n } from "@/i18n";
 import {
   type ApiUser,
@@ -27,7 +26,6 @@ import {
   type Visibility,
   type Series,
 } from "@/lib/api";
-import { formatRelativeTime } from "@/lib/formatRelativeTime";
 import type {
   DraftSaveStatus,
 } from "@/lib/hooks/useDraftAutosave";
@@ -40,7 +38,6 @@ import {
 import { MediaToolbar } from "@/components/post-editor/MediaToolbar";
 import { MediaPreviewList } from "@/components/post-editor/MediaPreviewList";
 import { ProductFields } from "@/components/post-editor/ProductFields";
-import { PreviewToggleButton } from "@/components/post-editor/PreviewToggleButton";
 import { TagAutocomplete } from "@/components/post-editor/TagAutocomplete";
 import { PublishOptionsPanel } from "@/components/post-editor/PublishOptionsPanel";
 import { useAutoResizeTextarea } from "@/lib/hooks/useAutoResizeTextarea";
@@ -189,63 +186,6 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
 
   return (
     <>
-      {/* Sticky header: title + autosave indicator + actions */}
-      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between gap-2">
-        <div className="flex flex-col min-w-0">
-          <h1 className="text-xl font-bold">{t("post.createTitle")}</h1>
-          <AutosaveIndicator
-            status={draftStatus}
-            lastSavedAt={lastSavedAt}
-            t={t}
-          />
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Desktop-only preview toggle */}
-          <div className="hidden md:block">
-            <PreviewToggleButton
-              isVisible={isPreviewVisible}
-              onToggle={onTogglePreview}
-            />
-          </div>
-          {/* B1: 발행 옵션 Drawer 트리거 (desktop only) — page.tsx 가 isPublishDrawerOpen 관리 */}
-          <button
-            type="button"
-            onClick={onPublishOptionsClick}
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border text-sm font-medium hover:bg-surface-hover transition-colors"
-          >
-            ⚙️ {t("post.editor.publishOptions.title")}
-          </button>
-          <Link
-            href="/posts/drafts"
-            className="text-xs text-text-muted hover:text-primary transition-colors hidden sm:inline"
-          >
-            {t("post.draft.list.title")}
-          </Link>
-          {me && (
-            <button
-              onClick={onManualSave}
-              disabled={draftStatus === "saving" || submitting}
-              className="text-sm text-text-secondary border border-border rounded-full px-3 py-1.5 hover:bg-surface-hover disabled:opacity-40 transition-colors"
-            >
-              {draftStatus === "saving"
-                ? t("post.draft.savingIndicator")
-                : t("post.draft.saveButton")}
-            </button>
-          )}
-          <button
-            onClick={onSubmit}
-            disabled={submitting || !me}
-            className="btn-primary text-sm disabled:opacity-50"
-          >
-            {submitting
-              ? t("post.submitting")
-              : scheduledAt
-                ? t("post.submitScheduled")
-                : t("post.submit")}
-          </button>
-        </div>
-      </div>
-
       {/* AC-7: multi-tab edit warning banner */}
       {multiTabWarning && (
         <div
@@ -272,15 +212,18 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
 
       {me && (
         <div className="p-4 space-y-4">
-          {/* Post type toggle — UI guard: non-artists cannot select 'product'.
+          {/* PostTypeSelector는 sticky header에 통합됨 (③).
+              비아티스트 사용자를 위한 hint만 별도 행으로 유지.
               Backend defense remains at api/posts.py:206-210 (FORBIDDEN 403). */}
-          <PostTypeSelector
-            value={type}
-            onChange={setters.setType}
-            userRole={me.role}
-            applicationStatus={applicationStatus}
-            disabled={uploading || submitting}
-          />
+          {!(me.role === "artist" || me.role === "admin") && applicationStatus !== undefined && (
+            <PostTypeSelector
+              value={type}
+              onChange={setters.setType}
+              userRole={me.role}
+              applicationStatus={applicationStatus}
+              disabled={uploading || submitting}
+            />
+          )}
 
           {/* Title */}
           <input
@@ -288,7 +231,7 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
             value={title}
             onChange={(e) => setters.setTitle(e.target.value)}
             placeholder={t("post.title")}
-            className="w-full bg-transparent text-xl font-bold text-text-primary placeholder:text-text-muted outline-none border-none"
+            className="w-full bg-transparent text-xl font-bold text-text-primary placeholder:text-text-muted outline-none border-none pb-3 border-b border-border"
           />
 
           {/* Content — A1: rows 고정 제거, min-h-[180px] + useAutoResizeTextarea 로 자동 확장.
@@ -423,9 +366,7 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
             />
           )}
 
-          <p className="text-text-muted text-xs">
-            {t("post.artCheckNote")}
-          </p>
+          {/* ② artCheckNote 항상 표시 제거 — 등록 버튼 클릭 시 미디어 첨부된 경우에만 경고 모달로 표시 */}
           {/* B1: PublishOptionsPanel 은 page.tsx 의 PublishDrawer 로 이동.
                inline 박스 제거 — 데스크탑에서 헤더 "⚙️ 발행 옵션" 버튼으로 Drawer 열기. */}
         </div>
@@ -434,39 +375,3 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
   );
 }
 
-// ─── Inline AutosaveIndicator (extracted from page.tsx) ─────────────────
-// Kept colocated with EditorWorkspace because it is the only consumer.
-function AutosaveIndicator({
-  status,
-  lastSavedAt,
-  t,
-}: {
-  status: DraftSaveStatus;
-  lastSavedAt: Date | null;
-  t: (key: string, params?: Record<string, string>) => string;
-}) {
-  // Branch order preserved verbatim from the previous page.tsx implementation
-  // — idle OR no lastSavedAt yet returns null, hiding the indicator until the
-  // first server save lands. Changing this order would alter UX during the
-  // very first autosave cycle.
-  if (status === "idle" || !lastSavedAt) return null;
-  if (status === "error") {
-    return (
-      <span className="text-xs text-danger">
-        {t("post.draft.errorIndicator")}
-      </span>
-    );
-  }
-  if (status === "saving") {
-    return (
-      <span className="text-xs text-text-muted">
-        {t("post.draft.savingIndicator")}
-      </span>
-    );
-  }
-  return (
-    <span className="text-xs text-text-muted">
-      {t("post.draft.savedIndicator")} · {formatRelativeTime(lastSavedAt)}
-    </span>
-  );
-}

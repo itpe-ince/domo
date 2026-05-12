@@ -233,6 +233,12 @@
     "tags": "태그",
     "makingVideoLabel": "다음 업로드를 메이킹/타임랩스 영상으로 표시",
     "artCheckNote": "※ 이미지/영상 포함 시 디지털 아트 판독 큐에 진입합니다 (관리자 승인 필요).",
+    "digitalArtWarning": {
+      "title": "디지털 아트 판독 큐 안내",
+      "body": "※ 이미지/영상 포함 시 디지털 아트 판독 큐에 진입합니다 (관리자 승인 필요).",
+      "confirm": "확인 후 등록",
+      "cancel": "취소"
+    },
     "productInfo": "상품 정보",
     "genre": "장르",
     "dimensions": "크기",

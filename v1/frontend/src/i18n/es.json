@@ -233,6 +233,12 @@
     "tags": "Etiquetas",
     "makingVideoLabel": "Marcar próxima subida como video de proceso",
     "artCheckNote": "※ Publicaciones con imágenes/videos entrarán en cola de revisión.",
+    "digitalArtWarning": {
+      "title": "Aviso: Cola de revisión de arte digital",
+      "body": "※ Las publicaciones con imágenes/videos entrarán en la cola de revisión de arte digital (requiere aprobación del administrador).",
+      "confirm": "Confirmar y publicar",
+      "cancel": "Cancelar"
+    },
     "productInfo": "Info del producto",
     "genre": "Género",
     "dimensions": "Dimensiones",

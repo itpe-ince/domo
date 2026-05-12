@@ -233,6 +233,12 @@
     "tags": "Tags",
     "makingVideoLabel": "Mark next upload as making/timelapse video",
     "artCheckNote": "※ Posts with images/videos will enter the digital art review queue.",
+    "digitalArtWarning": {
+      "title": "Digital Art Review Queue Notice",
+      "body": "※ Posts with images/videos will enter the digital art review queue (admin approval required).",
+      "confirm": "Confirm & Submit",
+      "cancel": "Cancel"
+    },
     "productInfo": "Product Info",
     "genre": "Genre",
     "dimensions": "Dimensions",
