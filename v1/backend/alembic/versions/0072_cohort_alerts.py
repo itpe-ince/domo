@@ -21,6 +21,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    # uuid_generate_v4() 사용을 위한 uuid-ossp extension 활성화 (멱등)
+    op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
+
     op.create_table(
         "cohort_alerts",
         sa.Column(

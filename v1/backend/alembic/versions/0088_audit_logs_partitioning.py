@@ -30,6 +30,9 @@ depends_on = None
 
 
 def upgrade() -> None:
+    # uuid_generate_v4() 사용을 위한 uuid-ossp extension 활성화 (멱등)
+    op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
+
     # ──────────────────────────────────────────────────────────────────────────
     # 1단계: 파티션 부모 테이블 생성 (PARTITION BY RANGE)
     # ──────────────────────────────────────────────────────────────────────────
