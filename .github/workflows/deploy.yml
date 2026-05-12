@@ -7,6 +7,8 @@ on:
       - master
     paths:
       - "v1/**"
+      # workflow 자체 변경 시에도 trigger (build/push 로직 수정 시 즉시 검증).
+      - ".github/workflows/deploy.yml"
     tags:
       - "v*"
   workflow_dispatch:
@@ -88,15 +90,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build & push ${{ matrix.component }}
+      - name: Build & push ${{ matrix.component }} (SHA tag only)
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
           platforms: linux/arm64
           push: true
-          tags: |
-            ${{ env[matrix.image_var] }}:${{ steps.tag.outputs.IMAGE_TAG }}
-            ${{ env[matrix.image_var] }}:latest
+          # 2026-05-13 운영 사고: build-push-action의 multi-tag push가 frontend에서
+          # latest를 누락하는 패턴 반복 발생 (3시간 전 SHA는 push됐는데 latest는
+          # 11시간 전 image 그대로). 안정성을 위해 SHA 태그만 build-push-action으로
+          # push하고, latest 태그는 아래 별도 step에서 imagetools create로 동기화.
+          tags: ${{ env[matrix.image_var] }}:${{ steps.tag.outputs.IMAGE_TAG }}
           # frontend/admin은 Next.js standalone build 산출물이 cache layer에
           # 동결되어 source 변경 후에도 stale image가 push되는 사례 발생
           # (2026-05-11 운영 사고: 4/28 이미지가 그대로 latest로 재push됨).
@@ -106,6 +110,15 @@ jobs:
           # Note: NEXT_PUBLIC_* values come from each app's .env.production
           # (committed to git, applied automatically by Next.js at build).
           # No build-args needed — pattern B keeps GitHub vars off the path.
+
+      - name: Sync latest tag to SHA digest
+        # SHA 태그가 push 완료된 후 동일 digest를 latest로 명시적 retag.
+        # docker buildx imagetools create는 manifest 단위 copy라 race condition 없음.
+        run: |
+          docker buildx imagetools create \
+            --tag ${{ env[matrix.image_var] }}:latest \
+            ${{ env[matrix.image_var] }}:${{ steps.tag.outputs.IMAGE_TAG }}
+          echo "✓ Synced latest → ${{ steps.tag.outputs.IMAGE_TAG }} for ${{ matrix.component }}"
 
   # =============================================================
   # Job 2: Verify required GitHub Secrets
