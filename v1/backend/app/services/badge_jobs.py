@@ -21,6 +21,7 @@ from app.models.auction import Order
 from app.models.post import Follow
 from app.models.sponsorship import Sponsorship
 from app.models.user import ArtistProfile, User
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 
 log = logging.getLogger(__name__)
 
@@ -103,12 +104,15 @@ async def badge_cron_loop(interval_seconds: int = 86400) -> None:
     """Background task — runs daily (default 24h)."""
     log.info("badge_cron_loop started (interval=%ss)", interval_seconds)
     while True:
+        await _push_cron_status("badge", "running")
         try:
             async with AsyncSessionLocal() as db:
                 stats = await update_artist_badges_once(db)
                 total = sum(stats.values())
                 if total:
                     log.info("Badge sweep: %s", stats)
+            await _push_cron_status("badge", "success")
         except Exception as e:
             log.exception("badge cron sweep failed: %s", e)
+            await _push_cron_status("badge", "failed", error=str(e)[:500])
         await asyncio.sleep(interval_seconds)

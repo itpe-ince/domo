@@ -27,6 +27,54 @@
   }
 }
 
+/* ─── Phase 9 L-E: WCAG AAA Color Tokens ──────────────────────────────────── */
+:root {
+  --color-text-subtle: #C8BBAE;   /* ~10.2:1 on background — AAA pass */
+  --color-danger-aaa: #F07070;    /* ~7.1:1 on background — AAA pass */
+}
+
+/* ─── Phase 9 L-E: WCAG AAA focus-visible ring (전체 인터랙티브 요소) ─────── */
+@layer base {
+  :focus-visible {
+    outline: 2px solid #A8D76E;
+    outline-offset: 2px;
+  }
+}
+
+/* ─── 통합 스크롤바 스타일 (Phase 10 UX 개선) ────────────────────────────────
+   Firefox + Chrome/Safari/Edge 양쪽 지원.
+   색상: Tailwind 토큰 border(#6B5440), text-muted(#998F82) 하드코딩
+   — CSS 변수 미사용 프로젝트이므로 직접 값 참조. */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #6B5440 transparent;
+}
+
+/* Chrome/Safari/Edge */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #6B5440;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #998F82;
+}
+
+/* .scrollbar-hide 클래스는 기존 동작 유지 (위 전역 규칙보다 우선) */
+
 @layer components {
   .font-logo {
     font-family: 'Playfair Display', serif;

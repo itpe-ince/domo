@@ -107,20 +107,22 @@ async def buy_now(
     if user.warning_count >= 3 or user.status == "suspended":
         raise ApiError("ACCOUNT_SUSPENDED", "Account suspended", http_status=403)
 
-    # Compute platform fee
+    # G'-10: buy_now_price is now cents (BigInteger). All fee math is integer cents.
+    # Compute platform fee (cents)
     fee_setting = await get_setting(db, "platform_fee_buy_now")
     fee_pct = (
         Decimal(str(fee_setting["percent"])) if fee_setting else Decimal("8")
     )
-    fee = (pp.buy_now_price * fee_pct / Decimal("100")).quantize(Decimal("0.01"))
+    price_cents = pp.buy_now_price  # already int cents
+    fee = int(Decimal(str(price_cents)) * fee_pct / Decimal("100"))
 
-    # Create payment intent
+    # Create payment intent (Stripe expects cents — now consistent)
     deadline = await get_setting(db, "auction_payment_deadline_days")
     deadline_days = int(deadline["days"]) if deadline else 3
 
     provider = get_payment_provider()
     intent = await provider.create_payment_intent(
-        amount=pp.buy_now_price,
+        amount=price_cents,
         currency=pp.currency or "KRW",
         metadata={
             "purpose": "buy_now",
@@ -129,14 +131,14 @@ async def buy_now(
         },
     )
 
-    buyer_fee = pp.buy_now_price * Decimal("0.10")  # 구매자 수수료 10%
+    buyer_fee = int(price_cents * Decimal("0.10"))  # 구매자 수수료 10% (cents)
     order = Order(
         buyer_id=user.id,
         seller_id=post.author_id,
         product_post_id=post_id,
         source="buy_now",
         auction_id=None,
-        amount=pp.buy_now_price,
+        amount=price_cents,
         currency=pp.currency or "KRW",
         platform_fee=fee,
         buyer_fee=buyer_fee,

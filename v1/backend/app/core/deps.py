@@ -45,3 +45,22 @@ async def require_active_user(user: User = Depends(get_current_user)) -> User:
     if user.status != "active":
         raise ApiError("ACCOUNT_SUSPENDED", "Account not active", http_status=403)
     return user
+
+
+async def require_email_verified(user: User = Depends(get_current_user)) -> User:
+    """D-3: 이메일 인증 완료 사용자만 허용.
+
+    게시물 작성, 후원 결제 등 민감한 기능에 적용.
+    Google OAuth 사용자는 alembic 0085 마이그레이션에서 email_verified=True 일괄 설정됨.
+    비밀번호 가입 사용자는 이메일 인증 전까지 차단.
+    """
+    if user.status != "active":
+        raise ApiError("ACCOUNT_SUSPENDED", "Account not active", http_status=403)
+    # email_verified 컬럼이 없는 구 사용자(마이그레이션 전)는 통과 처리
+    if not getattr(user, "email_verified", True):
+        raise ApiError(
+            "EMAIL_NOT_VERIFIED",
+            "이메일 인증이 필요한 기능입니다. 가입 시 발송된 인증 메일을 확인해주세요.",
+            http_status=403,
+        )
+    return user

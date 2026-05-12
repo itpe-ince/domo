@@ -13,6 +13,7 @@ import {
   HomeIcon,
   LayersIcon,
   PlusIcon,
+  SettingsIcon,
   UserIcon,
   UsersIcon,
 } from "./icons";
@@ -77,6 +78,16 @@ export function MobileTabBar() {
           aria-label={t("common.search")}
         >
           <ExploreIcon />
+        </Link>
+
+        <Link
+          href="/me/settings"
+          className={`flex-1 flex items-center justify-center py-2 ${iconCls(
+            pathname.startsWith("/me/settings")
+          )}`}
+          aria-label={t("nav.settings")}
+        >
+          <SettingsIcon />
         </Link>
 
         {me ? (

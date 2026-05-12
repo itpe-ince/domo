@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import AsyncSessionLocal
 from app.models.auth_token import RefreshToken
 from app.models.user import User
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 
 log = logging.getLogger(__name__)
 
@@ -65,9 +66,12 @@ async def gdpr_cron_loop(interval_seconds: int = 3600) -> None:
     """Background task — runs every hour."""
     log.info("gdpr_cron_loop started (interval=%ss)", interval_seconds)
     while True:
+        await _push_cron_status("gdpr", "running")
         try:
             async with AsyncSessionLocal() as db:
                 await hard_delete_pending_users(db)
+            await _push_cron_status("gdpr", "success")
         except Exception as e:  # noqa: BLE001
             log.exception("gdpr cron sweep failed: %s", e)
+            await _push_cron_status("gdpr", "failed", error=str(e)[:500])
         await asyncio.sleep(interval_seconds)

@@ -14,7 +14,7 @@ const config: Config = {
           DEFAULT: "#2A2018",
           hover: "#352821",
         },
-        border: "#3D2F24",
+        border: "#6B5440",
         primary: {
           DEFAULT: "#A8D76E",
           hover: "#BDE284",
@@ -23,9 +23,13 @@ const config: Config = {
         text: {
           primary: "#F5EFE4",
           secondary: "#B5A99A",
-          muted: "#7A6F60",
+          muted: "#998F82",
+          // Phase 9 L-E: AAA 필수 위치 전용 토큰 (~10.2:1 on background)
+          subtle: "#C8BBAE",
         },
         danger: "#E85D5D",
+        // Phase 9 L-E: 경매 urgent 상태 AAA 대비 토큰 (~7.1:1 on background)
+        dangerAAA: "#F07070",
         warning: "#F0B14A",
         success: "#A8D76E",
       },

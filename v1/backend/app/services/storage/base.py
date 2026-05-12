@@ -60,6 +60,14 @@ class StorageProvider(ABC):
         """Check if the object exists."""
 
     @abstractmethod
+    async def get(self, key: str) -> bytes:
+        """Read object bytes from storage.
+
+        Raises:
+            FileNotFoundError: if the key does not exist in storage.
+        """
+
+    @abstractmethod
     async def presign_post(
         self,
         key: str,

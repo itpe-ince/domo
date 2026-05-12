@@ -184,7 +184,7 @@ export default function AuctionDetailPage({
     Number(auction.current_price) + Number(auction.min_increment);
 
   return (
-    <main className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8">
+    <main id="main-content" className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8">
       <Link
         href={`/posts/${auction.product_post_id}`}
         className="text-text-secondary text-sm mb-6 inline-block hover:text-primary"
@@ -194,7 +194,10 @@ export default function AuctionDetailPage({
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-8">
         {/* Image */}
-        <section>
+        <section aria-label="경매 작품 이미지">
+          {post && (
+            <h1 className="sr-only">{post.title} 경매</h1>
+          )}
           <div className="card overflow-hidden">
             {cover ? (
               <div className="aspect-[4/5] bg-background overflow-hidden">
@@ -212,7 +215,7 @@ export default function AuctionDetailPage({
           </div>
           {post && (
             <div className="mt-4 space-y-2">
-              <h2 className="text-xl font-semibold">{post.title}</h2>
+              <p className="text-xl font-semibold">{post.title}</p>
               {post.product?.medium && (
                 <p className="text-text-secondary text-sm">
                   {post.product.medium} · {post.product.dimensions} ·{" "}
@@ -233,7 +236,7 @@ export default function AuctionDetailPage({
         </section>
 
         {/* Bid panel */}
-        <section className="space-y-4">
+        <section className="space-y-4" aria-label="입찰 패널">
           <div className="card p-6 space-y-4">
             <div>
               <span
@@ -252,25 +255,38 @@ export default function AuctionDetailPage({
             </div>
 
             <div>
-              <div className="text-text-muted text-xs mb-1">현재 입찰가</div>
+              <div className="text-text-subtle text-xs mb-1">현재 입찰가</div>
               <div className="text-3xl font-bold text-primary">
                 {fmt(auction.current_price)}
               </div>
-              <div className="text-text-muted text-xs mt-1">
+              <div className="text-text-subtle text-xs mt-1">
                 시작가 {fmt(auction.start_price)} · 입찰 단위{" "}
                 {fmt(auction.min_increment)}
               </div>
             </div>
 
             <div>
-              <div className="text-text-muted text-xs mb-1">남은 시간</div>
+              <div className="text-text-subtle text-xs mb-1">남은 시간</div>
+              {/* aria-live="off" — 매 초 읽기 제외, urgent 시만 assertive로 처리 */}
               <div
+                aria-live="off"
+                aria-atomic="true"
                 className={`text-2xl font-mono ${
-                  countdown.urgent ? "text-danger animate-pulse" : ""
+                  countdown.urgent ? "text-dangerAAA" : ""
                 }`}
               >
                 {countdown.text}
               </div>
+              {/* urgent 알림 — 스크린리더용 assertive 영역 */}
+              {countdown.urgent && (
+                <div
+                  aria-live="assertive"
+                  aria-atomic="true"
+                  className="sr-only"
+                >
+                  잔여 시간 10초 이하
+                </div>
+              )}
             </div>
 
             <div className="flex justify-between text-sm text-text-secondary border-t border-border pt-3">
@@ -293,17 +309,22 @@ export default function AuctionDetailPage({
 
             {isActive && !isSeller && me && (
               <div className="space-y-2 pt-2">
+                <label htmlFor="bid-amount" className="sr-only">
+                  입찰 금액 (최소 {fmt(minRequired)})
+                </label>
                 <input
+                  id="bid-amount"
                   type="number"
                   value={bidAmount}
                   min={minRequired}
                   step={Number(auction.min_increment)}
+                  aria-describedby="bid-min-hint"
                   onChange={(e) =>
                     setBidAmount(Number(e.target.value) || "")
                   }
-                  className="w-full bg-background border border-border rounded-lg px-4 py-3 text-text-primary text-lg focus:border-primary outline-none"
+                  className="w-full bg-background border border-border rounded-lg px-4 py-3 text-text-primary text-lg focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background outline-none"
                 />
-                <div className="text-text-muted text-xs">
+                <div id="bid-min-hint" className="text-text-subtle text-xs">
                   최소 입찰가: {fmt(minRequired)}
                 </div>
                 <button
@@ -322,21 +343,24 @@ export default function AuctionDetailPage({
               </div>
             )}
 
-            {error && (
-              <div className="card border-danger p-3 text-danger text-sm">
-                {error}
-              </div>
-            )}
-            {bidFlash && (
-              <div className="card border-primary p-3 text-primary text-sm">
-                {bidFlash}
-              </div>
-            )}
+            {/* 입찰 결과 알림 — aria-live="polite" */}
+            <div aria-live="polite" aria-atomic="true">
+              {error && (
+                <div role="alert" className="card border-danger p-3 text-danger text-sm">
+                  {error}
+                </div>
+              )}
+              {bidFlash && (
+                <div className="card border-primary p-3 text-primary text-sm">
+                  {bidFlash}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Bid history */}
           <div className="card p-4">
-            <h3 className="font-semibold mb-3 text-sm">입찰 내역</h3>
+            <h2 className="font-semibold mb-3 text-sm">입찰 내역</h2>
             {bids.length === 0 ? (
               <p className="text-text-muted text-sm">아직 입찰이 없습니다.</p>
             ) : (
@@ -354,14 +378,14 @@ export default function AuctionDetailPage({
                       {fmt(b.amount)}
                       {b.status === "active" && " ✦"}
                     </span>
-                    <span className="text-text-muted text-xs">
+                    <span className="text-text-subtle text-xs">
                       {new Date(b.created_at).toLocaleTimeString("ko-KR")}
                     </span>
                   </li>
                 ))}
               </ul>
             )}
-            <p className="text-text-muted text-xs mt-3 text-right">
+            <p className="text-text-subtle text-xs mt-3 text-right">
               · 2초마다 자동 갱신
             </p>
           </div>

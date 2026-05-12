@@ -19,6 +19,7 @@ from app.models.notification import Notification
 from app.models.settlement import Settlement, SettlementItem
 from app.models.user import User
 from app.services.settings import get_setting
+from app.services.cron_monitor import record_cron_run as _push_cron_status
 
 log = logging.getLogger(__name__)
 
@@ -98,6 +99,7 @@ async def settlement_cron_loop(interval_seconds: int = 86400) -> None:
     """Background task — checks daily, generates batch on settlement day."""
     log.info("settlement_cron_loop started (interval=%ss)", interval_seconds)
     while True:
+        await _push_cron_status("settlement", "running")
         try:
             async with AsyncSessionLocal() as db:
                 cycle_setting = await get_setting(db, "settlement_cycle")
@@ -120,6 +122,8 @@ async def settlement_cron_loop(interval_seconds: int = 86400) -> None:
                     batches = await generate_settlement_batch(db, period_start, period_end)
                     if batches:
                         log.info("Settlement cron: generated %d batches", len(batches))
+            await _push_cron_status("settlement", "success")
         except Exception as e:
             log.exception("settlement cron failed: %s", e)
+            await _push_cron_status("settlement", "failed", error=str(e)[:500])
         await asyncio.sleep(interval_seconds)

@@ -21,7 +21,8 @@
     "following": "Siguiendo",
     "followers": "Seguidores",
     "likes": "Me gusta",
-    "comments": "Comentarios"
+    "comments": "Comentarios",
+    "close": "Cerrar"
   },
   "nav": {
     "home": "Inicio",
@@ -29,6 +30,7 @@
     "following": "Siguiendo",
     "explore": "Explorar",
     "notifications": "Notificaciones",
+    "messages": "Mensajes",
     "profile": "Perfil",
     "register": "Crear",
     "subscription": "Suscripciones",
@@ -36,7 +38,16 @@
     "warnings": "Advertencias",
     "settings": "Configuración",
     "admin": "Admin",
-    "communities": "Comunidades"
+    "communities": "Comunidades",
+    "draftsList": "Borradores",
+    "mySponsoring": "Mis patrocinios",
+    "patronageDashboard": "Panel de mecenazgo",
+    "tierBenefits": "Configurar beneficios por nivel",
+    "artistIndex": "Índice de artistas",
+    "stories": "Hub de historias",
+    "accessibilitySettings": "Accesibilidad",
+    "displaySettings": "Pantalla",
+    "moreMenu": "Más opciones"
   },
   "home": {
     "title": "Domo Lounge",
@@ -49,10 +60,24 @@
   },
   "feed": {
     "title": "Feed",
+    "titlePersonalized": "Feed personalizado",
     "subtitleAuth": "Mezcla de artistas seguidos y obras populares.",
+    "subtitlePersonalized": "Una mezcla de tus seguidos, recomendaciones y tendencias.",
     "subtitleGuest": "Obras populares de artistas emergentes.",
     "noPosts": "No hay publicaciones.",
-    "loadError": "Error al cargar el feed"
+    "loadError": "Error al cargar el feed",
+    "loadMore": "Cargar más",
+    "emptyTitle": "Descubre artistas para seguir",
+    "emptySubtitle": "Aún no sigues a ningún artista. Sigue artistas recomendados para llenar tu feed.",
+    "emptyCtaFollow": "Ver artistas recomendados",
+    "emptyCtaSponsor": "Conocer Blue Bird",
+    "algoToggleLabel": "Orden del feed",
+    "algoDefault": "Recientes",
+    "algoPersonalized": "Para ti",
+    "reasonFollowing": "Siguiendo",
+    "reasonTrending": "Tendencia",
+    "reasonSimilarGenre": "Género similar",
+    "reasonLabel": "Recomendado: {{reason}}"
   },
   "followingPage": {
     "title": "Siguiendo",
@@ -68,7 +93,44 @@
     "all": "Todo",
     "allPosts": "Todas las publicaciones",
     "products": "Obras en venta",
-    "general": "Publicaciones generales"
+    "general": "Publicaciones generales",
+    "noPosts": "No hay publicaciones para mostrar.",
+    "tabs": {
+      "ariaLabel": "Pestañas de exploración",
+      "trending": "Tendencias",
+      "new": "Nuevo",
+      "region": "Región",
+      "genre": "Género",
+      "pricing": "En venta"
+    },
+    "filters": {
+      "regionLabel": "Región",
+      "regionAll": "Todas las regiones",
+      "regionSEA": "Sudeste asiático",
+      "regionLATAM": "América Latina",
+      "regionEEU": "Europa del Este",
+      "regionEAS": "Asia Oriental",
+      "regionNAM": "América del Norte",
+      "regionWEU": "Europa Occidental",
+      "genreLabel": "Género",
+      "genreAll": "Todos los géneros",
+      "genreWatercolor": "Acuarela",
+      "genreOil": "Óleo",
+      "genreDigital": "Arte digital",
+      "genreSculpture": "Escultura",
+      "genreMixed": "Técnica mixta",
+      "pricingHint": "Mostrando obras disponibles en subasta o para compra inmediata."
+    },
+    "hero": {
+      "ariaLabel": "Artista destacado",
+      "badge": "Artista del día",
+      "viewProfile": "Ver perfil"
+    },
+    "rankingPreview": {
+      "ariaLabel": "Vista previa del índice de artistas emergentes",
+      "title": "Índice de artistas emergentes",
+      "viewAll": "Ver más artistas emergentes"
+    }
   },
   "search": {
     "placeholder": "Buscar...",
@@ -85,14 +147,76 @@
     "sortLatest": "Recientes",
     "sortPopular": "Populares",
     "sortEnding": "Por terminar",
-    "searchHint": "Busca artistas, obras y publicaciones."
+    "searchHint": "Busca artistas, obras y publicaciones.",
+    "v2": {
+      "recentHistory": "Historial de búsqueda reciente",
+      "popular": "Búsquedas populares",
+      "clearHistory": "Borrar historial",
+      "priceMin": "Precio mínimo",
+      "priceMax": "Precio máximo",
+      "regionPlaceholder": "Región (ej. MX,US)",
+      "activeOnly": "Solo activos",
+      "filterPrice": "Precio",
+      "filterRegion": "Región",
+      "filterActive": "Activo",
+      "sortRelevance": "Relevancia",
+      "typeAll": "Todo",
+      "typeArtists": "Artistas",
+      "typeArtworks": "Obras",
+      "typePosts": "Publicaciones",
+      "noHistory": "Sin historial de búsqueda reciente",
+      "noPopular": "Aún no hay búsquedas populares",
+      "historyCleared": "Historial de búsqueda borrado"
+    }
   },
   "notifications": {
     "title": "Notificaciones",
     "markAllRead": "Marcar todo como leído",
     "loginRequired": "Inicia sesión para ver notificaciones.",
     "loginHint": "Usa el botón de inicio de sesión en la barra lateral.",
-    "empty": "No hay notificaciones."
+    "empty": "No hay notificaciones.",
+    "center": {
+      "title": "Notificaciones",
+      "markAllRead": "Marcar todo como leído",
+      "empty": {
+        "all": "No hay notificaciones",
+        "unread": "No hay notificaciones sin leer"
+      },
+      "filter": {
+        "all": "Todo",
+        "unread": "Sin leer",
+        "auction": "Subasta",
+        "sponsorship": "Patrocinio",
+        "engagement": "Me gusta/Comentarios",
+        "system": "Sistema"
+      },
+      "markedAsRead": "{{count}} notificaciones marcadas como leídas"
+    },
+    "preferences": {
+      "title": "Configuración de notificaciones",
+      "subtitle": "Elige las notificaciones que deseas recibir",
+      "pushSection": "Notificaciones push",
+      "emailSection": "Notificaciones por correo",
+      "pushEnabled": "Notificaciones push (general)",
+      "emailEnabled": "Resumen por correo (general)",
+      "digestFrequency": "Frecuencia del resumen",
+      "frequency": {
+        "weekly": "Semanal",
+        "biweekly": "Quincenal",
+        "monthly": "Mensual",
+        "never": "Nunca"
+      },
+      "types": {
+        "auction": "Alertas de subasta",
+        "sponsorship": "Alertas de patrocinio",
+        "engagement": "Me gusta y comentarios",
+        "system": "Alertas del sistema",
+        "digest": "Resumen"
+      },
+      "saveSuccess": "Configuración de notificaciones guardada",
+      "saveError": "Error al guardar la configuración",
+      "gdprNote": "Debes dar tu consentimiento explícito para recibir notificaciones (cumple con el GDPR)"
+    }
   },
   "post": {
     "untitled": "Sin título",
@@ -115,12 +239,410 @@
     "medium": "Medio",
     "year": "Año",
     "auctionSell": "Vender en subasta",
+    "auctionBadge": "Subasta",
     "buyNow": "Compra inmediata",
-    "buyNowPrice": "Precio compra inmediata (USD)"
+    "buyNowPrice": "Precio compra inmediata (USD)",
+    "locationPrompt": "Ingresa el nombre del lugar (ej: Museo Nacional de Arte)",
+    "genreLabel": "Género: {{value}}",
+    "buyNowPriceLabel": "Precio inmediato: ${{price}}",
+    "type": {
+      "product": {
+        "disabledTitle": "Publicaciones de producto: solo artistas",
+        "disabledHint": "Las publicaciones de producto están disponibles tras el registro de artista",
+        "disabledHintPending": "Tu solicitud de artista para publicaciones de producto está en revisión (1-3 días normalmente)",
+        "disabledHintRejected": "Tu solicitud de artista para publicaciones de producto fue rechazada.",
+        "applyLink": "Solicitar como artista",
+        "applyAgainLink": "Volver a solicitar",
+        "errorOnlyArtists": "Solo los artistas pueden crear publicaciones de productos."
+      }
+    },
+    "draft": {
+      "saveButton": "Guardar borrador",
+      "savedIndicator": "Guardado",
+      "savingIndicator": "Guardando...",
+      "errorIndicator": "Error al guardar",
+      "restoreDialog": {
+        "title": "Restaurar borrador",
+        "body": "Hay un borrador guardado anteriormente.",
+        "continue": "Continuar",
+        "continueRecommended": "Continuar (recomendado)",
+        "restorePrevious": "Restaurar versión anterior",
+        "discard": "Empezar de nuevo",
+        "discardAll": "Eliminar ambos"
+      },
+      "list": {
+        "title": "Borradores",
+        "empty": "No hay borradores",
+        "newPost": "Nueva publicación"
+      },
+      "deleted": "Borrador eliminado",
+      "card": {
+        "untitled": "(Sin título)",
+        "openInEditor": "Continuar",
+        "delete": "Eliminar",
+        "typeGeneral": "General",
+        "typeProduct": "Producto"
+      },
+      "multiTabWarning": "Otra pestaña está editando. El guardado más reciente prevalece."
+    },
+    "editor": {
+      "preview": {
+        "title": "Vista previa",
+        "toggleShow": "Vista previa",
+        "toggleHide": "Ocultar vista previa",
+        "label": "Vista previa",
+        "video": "▶ Vídeo",
+        "externalEmbed": "Incrustado externo",
+        "empty": {
+          "title": "Aún no se ha introducido nada.",
+          "hint": "Añade un título, contenido o medios para ver la vista previa."
+        }
+      },
+      "media": {
+        "caption": {
+          "label": "Leyenda",
+          "placeholder": "Añade una leyenda... (ej. intención, medio)",
+          "tooLong": "Supera los 280 caracteres"
+        },
+        "dragHandle": {
+          "aria": "Arrastrar para reordenar"
+        },
+        "reorder": {
+          "aria": "Elemento multimedia {{index}}"
+        },
+        "edit": {
+          "aria": "Editar imagen"
+        },
+        "remove": {
+          "aria": "Eliminar medio"
+        },
+        "upload": {
+          "progress": "Subiendo {{done}}/{{total}}",
+          "complete": "Carga completa",
+          "failed": "{{n}} carga(s) fallida(s)"
+        },
+        "retry": {
+          "button": "Reintentar"
+        },
+        "cancel": {
+          "button": "Cancelar"
+        },
+        "error": {
+          "tooLarge": "Archivo demasiado grande (máx. 50 MB)",
+          "unsupportedType": "Tipo de archivo no compatible",
+          "authExpired": "Sesión expirada. Vuelva a iniciar sesión",
+          "rateLimit": "Demasiadas solicitudes. Inténtelo más tarde",
+          "serverError": "Error del servidor. Inténtelo de nuevo",
+          "networkError": "Error de red",
+          "cancelled": "Cancelado",
+          "unknown": "Error de carga"
+        },
+        "uploading": "Subiendo...",
+        "studio": {
+          "image": {
+            "editor": {
+              "title": "Editar imagen",
+              "saving": "Guardando...",
+              "noIdHint": "La edición de imágenes está disponible después de publicar",
+              "error": {
+                "auctionActive": "No se puede editar mientras hay una subasta activa",
+                "signatureMissing": "Por favor, sube una firma primero",
+                "tooLarge": "El archivo es demasiado grande (máx. 20MB)",
+                "unsupportedType": "Formato de archivo no compatible",
+                "notOwner": "Solo puedes editar tus propios medios",
+                "rateLimit": "Demasiadas solicitudes. Inténtalo de nuevo más tarde",
+                "generic": "Error al guardar. Inténtalo de nuevo",
+                "noMediaId": "La edición de imágenes está disponible después de publicar"
+              }
+            },
+            "tool": {
+              "rotate": {
+                "label": "Rotar",
+                "90": "Rotar 90°",
+                "180": "Rotar 180°",
+                "270": "Rotar 270°",
+                "current": "Actual"
+              },
+              "crop": {
+                "label": "Recortar",
+                "ratio_1_1": "1:1",
+                "ratio_4_3": "4:3",
+                "ratio_16_9": "16:9",
+                "ratio_free": "Libre",
+                "ratio_original": "Original"
+              },
+              "mosaic": {
+                "label": "Mosaico",
+                "strength": "Intensidad",
+                "clearAll": "Borrar todo"
+              },
+              "watermark": {
+                "label": "Marca de agua",
+                "text": {
+                  "label": "Texto de marca de agua",
+                  "placeholder": "Escribe el texto"
+                },
+                "opacity": "Opacidad",
+                "apply": "Aplicar",
+                "remove": "Quitar",
+                "signature": {
+                  "label": "Firma",
+                  "upload": "Subir firma",
+                  "change": "Cambiar",
+                  "remove": "Eliminar",
+                  "removeConfirm": "¿Eliminar la firma?",
+                  "current": "Firma actual",
+                  "loading": "Verificando firma...",
+                  "useToggle": "Usar firma como marca de agua",
+                  "tooLarge": "El archivo es demasiado grande (máx. 2MB)",
+                  "unsupportedType": "Formato no compatible (solo PNG/WebP)",
+                  "uploadFailed": "Error al subir. Por favor, inténtalo de nuevo",
+                  "modal": {
+                    "title": "Subir firma",
+                    "hint": "Sube una imagen de firma para usarla como marca de agua",
+                    "requirements": "PNG o WebP, máx. 2MB. Se recomienda fondo transparente.",
+                    "upload": "Subir",
+                    "uploading": "Subiendo..."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "wizard": {
+        "indicator": "Progreso de pasos",
+        "prev": "Atrás",
+        "next": "Siguiente",
+        "steps": {
+          "type": "Tipo",
+          "content": "Contenido",
+          "productMeta": "Producto",
+          "publishOptions": "Opciones",
+          "publish": "Publicar"
+        },
+        "stepType": {
+          "title": "¿Qué tipo de publicación vas a crear?",
+          "hint": "Las publicaciones generales están abiertas a todos; las de producto requieren registro como artista."
+        },
+        "stepProductMeta": {
+          "title": "Detalles del producto",
+          "hint": "Añade los metadatos de la obra y las opciones de venta."
+        },
+        "stepPublish": {
+          "title": "Confirmar ajustes de publicación",
+          "hint": "Revisa o modifica la programación y la ubicación a continuación.",
+          "empty": "Puedes añadir programación y ubicación desde la barra de herramientas del paso anterior."
+        }
+      },
+      "oembed": {
+        "title": "Insertar medio externo"
+      },
+      "schedulePicker": {
+        "title": "Programar publicación",
+        "hint": "La publicación se hará pública automáticamente a la hora establecida.",
+        "cancel": "Cancelar programación"
+      },
+      "scheduledLabel": "Programado",
+      "publishOptions": {
+        "title": "Opciones de publicación",
+        "visibility": {
+          "label": "Visibilidad",
+          "public": "Público",
+          "followersOnly": "Solo seguidores",
+          "unlisted": "Solo con enlace",
+          "publicHint": "Cualquier persona puede ver esta publicación",
+          "followersHint": "Solo tus seguidores pueden verla",
+          "unlistedHint": "Solo quienes tengan el enlace pueden verla"
+        },
+        "comments": {
+          "label": "Permitir comentarios",
+          "enabled": "Activados",
+          "disabled": "Desactivados",
+          "hint": "Los comentarios existentes se conservan aunque desactives los comentarios"
+        },
+        "series": {
+          "label": "Serie",
+          "select": "Seleccionar serie",
+          "createNew": "+ Crear nueva serie",
+          "none": "Todavía no has creado ninguna serie"
+        },
+        "scheduled": {
+          "label": "Publicación programada",
+          "placeholder": "Selecciona fecha y hora",
+          "timezone": "Tu zona horaria: {tz}",
+          "clearLabel": "Publicar ahora",
+          "tooSoon": "Por favor, selecciona al menos 5 minutos a partir de ahora",
+          "tooFar": "Por favor, selecciona un tiempo dentro del próximo año"
+        },
+        "tierRelease": {
+          "label": "Acceso anticipado",
+          "activeHint": "{duration} antes para {tier}",
+          "tier": {
+            "label": "Audiencia",
+            "subscriber": "Solo suscriptores",
+            "sponsor": "Suscriptores y patrocinadores",
+            "follower": "Seguidores y superiores"
+          },
+          "duration": {
+            "label": "Período de acceso anticipado",
+            "1h": "1 hora",
+            "6h": "6 horas",
+            "24h": "24 horas",
+            "3d": "3 días",
+            "7d": "7 días"
+          },
+          "expiryHint": "Abre para {visibility} después de {duration}",
+          "clear": "Quitar acceso anticipado",
+          "errorBothRequired": "Por favor selecciona tanto la audiencia como la duración"
+        }
+      },
+      "error": {
+        "postNotFound": "Publicación no encontrada",
+        "postNotOwner": "Solo puedes publicar tus propias publicaciones",
+        "postInvalidState": "Esta publicación ya ha sido publicada",
+        "auctionActiveVisibilityLocked": "No se puede cambiar la visibilidad mientras hay una subasta activa",
+        "seriesNotFound": "La serie seleccionada no existe",
+        "seriesNotOwner": "Solo puedes seleccionar tus propias series",
+        "scheduledAtTooSoon": "La publicación programada debe ser al menos 5 minutos después",
+        "scheduledAtTooFar": "La publicación programada debe ser dentro de 1 año",
+        "commentsDisabled": "Los comentarios están desactivados",
+        "invalidTier": "Valor de tier no válido",
+        "invalidDuration": "Duración no soportada (1h/6h/24h/3d/7d)",
+        "tierFieldsInconsistent": "Por favor establece tanto el tier como la duración, o deja ambos vacíos"
+      }
+    },
+    "series": {
+      "viewAll": "Ver series",
+      "byAuthor": "Series de {{name}}",
+      "edit": "Editar serie",
+      "delete": "Eliminar serie",
+      "deleteConfirm": "¿Eliminar esta serie? Las publicaciones de la serie se conservarán.",
+      "empty": "Esta serie aún no tiene publicaciones",
+      "notFound": "Serie no encontrada",
+      "postCount": "{{count}} publicaciones",
+      "addPost": "Añadir publicación",
+      "removePost": "Quitar de la serie",
+      "createModal": {
+        "title": "Crear nueva serie",
+        "titleLabel": "Título de la serie",
+        "descriptionLabel": "Descripción (opcional)",
+        "submit": "Crear",
+        "cancel": "Cancelar",
+        "coverLabel": "Imagen de portada (opcional)",
+        "coverHint": "Si no se establece, se usa automáticamente la imagen de la primera publicación",
+        "coverUploading": "Subiendo portada...",
+        "coverUploadFailed": "Error al subir la portada"
+      }
+    },
+    "feed": {
+      "indicator": {
+        "followersOnly": "Solo seguidores",
+        "unlisted": "Enlace compartido",
+        "commentsDisabled": "Los comentarios están deshabilitados en esta publicación",
+        "tier": {
+          "subscriber": "Acceso anticipado para suscriptores",
+          "sponsor": "Acceso anticipado para patrocinadores",
+          "follower": "Acceso anticipado para seguidores"
+        }
+      }
+    },
+    "detail": {
+      "tierRestricted": "Esta publicación solo está disponible para suscriptores o patrocinadores",
+      "tierRestrictedTitle": "Publicación de acceso anticipado",
+      "tierRestrictedHint": "Esta publicación se comparte primero con los patrocinadores de {{artistName}}.",
+      "tierRestrictedSponsorCta": "Apoyar a este artista",
+      "tierRestrictedSubscribeCta": "Suscripción mensual",
+      "tierRestrictedHistoryCta": "Mis patrocinios"
+    },
+    "tierLocked": {
+      "badge": "Anticipado para patrocinadores",
+      "hint": "Apoya para ver de inmediato"
+    }
+  },
+  "me": {
+    "settings": {
+      "sponsorValidity": {
+        "title": "Período de validez del patrocinio",
+        "hint": "Tiempo durante el cual un patrocinio único otorga acceso al nivel.",
+        "lifetime": "Permanente",
+        "days": "{{n}} días",
+        "save": "Guardar",
+        "saved": "Guardado"
+      }
+    }
   },
   "bluebird": {
-    "unitLabel": "Bluebird",
-    "perUnit": "$1 / 1 Bluebird"
+    "button": {
+      "label": "Patrocinar Blue Bird"
+    },
+    "modal": {
+      "title": "Patrocinio Blue Bird",
+      "subtitle": "Apoya a {{artistName}}"
+    },
+    "intro": "1 Bluebird = $1. La forma más sencilla de apoyar directamente a tu artista favorito.",
+    "type": {
+      "oneTime": "Pago único",
+      "subscription": "Suscripción mensual"
+    },
+    "amount": {
+      "label": "Seleccionar monto",
+      "custom": "Personalizado",
+      "customPlaceholder": "Ingresa monto (mín. $1)",
+      "total": "Total: ${{amount}}",
+      "totalMonthly": "${{amount}}/mes"
+    },
+    "payment": {
+      "title": "Método de pago",
+      "hint": "Tus datos de tarjeta son procesados de forma segura por Stripe.",
+      "mockHint": "Modo desarrollo (sin pago real)"
+    },
+    "confirm": {
+      "button": "Patrocinar ${{amount}}",
+      "buttonMonthly": "Suscribirse ${{amount}}/mes",
+      "processing": "Procesando pago...",
+      "summary": {
+        "artist": "Artista",
+        "amount": "Monto",
+        "type": "Tipo"
+      }
+    },
+    "success": {
+      "title": "¡Gracias!",
+      "message": "Enviaste Bluebirds a {{artistName}}.",
+      "messageMonthly": "Ahora eres patrocinador mensual de {{artistName}}.",
+      "tier": "Nivel {{tier}} activado",
+      "tierHint": "Ahora tienes acceso anticipado al contenido exclusivo del artista.",
+      "close": "Cerrar"
+    }
+  },
+  "artist": {
+    "applyTitle": "Solicitud de revisión como artista",
+    "step1": "Información básica",
+    "step2": "Obras representativas",
+    "step3": "Portafolio",
+    "step4": "Historial",
+    "school": "Universidad / Escuela",
+    "department": "Departamento",
+    "gradYear": "Año de graduación (previsto)",
+    "enrolled": "Actualmente matriculado",
+    "genreTags": "Género / Estilo",
+    "eduEmail": "Verificación de correo universitario",
+    "eduEmailHint": "Verifica tu correo universitario para obtener la insignia \"🎓 Artista verificado por universidad\".",
+    "sendCode": "Enviar código",
+    "resendCode": "Reenviar",
+    "verified": "Verificado",
+    "statement": "Sobre mí",
+    "enrollmentProof": "Comprobante de matrícula / graduación",
+    "portfolioUrls": "URLs del portafolio",
+    "introVideo": "URL del vídeo de presentación",
+    "exhibitions": "Historial de exposiciones",
+    "awards": "Premios",
+    "submitApply": "Enviar solicitud",
+    "applySuccess": "Solicitud enviada",
+    "applySuccessHint": "Recibirás una notificación tras la revisión del administrador.",
+    "alreadyArtist": "Ya eres artista",
+    "representativeWorks": "Obras representativas"
   },
   "recommendation": {
     "following": "Siguiendo",
@@ -145,5 +667,1194 @@
     "minutesAgo": "m atrás",
     "hoursAgo": "h atrás",
     "daysAgo": "d atrás"
+  },
+  "auction": {
+    "ended": "Finalizado",
+    "countdown": {
+      "label": "Tiempo restante",
+      "compact": {
+        "day": "D-{{days}}d {{hours}}h",
+        "hour": "{{hours}}h {{minutes}}m"
+      },
+      "full": {
+        "day_hour": "{{days}}d {{hours}}h",
+        "hour_minute": "{{hours}}h {{minutes}}m"
+      }
+    },
+    "shareCard": {
+      "title": "Tarjeta de compartir",
+      "generate": "Generar tarjeta",
+      "generating": "Generando tarjeta...",
+      "regenerate": "Regenerar tarjeta",
+      "retry": "Intentar de nuevo",
+      "download": "Descargar imagen",
+      "copyLink": "Copiar enlace",
+      "copied": "Enlace copiado",
+      "errorUnauthorized": "Debes iniciar sesión",
+      "errorOwnerOnly": "Solo el artista puede generarla",
+      "errorActiveOnly": "Solo subastas activas",
+      "errorRateLimit": "Inténtelo de nuevo en un momento",
+      "errorGenerate": "Error al generar la tarjeta",
+      "loading": "Generando tarjeta de compartir..."
+    }
+  },
+  "notification": {
+    "type": {
+      "auction": {
+        "ending": {
+          "24h": "Subasta termina en 24h",
+          "6h": "Subasta termina en 6h",
+          "1h": "Subasta termina en 1h"
+        },
+        "ended": "Subasta finalizada"
+      },
+      "like": "Me gusta",
+      "comment": "Comentario",
+      "follow": "Seguir",
+      "sponsor": "Patrocinio",
+      "system": "Notificación del sistema"
+    }
+  },
+  "patronage": {
+    "supporter": {
+      "title": "Mis patrocinios",
+      "subtitle": "Revisa tu historial de apoyo y gestiona suscripciones",
+      "loginRequired": "Inicia sesión para ver tu historial de patrocinios.",
+      "summary": {
+        "artistsCount": "Artistas apoyados",
+        "lifetimeAmount": "Monto total",
+        "activeSubscriptions": "Suscripciones activas"
+      },
+      "subscriptions": {
+        "title": "Suscripciones activas",
+        "cancel": "Cancelar suscripción",
+        "cancelAtEnd": "Cancela al final del período",
+        "since": "Desde",
+        "benefits": "Beneficios del nivel",
+        "changeAmount": "Cambiar monto (próximamente)",
+        "empty": "Aún no apoyas a ningún artista.",
+        "pastLabel": "suscripción(es) anterior(es)"
+      },
+      "history": {
+        "title": "Patrocinios únicos",
+        "empty": "Aún no tienes patrocinios únicos.",
+        "showMore": "Ver más",
+        "status": {
+          "succeeded": "Completado",
+          "completed": "Completado",
+          "failed": "Fallido",
+          "refunded": "Reembolsado",
+          "pending": "Pendiente"
+        }
+      },
+      "cancel": {
+        "modal": {
+          "title": "Cancelar suscripción",
+          "reason": {
+            "too_expensive": "Es muy caro",
+            "changed_mind": "Cambié de opinión",
+            "not_satisfied": "No estoy satisfecho con los beneficios",
+            "other": "Otro"
+          },
+          "confirmEnd": "Cancelar al final del período de facturación",
+          "confirmImmediate": "Cancelar inmediatamente",
+          "cta": "Confirmar cancelación"
+        }
+      },
+      "tier": {
+        "benefits": {
+          "title": "Beneficios del nivel",
+          "subscriber": "Acceso anticipado a nuevas publicaciones (1-24h antes del público), feed de contenido exclusivo, mensajes solo para suscriptores",
+          "sponsor": "Todos los beneficios de suscriptor + prioridad en Q&A del artista, insignia de patrocinador en tu perfil",
+          "follower": "Insignia de seguidor, prioridad en visibilidad de comentarios",
+          "detailsLink": "Los beneficios son los valores predeterminados de la plataforma. Los artistas pueden personalizarlos."
+        }
+      },
+      "empty": {
+        "title": "Aún no tienes patrocinios",
+        "exploreCta": "Descubrir artistas"
+      }
+    },
+    "support": {
+      "landing": {
+        "intro": "Conoce el patrocinio Blue Bird",
+        "blueBirdAbout": "Blue Bird es una unidad de micro-mecenazgo de $1 para apoyar directamente a los artistas que amas.",
+        "tierBenefits": "Beneficios del nivel",
+        "myHistory": "Mi historial de patrocinios",
+        "exploreArtists": "Explorar artistas"
+      }
+    },
+    "artist": {
+      "title": "Panel de mecenazgo",
+      "summary": {
+        "supporters": "Total de mecenas",
+        "monthlyRevenue": "Ingresos del mes",
+        "subscribers": "Suscripciones activas",
+        "tierDistribution": "Distribución por nivel"
+      },
+      "tier": {
+        "subscriber": "Suscriptores",
+        "sponsor": "Patrocinadores",
+        "follower": "Seguidores"
+      },
+      "chart": {
+        "daily": "Ingresos (últimos 30 días)",
+        "monthly": "Ingresos (últimos 12 meses)",
+        "toggle": {
+          "daily": "Diario",
+          "monthly": "Mensual"
+        }
+      },
+      "supporters": {
+        "table": {
+          "title": "Lista de mecenas"
+        },
+        "filter": {
+          "active": "Activo",
+          "churned": "Perdido",
+          "all": "Todos"
+        },
+        "col": {
+          "username": "Usuario",
+          "tier": "Nivel",
+          "since": "Desde",
+          "lifetime": "Total acumulado",
+          "status": "Estado"
+        },
+        "empty": "Aún no hay mecenas.",
+        "loadMore": "Ver más"
+      },
+      "payout": {
+        "request": "Solicitar pago",
+        "balance": "Saldo disponible",
+        "balanceHint": "Ingresos acumulados (liquidación completa en Fase 6)",
+        "modalTitle": "Solicitar pago",
+        "amountLabel": "Importe (centavos USD)",
+        "amountPlaceholder": "ej. 5000 (= $50)",
+        "methodLabel": "Método",
+        "methodBank": "Transferencia bancaria",
+        "methodStripe": "Stripe",
+        "success": "Solicitud de pago enviada correctamente."
+      },
+      "empty": {
+        "title": "Aún no tienes mecenas",
+        "cta": "Ver cómo activar el mecenazgo Blue Bird"
+      }
+    },
+    "churn": {
+      "feedback": {
+        "preview": "Vista previa del comentario"
+      },
+      "empty": {
+        "celebrated": "No hay mecenas que hayan abandonado en los últimos 30 días ✨"
+      }
+    },
+    "analytics": {
+      "title": "Análisis",
+      "noData": "Aún no hay datos disponibles.",
+      "mockBadge": "datos de muestra",
+      "cohort": {
+        "title": "Retención de cohorte (D1 / D7 / D30)",
+        "d1": "Día 1",
+        "d7": "Día 7",
+        "d30": "Día 30"
+      },
+      "coupon": {
+        "title": "Uso de cupones de recuperación",
+        "issued": "Emitidos",
+        "applied": "Aplicados",
+        "cancelReverted": "Cancelaciones revertidas",
+        "expired": "Vencidos",
+        "redemptionRate": "Tasa de uso"
+      },
+      "newsletter": {
+        "title": "Tasa de apertura y clics del boletín",
+        "openRate": "Tasa de apertura",
+        "clickRate": "Tasa de clics"
+      },
+      "funnel": {
+        "title": "Embudo de conversión de mecenazgo",
+        "postClick": "Clic en publicación",
+        "sponsorStart": "Inicio de patrocinio",
+        "sponsorSuccess": "Patrocinio exitoso",
+        "active30d": "Activo 30d",
+        "conversionRate": "Conversión total"
+      },
+      "dm": {
+        "title": "Participación en mensajes directos",
+        "firstMessageRate": "Tasa de primer mensaje",
+        "firstMessageHint": "Nuevos mecenas que enviaron un mensaje",
+        "avgResponseTime": "Tiempo medio de respuesta",
+        "avgResponseUnit": "Tiempo mediano de respuesta del artista",
+        "totalThreads": "Total de conversaciones"
+      }
+    }
+  },
+  "tierBenefits": {
+    "editor": {
+      "title": "Configurar beneficios por nivel",
+      "subtitle": "Define beneficios personalizados para cada nivel. Los niveles sin configuración mostrarán los beneficios predeterminados de la plataforma."
+    },
+    "tier": {
+      "subscriber": "Suscriptor",
+      "sponsor": "Patrocinador",
+      "follower": "Seguidor"
+    },
+    "benefit": {
+      "add": "Agregar",
+      "remove": "Eliminar",
+      "placeholder": "Escribe un beneficio (máx. 200 caracteres)",
+      "maxLength": "Cada beneficio puede tener hasta 200 caracteres.",
+      "maxCount": "Puedes agregar hasta {max} beneficios.",
+      "emptyHint": "Aún no hay beneficios. Agrega uno abajo."
+    },
+    "welcomeMessage": {
+      "label": "Mensaje de bienvenida (opcional)",
+      "placeholder": "Un mensaje de agradecimiento para tus mecenas (máx. 500 caracteres)",
+      "maxLength": "El mensaje de bienvenida puede tener hasta 500 caracteres."
+    },
+    "action": {
+      "save": "Guardar",
+      "reset": "Usar predeterminado",
+      "resetConfirm": "¿Restablecer los beneficios de este nivel a los valores predeterminados?",
+      "saving": "Guardando...",
+      "saved": "Guardado"
+    },
+    "preview": {
+      "title": "Vista previa"
+    },
+    "profile": {
+      "title": "Beneficios de mecenazgo"
+    },
+    "empty": {
+      "platformDefault": "Beneficios predeterminados de {tier}"
+    },
+    "error": {
+      "tooLong": "Cada beneficio puede tener hasta 200 caracteres.",
+      "tooMany": "Puedes agregar hasta 10 beneficios.",
+      "saveError": "Error al guardar. Inténtalo de nuevo."
+    }
+  },
+  "common_ui": {
+    "comingSoon": "Próximamente",
+    "optional": "opcional",
+    "perMonth": "/mes",
+    "auctionBadge": "Subasta",
+    "buyNowBadge": "Comprar ya"
+  },
+  "bluebird_modal": {
+    "closeAriaLabel": "Cerrar",
+    "typeSelectAriaLabel": "Seleccionar tipo de patrocinio",
+    "amountSelectAriaLabel": "Seleccionar monto",
+    "cardInputAriaLabel": "Información de tarjeta",
+    "mockDevBanner": "Modo desarrollo — sin pago real (Stripe no conectado)",
+    "mockCardPlaceholder": "Tarjeta de prueba: 4242 4242 4242 4242",
+    "mockCardAriaLabel": "Número de tarjeta de prueba",
+    "messageLabel": "Mensaje (opcional)",
+    "messagePlaceholder": "Deja un breve mensaje de apoyo al artista",
+    "messageAriaLabel": "Mensaje de apoyo",
+    "visibilityLabel": "Visibilidad",
+    "visibilityAriaLabel": "Visibilidad",
+    "visibilityPublic": "Público",
+    "visibilityArtistOnly": "Solo el artista",
+    "visibilityPrivate": "Privado",
+    "anonymousLabel": "Patrocinar anónimamente",
+    "nextStepsLabel": "Próximos pasos",
+    "minAmountError": "Por favor, introduce al menos $1.",
+    "cardInfoRequiredError": "Por favor, completa tu información de tarjeta.",
+    "setupInitError": "Error al inicializar el método de pago.",
+    "unknownError": "Se produjo un error desconocido",
+    "stripeError": {
+      "cardDeclined": "Tu tarjeta fue rechazada. Prueba con otra tarjeta.",
+      "insufficientFunds": "Fondos insuficientes.",
+      "authRequired": "Falló la autenticación de la tarjeta. Inténtalo de nuevo.",
+      "unknown": "Error en el pago. Inténtalo de nuevo."
+    }
+  },
+  "cancel_modal": {
+    "discountComingSoonNote": "La integración de cupones Stripe está prevista para Fase 6+.",
+    "pauseComingSoonNote": "La función de pausa de suscripción está prevista para Fase 6+.",
+    "feedbackPlaceholder": "Dile al artista qué podría mejorar...",
+    "feedbackAriaLabel": "Entrada de comentarios",
+    "otherFeedbackPlaceholder": "Comparte tus pensamientos libremente...",
+    "otherFeedbackAriaLabel": "Otros comentarios",
+    "optionalSuffix": "(opcional)"
+  },
+  "churn": {
+    "last30DaysSuffix": "(últimos 30 días)",
+    "comingSoonSuffix": "(próximamente)"
+  },
+  "post_card": {
+    "bluebirdAriaLabel": "Patrocinio Blue Bird",
+    "bluebirdLabel": "Apoyar"
+  },
+  "retention": {
+    "thankyou": {
+      "title": "¡Gracias!",
+      "welcomeMessageDefault": "Gracias por apoyar la obra de {{artistName}}.",
+      "nextSteps": {
+        "seeWorks": "Ver más obras de {{artistName}}",
+        "exploreSimilar": "Descubrir artistas similares",
+        "seeHistory": "Ver mi historial de mecenazgo"
+      }
+    },
+    "cancel": {
+      "winback": {
+        "title": "Espera, ¿lo reconsiderarías?",
+        "offer": {
+          "discount": "50% de descuento en tu primer mes de vuelta",
+          "pause": "Opción de pausa de un mes",
+          "message": "Envía comentarios directamente al artista.",
+          "feedback": "Comentarios (opcional)"
+        },
+        "confirmCancel": "Igual cancelar",
+        "reconsider": "Lo reconsideraré"
+      }
+    },
+    "winback": {
+      "success": {
+        "title": "¡Cupón aplicado!",
+        "discountApplied": "Descuento de {{discount}} aplicado",
+        "durationOnce": "Aplicado a tu próximo pago",
+        "durationMonths": "Descuento activo por {{months}} mes(es)",
+        "cancelReverted": "Tu suscripción continúa sin cancelarse. ¡Gracias por quedarte!",
+        "cta": "Entendido"
+      },
+      "offer": {
+        "discount50": "Aplicar 50% de descuento por 1 mes",
+        "discount50Desc": "Ahorra el 50% del pago de este mes. Vuelve al precio normal después de 1 mes.",
+        "discount30": "Aplicar 30% de descuento por 1 mes",
+        "discount30Desc": "Ahorra el 30% del pago de este mes. Vuelve al precio normal después de 1 mes.",
+        "discount20": "Aplicar 20% de descuento por 1 mes",
+        "discount20Desc": "Ahorra el 20% del pago de este mes. Vuelve al precio normal después de 1 mes.",
+        "discount10": "Aplicar 10% de descuento (una vez)",
+        "discount10Desc": "Se aplica un 10% de descuento a tu próximo pago.",
+        "dmComingSoon": "El mensaje directo al artista estará disponible próximamente."
+      },
+      "banner": {
+        "title": "Antes apoyabas a este artista",
+        "subtitle": "¿Te gustaría volver a apoyar a {{artistName}}?",
+        "resubscribeCta": "Volver a suscribirse",
+        "dismiss": "Quizás luego"
+      },
+      "conditional": {
+        "tooExpensive": "{{artistName}} — Hay un código de descuento disponible ahora. ¡Vuelve a apoyarlo!",
+        "notSatisfied": "{{artistName}} ha comenzado una nueva serie. ¡Dale otra oportunidad!"
+      }
+    },
+    "expiry": {
+      "banner": {
+        "title": "Tu suscripción a {{artistName}} expira en D-{{days}} días",
+        "subtitle": "Renueva ahora para seguir apoyando al artista.",
+        "renewCta": "Renovar",
+        "dismiss": "Descartar"
+      }
+    },
+    "churn": {
+      "title": "Mecenas que abandonaron recientemente",
+      "empty": "Ningún mecenas ha abandonado en los últimos 30 días.",
+      "sentCampaign": "Enviar campaña de recuperación",
+      "reason": {
+        "too_expensive": "Muy caro",
+        "changed_mind": "Cambié de opinión",
+        "not_satisfied": "No satisfecho",
+        "other": "Otro",
+        "unknown": "Sin razón indicada"
+      }
+    },
+    "resubscribe": {
+      "cta": "Volver a suscribirse",
+      "confirming": "Suscribiendo...",
+      "success": "¡Tu suscripción se ha reiniciado!"
+    }
+  },
+  "coupon": {
+    "admin": {
+      "title": "Gestión de cupones",
+      "createCta": "Emitir cupón",
+      "table": {
+        "code": "Código",
+        "discount": "Descuento",
+        "duration": "Duración",
+        "redemptions": "Canjes",
+        "status": "Estado",
+        "delete": "Eliminar"
+      },
+      "form": {
+        "label": {
+          "code": "Código de cupón",
+          "discountType": "Tipo de descuento",
+          "discountValue": "Valor del descuento",
+          "duration": "Duración",
+          "durationInMonths": "Meses",
+          "validUntil": "Válido hasta (opcional)",
+          "maxRedemptions": "Máximo de canjes (opcional)"
+        },
+        "duration": {
+          "once": "Una vez",
+          "forever": "Para siempre",
+          "repeating": "Repetido"
+        },
+        "discountType": {
+          "percent": "Porcentaje",
+          "amount": "Cantidad"
+        }
+      }
+    },
+    "user": {
+      "title": "Mis códigos de descuento",
+      "applyCta": "Aplicar código",
+      "applyPlaceholder": "Ingresa el código de cupón",
+      "applySuccess": "¡Cupón aplicado con éxito!",
+      "active": {
+        "label": "Descuento activo",
+        "expiry": "Vence",
+        "remaining": "{{count}} meses restantes"
+      },
+      "empty": "No hay códigos de descuento aplicados."
+    },
+    "error": {
+      "notFound": "Código de cupón no encontrado o expirado.",
+      "expired": "Este cupón ha expirado.",
+      "alreadyApplied": "Este cupón ya ha sido aplicado.",
+      "saveError": "Ocurrió un error al guardar el cupón.",
+      "unauthorized": "No tienes autorización para aplicar este cupón."
+    },
+    "subscription": {
+      "appliedBadge": "{{discount}}% de descuento activo"
+    }
+  },
+  "subscription": {
+    "renewal": {
+      "autoOn": "Renovación automática",
+      "autoOff": "Renovación manual",
+      "enableAutoRenew": "Activar renovación automática",
+      "disableAutoRenew": "Desactivar renovación automática",
+      "renewNow": "Renovar ahora",
+      "renewing": "Renovando...",
+      "renewSuccess": "¡Renovado! Próxima fecha de vencimiento: {{date}}",
+      "renewError": "Error al renovar. Por favor, inténtalo de nuevo.",
+      "expiryWarning": "Vence en {{days}} día(s)"
+    }
+  },
+  "admin": {
+    "featuredArtists": {
+      "pageTitle": "Gestión de Artistas Destacados",
+      "pageSubtitle": "Curate la selección mensual de artistas destacados.",
+      "createCta": "Establecer Artista Destacado",
+      "form": {
+        "title": "Registrar Nuevo Artista Destacado",
+        "artistLabel": "Buscar Artista",
+        "artistPlaceholder": "Ingresa el nombre del artista...",
+        "searchBtn": "Buscar",
+        "selectedArtist": "Seleccionado: {{name}}",
+        "monthLabel": "Mes Objetivo (primer día del mes)",
+        "monthHint": "Solo se pueden establecer meses actuales o futuros.",
+        "noteLabel": "Nota de Curaduría (opcional)",
+        "notePlaceholder": "¿Por qué fue seleccionado este artista este mes?",
+        "submitBtn": "Registrar"
+      },
+      "list": {
+        "title": "Historial de Selecciones",
+        "empty": "Aún no hay artistas destacados registrados.",
+        "monthCol": "Mes",
+        "artistCol": "ID de Artista",
+        "noteCol": "Nota de Curaduría",
+        "statusCol": "Estado",
+        "actionsCol": "Acciones",
+        "active": "Activo",
+        "inactive": "Inactivo",
+        "noNote": "Sin nota",
+        "deactivateBtn": "Desactivar"
+      }
+    }
+  },
+  "cookie": {
+    "bannerTitle": "🍪 Aviso de cookies",
+    "bannerBody": "Domo utiliza cookies esenciales para funcionar. Puede permitir opcionalmente las cookies analíticas.",
+    "essentialOnly": "Solo esenciales",
+    "acceptAll": "Aceptar todas",
+    "policyLink": "Política de cookies",
+    "privacyLink": "Política de privacidad"
+  },
+  "privacy": {
+    "title": "Configuración de privacidad",
+    "subtitle": "Administre sus preferencias de recopilación de datos y análisis.",
+    "analytics": {
+      "title": "Datos analíticos",
+      "description": "Recopilamos datos de uso anónimos para mejorar el servicio. Compatible con GDPR y con anonimización de IP.",
+      "toggleLabel": "Permitir recopilación de datos analíticos",
+      "statusEnabled": "La recopilación de datos analíticos está habilitada.",
+      "statusDisabled": "La recopilación de datos analíticos está deshabilitada."
+    },
+    "savedConfirmation": "Configuración guardada."
+  },
+  "onboarding": {
+    "wizard": {
+      "ariaLabel": "Asistente de incorporación de Domo"
+    },
+    "common": {
+      "skip": "Omitir",
+      "laterLink": "Quizás más tarde",
+      "goHome": "Ir al inicio"
+    },
+    "step1": {
+      "title": "¡Bienvenido a Domo!",
+      "subtitle": "Sigue a los artistas que te gustan y llena tu feed.",
+      "selectPrompt": "Selecciona artistas para seguir",
+      "selectedCount": "{{count}} seleccionado(s)",
+      "selectAll": "Seleccionar todos",
+      "deselectAll": "Deseleccionar todos",
+      "noArtists": "No se pudieron cargar los artistas recomendados.",
+      "worksCount": "{{count}} obras",
+      "artistListAriaLabel": "Lista de artistas recomendados",
+      "followSelected": "Seguir {{count}} artista(s) seleccionado(s)",
+      "skipAndNext": "Siguiente"
+    },
+    "step2": {
+      "title": "Apoya a los artistas con Blue Bird",
+      "subtitle": "El patrocinio financia directamente la actividad creativa del artista.",
+      "bullet1": "El 100% de tu apoyo va al artista",
+      "bullet2": "Comienza desde solo $1 al mes",
+      "bullet3": "Accede a contenido y beneficios exclusivos",
+      "bulletsAriaLabel": "Beneficios del patrocinio Blue Bird",
+      "ctaWithArtist": "Apoyar a @{{artistName}}",
+      "cta": "Apoyar ahora",
+      "continueAfterSponsor": "Continuar",
+      "sponsoredSuccess": "¡Patrocinio completado!"
+    },
+    "step3": {
+      "title": "Descubre arte increíble",
+      "subtitle": "Explora artistas emergentes de todo el mundo.",
+      "previewAriaLabel": "Vista previa de la página de exploración",
+      "summaryTitle": "Resumen de incorporación",
+      "summaryFollowed": "{{count}} artista(s) seguido(s)",
+      "summaryFollowedNone": "Aún no sigues a ningún artista",
+      "summarySponsoredDone": "Primer patrocinio Blue Bird completado",
+      "summarySponsoredSkip": "Patrocinio Blue Bird para más tarde",
+      "cta": "Comenzar a explorar"
+    },
+    "sidebar": {
+      "indicator": "Continuar incorporación",
+      "title": "Incorporación en progreso",
+      "hint": "Haz clic para continuar la configuración"
+    }
+  },
+  "artist": {
+    "index": {
+      "pageTitle": "Índice Global de Artistas Emergentes",
+      "pageSubtitle": "Artistas en ascenso descubiertos por Domo",
+      "navLabel": "Índice de Artistas",
+      "rank": "Posición",
+      "score": "Puntuación",
+      "topHeroTitle": "Top 3 del Mes",
+      "listTitle": "Ranking Completo",
+      "loadMore": "Cargar más",
+      "loading": "Cargando ranking...",
+      "empty": "No hay artistas que coincidan con los filtros.",
+      "error": "No se pudo cargar el ranking.",
+      "viewProfile": "Ver",
+      "tierBadge": {
+        "top_10": "Top 10",
+        "top_100": "Top 100",
+        "top_1000": "Top 1000"
+      },
+      "filter": {
+        "region": "Región",
+        "regionAll": "Todas las regiones",
+        "genre": "Género",
+        "genreAll": "Todos los géneros"
+      },
+      "badge": {
+        "globalRank": "Global #{{rank}}",
+        "regionRank": "Regional #{{rank}}",
+        "genreRank": "Género #{{rank}}",
+        "whyLabel": "¿Por qué esta posición?",
+        "whyTooltip": "Calculado a partir de: actividad reciente (50%) + ventas (30%) + patrocinadores (20%) + antigüedad (10%).",
+        "notRanked": "Sin clasificar",
+        "notYet": "Calculando...",
+        "lastUpdated": "Actualizado: {{date}}"
+      },
+      "seo": {
+        "description": "Índice Global de Artistas Emergentes de Domo — ranking en tiempo real de artistas de todo el mundo",
+        "ogTitle": "Índice Global de Artistas Emergentes de Domo"
+      }
+    }
+  },
+  "stories": {
+    "pageTitle": "Hub de Historias",
+    "pageSubtitle": "Descubre los viajes de artistas emergentes y su cobertura mediática.",
+    "backToHub": "Hub de Historias",
+    "featured": {
+      "sectionTitle": "Artista Destacado del Mes",
+      "monthLabel": "Destacado del Mes",
+      "curatedBadge": "Curado por Admin",
+      "viewProfile": "Ver perfil",
+      "viewTimeline": "Su historia",
+      "scoreLabel": "Puntuación {{score}}",
+      "empty": "Aún no hay artista destacado."
+    },
+    "history": {
+      "sectionTitle": "Historias de Artistas",
+      "sectionSubtitle": "Sigue los viajes de artistas emergentes que crecen en Domo.",
+      "viewTimeline": "Ver historia",
+      "viewFullIndex": "Ver índice completo",
+      "empty": "Aún no hay historias de artistas."
+    },
+    "media": {
+      "sectionTitle": "Cobertura Mediática",
+      "empty": "Aún no hay cobertura mediática.",
+      "placeholderNote": "Estos son ejemplos. Se actualizarán con cobertura real."
+    }
+  },
+  "timeline": {
+    "title": "Línea de Tiempo de Crecimiento",
+    "notFound": "Artista no encontrado.",
+    "postsCount": "obras",
+    "viewProfile": "Ver perfil",
+    "empty": "Aún no hay hitos registrados.",
+    "joined": "Se unió a Domo",
+    "firstPost": "Primera obra publicada",
+    "firstBluebird": "Primer Blue Bird recibido",
+    "rankTop1000": "Entró al Top 1000 global",
+    "rankTop100": "Entró al Top 100 global",
+    "rankTop10": "Entró al Top 10 global",
+    "highlightPost": "Obra popular"
+  },
+  "webhook": {
+    "notification": {
+      "payment_failed": "El pago falló — por favor intenta de nuevo",
+      "payment_3ds_required": "Se requiere autenticación 3D Secure",
+      "subscription_renewed": "Tu suscripción ha sido renovada",
+      "subscription_payment_failed": "El pago de suscripción falló — actualiza tu método de pago",
+      "subscription_cancelled": "Tu suscripción ha sido cancelada",
+      "dispute_created": "Se presentó una disputa — comunícate con soporte",
+      "update_payment_method": "Actualizar método de pago"
+    }
+  },
+  "interview": {
+    "pageTitle": "Entrevistas AI de Artistas",
+    "pageSubtitle": "Artículos de entrevistas generados por IA",
+    "admin": {
+      "pageTitle": "Gestión de Entrevistas",
+      "pageSubtitle": "Revisión y publicación de entrevistas generadas por LLM",
+      "generateCta": "Generar Entrevista",
+      "generateTitle": "Generar Nueva Entrevista",
+      "artistIdLabel": "ID del Artista",
+      "localeLabel": "Idioma",
+      "generating": "Generando...",
+      "generateSuccess": "Entrevista generada y pendiente de revisión.",
+      "reviewTitle": "Revisar Entrevista",
+      "approveBtn": "Aprobar",
+      "rejectBtn": "Rechazar",
+      "publishBtn": "Publicar",
+      "publishDisabled": "Se requiere el consentimiento del artista antes de publicar.",
+      "reviewNoteLabel": "Nota de Revisión",
+      "statusLabel": "Estado",
+      "localeTag": "Idioma",
+      "consentTag": "Consentimiento",
+      "consentPending": "Esperando consentimiento del artista",
+      "consentDone": "Consentimiento del artista recibido",
+      "listTitle": "Lista de Entrevistas"
+    },
+    "me": {
+      "pageTitle": "Mis Entrevistas",
+      "pageSubtitle": "Artículos de entrevista generados por Domo AI sobre mí",
+      "consentBtn": "Dar Consentimiento",
+      "rejectBtn": "Rechazar Publicación",
+      "consentConfirm": "¿Das tu consentimiento para publicar esta entrevista? Un administrador finalizará la publicación después de tu consentimiento.",
+      "rejectConfirm": "¿Estás seguro de que deseas rechazar la publicación de esta entrevista?",
+      "noInterviews": "Aún no se han generado entrevistas.",
+      "previewLabel": "Vista previa",
+      "statusApproved": "Aprobada (Necesita consentimiento)",
+      "statusPublished": "Publicada",
+      "statusRejected": "Rechazada",
+      "statusAdminReview": "Pendiente de revisión"
+    },
+    "public": {
+      "readMore": "Leer Entrevista",
+      "sectionTitle": "Entrevista AI",
+      "noPublished": "No hay entrevistas publicadas.",
+      "aiGenerated": "Generado por IA",
+      "consentNote": "Entrevista publicada con el consentimiento del artista."
+    },
+    "status": {
+      "draft": "Borrador",
+      "admin_review": "Pendiente de revisión",
+      "approved": "Aprobada",
+      "published": "Publicada",
+      "rejected": "Rechazada",
+      "archived": "Archivada"
+    }
+  },
+  "bio": {
+    "pageTitle": "Editor de bio multilingüe",
+    "pageSubtitle": "Configura tu bio en 5 idiomas",
+    "translateBtn": "Traducir automáticamente (IA)",
+    "translating": "Traduciendo...",
+    "translateSuccess": "Traducido a 5 idiomas",
+    "translateError": "Falló la traducción",
+    "saveBtn": "Guardar",
+    "saving": "Guardando...",
+    "saved": "Guardado",
+    "machineTranslated": "Traducido por IA",
+    "humanEdited": "Editado manualmente",
+    "bioPlaceholder": "Escribe tu bio",
+    "emptyBioWarning": "Por favor, completa tu bio primero",
+    "localeTab": {
+      "ko": "한국어",
+      "en": "English",
+      "ja": "日本語",
+      "zh": "中文",
+      "es": "Español"
+    }
+  },
+  "localeSwitcher": {
+    "label": "Idioma",
+    "ko": "한국어",
+    "en": "English",
+    "ja": "日本語",
+    "zh": "中文",
+    "es": "Español"
+  },
+  "mediaCoverage": {
+    "pageTitle": "Cobertura Mediática",
+    "pageSubtitle": "Gestiona artículos, videos y apariciones en radio",
+    "addBtn": "Agregar entrada",
+    "emptyList": "No hay entradas de cobertura mediática.",
+    "loadMore": "Cargar más",
+    "typeLabel": "Tipo",
+    "sourceLabel": "Fuente",
+    "publishedAtLabel": "Publicado el",
+    "localeLabel": "Idioma",
+    "featuredLabel": "Destacado",
+    "publishedLabel": "Publicado",
+    "draftLabel": "Borrador",
+    "deleteConfirm": "¿Eliminar esta entrada?",
+    "saveSuccess": "Guardado correctamente.",
+    "saveError": "Error al guardar.",
+    "types": {
+      "article": "Artículo",
+      "youtube": "YouTube",
+      "radio": "Radio",
+      "podcast": "Podcast",
+      "tv": "TV"
+    },
+    "artist": {
+      "sectionTitle": "Cobertura Mediática Sobre Este Artista",
+      "empty": "No hay cobertura mediática sobre este artista."
+    }
+  },
+  "newsletter": {
+    "admin": {
+      "title": "Gestión de Boletín",
+      "compose": {
+        "title": "Nueva Edición (Auto-composición)",
+        "button": "Redactar Boletín {{locale}}"
+      },
+      "status": {
+        "draft": "Borrador",
+        "sending": "Enviando",
+        "sent": "Enviado",
+        "failed": "Fallido"
+      },
+      "list": {
+        "title": "Historial de Ediciones",
+        "empty": "Aún no hay ediciones de boletín.",
+        "retry": "Reintentar",
+        "refresh": "Actualizar",
+        "sendAction": "Iniciar Envío",
+        "col": {
+          "date": "Fecha",
+          "locale": "Idioma",
+          "subject": "Asunto",
+          "status": "Estado",
+          "sent": "Enviados",
+          "actions": "Acciones"
+        }
+      },
+      "editor": {
+        "title": "Editar Boletín",
+        "subject": "Asunto",
+        "body": "Cuerpo (Markdown)",
+        "showPreview": "Vista previa",
+        "hidePreview": "Volver a editar",
+        "send": "Iniciar Envío",
+        "sending": "Enviando...",
+        "sendConfirm": "¿Enviar este boletín? Todos los suscriptores recibirán un correo.",
+        "sentCount": "Enviados: {{sent}} / Fallidos: {{failed}}"
+      }
+    },
+    "preferences": {
+      "title": "Configuración del Boletín",
+      "subscribe": {
+        "label": "Suscribirse al Boletín",
+        "hint": "Recibe noticias de artistas Domo y destacados por correo electrónico."
+      },
+      "frequency": {
+        "label": "Frecuencia",
+        "weekly": "Semanal",
+        "biweekly": "Quincenal",
+        "monthly": "Mensual",
+        "never": "Nunca"
+      },
+      "locale": {
+        "label": "Idioma Preferido"
+      },
+      "lastSent": "Último recibido: {{date}}",
+      "unsubscribeNote": "Puedes darte de baja en cualquier momento usando el enlace en el pie del correo."
+    },
+    "unsubscribe": {
+      "loading": "Procesando...",
+      "success": {
+        "title": "Baja completada",
+        "message": "Te has dado de baja correctamente. Puedes volver a suscribirte en cualquier momento desde tu configuración."
+      },
+      "already": {
+        "title": "Ya estás dado de baja",
+        "message": "Actualmente no estás suscrito a nuestro boletín."
+      },
+      "error": {
+        "title": "Enlace no válido",
+        "message": "Este enlace de baja ha caducado o no es válido. Por favor, darse de baja desde tu configuración."
+      },
+      "missing": {
+        "title": "Información faltante",
+        "message": "El enlace de baja no contiene la información necesaria."
+      },
+      "backToHome": "Volver al inicio"
+    }
+  },
+  "pressKit": {
+    "pageTitle": "Kit de Prensa",
+    "pageSubtitle": "Genera automáticamente PDF de kit de prensa para artistas",
+    "generateBtn": "Generar Kit de Prensa",
+    "regenerateBtn": "Regenerar",
+    "downloadBtn": "Descargar",
+    "generating": "Generando...",
+    "locale": "Idioma",
+    "localePlaceholder": "Seleccionar idioma",
+    "cacheNote": "El mismo artista + idioma se almacena en caché durante 30 días.",
+    "history": "Historial de generación",
+    "noHistory": "No hay kits de prensa generados aún.",
+    "pages": "páginas",
+    "fileSize": "Tamaño de archivo",
+    "expiresAt": "Vence",
+    "createdAt": "Creado",
+    "isPublic": "Descarga pública",
+    "artistSearch": "ID de artista o búsqueda",
+    "generateError": "Error al generar el kit de prensa.",
+    "me": {
+      "pageTitle": "Mi Kit de Prensa",
+      "pageSubtitle": "PDF de kit de prensa para distribución en medios externos",
+      "download": "Descargar PDF",
+      "noKit": "Aún no se ha generado un kit de prensa. Contacta al administrador.",
+      "publicToggle": "Permitir descarga pública",
+      "publicToggleNote": "Cuando está activado, cualquiera puede descargar tu kit de prensa."
+    }
+  },
+  "a11y": {
+    "skip": {
+      "toMain": "Saltar al contenido principal",
+      "toNav": "Saltar a la navegación"
+    }
+  },
+  "accessibility": {
+    "pageTitle": "Configuración de accesibilidad",
+    "focusMode": {
+      "label": "Modo de enfoque",
+      "description": "Resalta elementos interactivos para la navegación por teclado."
+    },
+    "announcements": {
+      "bidPlaced": "Oferta realizada con éxito",
+      "bidFailed": "La oferta falló. Por favor, inténtalo de nuevo.",
+      "auctionEnded": "La subasta ha terminado",
+      "auctionUrgent": "Menos de 10 segundos restantes",
+      "modalOpened": "Diálogo abierto",
+      "modalClosed": "Diálogo cerrado"
+    },
+    "settings": {
+      "saved": "Configuración de accesibilidad guardada",
+      "saveError": "Error al guardar la configuración"
+    },
+    "contrast": {
+      "highContrastHint": "Para mayor contraste, usa el modo de alto contraste de tu sistema operativo."
+    }
+  },
+  "currency": {
+    "label": {
+      "USD": "Dólar estadounidense",
+      "KRW": "Won coreano",
+      "EUR": "Euro",
+      "JPY": "Yen japonés"
+    },
+    "switcher": {
+      "label": "Seleccionar moneda",
+      "converted": "Precio convertido",
+      "native": "Precio original",
+      "saved": "Preferencia de moneda guardada"
+    }
+  },
+  "messaging": {
+    "loginRequired": "Inicia sesión para ver los mensajes.",
+    "list": {
+      "title": "Mensajes",
+      "empty": "Aún no hay conversaciones.",
+      "noMessages": "Sin mensajes",
+      "refresh": "Actualizar"
+    },
+    "conversation": {
+      "title": "Conversación",
+      "empty": "Aún no hay mensajes. ¡Envía el primero!",
+      "closed": "[Conversación cerrada por un administrador]",
+      "loadMore": "Cargar mensajes anteriores",
+      "report": "Reportar",
+      "reportTitle": "Reportar esta conversación",
+      "reportPlaceholder": "Describe el problema (máx. 500 caracteres)...",
+      "reportSubmit": "Enviar reporte",
+      "reportSent": "Tu reporte ha sido enviado. ¡Gracias!"
+    },
+    "message": {
+      "deleted": "[Mensaje eliminado]",
+      "edited": "editado",
+      "read": "Leído",
+      "editAriaLabel": "Editar mensaje",
+      "deleteAriaLabel": "Eliminar mensaje"
+    },
+    "composer": {
+      "placeholder": "Escribe un mensaje... (Enter para enviar, Shift+Enter para nueva línea)",
+      "editPlaceholder": "Edita tu mensaje...",
+      "send": "Enviar",
+      "ariaLabel": "Campo de entrada de mensaje"
+    }
+  },
+  "docent": {
+    "title": "Comentario de la obra",
+    "artist_label": "Palabras del artista",
+    "ai_label": "Guía AI",
+    "toggle_show": "Ver comentario de la guía AI",
+    "toggle_hide": "Ocultar comentario de la guía AI",
+    "ai_disclaimer": "Este comentario fue generado por IA",
+    "generating": "La IA está analizando la obra...",
+    "generate_button": "Generar guía AI",
+    "regenerate": "Regenerar guía",
+    "generate_failed": "No se pudo generar la guía. Inténtalo de nuevo más tarde.",
+    "disabled_by_artist": "El artista ha desactivado la guía AI para esta obra.",
+    "opt_out_label": "Desactivar guía AI",
+    "opt_in_label": "Activar guía AI",
+    "rate_limit_notice": "La guía AI se puede generar hasta 2 veces al día.",
+    "locale_only_ko": "Disponible solo en coreano",
+    "by_artist": "Escrito por el artista",
+    "by_ai": "Generado por IA",
+    "edit_page": {
+      "section_title": "Editar guía",
+      "artist_text_label": "Escribir manualmente",
+      "artist_text_placeholder": "Escribe libremente sobre la obra. Puedes describir el proceso creativo, la fuente de inspiración y el significado de la pieza.",
+      "generate_button": "Generar guía AI",
+      "opt_out_label": "Desactivar guía AI",
+      "save_button": "Guardar",
+      "save_success": "Guardado"
+    }
+  },
+  "preferences": {
+    "title": "Preferencias",
+    "pageTitle": "Pantalla",
+    "pageSubtitle": "Elige la moneda de visualización y el idioma de la interfaz.",
+    "currency": {
+      "label": "Moneda"
+    },
+    "locale": {
+      "label": "Idioma"
+    }
+  },
+  "collections": {
+    "editors_pick": "Editor's Pick",
+    "subtitle": "Colecciones temáticas semanales curadas por IA",
+    "works_count": "{{count}} obras",
+    "week_label": "Semana del {{date}}",
+    "share": "Compartir",
+    "share_link_copied": "Enlace copiado",
+    "no_collections": "No hay colecciones disponibles",
+    "view_all": "Ver todas las colecciones",
+    "back": "Volver a colecciones",
+    "generated_by_ai": "Colección curada por IA"
+  },
+  "keyboardShortcuts": {
+    "title": "Atajos de teclado",
+    "close": "Cerrar ayuda",
+    "category": {
+      "navigation": "Navigation",
+      "feed": "Feed",
+      "editor": "Editor",
+      "general": "General"
+    },
+    "action": {
+      "nextPost": "Siguiente publicación",
+      "prevPost": "Publicación anterior",
+      "saveDraft": "Guardar borrador",
+      "showHelp": "Mostrar esta ayuda",
+      "closeModal": "Cerrar modal",
+      "gotoHome": "Inicio",
+      "gotoFeed": "Feed",
+      "gotoExplore": "Explorar",
+      "gotoMessages": "Mensajes",
+      "gotoNotifications": "Notificaciones",
+      "gotoProfile": "Mi perfil",
+      "newPost": "Nueva publicación",
+      "searchFocus": "Enfocar búsqueda",
+      "bookmarkToggle": "Alternar marcador"
+    }
+  },
+  "auth": {
+    "magic_link": {
+      "request": {
+        "tab": "Entrar con correo",
+        "description": "Inicia sesión al instante con un enlace enviado a tu correo",
+        "emailPlaceholder": "Correo electrónico",
+        "submit": "Enviar enlace de acceso",
+        "sent": "Revisa tu correo. Haz clic en el enlace dentro de las 24 horas.",
+        "cooldown": "Puedes solicitar de nuevo en 5 minutos."
+      },
+      "verify": {
+        "verifying": "Verificando enlace mágico...",
+        "setupTitle": "Ingresa tu nombre de usuario",
+        "setupPlaceholder": "Nombre de usuario (3–50 caracteres)",
+        "setupSubmit": "Completar registro",
+        "success": "¡Sesión iniciada! Redirigiendo...",
+        "expired": "Enlace expirado. Por favor solicita uno nuevo.",
+        "used": "Este enlace ya fue utilizado.",
+        "ipWarning": "Se detectó acceso desde una red diferente. Continúa si eres tú.",
+        "requestNew": "Solicitar nuevo enlace"
+      }
+    },
+    "signup": {
+      "tab": "Registrarse",
+      "emailPlaceholder": "Correo electrónico",
+      "passwordPlaceholder": "Contraseña (mín. 8 caracteres)",
+      "displayNamePlaceholder": "Nombre de usuario (3–50 caracteres)",
+      "passwordHint": "Debe incluir 3 de: mayúsculas, minúsculas, números, caracteres especiales",
+      "submit": "Crear cuenta"
+    },
+    "login": {
+      "email": {
+        "tab": "Iniciar sesión",
+        "emailPlaceholder": "Correo electrónico",
+        "passwordPlaceholder": "Contraseña",
+        "forgotPassword": "¿Olvidaste tu contraseña?",
+        "forgotPasswordTooltip": "El restablecimiento de contraseña estará disponible en Phase 12",
+        "submit": "Iniciar sesión"
+      }
+    },
+    "verify": {
+      "banner": "Se ha enviado un enlace de verificación a tu correo. Por favor verifica en 24 horas.",
+      "verifying": "Verificando tu correo electrónico...",
+      "success": "¡Correo verificado!",
+      "redirecting": "Redirigiendo al inicio...",
+      "alreadyVerified": "Tu cuenta ya está verificada",
+      "expired": "El enlace de verificación ha caducado",
+      "expiredDesc": "El enlace expiró (24 horas). Por favor solicita un nuevo correo de verificación.",
+      "resend": "Reenviar correo de verificación",
+      "resendSuccess": "Correo de verificación reenviado. Revisa tu bandeja de entrada.",
+      "error": "Error en la verificación",
+      "noToken": "No se encontró el token de verificación. Haz clic en el enlace del correo nuevamente.",
+      "goHome": "Ir al inicio"
+    },
+    "password_reset": {
+      "request": {
+        "title": "¿Olvidaste tu contraseña?",
+        "subtitle": "Ingresa tu correo y te enviaremos un enlace para restablecerla.",
+        "email_label": "Correo electrónico",
+        "submit": "Enviar enlace de restablecimiento",
+        "sent_title": "Revisa tu correo",
+        "sent_body": "Se envió un enlace de restablecimiento. Por favor verifica en 1 hora.",
+        "too_soon": "Intenta de nuevo en {{seconds}} segundos.",
+        "back_to_login": "Volver al inicio de sesión",
+        "error": "Ocurrió un error. Por favor intenta de nuevo."
+      },
+      "token": {
+        "title": "Establecer nueva contraseña",
+        "new_password_label": "Nueva contraseña",
+        "confirm_label": "Confirmar nueva contraseña",
+        "submit": "Cambiar contraseña",
+        "mismatch": "Las contraseñas no coinciden.",
+        "expired": "El enlace ha expirado. Por favor solicita uno nuevo.",
+        "already_used": "El enlace ya fue usado. Por favor solicita uno nuevo.",
+        "invalid": "Enlace de restablecimiento inválido.",
+        "request_again": "Solicitar nuevo enlace"
+      },
+      "success": {
+        "title": "Contraseña cambiada",
+        "body": "Tu contraseña fue actualizada. Redirigiendo al inicio de sesión..."
+      }
+    }
+  },
+  "admin": {
+    "analytics": {
+      "pageTitle": "Panel de análisis",
+      "period": {
+        "7d": "Últimos 7 días",
+        "30d": "Últimos 30 días",
+        "90d": "Últimos 90 días"
+      },
+      "refresh": "Actualizar",
+      "cachedAt": "Caché: desde {{time}}",
+      "loading": "Cargando...",
+      "error": "No se pudieron cargar los datos",
+      "retry": "Reintentar",
+      "cohortRetention": {
+        "title": "Retención de cohorte",
+        "d7": "Retención D7",
+        "d30": "Retención D30",
+        "belowThreshold": "Solo registros por debajo del umbral"
+      },
+      "newsletter": {
+        "title": "Tasa de apertura del boletín",
+        "openRate": "Tasa de apertura",
+        "clickRate": "Tasa de clics",
+        "issued": "Boletines enviados"
+      },
+      "feedCtr": {
+        "title": "CTR del Feed por algoritmo",
+        "delta": "Delta v2 vs v1"
+      },
+      "aiFeatures": {
+        "title": "Uso de funciones de IA",
+        "caption": "Subtítulo IA",
+        "docent": "Docente IA",
+        "collection": "Colección IA"
+      }
+    }
+  },
+  "settings": {
+    "hub": {
+      "title": "Configuración",
+      "subtitle": "Gestiona tu perfil, notificaciones, privacidad y más en un solo lugar",
+      "category": {
+        "profile": {
+          "title": "Perfil",
+          "description": "Edita tu biografía e introducción de artista multilingüe"
+        },
+        "display": {
+          "title": "Visualización",
+          "description": "Preferencias de idioma de interfaz y moneda"
+        },
+        "accessibility": {
+          "title": "Accesibilidad",
+          "description": "Alto contraste, modo de enfoque y otras opciones"
+        },
+        "notifications": {
+          "title": "Notificaciones",
+          "description": "Alertas push, correo electrónico y suscripción al boletín"
+        },
+        "privacy": {
+          "title": "Privacidad",
+          "description": "Consentimiento de análisis y configuración de cookies"
+        },
+        "account": {
+          "title": "Cuenta",
+          "description": "Información de cuenta, exportación de datos y validez de patrocinio"
+        }
+      }
+    }
   }
 }

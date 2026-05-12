@@ -4,16 +4,32 @@ import Link from "next/link";
 import { useI18n } from "@/i18n";
 import { PostView } from "@/lib/api";
 import { usePostTranslation } from "@/lib/useTranslation";
+import { AuctionCountdown } from "@/components/AuctionCountdown";
+import { convertAndFormat } from "@/lib/format";
+import { useExchangeRates } from "@/lib/hooks/useExchangeRates";
 
-export function FeedItem({ post }: { post: PostView }) {
+export function FeedItem({
+  post,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  source,
+}: {
+  post: PostView;
+  /** Context where the post is rendered — for analytics (A-1/A-3). */
+  source?: "feed" | "explore" | "search" | "profile";
+}) {
   const { t } = useI18n();
+  const { rates, currency: preferredCurrency } = useExchangeRates();
   const heroMedia = post.media[0];
   const { title: translatedTitle, content: translatedContent, isTranslated } = usePostTranslation(
     post.id, post.language, post.title, post.content
   );
 
   return (
-    <article className="px-4 py-4 hover:bg-surface-hover/30 transition-colors">
+    <article
+      className="px-4 py-4 hover:bg-surface-hover/30 transition-colors"
+      data-feed-item
+      data-post-id={post.id}
+    >
       {/* Author header */}
       <Link
         href={`/users/${post.author.id}`}
@@ -102,7 +118,7 @@ export function FeedItem({ post }: { post: PostView }) {
           ) : (
             <img
               src={heroMedia.thumbnail_url ?? heroMedia.url}
-              alt={post.title ?? ""}
+              alt={post.effective_caption || post.title || ""}
               className="w-full rounded-xl object-cover max-h-[500px]"
             />
           )}
@@ -116,6 +132,18 @@ export function FeedItem({ post }: { post: PostView }) {
         </div>
       )}
 
+      {/* auction-promotion-suite PDCA #11 — D-1h compact countdown for feed (OQ-10=B) */}
+      {post.type === "product" && post.active_auction_end_at && (() => {
+        const msLeft = new Date(post.active_auction_end_at!).getTime() - Date.now();
+        const isUnder1h = msLeft > 0 && msLeft <= 3_600_000;
+        return isUnder1h ? (
+          <div className="mb-3 flex items-center gap-2 text-xs">
+            <span className="text-amber-400">⏱</span>
+            <AuctionCountdown endAt={post.active_auction_end_at!} compact />
+          </div>
+        ) : null;
+      })()}
+
       {/* Engagement bar */}
       <div className="flex items-center gap-6 text-text-muted text-sm">
         <span className="flex items-center gap-1.5 hover:text-primary cursor-pointer transition-colors">
@@ -127,9 +155,26 @@ export function FeedItem({ post }: { post: PostView }) {
         <span className="flex items-center gap-1.5 hover:text-primary cursor-pointer transition-colors">
           🕊 {post.bluebird_count}
         </span>
-        {post.product && post.product.buy_now_price && (
-          <span className="ml-auto text-primary font-semibold text-xs">
-            ${Number(post.product.buy_now_price).toLocaleString()}
+        {/* 북마크 버튼 — b 단축키(Phase 12 C-3)의 programmatic click 대상 */}
+        <button
+          type="button"
+          data-bookmark-btn
+          aria-label={t("keyboardShortcuts.action.bookmarkToggle")}
+          className="flex items-center gap-1.5 hover:text-primary cursor-pointer transition-colors ml-auto"
+          onClick={() => {
+            /* TODO: bookmark API 연동 (Phase 13) — 현재 UI 반응만 처리 */
+          }}
+        >
+          🔖
+        </button>
+        {post.product && post.product.buy_now_price != null && post.product.buy_now_price > 0 && (
+          <span className="text-primary font-semibold text-xs">
+            {convertAndFormat(
+              post.product.buy_now_price,
+              post.product.buy_now_currency || post.product.currency || "USD",
+              preferredCurrency,
+              rates
+            )}
           </span>
         )}
       </div>

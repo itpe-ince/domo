@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n";
 import { fetchExplore, PostView } from "@/lib/api";
+import { formatPriceCents } from "@/lib/format";
 
 type Section = {
   title: string;
@@ -107,7 +108,7 @@ export function GalleryView() {
                   trending[0].media[0].thumbnail_url ??
                   trending[0].media[0].url
                 }
-                alt=""
+                alt={trending[0].effective_caption || trending[0].title || ""}
                 className="w-full h-full object-cover"
               />
             )}
@@ -213,7 +214,7 @@ function CardRow({ title, posts }: { title: string; posts: PostView[] }) {
                   src={
                     post.media[0].thumbnail_url ?? post.media[0].url
                   }
-                  alt=""
+                  alt={post.effective_caption || post.title || ""}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (
@@ -221,9 +222,9 @@ function CardRow({ title, posts }: { title: string; posts: PostView[] }) {
                   🖼
                 </div>
               )}
-              {post.product && post.product.buy_now_price && (
+              {post.product && post.product.buy_now_price != null && post.product.buy_now_price > 0 && (
                 <span className="absolute bottom-2 right-2 bg-primary text-background text-[10px] font-bold px-1.5 py-0.5 rounded">
-                  ${Number(post.product.buy_now_price).toLocaleString()}
+                  {formatPriceCents(post.product.buy_now_price, post.product.currency || "KRW")}
                 </span>
               )}
             </div>

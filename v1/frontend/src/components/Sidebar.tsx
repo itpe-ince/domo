@@ -3,25 +3,33 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { useI18n, LOCALE_LABELS, Locale } from "@/i18n";
+import { useI18n } from "@/i18n";
 import { logout } from "@/lib/api";
+import { captureEvent, resetIdentity } from "@/lib/analytics/capture";
 import { useMe } from "@/lib/useMe";
 import { useUnreadCount } from "@/lib/useUnreadCount";
+import { useOnboarding } from "@/lib/hooks/useOnboarding";
 import { LoginModal } from "./LoginModal";
 import { SearchBar } from "./SearchBar";
+import { PreferencesCard } from "./PreferencesCard";
 import {
   BellIcon,
   BluebirdIcon,
+  BookOpenIcon,
   DashboardIcon,
+  DraftIcon,
   ExploreIcon,
+  HeartHandshakeIcon,
   HomeIcon,
   LayersIcon,
   LogoutIcon,
+  MessageCircleIcon,
   MoreHorizontalIcon,
   PlusIcon,
   ReceiptIcon,
   SettingsIcon,
   ShieldAlertIcon,
+  TrophyIcon,
   UserIcon,
   UsersIcon,
 } from "./icons";
@@ -41,9 +49,12 @@ export function Sidebar() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginRedirect, setLoginRedirect] = useState<string | undefined>();
   const unread = useUnreadCount();
-  const { t, locale, setLocale } = useI18n();
+  const { t } = useI18n();
+  const { isFirstSession, reopenWizard } = useOnboarding();
 
   async function handleLogout() {
+    captureEvent({ type: "logout" });
+    resetIdentity();
     await logout();
   }
 
@@ -64,9 +75,20 @@ export function Sidebar() {
       needsAuth: true,
       badge: unread,
     },
+    // B'-2 dm-messaging
+    {
+      href: "/me/messages",
+      label: t("nav.messages"),
+      Icon: MessageCircleIcon,
+      needsAuth: true,
+    },
   ];
 
   const secondary: NavItem[] = [
+    // A-7 storytelling-hub — public (no auth required)
+    { href: "/stories", label: t("nav.stories"), Icon: BookOpenIcon },
+    // A-6 artist-index-v1 — global ranking page (public, no auth required)
+    { href: "/artists/index", label: t("nav.artistIndex"), Icon: TrophyIcon },
     { href: "/communities", label: t("nav.communities"), Icon: UsersIcon },
     {
       href: "/subscriptions",
@@ -74,6 +96,29 @@ export function Sidebar() {
       Icon: BluebirdIcon,
       needsAuth: true,
     },
+    {
+      href: "/me/sponsorships",
+      label: t("nav.mySponsoring"),
+      Icon: HeartHandshakeIcon,
+      needsAuth: true,
+    },
+    // artist-patronage-dashboard B-2 + tier-benefits B-4 — 작가 본인만 표시
+    ...(me?.role === "artist"
+      ? [
+          {
+            href: "/me/patronage",
+            label: t("nav.patronageDashboard"),
+            Icon: DashboardIcon,
+            needsAuth: true,
+          } as NavItem,
+          {
+            href: "/me/tier-benefits",
+            label: t("nav.tierBenefits"),
+            Icon: HeartHandshakeIcon,
+            needsAuth: true,
+          } as NavItem,
+        ]
+      : []),
     { href: "/orders", label: t("nav.orders"), Icon: ReceiptIcon, needsAuth: true },
     {
       href: "/warnings",
@@ -81,7 +126,7 @@ export function Sidebar() {
       Icon: ShieldAlertIcon,
       needsAuth: true,
     },
-    { href: "/me/account", label: t("nav.settings"), Icon: SettingsIcon, needsAuth: true },
+    { href: "/me/settings", label: t("nav.settings"), Icon: SettingsIcon, needsAuth: true },
   ];
 
   // Admin은 별도 앱 (포트 3800)
@@ -122,8 +167,10 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="hidden md:flex sticky top-0 h-screen flex-col justify-between py-4 px-2 xl:px-4 w-[80px] xl:w-[260px] border-r border-border bg-background flex-shrink-0">
-        <div className="flex flex-col gap-1">
+      <aside className="hidden md:flex sticky top-0 h-screen flex flex-col min-h-0 py-4 px-2 xl:px-4 w-[80px] xl:w-[260px] border-r border-border bg-background flex-shrink-0">
+        <div className="flex flex-col flex-1 min-h-0">
+          {/* 스크롤은 상단 내비만 — 프로필 메뉴는 하단 고정, 드롭다운이 overflow에 잘리지 않음 */}
+          <div className="flex-1 overflow-y-auto min-h-0 overscroll-contain flex flex-col gap-1">
           {/* Logo */}
           <Link
             href="/"
@@ -178,6 +225,29 @@ export function Sidebar() {
             </>
           )}
 
+          {/* A-2: Onboarding indicator for first-session authenticated users */}
+          {me && isFirstSession && (
+            <>
+              <div className="border-t border-border my-2" />
+              <button
+                type="button"
+                onClick={reopenWizard}
+                className="group flex items-center justify-center xl:justify-start gap-3 rounded-xl px-3 py-2.5 w-full bg-primary/10 hover:bg-primary/15 transition-colors text-left"
+                aria-label={t("onboarding.sidebar.indicator")}
+              >
+                <span className="text-primary text-lg flex-shrink-0" aria-hidden="true">🎨</span>
+                <span className="hidden xl:flex flex-col flex-1 min-w-0">
+                  <span className="text-xs font-semibold text-primary truncate">
+                    {t("onboarding.sidebar.title")}
+                  </span>
+                  <span className="text-[10px] text-text-muted truncate">
+                    {t("onboarding.sidebar.hint")}
+                  </span>
+                </span>
+              </button>
+            </>
+          )}
+
           {/* 등록 버튼 */}
           {me ? (
             <Link
@@ -220,16 +290,25 @@ export function Sidebar() {
               <span className="hidden xl:inline text-lg font-medium">{t("common.login")}</span>
             </button>
           ) : null}
-        </div>
+          </div>
 
         {/* Profile card at bottom — meLoading 동안 placeholder로 layout shift 방지 */}
         {meLoading && (
-          <div className="mx-3 mb-2 h-14 rounded-full bg-surface-hover/40 animate-pulse" aria-hidden />
+          <div className="flex-shrink-0 mx-3 mt-2 mb-2 h-14 rounded-full bg-surface-hover/40 animate-pulse" aria-hidden />
+        )}
+        {/* 비로그인: 통화·언어도 바꿀 수 있어야 함 (로컬 + 로그인 시 서버 동기화) */}
+        {!meLoading && !me && (
+          <div className="flex-shrink-0 mt-auto pt-2 mx-3 mb-2">
+            <PreferencesCard isAuthenticated={false} />
+          </div>
         )}
         {!meLoading && me && (
-          <div className="relative">
+          <div className="relative flex-shrink-0 mt-auto pt-2">
             <details className="group">
-              <summary className="list-none cursor-pointer flex items-center gap-3 rounded-full px-3 py-3 hover:bg-surface-hover transition-colors">
+              <summary
+                className="list-none cursor-pointer flex items-center gap-3 rounded-full px-3 py-3 hover:bg-surface-hover transition-colors [&::-webkit-details-marker]:hidden"
+                aria-label={t("nav.moreMenu")}
+              >
                 <div className="w-10 h-10 rounded-full bg-surface-hover flex items-center justify-center text-sm flex-shrink-0">
                   {me.avatar_url ? (
                     <img
@@ -251,16 +330,15 @@ export function Sidebar() {
                     {me.role}
                   </span>
                 </div>
-                <span className="hidden xl:inline text-text-muted">
+                <span className="flex-shrink-0 text-text-muted ml-auto xl:ml-0" aria-hidden>
                   <MoreHorizontalIcon size={20} />
                 </span>
               </summary>
               {/* Dropdown
-                  - 축소 (xl 미만): 사이드바 폭이 좁아 안에 두면 글자가 세로로 쌓임
-                    → 사이드바 옆 (right side)으로 popover, 고정 너비 w-44 사용
-                  - 확장 (xl 이상): 사이드바 안에서 위로 펼침 (기존 패턴) */}
+                  - 축소 (xl 미만): 사이드바 옆(right)으로 펼침 — 상단 스크롤 영역과 분리해 overflow 클리핑 방지
+                  - 확장 (xl 이상): 사이드바 안에서 위로 펼침 */}
               <div
-                className="absolute z-40 card p-2 space-y-1 w-44 whitespace-nowrap
+                className="absolute z-[100] card p-2 space-y-1 w-44 whitespace-nowrap shadow-xl
                            bottom-0 left-full ml-2
                            xl:bottom-full xl:left-2 xl:right-2 xl:w-auto xl:ml-0 xl:mb-2"
               >
@@ -270,6 +348,21 @@ export function Sidebar() {
                 >
                   <UserIcon />
                   <span>{t("nav.profile")}</span>
+                </Link>
+                {/* editor-draft-autosave PDCA — Q-2: drafts list in user menu */}
+                <Link
+                  href="/posts/drafts"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-hover text-sm text-text-primary"
+                >
+                  <DraftIcon />
+                  <span>{t("nav.draftsList")}</span>
+                </Link>
+                <Link
+                  href="/me/settings/display"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-hover text-sm text-text-primary"
+                >
+                  <SettingsIcon />
+                  <span>{t("nav.displaySettings")}</span>
                 </Link>
                 <div className="border-t border-border my-1" />
                 <button
@@ -283,61 +376,6 @@ export function Sidebar() {
             </details>
           </div>
         )}
-
-        {/* Language switcher
-            - xl 이상 (사이드바 확장): 풀 select with flag + name
-            - xl 미만 (사이드바 축소): flag만 보이는 popover dropdown
-        */}
-        <div className="mx-3 mb-2">
-          {/* Expanded sidebar — native select */}
-          <select
-            value={locale}
-            onChange={(e) => setLocale(e.target.value as Locale)}
-            className="hidden xl:block w-full bg-surface border border-border rounded-full px-3 py-1.5 text-xs text-text-muted focus:border-primary outline-none cursor-pointer"
-            aria-label="Language"
-          >
-            {(Object.entries(LOCALE_LABELS) as [Locale, { flag: string; name: string }][]).map(
-              ([code, { flag, name }]) => (
-                <option key={code} value={code}>
-                  {flag} {name}
-                </option>
-              )
-            )}
-          </select>
-
-          {/* Collapsed sidebar — icon-only dropdown via <details> */}
-          <details className="xl:hidden relative group">
-            <summary
-              className="list-none cursor-pointer flex items-center justify-center w-10 h-10 rounded-full bg-surface border border-border hover:bg-surface-hover transition-colors"
-              aria-label="Language"
-              title={LOCALE_LABELS[locale].name}
-            >
-              <span className="text-base leading-none">{LOCALE_LABELS[locale].flag}</span>
-            </summary>
-            <div className="absolute bottom-full mb-2 left-0 w-32 card p-1 z-40">
-              {(Object.entries(LOCALE_LABELS) as [Locale, { flag: string; name: string }][]).map(
-                ([code, { flag, name }]) => (
-                  <button
-                    key={code}
-                    type="button"
-                    onClick={() => {
-                      setLocale(code);
-                      // close <details>
-                      (document.activeElement as HTMLElement)?.blur();
-                    }}
-                    className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
-                      code === locale
-                        ? "bg-primary/15 text-primary"
-                        : "text-text-secondary hover:bg-surface-hover"
-                    }`}
-                  >
-                    <span className="text-sm">{flag}</span>
-                    <span>{name}</span>
-                  </button>
-                )
-              )}
-            </div>
-          </details>
         </div>
       </aside>
 

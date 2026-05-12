@@ -1,22 +1,43 @@
 """Admin: user management endpoints."""
+from __future__ import annotations
+
+import logging
+import secrets
+from datetime import datetime, timezone
+from typing import Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, Query, Request
+from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.admin_deps import require_admin_with_2fa
 from app.core.errors import ApiError
+from app.core.security import hash_password
 from app.db.session import get_db
 from app.models.notification import Notification
 from app.models.user import ArtistApplication, ArtistProfile, User
 from app.schemas.artist import ApplicationReviewRequest, ArtistApplicationOut
 from app.services.auth_tokens import revoke_user_tokens
+from app.services.audit_log import record_audit
 
-from datetime import datetime, timezone
+log = logging.getLogger(__name__)
 
 router = APIRouter(tags=["admin"])
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 스키마
+# ──────────────────────────────────────────────────────────────────────────────
+
+class AdminCreateUserRequest(BaseModel):
+    """POST /admin/users 요청 본문."""
+    email: EmailStr
+    display_name: str = Field(min_length=3, max_length=50)
+    role: Literal["user", "artist", "admin"] = "user"
+    send_magic_link: bool = True  # 기본값 True — 평문 비밀번호를 admin이 보지 않도록
+    country_code: str | None = Field(default=None, min_length=2, max_length=2)
 
 
 class UserUpdateRequest(BaseModel):
@@ -24,6 +45,22 @@ class UserUpdateRequest(BaseModel):
     role: str | None = None
     badge_level: str | None = None
 
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 헬퍼
+# ──────────────────────────────────────────────────────────────────────────────
+
+def _normalize_display_name(raw: str) -> str:
+    """소문자 변환 → 앞뒤 공백 제거 → 내부 공백을 underscore로.
+
+    기존 회원가입 패턴과 동일하게 처리한다.
+    """
+    return raw.strip().lower().replace(" ", "_")
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Artist application 관리 endpoints
+# ──────────────────────────────────────────────────────────────────────────────
 
 @router.get("/artists/applications")
 async def list_applications(
@@ -145,6 +182,10 @@ async def reject_application(
     return {"data": ArtistApplicationOut.model_validate(app_obj).model_dump(mode="json")}
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+# User 관리 endpoints
+# ──────────────────────────────────────────────────────────────────────────────
+
 @router.get("/users")
 async def list_users(
     q: str | None = Query(None),
@@ -186,17 +227,129 @@ async def list_users(
     }
 
 
+@router.post("/users", status_code=201)
+async def create_user_by_admin(
+    body: AdminCreateUserRequest,
+    request: Request,
+    admin: User = Depends(require_admin_with_2fa),
+    db: AsyncSession = Depends(get_db),
+):
+    """admin이 사용자를 직접 생성한다.
+
+    보안 원칙:
+    - 임시 비밀번호는 bcrypt hash만 DB에 저장, 평문은 즉시 폐기.
+    - 응답/로그에 평문 비밀번호 절대 노출 금지.
+    - send_magic_link=True 시 사용자가 직접 비밀번호를 설정하도록 유도.
+    """
+    # 1. email 중복 검증
+    existing = await db.scalar(select(User).where(User.email == str(body.email)))
+    if existing is not None:
+        raise ApiError("ALREADY_EXISTS", "이미 등록된 이메일입니다.", http_status=409)
+
+    # 2. display_name 정규화
+    display_name = _normalize_display_name(body.display_name)
+
+    # 3. 임시 비밀번호 생성 — 평문은 즉시 hash 후 폐기
+    _tmp_plain = secrets.token_urlsafe(32)
+    password_hash = hash_password(_tmp_plain)
+    del _tmp_plain  # 평문 즉시 폐기
+
+    # 4. User 생성
+    new_user = User(
+        email=str(body.email),
+        display_name=display_name,
+        role=body.role,
+        status="active",
+        password_hash=password_hash,
+        country_code=body.country_code,
+    )
+    db.add(new_user)
+    await db.flush()  # id 확보
+    await db.refresh(new_user)
+
+    # 5. 매직 링크 발송
+    magic_link_sent = False
+    if body.send_magic_link:
+        from app.services.magic_link import send_admin_invite_magic_link
+        result = await send_admin_invite_magic_link(
+            email=str(body.email),
+            display_name=display_name,
+            role=body.role,
+        )
+        magic_link_sent = result.get("sent", False)
+        if not magic_link_sent:
+            log.warning(
+                "magic_link_skipped | user_id=%s reason=%s",
+                new_user.id,
+                result.get("reason", "unknown"),
+            )
+
+    await db.commit()
+    await db.refresh(new_user)
+
+    # 6. Audit log (structured DB record)
+    await record_audit(
+        db,
+        actor=admin,
+        action="admin.create_user",
+        target_type="user",
+        target_id=new_user.id,
+        metadata={
+            "created_user_id": str(new_user.id),
+            "email": str(body.email),
+            "role": body.role,
+            "send_magic_link": body.send_magic_link,
+        },
+        request=request,
+    )
+
+    return {
+        "data": {
+            "id": str(new_user.id),
+            "email": new_user.email,
+            "display_name": new_user.display_name,
+            "role": new_user.role,
+            "status": new_user.status,
+            "magic_link_sent": magic_link_sent,
+            "created_at": new_user.created_at.isoformat() if new_user.created_at else None,
+        }
+    }
+
+
 @router.patch("/users/{user_id}")
 async def update_user(
     user_id: UUID,
     body: UserUpdateRequest,
-    _admin: User = Depends(require_admin_with_2fa),
+    request: Request,
+    admin: User = Depends(require_admin_with_2fa),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
         raise ApiError("NOT_FOUND", "User not found", http_status=404)
+
+    # ── Self-modify 차단 (line 237~244) ─────────────────────────────────────
+    # admin이 자신의 role을 변경하는 것은 허용하지 않는다.
+    # (다른 admin이 해야 함 — 4-eyes 원칙)
+    if body.role is not None and user.id == admin.id:
+        raise ApiError(
+            "SELF_MODIFY_FORBIDDEN",
+            "자신의 권한은 변경할 수 없습니다.",
+            http_status=400,
+        )
+    # admin이 자신을 정지시키는 것도 차단
+    if body.status == "suspended" and user.id == admin.id:
+        raise ApiError(
+            "SELF_MODIFY_FORBIDDEN",
+            "자신의 계정을 정지할 수 없습니다.",
+            http_status=400,
+        )
+    # ────────────────────────────────────────────────────────────────────────
+
+    before_status = user.status
+    before_role = user.role
+    old_role = user.role
 
     if body.status and body.status in ("active", "suspended"):
         user.status = body.status
@@ -207,6 +360,13 @@ async def update_user(
     if body.role and body.role in ("user", "artist", "admin"):
         user.role = body.role
         await revoke_user_tokens(db, user.id, reason="admin_role_change")
+        log.info(
+            "AUDIT action=admin_role_change admin=%s target=%s old=%s new=%s",
+            admin.id,
+            user.id,
+            old_role,
+            body.role,
+        )
     if body.badge_level:
         prof_result = await db.execute(select(ArtistProfile).where(ArtistProfile.user_id == user_id))
         prof = prof_result.scalar_one_or_none()
@@ -214,4 +374,20 @@ async def update_user(
             prof.badge_level = body.badge_level
 
     await db.commit()
+
+    # Audit log (structured DB record)
+    await record_audit(
+        db,
+        actor=admin,
+        action="admin.update_user",
+        target_type="user",
+        target_id=user.id,
+        metadata={
+            "target_user_id": str(user.id),
+            "before": {"role": before_role, "status": before_status},
+            "after": {"role": user.role, "status": user.status},
+        },
+        request=request,
+    )
+
     return {"data": {"id": str(user.id), "status": user.status, "role": user.role}}

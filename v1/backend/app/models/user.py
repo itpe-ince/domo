@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -42,6 +42,14 @@ class User(Base):
     avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+    # editor-image-studio PDCA #6-image v1.1 — watermark signature storage key (alembic 0038).
+    # OQ-D-B = C, OQ-D-3 = B: pre-stored separate user asset (not avatar reuse).
+    # Backend reads directly from storage by key — no external URL fetch (SSRF defense).
+    # Populated via POST /v1/users/me/signature; cleared by DELETE /v1/users/me/signature.
+    signature_storage_key: Mapped[str | None] = mapped_column(
+        String(512), nullable=True
+    )
+
     country_code: Mapped[str | None] = mapped_column(String(2), nullable=True)
     language: Mapped[str] = mapped_column(String(10), default="ko")
     birth_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -63,9 +71,79 @@ class User(Base):
         DateTime(timezone=True), nullable=True
     )
 
+    # C-2 GitHub OAuth 필드 (alembic 0087)
+    # sns_id는 VARCHAR(255)로 Google sub 문자열 저장 — GitHub ID는 BIGINT 별도 관리
+    github_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True, unique=True)
+
+    # D-3 이메일+비밀번호 인증 컬럼 (alembic 0085)
+    # Google OAuth 사용자는 alembic 마이그레이션 시 email_verified=True 일괄 설정됨.
+    # email_verification_token: secrets.token_urlsafe(32) 평문 저장 (단일 사용 후 NULL).
+    # failed_login_locked_until: admin의 locked_until 과 분리된 일반 사용자 잠금.
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    email_verification_token: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )
+    email_verification_sent_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    email_verification_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    failed_login_locked_until: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
     # M10 Stripe Customer caching
     stripe_customer_id: Mapped[str | None] = mapped_column(
         String(100), nullable=True, index=True
+    )
+
+    # D'-1 artist-tier-release carry-over — sponsor_validity_days.
+    # NULL = lifetime (any completed Sponsorship qualifies forever).
+    # 1 / 7 / 30 / 90 / 365 = Sponsorship.completed_at must be within N days.
+    # Artist-only setting; ignored for subscriber / follower tier checks.
+    sponsor_validity_days: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
+
+    # A-6 artist-index-v1 — global ranking columns (alembic 0047)
+    # score 0-100 (weighted composite), rank/rank_region 1=1위, calc timestamp.
+    # Updated hourly by artist_index_cron_loop. NULL = not yet ranked.
+    artist_index_score: Mapped[float | None] = mapped_column(
+        nullable=True
+    )
+    artist_index_rank: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
+    artist_index_rank_region: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
+    artist_index_calculated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    # G'-8 artist-index-region-genre — region/genre ranking columns (alembic 0051)
+    # Region rank: 1-indexed within same country_code group.
+    # Genre rank: 1-indexed within same primary_genre group.
+    # primary_genre: most-posted genre tag (cron-computed from posts.genre_tags).
+    artist_index_score_region: Mapped[float | None] = mapped_column(
+        nullable=True
+    )
+    artist_index_rank_genre: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
+    artist_index_score_genre: Mapped[float | None] = mapped_column(
+        nullable=True
+    )
+    artist_index_primary_genre: Mapped[str | None] = mapped_column(
+        String(100), nullable=True
+    )
+
+    # B'-1 multi-currency-foundation — user display currency preference (alembic 0061).
+    # Supported: USD / KRW / EUR / JPY. Default USD.
+    # Updated via PATCH /v1/me/preferences/currency.
+    preferred_currency: Mapped[str] = mapped_column(
+        String(3), nullable=False, default="USD"
     )
 
     # M3 GDPR fields (Phase 4)
@@ -90,6 +168,12 @@ class User(Base):
 
     artist_profile: Mapped["ArtistProfile | None"] = relationship(
         back_populates="user", uselist=False, foreign_keys="ArtistProfile.user_id"
+    )
+
+    # C-1: password reset tokens (별도 테이블)
+    password_reset_tokens: Mapped[list["PasswordResetToken"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
 
 

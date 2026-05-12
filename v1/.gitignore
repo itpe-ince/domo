@@ -42,6 +42,9 @@ yarn-error.log*
 backend/uploads/
 *.tmp
 
+# CJK fonts — downloaded via scripts/download_cjk_fonts.sh (H'-2)
+backend/app/fonts/
+
 # Docker volumes
 postgres_data/
 redis_data/
@@ -50,3 +53,9 @@ redis_data/
 coverage/
 .coverage
 htmlcov/
+
+# E2E artifacts
+e2e/.env.e2e
+e2e/playwright-report/
+e2e/test-results/
+e2e/playwright/.auth/

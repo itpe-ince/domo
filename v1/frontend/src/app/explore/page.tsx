@@ -1,137 +1,138 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { PostCard } from "@/components/PostCard";
+/**
+ * Explore Page — A-4 Explore Revamp
+ *
+ * Layout:
+ *  1. Sticky header with 5 tabs + context filter
+ *  2. 오늘의 작가 Hero Card (A-6 artist-index top-3 daily rotation)
+ *  3. Ranking Preview strip — top-5 horizontal scroll → /artists/index
+ *  4. Posts grid (tab-driven)
+ *
+ * Tab behavior:
+ *  - Trending: popular sort 24h (PostHog flag 'feed-algorithm-v2' → algo=v1)
+ *  - New: created_at DESC
+ *  - Region: country-group filter + dropdown
+ *  - Genre: genre filter + dropdown
+ *  - Pricing: product posts (auction active OR buy_now)
+ *
+ * State: URL query params + localStorage last-tab persistence.
+ * Analytics: explore_view {tab}, explore_hero_view {artist_id},
+ *            artist_index_preview_click {rank}.
+ */
+
+import { Suspense, useEffect, useState } from "react";
 import { useI18n } from "@/i18n";
-import { fetchExplore, PostView } from "@/lib/api";
+import { fetchExplorePosts } from "@/lib/api";
+import { useExploreState } from "@/lib/hooks/useExploreState";
+import { useArtistIndex } from "@/lib/hooks/useArtistIndex";
+import { isFeatureEnabled } from "@/lib/analytics/featureFlags";
+import { ExploreTabs } from "@/components/explore/ExploreTabs";
+import { ExploreFilters } from "@/components/explore/ExploreFilters";
+import { ExploreHeroCard } from "@/components/explore/ExploreHeroCard";
+import { ArtistIndexPreview } from "@/components/explore/ArtistIndexPreview";
+import { PostsGrid } from "@/components/explore/PostsGrid";
+import type { PostView } from "@/lib/api";
 
-const GENRES = [
-  null,
-  "painting",
-  "drawing",
-  "photography",
-  "sculpture",
-  "mixed_media",
-];
-
-export default function ExplorePage() {
+function ExploreContent() {
   const { t } = useI18n();
+  const { tab, filters, setTab, setRegion, setGenre } = useExploreState();
+
+  // A-6: artist index (top 5 for preview, top 3 for hero)
+  const {
+    entries: artistEntries,
+    loading: artistLoading,
+  } = useArtistIndex({ limit: 5 });
+
+  const top3 = artistEntries.slice(0, 3);
+
+  // Posts state
   const [posts, setPosts] = useState<PostView[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [genre, setGenre] = useState<string | null>(null);
-  const [type, setType] = useState<"general" | "product" | null>(null);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [postsError, setPostsError] = useState<string | null>(null);
 
+  // Reload posts when tab or filters change
   useEffect(() => {
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [genre, type]);
+    let cancelled = false;
+    setPostsLoading(true);
+    setPostsError(null);
 
-  async function load() {
-    setLoading(true);
-    setError(null);
-    try {
-      const items = await fetchExplore({
-        genre: genre ?? undefined,
-        type: type ?? undefined,
-        limit: 40,
+    // PostHog feature flag: trending tab uses algo=v1 when flag active
+    // Currently routed through fetchExplorePosts which calls /posts/explore
+    // with sort=popular. The v1 personalization is a server-side concern
+    // enabled via the feature flag header in a future enhancement.
+    const _usePersonalized =
+      tab === "trending" && isFeatureEnabled("feed-algorithm-v2");
+    void _usePersonalized; // intentional — documents future integration point
+
+    fetchExplorePosts({
+      tab,
+      region: filters.region || undefined,
+      genre: filters.genre || undefined,
+      limit: 40,
+    })
+      .then((items) => {
+        if (!cancelled) setPosts(items);
+      })
+      .catch((e) => {
+        if (!cancelled)
+          setPostsError(e instanceof Error ? e.message : t("common.error"));
+      })
+      .finally(() => {
+        if (!cancelled) setPostsLoading(false);
       });
-      setPosts(items);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load");
-    } finally {
-      setLoading(false);
-    }
-  }
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, filters.region, filters.genre]);
 
   return (
-    <main className="flex-1 min-w-0 xl:max-w-[900px] mx-auto">
-      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3">
-        <h1 className="text-xl font-bold mb-3">{t("explore.title")}</h1>
-        <div className="space-y-2">
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {GENRES.map((g) => (
-              <button
-                key={g ?? "all-g"}
-                onClick={() => setGenre(g)}
-                className={`px-3 py-1 rounded-full text-xs whitespace-nowrap ${
-                  (genre ?? null) === g
-                    ? "bg-primary text-background font-semibold"
-                    : "bg-surface text-text-secondary hover:bg-surface-hover"
-                }`}
-              >
-                {g ?? t("explore.all")}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setType(null)}
-              className={`px-3 py-1 rounded-full text-xs ${
-                type === null
-                  ? "bg-primary text-background font-semibold"
-                  : "bg-surface text-text-secondary"
-              }`}
-            >
-              {t("explore.allPosts")}
-            </button>
-            <button
-              onClick={() => setType("product")}
-              className={`px-3 py-1 rounded-full text-xs ${
-                type === "product"
-                  ? "bg-primary text-background font-semibold"
-                  : "bg-surface text-text-secondary"
-              }`}
-            >
-              {t("explore.products")}
-            </button>
-            <button
-              onClick={() => setType("general")}
-              className={`px-3 py-1 rounded-full text-xs ${
-                type === "general"
-                  ? "bg-primary text-background font-semibold"
-                  : "bg-surface text-text-secondary"
-              }`}
-            >
-              {t("explore.general")}
-            </button>
-          </div>
-        </div>
+    <main className="flex-1 min-w-0 xl:max-w-[900px] mx-auto" aria-label={t("explore.title")}>
+      {/* ── Sticky header: title + tabs + context filter ── */}
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3 space-y-2">
+        <h1 className="text-xl font-bold text-text-primary">
+          {t("explore.title")}
+        </h1>
+
+        <ExploreTabs active={tab} onChange={setTab} />
+
+        {/* Context-sensitive filter row */}
+        <ExploreFilters
+          tab={tab}
+          filters={filters}
+          onRegionChange={setRegion}
+          onGenreChange={setGenre}
+        />
       </div>
 
-      <div className="p-4">
-        {error && (
-          <div className="card border-danger p-4 mb-4 text-danger text-sm">
-            {error}
-          </div>
-        )}
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <div
-                key={i}
-                className="card overflow-hidden animate-pulse"
-              >
-                <div className="aspect-[4/5] bg-surface-hover" />
-                <div className="p-4 space-y-2">
-                  <div className="h-3 w-1/2 bg-surface-hover rounded" />
-                  <div className="h-4 w-3/4 bg-surface-hover rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : posts.length === 0 ? (
-          <div className="card p-12 text-center text-text-muted">
-            표시할 포스트가 없습니다.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
-        )}
+      <div className="p-4 space-y-0">
+        {/* ── 오늘의 작가 Hero Card ── */}
+        <ExploreHeroCard top3={top3} loading={artistLoading} />
+
+        {/* ── Ranking Preview strip ── */}
+        <ArtistIndexPreview entries={artistEntries} loading={artistLoading} />
+
+        {/* ── Posts grid ── */}
+        <PostsGrid
+          posts={posts}
+          loading={postsLoading}
+          error={postsError}
+        />
       </div>
     </main>
+  );
+}
+
+/**
+ * Wrap ExploreContent in a Suspense boundary because useSearchParams()
+ * (called inside useExploreState) requires it in Next.js App Router.
+ */
+export default function ExplorePage() {
+  return (
+    <Suspense fallback={null}>
+      <ExploreContent />
+    </Suspense>
   );
 }

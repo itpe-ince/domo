@@ -15,7 +15,8 @@ dependencies = [
     "bcrypt>=4.2",
     "python-multipart>=0.0.20",
     "httpx>=0.28",
-    "redis>=5.2",
+    "beautifulsoup4>=4.12",
+    "redis[hiredis]>=5.2",
     "google-auth>=2.36",
     "requests>=2.32",
     "Pillow>=11.0",
@@ -24,7 +25,51 @@ dependencies = [
     "reportlab>=4.2",
     "pyotp>=2.9",
     "webauthn>=2.5",
+    "prometheus-client>=0.21",
+    "posthog>=3.0.0",
+    # OpenTelemetry — G''-1 opentelemetry-tracing
+    "opentelemetry-sdk>=1.25.0",
+    "opentelemetry-api>=1.25.0",
+    "opentelemetry-instrumentation-fastapi>=0.46b0",
+    "opentelemetry-instrumentation-sqlalchemy>=0.46b0",
+    "opentelemetry-instrumentation-httpx>=0.46b0",
+    "opentelemetry-instrumentation-asyncpg>=0.46b0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.25.0",
 ]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pytest-mock>=3.14",
+    "pytest-timeout>=2.3",
+    "testcontainers[postgresql,redis,localstack]>=4.0",
+    "freezegun>=1.4",
+    "factory-boy>=3.3",
+    "respx>=0.21",
+    # Phase 13 A-2: LocalStack SES/S3/Cognito integration
+    "boto3>=1.34",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+# setuptools 자동 검색은 'app/' 외에 'alembic/' 'tests/' 'scripts/'까지 top-level로
+# 잡으려 시도하여 "Multiple top-level packages discovered" 에러를 일으킴.
+# 패키지 디스트리뷰션 대상은 런타임 코드 'app/'만으로 명시.
+[tool.setuptools.packages.find]
+include = ["app*"]
+exclude = ["alembic*", "tests*", "scripts*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 100

@@ -1,0 +1,64 @@
+name: Backend Tests
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - "feature/**"
+    paths:
+      - "v1/backend/**"
+  pull_request:
+    paths:
+      - "v1/backend/**"
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: ./v1/backend
+
+jobs:
+  test:
+    name: pytest (LocalStack enabled)
+    runs-on: ubuntu-latest
+
+    env:
+      # Phase 13 A-2: LocalStack opt-in for CI (docker-in-docker available on ubuntu-latest)
+      USE_LOCALSTACK: "true"
+      # Phase 13 A-1: PostgreSQL testcontainers disabled (mock DB 방식 사용)
+      USE_TESTCONTAINERS: "false"
+      # AWS credentials for LocalStack (test-only, not real AWS)
+      AWS_DEFAULT_REGION: "us-east-1"
+      AWS_ACCESS_KEY_ID: "test"
+      AWS_SECRET_ACCESS_KEY: "test"
+      # Suppress Stripe/SES/LLM calls in unit tests
+      PAYMENT_PROVIDER: "mock_stripe"
+      EMAIL_PROVIDER: "mock"
+      STORAGE_PROVIDER: "local"
+      OTEL_ENABLED: "false"
+      DATABASE_URL: "postgresql+asyncpg://domo:domo@localhost:5432/domo"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run tests (unit + integration, LocalStack enabled)
+        run: pytest tests/ --tb=short -q --timeout=120
+        timeout-minutes: 15
+
+      - name: Summarize skip count
+        if: always()
+        run: |
+          echo "=== Test summary ==="
+          pytest tests/ --tb=no -q 2>&1 | tail -5 || true

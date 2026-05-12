@@ -26,6 +26,7 @@ from app.core.config import get_settings
 from app.services.payments.base import (
     PaymentIntent,
     PaymentProvider,
+    SetupIntent,
     SubscriptionResult,
 )
 
@@ -58,6 +59,59 @@ class StripeProvider(PaymentProvider):
         stripe.api_key = self.secret_key
         # Hold a reference so test code can monkey-patch if needed
         self._stripe = stripe
+
+    # ─── Customer ───────────────────────────────────────────────────────
+
+    async def get_or_create_customer(
+        self,
+        user_id: str,
+        email: str | None = None,
+    ) -> str:
+        """Find or create a Stripe Customer for the given user_id.
+
+        Does NOT interact with the DB — caller is responsible for caching
+        the returned customer_id on User.stripe_customer_id.
+        """
+        stripe = self._stripe
+
+        def _find_or_create() -> str:
+            # Search by metadata.user_id (idempotent on repeated calls)
+            results = stripe.Customer.list(limit=1, metadata={"user_id": user_id})
+            if results.data:
+                return results.data[0].id
+            params: dict = {"metadata": {"user_id": user_id}}
+            if email:
+                params["email"] = email
+            customer = stripe.Customer.create(**params)
+            return customer.id
+
+        return await asyncio.to_thread(_find_or_create)
+
+    # ─── SetupIntent ────────────────────────────────────────────────────
+
+    async def create_setup_intent(
+        self,
+        customer_id: str,
+        metadata: dict | None = None,
+    ) -> SetupIntent:
+        """Create a Stripe SetupIntent for off-session payment method collection."""
+        stripe = self._stripe
+
+        def _create():
+            return stripe.SetupIntent.create(
+                customer=customer_id,
+                payment_method_types=["card"],
+                usage="off_session",
+                metadata=metadata or {},
+            )
+
+        si = await asyncio.to_thread(_create)
+        return SetupIntent(
+            id=si.id,
+            client_secret=si.client_secret or "",
+            customer_id=customer_id,
+            status=si.status,
+        )
 
     # ─── Payment Intents ────────────────────────────────────────────────
 
@@ -298,6 +352,73 @@ class StripeProvider(PaymentProvider):
             "reason": refund_obj.reason,
             "status": refund_obj.status,
         }
+
+    # ─── Stripe Connect ─────────────────────────────────────────────────
+
+    async def get_or_create_connect_account(self, user_id: str, email: str) -> str:
+        """Stripe Connect Express 계정 생성 (KYC approve 시 호출)."""
+        stripe = self._stripe
+
+        def _create():
+            account = stripe.Account.create(
+                type="express",
+                email=email,
+                metadata={"user_id": user_id},
+            )
+            return account.id
+
+        return await asyncio.to_thread(_create)
+
+    async def create_account_link(
+        self, account_id: str, refresh_url: str, return_url: str
+    ) -> str:
+        """Stripe Connect onboarding URL 생성."""
+        stripe = self._stripe
+
+        def _create():
+            link = stripe.AccountLink.create(
+                account=account_id,
+                refresh_url=refresh_url,
+                return_url=return_url,
+                type="account_onboarding",
+            )
+            return link.url
+
+        return await asyncio.to_thread(_create)
+
+    async def get_connect_account_status(self, account_id: str) -> dict:
+        """charges_enabled, payouts_enabled, requirements 조회."""
+        stripe = self._stripe
+
+        def _retrieve():
+            acct = stripe.Account.retrieve(account_id)
+            return {
+                "charges_enabled": acct.charges_enabled,
+                "payouts_enabled": acct.payouts_enabled,
+                "requirements": {
+                    "currently_due": list(acct.requirements.currently_due or []),
+                    "eventually_due": list(acct.requirements.eventually_due or []),
+                    "disabled_reason": acct.requirements.disabled_reason,
+                },
+            }
+
+        return await asyncio.to_thread(_retrieve)
+
+    async def retrieve_transfer(self, transfer_id: str) -> dict:
+        """Stripe Transfer 조회."""
+        stripe = self._stripe
+
+        def _retrieve():
+            tr = stripe.Transfer.retrieve(transfer_id)
+            return {
+                "transfer_id": tr.id,
+                "amount": tr.amount,
+                "currency": tr.currency,
+                "created": tr.created,
+                "destination": tr.destination,
+            }
+
+        return await asyncio.to_thread(_retrieve)
 
     # ─── Webhooks ───────────────────────────────────────────────────────
 

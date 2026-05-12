@@ -242,6 +242,20 @@ export function HashIcon(p: IconProps) {
   );
 }
 
+// A-6 artist-index-v1 — global ranking / trophy icon
+export function TrophyIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+      <path d="M4 22h16" />
+      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+      <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
+    </svg>
+  );
+}
+
 export function MoreHorizontalIcon(p: IconProps) {
   return (
     <svg {...base(p)}>
@@ -251,3 +265,188 @@ export function MoreHorizontalIcon(p: IconProps) {
     </svg>
   );
 }
+
+// editor-draft-autosave PDCA — Drafts list menu
+export function DraftIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <path
+        d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+        strokeDasharray="4 2"
+      />
+      <polyline points="14 3 14 8 19 8" />
+      <line x1="8" y1="13" x2="16" y2="13" />
+      <line x1="8" y1="17" x2="12" y2="17" />
+    </svg>
+  );
+}
+
+// editor-media-ux PDCA — Drag handle (dots-grip) for SortableMediaCard
+export function DragHandleIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <circle cx="9" cy="6" r="1.2" fill="currentColor" />
+      <circle cx="15" cy="6" r="1.2" fill="currentColor" />
+      <circle cx="9" cy="12" r="1.2" fill="currentColor" />
+      <circle cx="15" cy="12" r="1.2" fill="currentColor" />
+      <circle cx="9" cy="18" r="1.2" fill="currentColor" />
+      <circle cx="15" cy="18" r="1.2" fill="currentColor" />
+    </svg>
+  );
+}
+
+// editor-image-studio PDCA #6-image — Edit pencil icon for SortableMediaCard
+export function EditPencilIcon(p: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+    </svg>
+  );
+}
+
+// editor-responsive-redesign PDCA — Preview pane toggle
+export function EyeIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+export function EyeOffIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-10-7-10-7a18.7 18.7 0 0 1 5.06-5.94" />
+      <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 10 7 10 7a18.7 18.7 0 0 1-2.16 3.19" />
+      <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+      <line x1="2" y1="2" x2="22" y2="22" />
+    </svg>
+  );
+}
+
+// publish-controls PDCA #8 — visibility indicators (Step 5에서 사용)
+export function LockClosedIcon(p: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  );
+}
+
+// upload-retry-ui (D-2) — retry/cancel icons for MediaUploadProgress
+export function RefreshIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <polyline points="1 4 1 10 7 10" />
+      <path d="M3.51 15a9 9 0 1 0 .49-4.5" />
+    </svg>
+  );
+}
+
+export function XCircleIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="15" y1="9" x2="9" y2="15" />
+      <line x1="9" y1="9" x2="15" y2="15" />
+    </svg>
+  );
+}
+
+// auction-promotion-suite PDCA #11 — share-2 style share icon (Lucide pattern)
+export function ShareIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+    </svg>
+  );
+}
+
+export function HeartIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  );
+}
+
+export function MessageCircleIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+export function GavelIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <path d="m14 13-7.5 7.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L11 10" />
+      <path d="m16 16 6-6" />
+      <path d="m8 8 6-6" />
+      <path d="m9 7 8 8" />
+      <path d="m21 11-8-8" />
+    </svg>
+  );
+}
+
+export function UserPlusIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <line x1="19" y1="8" x2="19" y2="14" />
+      <line x1="22" y1="11" x2="16" y2="11" />
+    </svg>
+  );
+}
+
+export function InfoIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+  );
+}
+
+// B-3 supporter-dashboard — My Sponsorships nav icon
+export function HeartHandshakeIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+      <path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66" />
+      <path d="m18 15-2-2" />
+      <path d="m15 18-2-2" />
+    </svg>
+  );
+}
+
+export function BookOpenIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    </svg>
+  );
+}
+
+// B'-2 dm-messaging — paper-plane send icon
+export function SendIcon(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <line x1="22" y1="2" x2="11" y2="13" />
+      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+    </svg>
+  );
+}
+
+// B'-2 dm-messaging removed duplicate — using existing MessageCircleIcon at line 380

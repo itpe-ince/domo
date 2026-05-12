@@ -1,0 +1,344 @@
+"use client";
+
+/**
+ * PreferencesCard — 통화 / 인터페이스 언어
+ *
+ * 표시 설정 페이지(`/me/settings/display`)에서 사용.
+ *
+ * Expanded (xl+): 2행 (통화 · 언어)
+ * Collapsed (xl-): 아이콘 2개 가로 배치
+ *
+ * Popover 위치:
+ *   - Expanded: 카드 우측 상단 (right-0 bottom-full mb-1)
+ *   - Collapsed: 카드 우측 상단 (right-0 bottom-full mb-2)
+ *
+ * 한 번에 하나의 popover만 열림.
+ * ESC 키 / 외부 클릭으로 닫힘.
+ */
+
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useI18n, LOCALE_LABELS, Locale } from "@/i18n";
+import {
+  SUPPORTED_CURRENCIES,
+  SupportedCurrency,
+  CURRENCY_SYMBOLS,
+  CURRENCY_CHANGED_EVENT,
+  getStoredCurrency,
+  setStoredCurrency,
+} from "./CurrencySwitcher";
+
+/* ------------------------------------------------------------------ */
+/* Types                                                               */
+/* ------------------------------------------------------------------ */
+
+interface PreferencesCardProps {
+  /** 사이드바 펼친 모드 여부 (xl+) — 컴포넌트 내부 미디어 쿼리로도 처리 */
+  expanded?: boolean;
+  /** 로그인 상태 (currency 서버 동기화 트리거) */
+  isAuthenticated?: boolean;
+  className?: string;
+}
+
+type PopoverTarget = "currency" | "locale" | null;
+
+/* ------------------------------------------------------------------ */
+/* Chevron icon                                                         */
+/* ------------------------------------------------------------------ */
+
+function ChevronDown({ open }: { open: boolean }) {
+  return (
+    <svg
+      className={`w-3.5 h-3.5 text-text-muted transition-transform ${open ? "rotate-180" : ""}`}
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Main component                                                       */
+/* ------------------------------------------------------------------ */
+
+export function PreferencesCard({
+  isAuthenticated = false,
+  className = "",
+}: PreferencesCardProps) {
+  const { t, locale, setLocale } = useI18n();
+
+  const [currency, setCurrency] = useState<SupportedCurrency>("USD");
+  const [openPopover, setOpenPopover] = useState<PopoverTarget>(null);
+
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  /* Sync currency from localStorage */
+  useEffect(() => {
+    setCurrency(getStoredCurrency());
+
+    function onCurrencyChange(e: Event) {
+      const evt = e as CustomEvent<SupportedCurrency>;
+      setCurrency(evt.detail);
+    }
+    window.addEventListener(CURRENCY_CHANGED_EVENT, onCurrencyChange);
+    return () => window.removeEventListener(CURRENCY_CHANGED_EVENT, onCurrencyChange);
+  }, []);
+
+  /* ESC key closes popover */
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpenPopover(null);
+    }
+    if (openPopover) {
+      document.addEventListener("keydown", onKeyDown);
+      return () => document.removeEventListener("keydown", onKeyDown);
+    }
+  }, [openPopover]);
+
+  /* Outside click closes popover */
+  useEffect(() => {
+    function onPointerDown(e: PointerEvent) {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+        setOpenPopover(null);
+      }
+    }
+    if (openPopover) {
+      document.addEventListener("pointerdown", onPointerDown);
+      return () => document.removeEventListener("pointerdown", onPointerDown);
+    }
+  }, [openPopover]);
+
+  const togglePopover = useCallback((target: PopoverTarget) => {
+    setOpenPopover((prev) => (prev === target ? null : target));
+  }, []);
+
+  async function handleCurrencySelect(c: SupportedCurrency) {
+    setStoredCurrency(c);
+    setCurrency(c);
+    setOpenPopover(null);
+
+    if (isAuthenticated) {
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("domo_access_token")
+            : null;
+        if (token) {
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3710/v1"}/me/preferences/currency`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ currency: c }),
+            }
+          );
+        }
+      } catch {
+        // Non-fatal — localStorage is source of truth
+      }
+    }
+  }
+
+  function handleLocaleSelect(l: Locale) {
+    setLocale(l);
+    setOpenPopover(null);
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Currency popover list                                             */
+  /* ---------------------------------------------------------------- */
+
+  function CurrencyPopover() {
+    return (
+      <ul
+        role="listbox"
+        aria-label={t("currency.switcher.label")}
+        className="card p-1 shadow-lg rounded-lg z-40 min-w-[140px]"
+      >
+        {SUPPORTED_CURRENCIES.map((c) => (
+          <li key={c} role="option" aria-selected={c === currency}>
+            <button
+              type="button"
+              onClick={() => handleCurrencySelect(c)}
+              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
+                c === currency
+                  ? "bg-primary/15 text-primary font-medium"
+                  : "text-text-secondary hover:bg-surface-hover"
+              }`}
+            >
+              <span className="font-mono w-4 text-center">{CURRENCY_SYMBOLS[c]}</span>
+              <span className="font-medium">{c}</span>
+              <span className="text-text-muted ml-auto">{t(`currency.label.${c}`)}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Locale popover list                                               */
+  /* ---------------------------------------------------------------- */
+
+  function LocalePopover() {
+    return (
+      <ul
+        role="listbox"
+        aria-label={t("preferences.locale.label")}
+        className="card p-1 shadow-lg rounded-lg z-40 min-w-[140px]"
+      >
+        {(Object.entries(LOCALE_LABELS) as [Locale, { flag: string; name: string }][]).map(
+          ([code, { flag, name }]) => (
+            <li key={code} role="option" aria-selected={code === locale}>
+              <button
+                type="button"
+                onClick={() => handleLocaleSelect(code)}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
+                  code === locale
+                    ? "bg-primary/15 text-primary font-medium"
+                    : "text-text-secondary hover:bg-surface-hover"
+                }`}
+              >
+                <span className="text-sm">{flag}</span>
+                <span>{name}</span>
+              </button>
+            </li>
+          )
+        )}
+      </ul>
+    );
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Render                                                            */
+  /* ---------------------------------------------------------------- */
+
+  return (
+    <div ref={cardRef} className={`relative ${className}`}>
+      {/* ============================================================ */}
+      {/* EXPANDED MODE (xl+): 2-row card                             */}
+      {/* ============================================================ */}
+      <div className="hidden xl:block bg-surface border border-border rounded-xl overflow-hidden divide-y divide-border/50">
+
+        {/* Row 1: Currency */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => togglePopover("currency")}
+            aria-label={t("currency.switcher.label")}
+            aria-expanded={openPopover === "currency"}
+            aria-haspopup="listbox"
+            className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover transition-colors"
+          >
+            <span className="text-base leading-none" aria-hidden="true">💲</span>
+            <span className="text-xs text-text-secondary flex-1 text-left">
+              {t("preferences.currency.label")}
+            </span>
+            <span className="text-xs font-mono font-semibold text-primary">
+              {CURRENCY_SYMBOLS[currency]}
+              <span className="ml-1 font-sans font-normal text-text-muted">{currency}</span>
+            </span>
+            <ChevronDown open={openPopover === "currency"} />
+          </button>
+
+          {/* Currency popover — opens upward, right-aligned */}
+          {openPopover === "currency" && (
+            <div className="absolute right-0 bottom-full mb-1 z-40">
+              <CurrencyPopover />
+            </div>
+          )}
+        </div>
+
+        {/* Row 2: Locale */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => togglePopover("locale")}
+            aria-label={t("preferences.locale.label")}
+            aria-expanded={openPopover === "locale"}
+            aria-haspopup="listbox"
+            className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover transition-colors"
+          >
+            <span className="text-base leading-none" aria-hidden="true">🌐</span>
+            <span className="text-xs text-text-secondary flex-1 text-left">
+              {t("preferences.locale.label")}
+            </span>
+            <span className="text-xs text-text-muted">
+              {LOCALE_LABELS[locale].flag} {LOCALE_LABELS[locale].name}
+            </span>
+            <ChevronDown open={openPopover === "locale"} />
+          </button>
+
+          {/* Locale popover — opens upward, right-aligned */}
+          {openPopover === "locale" && (
+            <div className="absolute right-0 bottom-full mb-1 z-40">
+              <LocalePopover />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ============================================================ */}
+      {/* COLLAPSED MODE (xl-): 2 icon buttons in a row               */}
+      {/* ============================================================ */}
+      <div className="xl:hidden flex items-center justify-center gap-1 bg-surface border border-border rounded-xl px-1 py-1">
+
+        {/* Currency icon button */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => togglePopover("currency")}
+            aria-label={t("currency.switcher.label")}
+            aria-expanded={openPopover === "currency"}
+            aria-haspopup="listbox"
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-hover transition-colors"
+          >
+            <span
+              className="font-mono font-bold text-sm"
+              style={{ color: openPopover === "currency" ? undefined : undefined }}
+            >
+              {CURRENCY_SYMBOLS[currency]}
+            </span>
+          </button>
+
+          {/* Currency popover — opens upward */}
+          {openPopover === "currency" && (
+            <div className="absolute bottom-full mb-2 left-0 z-40">
+              <CurrencyPopover />
+            </div>
+          )}
+        </div>
+
+        {/* Locale icon button */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => togglePopover("locale")}
+            aria-label={t("preferences.locale.label")}
+            aria-expanded={openPopover === "locale"}
+            aria-haspopup="listbox"
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-hover transition-colors"
+            title={LOCALE_LABELS[locale].name}
+          >
+            <span className="text-base leading-none">{LOCALE_LABELS[locale].flag}</span>
+          </button>
+
+          {/* Locale popover — opens upward */}
+          {openPopover === "locale" && (
+            <div className="absolute bottom-full mb-2 left-0 z-40">
+              <LocalePopover />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

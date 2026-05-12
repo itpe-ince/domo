@@ -71,6 +71,22 @@ class S3StorageProvider(StorageProvider):
             return f"{self.cdn_base.rstrip('/')}/{key}"
         return f"https://{self.bucket}.s3.{self.region}.amazonaws.com/{key}"
 
+    async def get(self, key: str) -> bytes:
+        """Read object bytes from S3.
+
+        Raises:
+            FileNotFoundError: if the key does not exist (NoSuchKey / 404).
+        """
+        async with self._client() as s3:
+            try:
+                response = await s3.get_object(Bucket=self.bucket, Key=key)
+                return await response["Body"].read()
+            except Exception as exc:
+                exc_str = str(exc)
+                if "NoSuchKey" in exc_str or "404" in exc_str:
+                    raise FileNotFoundError(f"S3 object not found: {key}") from exc
+                raise
+
     async def exists(self, key: str) -> bool:
         async with self._client() as s3:
             try:

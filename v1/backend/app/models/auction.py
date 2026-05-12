@@ -8,6 +8,7 @@ from sqlalchemy import (
     Integer,
     Numeric,
     String,
+    Text,
     func,
 )
 from sqlalchemy.dialects.postgresql import UUID
@@ -46,6 +47,19 @@ class Auction(Base):
     status: Mapped[str] = mapped_column(String(20), default="scheduled")
     # 'scheduled' | 'active' | 'ended' | 'cancelled' | 'settled'
     bid_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Phase 4 #11 auction-promotion-suite
+    notified_24h_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, default=None,
+        comment="Phase 4 #11. UTC. NULL=24h 알림 미발송.")
+    notified_6h_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, default=None,
+        comment="Phase 4 #11. UTC. NULL=6h 알림 미발송.")
+    notified_1h_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, default=None,
+        comment="Phase 4 #11. UTC. NULL=1h 알림 미발송.")
+    share_card_url: Mapped[str | None] = mapped_column(Text, nullable=True, default=None,
+        comment="Phase 4 #11. 공유 카드 CDN URL.")
+    share_card_generated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, default=None,
+        comment="Phase 4 #11. UTC. 1h TTL cache 기준.")
+
     payment_deadline: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )

@@ -5,6 +5,13 @@ from uuid import UUID
 from pydantic import BaseModel, Field, field_validator
 
 
+class ShareCardResponse(BaseModel):
+    auction_id: UUID
+    share_card_url: str
+    generated_at: datetime
+    cached: bool  # True = 1h TTL cache hit
+
+
 class RefundRequest(BaseModel):
     """Input schema for POST /admin/orders/{order_id}/refund."""
 
@@ -47,6 +54,8 @@ class AuctionOut(BaseModel):
     bid_count: int
     payment_deadline: datetime | None
     created_at: datetime
+    share_card_url: str | None = None
+    share_card_generated_at: datetime | None = None
 
     class Config:
         from_attributes = True

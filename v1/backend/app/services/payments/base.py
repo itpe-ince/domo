@@ -21,6 +21,14 @@ class PaymentIntent:
 
 
 @dataclass
+class SetupIntent:
+    id: str
+    client_secret: str
+    customer_id: str
+    status: str  # 'requires_payment_method' | 'succeeded'
+
+
+@dataclass
 class SubscriptionResult:
     id: str
     status: str  # 'active' | 'cancelled' | 'past_due'
@@ -32,6 +40,22 @@ class PaymentProvider(ABC):
     """Abstract payment provider — Stripe-compatible surface."""
 
     name: str
+
+    @abstractmethod
+    async def create_setup_intent(
+        self,
+        customer_id: str,
+        metadata: dict | None = None,
+    ) -> SetupIntent:
+        """Create a SetupIntent for off-session payment method collection."""
+
+    @abstractmethod
+    async def get_or_create_customer(
+        self,
+        user_id: str,
+        email: str | None = None,
+    ) -> str:
+        """Get or create a Stripe Customer. Returns customer_id."""
 
     @abstractmethod
     async def create_payment_intent(

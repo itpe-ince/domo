@@ -21,7 +21,8 @@
     "following": "追蹤中",
     "followers": "粉絲",
     "likes": "喜歡",
-    "comments": "留言"
+    "comments": "留言",
+    "close": "關閉"
   },
   "nav": {
     "home": "首頁",
@@ -29,6 +30,7 @@
     "following": "追蹤中",
     "explore": "探索",
     "notifications": "通知",
+    "messages": "消息",
     "profile": "個人資料",
     "register": "發布",
     "subscription": "定期贊助",
@@ -36,7 +38,16 @@
     "warnings": "警告",
     "settings": "設定",
     "admin": "管理員",
-    "communities": "社群"
+    "communities": "社群",
+    "draftsList": "草稿",
+    "mySponsoring": "我的贊助記錄",
+    "patronageDashboard": "贊助儀表板",
+    "tierBenefits": "會員等級福利設定",
+    "artistIndex": "藝術家指數",
+    "stories": "故事中心",
+    "accessibilitySettings": "无障碍",
+    "displaySettings": "显示",
+    "moreMenu": "更多菜单"
   },
   "home": {
     "title": "Domo Lounge",
@@ -49,10 +60,24 @@
   },
   "feed": {
     "title": "動態",
+    "titlePersonalized": "個人化動態",
     "subtitleAuth": "追蹤的藝術家與熱門作品混合。",
+    "subtitlePersonalized": "混合您的追蹤、推薦與熱門作品。",
     "subtitleGuest": "目前最受歡迎的新興藝術家作品。",
     "noPosts": "沒有可顯示的內容。",
-    "loadError": "動態載入失敗"
+    "loadError": "動態載入失敗",
+    "loadMore": "載入更多",
+    "emptyTitle": "探索可追蹤的藝術家",
+    "emptySubtitle": "您尚未追蹤任何藝術家。追蹤推薦的藝術家以填充您的動態。",
+    "emptyCtaFollow": "查看推薦藝術家",
+    "emptyCtaSponsor": "了解 Blue Bird",
+    "algoToggleLabel": "動態排序方式",
+    "algoDefault": "最新",
+    "algoPersonalized": "為您推薦",
+    "reasonFollowing": "追蹤中",
+    "reasonTrending": "熱門",
+    "reasonSimilarGenre": "相似類型",
+    "reasonLabel": "推薦原因：{{reason}}"
   },
   "followingPage": {
     "title": "追蹤中",
@@ -68,7 +93,44 @@
     "all": "全部",
     "allPosts": "所有貼文",
     "products": "販售/拍賣作品",
-    "general": "一般貼文"
+    "general": "一般貼文",
+    "noPosts": "沒有可顯示的貼文。",
+    "tabs": {
+      "ariaLabel": "探索分頁",
+      "trending": "熱門",
+      "new": "最新",
+      "region": "地區",
+      "genre": "類型",
+      "pricing": "販售中"
+    },
+    "filters": {
+      "regionLabel": "地區",
+      "regionAll": "所有地區",
+      "regionSEA": "東南亞",
+      "regionLATAM": "拉丁美洲",
+      "regionEEU": "東歐",
+      "regionEAS": "東亞",
+      "regionNAM": "北美洲",
+      "regionWEU": "西歐",
+      "genreLabel": "類型",
+      "genreAll": "所有類型",
+      "genreWatercolor": "水彩畫",
+      "genreOil": "油畫",
+      "genreDigital": "數位藝術",
+      "genreSculpture": "雕塑",
+      "genreMixed": "混合媒材",
+      "pricingHint": "顯示可拍賣或立即購買的作品。"
+    },
+    "hero": {
+      "ariaLabel": "精選藝術家",
+      "badge": "今日藝術家",
+      "viewProfile": "查看個人資料"
+    },
+    "rankingPreview": {
+      "ariaLabel": "新興藝術家指數預覽",
+      "title": "新興藝術家指數",
+      "viewAll": "查看更多新興藝術家"
+    }
   },
   "search": {
     "placeholder": "搜尋...",
@@ -85,14 +147,76 @@
     "sortLatest": "最新",
     "sortPopular": "熱門",
     "sortEnding": "即將結束",
-    "searchHint": "搜尋藝術家、作品和貼文。"
+    "searchHint": "搜尋藝術家、作品和貼文。",
+    "v2": {
+      "recentHistory": "最近搜尋記錄",
+      "popular": "熱門搜尋",
+      "clearHistory": "清除記錄",
+      "priceMin": "最低價格",
+      "priceMax": "最高價格",
+      "regionPlaceholder": "地區 (例: TW,US)",
+      "activeOnly": "僅活躍",
+      "filterPrice": "價格",
+      "filterRegion": "地區",
+      "filterActive": "活躍",
+      "sortRelevance": "相關度",
+      "typeAll": "全部",
+      "typeArtists": "藝術家",
+      "typeArtworks": "作品",
+      "typePosts": "貼文",
+      "noHistory": "沒有最近搜尋記錄",
+      "noPopular": "目前沒有熱門搜尋",
+      "historyCleared": "搜尋記錄已清除"
+    }
   },
   "notifications": {
     "title": "通知",
     "markAllRead": "全部已讀",
     "loginRequired": "登入後查看通知。",
     "loginHint": "請使用側邊欄的登入按鈕。",
-    "empty": "沒有通知。"
+    "empty": "沒有通知。",
+    "center": {
+      "title": "通知",
+      "markAllRead": "全部標為已讀",
+      "empty": {
+        "all": "沒有通知",
+        "unread": "沒有未讀通知"
+      },
+      "filter": {
+        "all": "全部",
+        "unread": "未讀",
+        "auction": "拍賣",
+        "sponsorship": "贊助",
+        "engagement": "讚/留言",
+        "system": "系統"
+      },
+      "markedAsRead": "{{count}}條通知已標為已讀"
+    },
+    "preferences": {
+      "title": "通知設定",
+      "subtitle": "選擇您想接收的通知",
+      "pushSection": "推播通知",
+      "emailSection": "電子郵件通知",
+      "pushEnabled": "推播通知（總開關）",
+      "emailEnabled": "電子郵件摘要（總開關）",
+      "digestFrequency": "摘要頻率",
+      "frequency": {
+        "weekly": "每週",
+        "biweekly": "每兩週",
+        "monthly": "每月",
+        "never": "不接收"
+      },
+      "types": {
+        "auction": "拍賣通知",
+        "sponsorship": "贊助通知",
+        "engagement": "讚·留言通知",
+        "system": "系統通知",
+        "digest": "摘要"
+      },
+      "saveSuccess": "通知設定已儲存",
+      "saveError": "儲存通知設定失敗",
+      "gdprNote": "您必須明確同意才能接收通知（符合GDPR規範）"
+    }
   },
   "post": {
     "untitled": "無題",
@@ -115,12 +239,410 @@
     "medium": "媒材",
     "year": "年份",
     "auctionSell": "拍賣銷售",
+    "auctionBadge": "拍賣",
     "buyNow": "可即時購買",
-    "buyNowPrice": "即購價格 (USD)"
+    "buyNowPrice": "即購價格 (USD)",
+    "locationPrompt": "請輸入地點名稱（例：台北市立美術館）",
+    "genreLabel": "類型：{{value}}",
+    "buyNowPriceLabel": "即購價格：${{price}}",
+    "type": {
+      "product": {
+        "disabledTitle": "商品貼文僅限藝術家",
+        "disabledHint": "商品貼文需藝術家註冊後可創建",
+        "disabledHintPending": "商品貼文的藝術家申請審核中 (通常 1-3 天)",
+        "disabledHintRejected": "商品貼文的藝術家申請未通過。",
+        "applyLink": "申請成為藝術家",
+        "applyAgainLink": "重新申請",
+        "errorOnlyArtists": "只有藝術家可以創建商品貼文。"
+      }
+    },
+    "draft": {
+      "saveButton": "儲存草稿",
+      "savedIndicator": "已儲存",
+      "savingIndicator": "儲存中...",
+      "errorIndicator": "儲存失敗",
+      "restoreDialog": {
+        "title": "恢復草稿",
+        "body": "有先前編輯的內容。",
+        "continue": "繼續編輯",
+        "continueRecommended": "繼續編輯 (推薦)",
+        "restorePrevious": "恢復先前版本",
+        "discard": "重新開始",
+        "discardAll": "全部刪除"
+      },
+      "list": {
+        "title": "草稿列表",
+        "empty": "還沒有草稿",
+        "newPost": "新建貼文"
+      },
+      "deleted": "草稿已刪除",
+      "card": {
+        "untitled": "(無標題)",
+        "openInEditor": "繼續編輯",
+        "delete": "刪除",
+        "typeGeneral": "一般",
+        "typeProduct": "商品"
+      },
+      "multiTabWarning": "另一個分頁正在編輯。最後儲存將優先。"
+    },
+    "editor": {
+      "preview": {
+        "title": "預覽",
+        "toggleShow": "預覽",
+        "toggleHide": "隱藏預覽",
+        "label": "預覽",
+        "video": "▶ 影片",
+        "externalEmbed": "外部嵌入",
+        "empty": {
+          "title": "尚未輸入任何內容。",
+          "hint": "新增標題、內文或媒體後即可看到即時預覽。"
+        }
+      },
+      "media": {
+        "caption": {
+          "label": "說明",
+          "placeholder": "新增說明... (例: 意圖, 媒材)",
+          "tooLong": "超過280個字元"
+        },
+        "dragHandle": {
+          "aria": "拖動排序"
+        },
+        "reorder": {
+          "aria": "第{{index}}個媒體"
+        },
+        "edit": {
+          "aria": "编辑图片"
+        },
+        "remove": {
+          "aria": "刪除媒體"
+        },
+        "upload": {
+          "progress": "上傳中 {{done}}/{{total}}",
+          "complete": "上傳完成",
+          "failed": "{{n}}個上傳失敗"
+        },
+        "retry": {
+          "button": "重试"
+        },
+        "cancel": {
+          "button": "取消"
+        },
+        "error": {
+          "tooLarge": "文件过大（最大50MB）",
+          "unsupportedType": "不支持的文件格式",
+          "authExpired": "认证已过期，请重新登录",
+          "rateLimit": "请求过多，请稍后再试",
+          "serverError": "服务器错误，请重试",
+          "networkError": "网络错误",
+          "cancelled": "已取消",
+          "unknown": "上传失败"
+        },
+        "uploading": "上傳中...",
+        "studio": {
+          "image": {
+            "editor": {
+              "title": "編輯圖片",
+              "saving": "儲存中...",
+              "noIdHint": "圖片編輯在發佈後可用",
+              "error": {
+                "auctionActive": "拍賣進行中無法編輯",
+                "signatureMissing": "請先上傳簽名",
+                "tooLarge": "檔案太大（最大 20MB）",
+                "unsupportedType": "不支援的檔案格式",
+                "notOwner": "只能編輯自己的媒體",
+                "rateLimit": "請求過多，請稍後再試",
+                "generic": "儲存失敗，請再試一次",
+                "noMediaId": "圖片編輯在發佈後可用"
+              }
+            },
+            "tool": {
+              "rotate": {
+                "label": "旋轉",
+                "90": "旋轉 90°",
+                "180": "旋轉 180°",
+                "270": "旋轉 270°",
+                "current": "目前"
+              },
+              "crop": {
+                "label": "裁剪",
+                "ratio_1_1": "1:1",
+                "ratio_4_3": "4:3",
+                "ratio_16_9": "16:9",
+                "ratio_free": "自由",
+                "ratio_original": "原始"
+              },
+              "mosaic": {
+                "label": "馬賽克",
+                "strength": "強度",
+                "clearAll": "全部清除"
+              },
+              "watermark": {
+                "label": "浮水印",
+                "text": {
+                  "label": "浮水印文字",
+                  "placeholder": "請輸入文字"
+                },
+                "opacity": "透明度",
+                "apply": "套用",
+                "remove": "移除",
+                "signature": {
+                  "label": "簽名",
+                  "upload": "上傳簽名",
+                  "change": "更換",
+                  "remove": "刪除",
+                  "removeConfirm": "確定要刪除簽名嗎？",
+                  "current": "目前簽名",
+                  "loading": "正在確認簽名...",
+                  "useToggle": "將簽名用作浮水印",
+                  "tooLarge": "檔案過大（最大 2MB）",
+                  "unsupportedType": "不支援的格式（僅限 PNG/WebP）",
+                  "uploadFailed": "上傳失敗，請再試一次",
+                  "modal": {
+                    "title": "上傳簽名",
+                    "hint": "請上傳用作浮水印的簽名圖片",
+                    "requirements": "PNG 或 WebP，最大 2MB。建議使用透明背景。",
+                    "upload": "上傳",
+                    "uploading": "上傳中..."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "wizard": {
+        "indicator": "步驟進度",
+        "prev": "上一步",
+        "next": "下一步",
+        "steps": {
+          "type": "類型",
+          "content": "內容",
+          "productMeta": "商品資訊",
+          "publishOptions": "發佈設定",
+          "publish": "發佈"
+        },
+        "stepType": {
+          "title": "您要建立哪種貼文?",
+          "hint": "一般貼文人人都可建立,商品貼文需先完成藝術家註冊。"
+        },
+        "stepProductMeta": {
+          "title": "輸入商品資訊",
+          "hint": "請輸入作品的詮釋資料與販售選項。"
+        },
+        "stepPublish": {
+          "title": "確認發佈設定",
+          "hint": "若有排程發佈或地點資訊,可在下方檢視或修改。",
+          "empty": "排程發佈與地點資訊可從前一步的工具列加入。"
+        }
+      },
+      "oembed": {
+        "title": "嵌入外部媒體"
+      },
+      "schedulePicker": {
+        "title": "排程發佈",
+        "hint": "將在設定的時間自動公開。",
+        "cancel": "取消排程"
+      },
+      "scheduledLabel": "預約",
+      "publishOptions": {
+        "title": "發佈設定",
+        "visibility": {
+          "label": "公開範圍",
+          "public": "全體公開",
+          "followersOnly": "僅限追蹤者",
+          "unlisted": "連結分享",
+          "publicHint": "所有人都可以查看",
+          "followersHint": "只有追蹤者可以查看",
+          "unlistedHint": "只有擁有連結的人可以查看"
+        },
+        "comments": {
+          "label": "允許留言",
+          "enabled": "允許",
+          "disabled": "不允許",
+          "hint": "停用留言後，現有留言仍會保留"
+        },
+        "series": {
+          "label": "系列",
+          "select": "選擇系列",
+          "createNew": "+ 建立新系列",
+          "none": "尚未建立任何系列"
+        },
+        "scheduled": {
+          "label": "排程發佈",
+          "placeholder": "選擇發佈時間",
+          "timezone": "時區: {tz}",
+          "clearLabel": "立即發佈",
+          "tooSoon": "請設定至少 5 分鐘後的時間",
+          "tooFar": "請設定 1 年以內的時間"
+        },
+        "tierRelease": {
+          "label": "搶先看設定",
+          "activeHint": "{duration}內 {tier}搶先看",
+          "tier": {
+            "label": "開放對象",
+            "subscriber": "訂閱者搶先看",
+            "sponsor": "訂閱者 + 贊助者",
+            "follower": "追蹤者以上"
+          },
+          "duration": {
+            "label": "搶先看期間",
+            "1h": "1 小時",
+            "6h": "6 小時",
+            "24h": "24 小時",
+            "3d": "3 天",
+            "7d": "7 天"
+          },
+          "expiryHint": "{duration}後以{visibility}對外公開",
+          "clear": "取消搶先看",
+          "errorBothRequired": "請同時選擇對象與期間"
+        }
+      },
+      "error": {
+        "postNotFound": "找不到貼文",
+        "postNotOwner": "只能發佈自己的貼文",
+        "postInvalidState": "此貼文已發佈",
+        "auctionActiveVisibilityLocked": "拍賣進行中無法變更公開範圍",
+        "seriesNotFound": "找不到選取的系列",
+        "seriesNotOwner": "只能選取自己的系列",
+        "scheduledAtTooSoon": "排程發佈時間需在 5 分鐘後以上",
+        "scheduledAtTooFar": "排程發佈時間需在 1 年內",
+        "commentsDisabled": "留言功能已停用",
+        "invalidTier": "無效的 tier 值",
+        "invalidDuration": "不支援的期間 (1h/6h/24h/3d/7d)",
+        "tierFieldsInconsistent": "請同時設定 tier 與期間，或同時留空"
+      }
+    },
+    "series": {
+      "viewAll": "查看系列",
+      "byAuthor": "{{name}} 的系列",
+      "edit": "編輯系列",
+      "delete": "刪除系列",
+      "deleteConfirm": "確定刪除此系列嗎？系列中的貼文將予以保留。",
+      "empty": "此系列目前沒有貼文",
+      "notFound": "找不到系列",
+      "postCount": "{{count}} 篇貼文",
+      "addPost": "新增貼文",
+      "removePost": "從系列移除",
+      "createModal": {
+        "title": "建立新系列",
+        "titleLabel": "系列名稱",
+        "descriptionLabel": "說明（選填）",
+        "submit": "建立",
+        "cancel": "取消",
+        "coverLabel": "封面圖片（選填）",
+        "coverHint": "未設定時，自動使用第一篇貼文的圖片",
+        "coverUploading": "上傳封面中...",
+        "coverUploadFailed": "封面上傳失敗"
+      }
+    },
+    "feed": {
+      "indicator": {
+        "followersOnly": "僅限關注者",
+        "unlisted": "連結分享",
+        "commentsDisabled": "此貼文的留言已停用",
+        "tier": {
+          "subscriber": "訂閱者搶先看",
+          "sponsor": "贊助者搶先看",
+          "follower": "追蹤者搶先看"
+        }
+      }
+    },
+    "detail": {
+      "tierRestricted": "此貼文僅限特定訂閱者或贊助者瀏覽",
+      "tierRestrictedTitle": "搶先公開貼文",
+      "tierRestrictedHint": "此貼文正在優先與 {{artistName}} 的支持者分享。",
+      "tierRestrictedSponsorCta": "贊助此藝術家",
+      "tierRestrictedSubscribeCta": "開始月訂閱",
+      "tierRestrictedHistoryCta": "我的贊助記錄"
+    },
+    "tierLocked": {
+      "badge": "贊助者優先",
+      "hint": "贊助即可立即觀看"
+    }
+  },
+  "me": {
+    "settings": {
+      "sponsorValidity": {
+        "title": "贊助有效期",
+        "hint": "完成的一次性贊助被視為等級存取權限的期限。",
+        "lifetime": "永久",
+        "days": "{{n}}天",
+        "save": "儲存",
+        "saved": "已儲存"
+      }
+    }
   },
   "bluebird": {
-    "unitLabel": "藍鳥",
-    "perUnit": "$1 / 1 藍鳥"
+    "button": {
+      "label": "藍鳥贊助"
+    },
+    "modal": {
+      "title": "藍鳥贊助",
+      "subtitle": "支持 {{artistName}}"
+    },
+    "intro": "1藍鳥 = $1。直接支持您最喜愛藝術家的最簡單方式。",
+    "type": {
+      "oneTime": "一次性贊助",
+      "subscription": "月度訂閱"
+    },
+    "amount": {
+      "label": "選擇金額",
+      "custom": "自定義",
+      "customPlaceholder": "輸入金額（最低$1）",
+      "total": "合計：${{amount}}",
+      "totalMonthly": "${{amount}}/月"
+    },
+    "payment": {
+      "title": "付款方式",
+      "hint": "您的卡片資料由Stripe安全處理。",
+      "mockHint": "開發模式（無實際付款）"
+    },
+    "confirm": {
+      "button": "贊助 ${{amount}}",
+      "buttonMonthly": "訂閱 ${{amount}}/月",
+      "processing": "正在處理付款...",
+      "summary": {
+        "artist": "藝術家",
+        "amount": "金額",
+        "type": "類型"
+      }
+    },
+    "success": {
+      "title": "感謝您！",
+      "message": "您已向 {{artistName}} 送出藍鳥。",
+      "messageMonthly": "您現在是 {{artistName}} 的月度支持者。",
+      "tier": "{{tier}} 等級已啟用",
+      "tierHint": "您現在可以優先訪問藝術家限定內容。",
+      "close": "關閉"
+    }
+  },
+  "artist": {
+    "applyTitle": "藝術家審核申請",
+    "step1": "基本資訊",
+    "step2": "代表作品",
+    "step3": "作品集",
+    "step4": "經歷",
+    "school": "就讀學校",
+    "department": "科系",
+    "gradYear": "畢業（預計）年度",
+    "enrolled": "目前在學",
+    "genreTags": "創作類型/風格",
+    "eduEmail": "學校郵件驗證",
+    "eduEmailHint": "使用學校郵件驗證，即可獲得「🎓 學校認證藝術家」徽章。",
+    "sendCode": "發送驗證碼",
+    "resendCode": "重新發送",
+    "verified": "已驗證",
+    "statement": "自我介紹",
+    "enrollmentProof": "在學/畢業證明",
+    "portfolioUrls": "作品集網址",
+    "introVideo": "介紹影片網址",
+    "exhibitions": "展覽紀錄",
+    "awards": "獲獎紀錄",
+    "submitApply": "提交申請",
+    "applySuccess": "申請已送出",
+    "applySuccessHint": "管理員審核後將通知您結果。",
+    "alreadyArtist": "您已經是藝術家",
+    "representativeWorks": "代表作品"
   },
   "recommendation": {
     "following": "追蹤中",
@@ -145,5 +667,1194 @@
     "minutesAgo": "分前",
     "hoursAgo": "小時前",
     "daysAgo": "天前"
+  },
+  "auction": {
+    "ended": "已結束",
+    "countdown": {
+      "label": "剩餘時間",
+      "compact": {
+        "day": "D-{{days}}天{{hours}}h",
+        "hour": "{{hours}}h {{minutes}}m"
+      },
+      "full": {
+        "day_hour": "{{days}}天{{hours}}小時",
+        "hour_minute": "{{hours}}小時{{minutes}}分"
+      }
+    },
+    "shareCard": {
+      "title": "分享卡片",
+      "generate": "生成分享卡片",
+      "generating": "正在生成分享卡片...",
+      "regenerate": "重新生成分享卡片",
+      "retry": "再試一次",
+      "download": "下載圖片",
+      "copyLink": "複製連結",
+      "copied": "已複製連結",
+      "errorUnauthorized": "請先登入",
+      "errorOwnerOnly": "只有藝術家可以生成",
+      "errorActiveOnly": "僅限進行中的拍賣",
+      "errorRateLimit": "請稍後再試",
+      "errorGenerate": "生成分享卡片失敗",
+      "loading": "正在生成分享卡片..."
+    }
+  },
+  "notification": {
+    "type": {
+      "auction": {
+        "ending": {
+          "24h": "拍卖结束24小时前",
+          "6h": "拍卖结束6小时前",
+          "1h": "拍卖结束1小时前"
+        },
+        "ended": "拍卖已结束"
+      },
+      "like": "讚",
+      "comment": "留言",
+      "follow": "追蹤",
+      "sponsor": "贊助",
+      "system": "系統通知"
+    }
+  },
+  "patronage": {
+    "supporter": {
+      "title": "我的贊助記錄",
+      "subtitle": "查看贊助記錄並管理訂閱",
+      "loginRequired": "請登入以查看您的贊助記錄。",
+      "summary": {
+        "artistsCount": "支持的藝術家",
+        "lifetimeAmount": "累計贊助金額",
+        "activeSubscriptions": "有效訂閱"
+      },
+      "subscriptions": {
+        "title": "定期訂閱",
+        "cancel": "取消訂閱",
+        "cancelAtEnd": "於期間結束後取消",
+        "since": "開始日期",
+        "benefits": "等級權益",
+        "changeAmount": "更改金額（即將推出）",
+        "empty": "您尚未支持任何藝術家。",
+        "pastLabel": "過去的訂閱"
+      },
+      "history": {
+        "title": "一次性贊助記錄",
+        "empty": "尚無一次性贊助記錄。",
+        "showMore": "顯示更多",
+        "status": {
+          "succeeded": "完成",
+          "completed": "完成",
+          "failed": "失敗",
+          "refunded": "已退款",
+          "pending": "處理中"
+        }
+      },
+      "cancel": {
+        "modal": {
+          "title": "取消訂閱",
+          "reason": {
+            "too_expensive": "費用太高",
+            "changed_mind": "改變主意",
+            "not_satisfied": "對權益不滿意",
+            "other": "其他"
+          },
+          "confirmEnd": "在計費週期結束後取消",
+          "confirmImmediate": "立即取消",
+          "cta": "確認取消"
+        }
+      },
+      "tier": {
+        "benefits": {
+          "title": "等級權益",
+          "subscriber": "新貼文搶先看（公開前1〜24小時）、獨家內容頻道、訂閱者限定訊息",
+          "sponsor": "訂閱者所有權益＋藝術家Q&A優先參與、個人檔案贊助者徽章",
+          "follower": "追蹤者徽章、留言優先顯示",
+          "detailsLink": "權益為平台預設值，藝術家可自行自訂。"
+        }
+      },
+      "empty": {
+        "title": "尚無贊助記錄",
+        "exploreCta": "探索藝術家"
+      }
+    },
+    "support": {
+      "landing": {
+        "intro": "了解藍鳥贊助",
+        "blueBirdAbout": "藍鳥是$1為單位的微型後援，讓您直接支持喜愛的藝術家。",
+        "tierBenefits": "等級權益",
+        "myHistory": "我的贊助記錄",
+        "exploreArtists": "探索藝術家"
+      }
+    },
+    "artist": {
+      "title": "贊助儀表板",
+      "summary": {
+        "supporters": "總支持者",
+        "monthlyRevenue": "本月收益",
+        "subscribers": "活躍訂閱",
+        "tierDistribution": "等級分布"
+      },
+      "tier": {
+        "subscriber": "定期支持者",
+        "sponsor": "一次性支持者",
+        "follower": "追蹤者"
+      },
+      "chart": {
+        "daily": "收益（近30天）",
+        "monthly": "收益（近12個月）",
+        "toggle": {
+          "daily": "每日",
+          "monthly": "每月"
+        }
+      },
+      "supporters": {
+        "table": {
+          "title": "支持者列表"
+        },
+        "filter": {
+          "active": "活躍",
+          "churned": "已流失",
+          "all": "全部"
+        },
+        "col": {
+          "username": "用戶名",
+          "tier": "等級",
+          "since": "贊助開始",
+          "lifetime": "累計金額",
+          "status": "狀態"
+        },
+        "empty": "尚無支持者。",
+        "loadMore": "顯示更多"
+      },
+      "payout": {
+        "request": "申請提款",
+        "balance": "可提取餘額",
+        "balanceHint": "累計收益（Phase 6 實現結算整合）",
+        "modalTitle": "申請提款",
+        "amountLabel": "金額（美元分）",
+        "amountPlaceholder": "例：5000（= $50）",
+        "methodLabel": "方式",
+        "methodBank": "銀行轉帳",
+        "methodStripe": "Stripe",
+        "success": "提款申請已成功提交。"
+      },
+      "empty": {
+        "title": "尚無支持者",
+        "cta": "了解如何啟用藍鳥贊助"
+      }
+    },
+    "churn": {
+      "feedback": {
+        "preview": "回饋預覽"
+      },
+      "empty": {
+        "celebrated": "過去30天內沒有流失的支持者 ✨"
+      }
+    },
+    "analytics": {
+      "title": "分析",
+      "noData": "尚無可用資料。",
+      "mockBadge": "範例資料",
+      "cohort": {
+        "title": "同期群留存率（D1 / D7 / D30）",
+        "d1": "第1天",
+        "d7": "第7天",
+        "d30": "第30天"
+      },
+      "coupon": {
+        "title": "回流優惠券使用率",
+        "issued": "已發放",
+        "applied": "已使用",
+        "cancelReverted": "取消已撤回",
+        "expired": "已過期",
+        "redemptionRate": "使用率"
+      },
+      "newsletter": {
+        "title": "電子報開信與點擊率",
+        "openRate": "開信率",
+        "clickRate": "點擊率"
+      },
+      "funnel": {
+        "title": "贊助轉換漏斗",
+        "postClick": "貼文點擊",
+        "sponsorStart": "開始贊助",
+        "sponsorSuccess": "贊助完成",
+        "active30d": "30天活躍",
+        "conversionRate": "整體轉換率"
+      },
+      "dm": {
+        "title": "私訊互動",
+        "firstMessageRate": "首次私訊率",
+        "firstMessageHint": "傳送私訊的新贊助者比例",
+        "avgResponseTime": "平均回覆時間",
+        "avgResponseUnit": "藝術家中位數回覆時間",
+        "totalThreads": "總對話數"
+      }
+    }
+  },
+  "tierBenefits": {
+    "editor": {
+      "title": "會員等級福利設定",
+      "subtitle": "為每個等級定義自訂福利。未設定的等級將顯示平台預設福利。"
+    },
+    "tier": {
+      "subscriber": "訂閱者",
+      "sponsor": "贊助者",
+      "follower": "追蹤者"
+    },
+    "benefit": {
+      "add": "新增",
+      "remove": "移除",
+      "placeholder": "輸入福利（最多200字）",
+      "maxLength": "每項福利最多200字。",
+      "maxCount": "最多可設定{max}項福利。",
+      "emptyHint": "尚未設定任何福利，請在下方新增。"
+    },
+    "welcomeMessage": {
+      "label": "歡迎訊息（選填）",
+      "placeholder": "為支持者寫一段感謝訊息（最多500字）",
+      "maxLength": "歡迎訊息最多500字。"
+    },
+    "action": {
+      "save": "儲存",
+      "reset": "使用平台預設",
+      "resetConfirm": "將此等級的福利重設為平台預設值？",
+      "saving": "儲存中...",
+      "saved": "已儲存"
+    },
+    "preview": {
+      "title": "預覽"
+    },
+    "profile": {
+      "title": "贊助福利"
+    },
+    "empty": {
+      "platformDefault": "{tier}的預設福利"
+    },
+    "error": {
+      "tooLong": "每項福利最多200字。",
+      "tooMany": "最多可設定10項福利。",
+      "saveError": "儲存失敗，請再試一次。"
+    }
+  },
+  "common_ui": {
+    "comingSoon": "即將推出",
+    "optional": "選填",
+    "perMonth": "/月",
+    "auctionBadge": "拍賣",
+    "buyNowBadge": "即購"
+  },
+  "bluebird_modal": {
+    "closeAriaLabel": "關閉",
+    "typeSelectAriaLabel": "選擇贊助類型",
+    "amountSelectAriaLabel": "選擇金額",
+    "cardInputAriaLabel": "卡片資訊",
+    "mockDevBanner": "開發模式 — 無實際付款（Stripe 未連接）",
+    "mockCardPlaceholder": "測試卡：4242 4242 4242 4242",
+    "mockCardAriaLabel": "測試卡號",
+    "messageLabel": "留言（選填）",
+    "messagePlaceholder": "為藝術家留下短短的鼓勵訊息",
+    "messageAriaLabel": "鼓勵訊息",
+    "visibilityLabel": "公開範圍",
+    "visibilityAriaLabel": "公開範圍",
+    "visibilityPublic": "全體公開",
+    "visibilityArtistOnly": "僅藝術家",
+    "visibilityPrivate": "私密",
+    "anonymousLabel": "匿名贊助",
+    "nextStepsLabel": "接下來",
+    "minAmountError": "請輸入至少 $1。",
+    "cardInfoRequiredError": "請填寫完整的卡片資訊。",
+    "setupInitError": "付款方式初始化失敗。",
+    "unknownError": "發生未知錯誤",
+    "stripeError": {
+      "cardDeclined": "您的卡片被拒絕。請嘗試其他卡片。",
+      "insufficientFunds": "餘額不足。",
+      "authRequired": "卡片驗證失敗，請重試。",
+      "unknown": "付款失敗，請重試。"
+    }
+  },
+  "cancel_modal": {
+    "discountComingSoonNote": "Stripe 優惠券整合計畫於 Phase 6+ 提供。",
+    "pauseComingSoonNote": "訂閱暫停功能計畫於 Phase 6+ 提供。",
+    "feedbackPlaceholder": "告訴藝術家哪些地方可以改進...",
+    "feedbackAriaLabel": "意見回饋輸入",
+    "otherFeedbackPlaceholder": "自由分享您的想法...",
+    "otherFeedbackAriaLabel": "其他意見回饋",
+    "optionalSuffix": "（選填）"
+  },
+  "churn": {
+    "last30DaysSuffix": "（近30天）",
+    "comingSoonSuffix": "（即將推出）"
+  },
+  "post_card": {
+    "bluebirdAriaLabel": "藍鳥贊助",
+    "bluebirdLabel": "贊助"
+  },
+  "retention": {
+    "thankyou": {
+      "title": "感謝您！",
+      "welcomeMessageDefault": "感謝您對{{artistName}}作品的支持。",
+      "nextSteps": {
+        "seeWorks": "查看{{artistName}}的更多作品",
+        "exploreSimilar": "發現類似藝術家",
+        "seeHistory": "查看我的贊助記錄"
+      }
+    },
+    "cancel": {
+      "winback": {
+        "title": "等一下，請再考慮看看？",
+        "offer": {
+          "discount": "首月優惠50%折扣",
+          "pause": "暫停一個月選項",
+          "message": "直接向藝術家留下意見回饋",
+          "feedback": "意見回饋（選填）"
+        },
+        "confirmCancel": "仍要取消",
+        "reconsider": "我再想想"
+      }
+    },
+    "winback": {
+      "success": {
+        "title": "優惠券已套用！",
+        "discountApplied": "已套用 {{discount}} 折扣",
+        "durationOnce": "適用於下次付款",
+        "durationMonths": "折扣持續 {{months}} 個月",
+        "cancelReverted": "您的訂閱已繼續，無需取消。感謝您的支持！",
+        "cta": "確認"
+      },
+      "offer": {
+        "discount50": "套用1個月50%折扣",
+        "discount50Desc": "本月付款可節省50%。1個月後恢復正常價格。",
+        "discount30": "套用1個月30%折扣",
+        "discount30Desc": "本月付款可節省30%。1個月後恢復正常價格。",
+        "discount20": "套用1個月20%折扣",
+        "discount20Desc": "本月付款可節省20%。1個月後恢復正常價格。",
+        "discount10": "套用一次10%折扣",
+        "discount10Desc": "下次付款將享有10%折扣。",
+        "dmComingSoon": "直接向藝術家發送訊息的功能即將推出。"
+      },
+      "banner": {
+        "title": "您曾經支持過這位藝術家",
+        "subtitle": "您想再次支持{{artistName}}嗎？",
+        "resubscribeCta": "重新訂閱",
+        "dismiss": "稍後再說"
+      },
+      "conditional": {
+        "tooExpensive": "{{artistName}} — 現在可使用折扣碼。再次支持他吧！",
+        "notSatisfied": "{{artistName}}開始了新的系列。再給一次機會！"
+      }
+    },
+    "expiry": {
+      "banner": {
+        "title": "您對{{artistName}}的訂閱將在D-{{days}}天後到期",
+        "subtitle": "請續訂以繼續支持這位藝術家。",
+        "renewCta": "立即續訂",
+        "dismiss": "關閉"
+      }
+    },
+    "churn": {
+      "title": "最近流失的支持者",
+      "empty": "過去30天內沒有流失的支持者。",
+      "sentCampaign": "發送挽回活動",
+      "reason": {
+        "too_expensive": "太貴了",
+        "changed_mind": "改變主意",
+        "not_satisfied": "不滿意",
+        "other": "其他",
+        "unknown": "未填寫原因"
+      }
+    },
+    "resubscribe": {
+      "cta": "重新訂閱",
+      "confirming": "訂閱中...",
+      "success": "您的訂閱已重新開始！"
+    }
+  },
+  "coupon": {
+    "admin": {
+      "title": "優惠券管理",
+      "createCta": "發行優惠券",
+      "table": {
+        "code": "代碼",
+        "discount": "折扣",
+        "duration": "期限",
+        "redemptions": "使用次數",
+        "status": "狀態",
+        "delete": "刪除"
+      },
+      "form": {
+        "label": {
+          "code": "優惠券代碼",
+          "discountType": "折扣類型",
+          "discountValue": "折扣值",
+          "duration": "期限",
+          "durationInMonths": "月數",
+          "validUntil": "有效期至（可選）",
+          "maxRedemptions": "最大使用次數（可選）"
+        },
+        "duration": {
+          "once": "一次",
+          "forever": "永久",
+          "repeating": "重複"
+        },
+        "discountType": {
+          "percent": "百分比",
+          "amount": "金額"
+        }
+      }
+    },
+    "user": {
+      "title": "我的折扣代碼",
+      "applyCta": "套用代碼",
+      "applyPlaceholder": "輸入優惠券代碼",
+      "applySuccess": "優惠券已成功套用！",
+      "active": {
+        "label": "有效折扣",
+        "expiry": "到期日",
+        "remaining": "剩餘 {{count}} 個月"
+      },
+      "empty": "尚未套用折扣代碼。"
+    },
+    "error": {
+      "notFound": "優惠券代碼不存在或已過期。",
+      "expired": "此優惠券已過期。",
+      "alreadyApplied": "此優惠券已套用。",
+      "saveError": "儲存優惠券時發生錯誤。",
+      "unauthorized": "您無權套用此優惠券。"
+    },
+    "subscription": {
+      "appliedBadge": "{{discount}}% 折扣生效中"
+    }
+  },
+  "subscription": {
+    "renewal": {
+      "autoOn": "自動續訂",
+      "autoOff": "手動續訂",
+      "enableAutoRenew": "啟用自動續訂",
+      "disableAutoRenew": "停用自動續訂",
+      "renewNow": "立即續訂",
+      "renewing": "續訂中...",
+      "renewSuccess": "續訂成功！下次到期日: {{date}}",
+      "renewError": "續訂失敗，請再試一次。",
+      "expiryWarning": "{{days}}天後到期"
+    }
+  },
+  "admin": {
+    "featuredArtists": {
+      "pageTitle": "精選藝術家管理",
+      "pageSubtitle": "每月策劃精選藝術家。",
+      "createCta": "設定精選藝術家",
+      "form": {
+        "title": "新增精選藝術家",
+        "artistLabel": "搜尋藝術家",
+        "artistPlaceholder": "輸入藝術家名稱...",
+        "searchBtn": "搜尋",
+        "selectedArtist": "已選擇: {{name}}",
+        "monthLabel": "目標月份（月初）",
+        "monthHint": "只能設定當前或未來月份。",
+        "noteLabel": "策展備注（選填）",
+        "notePlaceholder": "說明選擇此藝術家的原因...",
+        "submitBtn": "登錄"
+      },
+      "list": {
+        "title": "精選歷史",
+        "empty": "尚無精選藝術家記錄。",
+        "monthCol": "月份",
+        "artistCol": "藝術家 ID",
+        "noteCol": "策展備注",
+        "statusCol": "狀態",
+        "actionsCol": "操作",
+        "active": "有效",
+        "inactive": "無效",
+        "noNote": "無備注",
+        "deactivateBtn": "停用"
+      }
+    }
+  },
+  "cookie": {
+    "bannerTitle": "🍪 Cookie 使用說明",
+    "bannerBody": "Domo 使用必要 Cookie 以提供服務。您可選擇性地允許分析 Cookie。",
+    "essentialOnly": "僅必要",
+    "acceptAll": "全部接受",
+    "policyLink": "Cookie 政策",
+    "privacyLink": "隱私政策"
+  },
+  "privacy": {
+    "title": "隱私設定",
+    "subtitle": "管理您的數據收集和分析偏好。",
+    "analytics": {
+      "title": "分析數據",
+      "description": "我們收集匿名使用數據以改善服務。符合 GDPR 規範，並進行 IP 匿名化處理。",
+      "toggleLabel": "允許收集分析數據",
+      "statusEnabled": "目前已允許收集分析數據。",
+      "statusDisabled": "目前已拒絕收集分析數據。"
+    },
+    "savedConfirmation": "設定已儲存。"
+  },
+  "onboarding": {
+    "wizard": {
+      "ariaLabel": "Domo 引導精靈"
+    },
+    "common": {
+      "skip": "跳過",
+      "laterLink": "稍後再說",
+      "goHome": "前往首頁"
+    },
+    "step1": {
+      "title": "歡迎來到 Domo！",
+      "subtitle": "追蹤您喜愛的藝術家，填充您的動態。",
+      "selectPrompt": "選擇要追蹤的藝術家",
+      "selectedCount": "已選 {{count}} 位",
+      "selectAll": "全選",
+      "deselectAll": "取消全選",
+      "noArtists": "無法載入推薦藝術家。",
+      "worksCount": "{{count}} 件作品",
+      "artistListAriaLabel": "推薦藝術家列表",
+      "followSelected": "追蹤已選 {{count}} 位藝術家",
+      "skipAndNext": "下一步"
+    },
+    "step2": {
+      "title": "用 Blue Bird 支持藝術家",
+      "subtitle": "贊助能直接資助藝術家的創作活動。",
+      "bullet1": "您的支持 100% 到達藝術家",
+      "bullet2": "每月最低 $1 即可開始",
+      "bullet3": "解鎖支持者專屬內容與福利",
+      "bulletsAriaLabel": "Blue Bird 贊助福利",
+      "ctaWithArtist": "支持 @{{artistName}}",
+      "cta": "立即支持",
+      "continueAfterSponsor": "繼續",
+      "sponsoredSuccess": "贊助完成！"
+    },
+    "step3": {
+      "title": "探索精彩作品",
+      "subtitle": "在探索頁面發現來自世界各地的新興藝術家。",
+      "previewAriaLabel": "探索頁面預覽",
+      "summaryTitle": "引導摘要",
+      "summaryFollowed": "已追蹤 {{count}} 位藝術家",
+      "summaryFollowedNone": "尚未追蹤任何藝術家",
+      "summarySponsoredDone": "首次 Blue Bird 贊助完成",
+      "summarySponsoredSkip": "Blue Bird 贊助留待日後",
+      "cta": "開始探索"
+    },
+    "sidebar": {
+      "indicator": "繼續引導",
+      "title": "引導進行中",
+      "hint": "點擊繼續設定"
+    }
+  },
+  "artist": {
+    "index": {
+      "pageTitle": "全球新興藝術家指數",
+      "pageSubtitle": "由 Domo 發掘的新興藝術家",
+      "navLabel": "藝術家指數",
+      "rank": "排名",
+      "score": "分數",
+      "topHeroTitle": "本月 Top 3",
+      "listTitle": "全部排名",
+      "loadMore": "載入更多",
+      "loading": "載入排名中...",
+      "empty": "找不到符合條件的藝術家。",
+      "error": "無法載入排名。",
+      "viewProfile": "查看",
+      "tierBadge": {
+        "top_10": "Top 10",
+        "top_100": "Top 100",
+        "top_1000": "Top 1000"
+      },
+      "filter": {
+        "region": "地區",
+        "regionAll": "全部地區",
+        "genre": "類型",
+        "genreAll": "全部類型"
+      },
+      "badge": {
+        "globalRank": "全球 #{{rank}}",
+        "regionRank": "地區 #{{rank}}",
+        "genreRank": "類型 #{{rank}}",
+        "whyLabel": "為何此排名？",
+        "whyTooltip": "依據：近期活動(50%) + 銷售(30%) + 支持者(20%) + 加入時長(10%)計算。",
+        "notRanked": "未排名",
+        "notYet": "計算中",
+        "lastUpdated": "更新時間: {{date}}"
+      },
+      "seo": {
+        "description": "Domo 全球新興藝術家指數 — 全球藝術家即時排名",
+        "ogTitle": "Domo 全球新興藝術家指數"
+      }
+    }
+  },
+  "stories": {
+    "pageTitle": "故事中心",
+    "pageSubtitle": "探索新興藝術家的成長故事與媒體報導。",
+    "backToHub": "故事中心",
+    "featured": {
+      "sectionTitle": "本月精選藝術家",
+      "monthLabel": "本月精選",
+      "curatedBadge": "管理員精選",
+      "viewProfile": "查看個人資料",
+      "viewTimeline": "成長故事",
+      "scoreLabel": "分數 {{score}}",
+      "empty": "尚無精選藝術家。"
+    },
+    "history": {
+      "sectionTitle": "藝術家歷程",
+      "sectionSubtitle": "關注在 Domo 成長的新興藝術家旅程。",
+      "viewTimeline": "查看成長故事",
+      "viewFullIndex": "查看完整指數",
+      "empty": "尚無藝術家歷程記錄。"
+    },
+    "media": {
+      "sectionTitle": "外部媒體報導",
+      "empty": "尚無外部媒體報導。",
+      "placeholderNote": "以下為示例，有實際報導時將更新。"
+    }
+  },
+  "timeline": {
+    "title": "成長時間軸",
+    "notFound": "找不到藝術家。",
+    "postsCount": "作品",
+    "viewProfile": "查看個人資料",
+    "empty": "尚無記錄的里程碑。",
+    "joined": "加入 Domo",
+    "firstPost": "首件作品發布",
+    "firstBluebird": "收到首個 Blue Bird",
+    "rankTop1000": "進入全球 Top 1000",
+    "rankTop100": "進入全球 Top 100",
+    "rankTop10": "進入全球 Top 10",
+    "highlightPost": "熱門作品"
+  },
+  "webhook": {
+    "notification": {
+      "payment_failed": "付款失敗 — 請重試",
+      "payment_3ds_required": "需要 3D Secure 驗證",
+      "subscription_renewed": "訂閱已成功續訂",
+      "subscription_payment_failed": "訂閱付款失敗 — 請更新付款方式",
+      "subscription_cancelled": "訂閱已取消",
+      "dispute_created": "已提出爭議 — 請聯繫客服",
+      "update_payment_method": "更新付款方式"
+    }
+  },
+  "interview": {
+    "pageTitle": "AI艺术家访谈",
+    "pageSubtitle": "AI生成的艺术家访谈文章",
+    "admin": {
+      "pageTitle": "访谈管理",
+      "pageSubtitle": "LLM自动生成访谈的审核与发布管理",
+      "generateCta": "生成访谈",
+      "generateTitle": "新建访谈生成",
+      "artistIdLabel": "艺术家ID",
+      "localeLabel": "语言",
+      "generating": "生成中...",
+      "generateSuccess": "访谈已生成，等待管理员审核。",
+      "reviewTitle": "审核访谈",
+      "approveBtn": "批准",
+      "rejectBtn": "拒绝",
+      "publishBtn": "发布",
+      "publishDisabled": "发布前需要艺术家同意。",
+      "reviewNoteLabel": "审核备注",
+      "statusLabel": "状态",
+      "localeTag": "语言",
+      "consentTag": "同意",
+      "consentPending": "等待艺术家同意",
+      "consentDone": "已获得艺术家同意",
+      "listTitle": "访谈列表"
+    },
+    "me": {
+      "pageTitle": "我的访谈",
+      "pageSubtitle": "Domo AI为我生成的访谈文章",
+      "consentBtn": "同意发布",
+      "rejectBtn": "拒绝发布",
+      "consentConfirm": "您同意发布此访谈吗？同意后，管理员将完成发布处理。",
+      "rejectConfirm": "您确定要拒绝发布此访谈吗？",
+      "noInterviews": "尚未生成任何访谈。",
+      "previewLabel": "预览",
+      "statusApproved": "已批准（需要同意）",
+      "statusPublished": "已发布",
+      "statusRejected": "已拒绝",
+      "statusAdminReview": "待审核"
+    },
+    "public": {
+      "readMore": "阅读访谈",
+      "sectionTitle": "AI访谈",
+      "noPublished": "暂无已发布的访谈。",
+      "aiGenerated": "AI生成",
+      "consentNote": "经艺术家同意后发布的访谈。"
+    },
+    "status": {
+      "draft": "草稿",
+      "admin_review": "待审核",
+      "approved": "已批准",
+      "published": "已发布",
+      "rejected": "已拒绝",
+      "archived": "已归档"
+    }
+  },
+  "bio": {
+    "pageTitle": "多语言简介编辑",
+    "pageSubtitle": "用5种语言设置您的简介",
+    "translateBtn": "自动翻译 (AI)",
+    "translating": "翻译中...",
+    "translateSuccess": "已翻译为5种语言",
+    "translateError": "翻译失败",
+    "saveBtn": "保存",
+    "saving": "保存中...",
+    "saved": "已保存",
+    "machineTranslated": "AI翻译",
+    "humanEdited": "手动编辑",
+    "bioPlaceholder": "请输入您的简介",
+    "emptyBioWarning": "请先填写简介",
+    "localeTab": {
+      "ko": "한국어",
+      "en": "English",
+      "ja": "日本語",
+      "zh": "中文",
+      "es": "Español"
+    }
+  },
+  "localeSwitcher": {
+    "label": "语言",
+    "ko": "한국어",
+    "en": "English",
+    "ja": "日本語",
+    "zh": "中文",
+    "es": "Español"
+  },
+  "mediaCoverage": {
+    "pageTitle": "媒体报道管理",
+    "pageSubtitle": "管理外部媒体的文章、视频和广播",
+    "addBtn": "新增条目",
+    "emptyList": "暂无媒体报道记录。",
+    "loadMore": "加载更多",
+    "typeLabel": "类型",
+    "sourceLabel": "媒体名称",
+    "publishedAtLabel": "发布日期",
+    "localeLabel": "语言",
+    "featuredLabel": "重点展示",
+    "publishedLabel": "已发布",
+    "draftLabel": "草稿",
+    "deleteConfirm": "确定删除此条目？",
+    "saveSuccess": "保存成功。",
+    "saveError": "保存失败。",
+    "types": {
+      "article": "文章",
+      "youtube": "YouTube",
+      "radio": "广播",
+      "podcast": "播客",
+      "tv": "电视"
+    },
+    "artist": {
+      "sectionTitle": "关于此艺术家的媒体报道",
+      "empty": "暂无关于此艺术家的媒体报道。"
+    }
+  },
+  "newsletter": {
+    "admin": {
+      "title": "通讯管理",
+      "compose": {
+        "title": "新建期刊（自动生成）",
+        "button": "生成 {{locale}} 通讯"
+      },
+      "status": {
+        "draft": "草稿",
+        "sending": "发送中",
+        "sent": "已发送",
+        "failed": "失败"
+      },
+      "list": {
+        "title": "期刊历史",
+        "empty": "暂无通讯期刊。",
+        "retry": "重试",
+        "refresh": "刷新",
+        "sendAction": "开始发送",
+        "col": {
+          "date": "日期",
+          "locale": "语言",
+          "subject": "主题",
+          "status": "状态",
+          "sent": "发送数",
+          "actions": "操作"
+        }
+      },
+      "editor": {
+        "title": "编辑通讯",
+        "subject": "主题",
+        "body": "正文（Markdown）",
+        "showPreview": "预览",
+        "hidePreview": "返回编辑",
+        "send": "开始发送",
+        "sending": "发送中...",
+        "sendConfirm": "确认发送此通讯？所有订阅用户将收到邮件。",
+        "sentCount": "已发送: {{sent}} / 失败: {{failed}}"
+      }
+    },
+    "preferences": {
+      "title": "通讯设置",
+      "subscribe": {
+        "label": "订阅通讯",
+        "hint": "通过邮件接收Domo艺术家资讯和精选内容。"
+      },
+      "frequency": {
+        "label": "发送频率",
+        "weekly": "每周",
+        "biweekly": "隔周",
+        "monthly": "每月",
+        "never": "不接收"
+      },
+      "locale": {
+        "label": "接收语言"
+      },
+      "lastSent": "最后接收: {{date}}",
+      "unsubscribeNote": "您可以随时通过邮件底部的退订链接取消订阅。"
+    },
+    "unsubscribe": {
+      "loading": "处理中...",
+      "success": {
+        "title": "已退订",
+        "message": "您已成功退订通讯。您可以随时在设置中重新订阅。"
+      },
+      "already": {
+        "title": "已处于退订状态",
+        "message": "您目前未订阅我们的通讯。"
+      },
+      "error": {
+        "title": "链接无效",
+        "message": "此退订链接已过期或无效。请在设置中直接退订。"
+      },
+      "missing": {
+        "title": "缺少信息",
+        "message": "退订链接缺少必要信息。"
+      },
+      "backToHome": "返回首页"
+    }
+  },
+  "pressKit": {
+    "pageTitle": "新闻资料包",
+    "pageSubtitle": "自动生成艺术家宣传用PDF",
+    "generateBtn": "生成新闻资料包",
+    "regenerateBtn": "重新生成",
+    "downloadBtn": "下载",
+    "generating": "生成中...",
+    "locale": "语言",
+    "localePlaceholder": "选择语言",
+    "cacheNote": "相同的艺术家和语言将缓存30天。",
+    "history": "生成历史",
+    "noHistory": "暂无生成的新闻资料包。",
+    "pages": "页",
+    "fileSize": "文件大小",
+    "expiresAt": "到期日",
+    "createdAt": "创建日期",
+    "isPublic": "公开下载",
+    "artistSearch": "艺术家ID或搜索",
+    "generateError": "生成时出现错误。",
+    "me": {
+      "pageTitle": "我的新闻资料包",
+      "pageSubtitle": "用于外部媒体分发的新闻资料包PDF",
+      "download": "下载PDF",
+      "noKit": "尚未生成新闻资料包，请联系管理员。",
+      "publicToggle": "允许公开下载",
+      "publicToggleNote": "启用后，任何人都可以下载您的新闻资料包。"
+    }
+  },
+  "a11y": {
+    "skip": {
+      "toMain": "跳到主要内容",
+      "toNav": "跳到导航"
+    }
+  },
+  "accessibility": {
+    "pageTitle": "无障碍设置",
+    "focusMode": {
+      "label": "专注模式",
+      "description": "突出显示交互元素以便键盘导航。"
+    },
+    "announcements": {
+      "bidPlaced": "出价成功",
+      "bidFailed": "出价失败，请重试。",
+      "auctionEnded": "拍卖已结束",
+      "auctionUrgent": "剩余不足10秒",
+      "modalOpened": "对话框已打开",
+      "modalClosed": "对话框已关闭"
+    },
+    "settings": {
+      "saved": "无障碍设置已保存",
+      "saveError": "保存设置失败"
+    },
+    "contrast": {
+      "highContrastHint": "如需更高对比度，请使用操作系统高对比度模式。"
+    }
+  },
+  "currency": {
+    "label": {
+      "USD": "美元",
+      "KRW": "韩元",
+      "EUR": "欧元",
+      "JPY": "日元"
+    },
+    "switcher": {
+      "label": "选择货币",
+      "converted": "换算价格",
+      "native": "原始价格",
+      "saved": "货币偏好已保存"
+    }
+  },
+  "messaging": {
+    "loginRequired": "请登录以查看消息。",
+    "list": {
+      "title": "消息",
+      "empty": "暂无对话。",
+      "noMessages": "无消息",
+      "refresh": "刷新"
+    },
+    "conversation": {
+      "title": "对话",
+      "empty": "暂无消息。发送第一条消息吧！",
+      "closed": "[管理员已关闭此对话]",
+      "loadMore": "加载更早的消息",
+      "report": "举报",
+      "reportTitle": "举报此对话",
+      "reportPlaceholder": "请描述问题（最多500字）...",
+      "reportSubmit": "提交举报",
+      "reportSent": "举报已提交，感谢您的反馈。"
+    },
+    "message": {
+      "deleted": "[消息已删除]",
+      "edited": "已编辑",
+      "read": "已读",
+      "editAriaLabel": "编辑消息",
+      "deleteAriaLabel": "删除消息"
+    },
+    "composer": {
+      "placeholder": "输入消息...（Enter发送，Shift+Enter换行）",
+      "editPlaceholder": "编辑消息...",
+      "send": "发送",
+      "ariaLabel": "消息输入框"
+    }
+  },
+  "docent": {
+    "title": "作品解说",
+    "artist_label": "艺术家的话",
+    "ai_label": "AI 导览",
+    "toggle_show": "查看AI导览解说",
+    "toggle_hide": "收起AI导览解说",
+    "ai_disclaimer": "此解说由AI生成",
+    "generating": "AI正在分析作品...",
+    "generate_button": "生成AI导览",
+    "regenerate": "重新生成导览",
+    "generate_failed": "导览生成失败，请稍后再试。",
+    "disabled_by_artist": "艺术家已禁用AI导览。",
+    "opt_out_label": "禁用AI导览",
+    "opt_in_label": "启用AI导览",
+    "rate_limit_notice": "AI导览每天最多生成2次。",
+    "locale_only_ko": "仅提供韩语版本",
+    "by_artist": "艺术家亲笔",
+    "by_ai": "AI生成",
+    "edit_page": {
+      "section_title": "编辑导览",
+      "artist_text_label": "亲自撰写",
+      "artist_text_placeholder": "请自由描述关于作品的故事，可以介绍创作过程、灵感来源以及作品所蕴含的意义。",
+      "generate_button": "生成AI导览",
+      "opt_out_label": "禁用AI导览",
+      "save_button": "保存",
+      "save_success": "已保存"
+    }
+  },
+  "preferences": {
+    "title": "偏好设置",
+    "pageTitle": "显示设置",
+    "pageSubtitle": "选择显示货币与界面语言。",
+    "currency": {
+      "label": "货币"
+    },
+    "locale": {
+      "label": "语言"
+    }
+  },
+  "collections": {
+    "editors_pick": "Editor's Pick",
+    "subtitle": "AI策划的本周主题系列",
+    "works_count": "{{count}}件作品",
+    "week_label": "{{date}}当周",
+    "share": "分享",
+    "share_link_copied": "链接已复制",
+    "no_collections": "目前没有公开的系列",
+    "view_all": "查看所有系列",
+    "back": "返回系列列表",
+    "generated_by_ai": "AI策划系列"
+  },
+  "keyboardShortcuts": {
+    "title": "键盘快捷键",
+    "close": "关闭帮助",
+    "category": {
+      "navigation": "Navigation",
+      "feed": "动态",
+      "editor": "发布",
+      "general": "通用"
+    },
+    "action": {
+      "nextPost": "下一篇",
+      "prevPost": "上一篇",
+      "saveDraft": "保存草稿",
+      "showHelp": "显示此帮助",
+      "closeModal": "关闭弹窗",
+      "gotoHome": "首页",
+      "gotoFeed": "动态",
+      "gotoExplore": "探索",
+      "gotoMessages": "消息",
+      "gotoNotifications": "通知",
+      "gotoProfile": "我的主页",
+      "newPost": "新建帖子",
+      "searchFocus": "聚焦搜索",
+      "bookmarkToggle": "切换收藏"
+    }
+  },
+  "auth": {
+    "magic_link": {
+      "request": {
+        "tab": "郵件登入",
+        "description": "無需密碼，通過電子郵件鏈接即可登入",
+        "emailPlaceholder": "電子郵件",
+        "submit": "發送登入鏈接",
+        "sent": "請查看您的電子郵件，請在24小時內點擊鏈接。",
+        "cooldown": "您可以在5分鐘後再次請求。"
+      },
+      "verify": {
+        "verifying": "正在驗證魔法鏈接...",
+        "setupTitle": "請輸入您的顯示名稱",
+        "setupPlaceholder": "顯示名稱（3～50字）",
+        "setupSubmit": "完成註冊",
+        "success": "登入成功！即將跳轉...",
+        "expired": "鏈接已過期，請重新申請。",
+        "used": "此鏈接已被使用。",
+        "ipWarning": "檢測到來自不同網路的訪問，如果是您本人請繼續。",
+        "requestNew": "申請新鏈接"
+      }
+    },
+    "signup": {
+      "tab": "註冊",
+      "emailPlaceholder": "電子郵件",
+      "passwordPlaceholder": "密碼（8字以上）",
+      "displayNamePlaceholder": "顯示名稱（3～50字）",
+      "passwordHint": "需包含大寫、小寫、數字、特殊字元中的3種",
+      "submit": "建立帳號"
+    },
+    "login": {
+      "email": {
+        "tab": "登入",
+        "emailPlaceholder": "電子郵件",
+        "passwordPlaceholder": "密碼",
+        "forgotPassword": "忘記密碼？",
+        "forgotPasswordTooltip": "密碼重設將於 Phase 12 提供",
+        "submit": "登入"
+      }
+    },
+    "verify": {
+      "banner": "驗證連結已寄送至您的信箱，請在24小時內完成驗證。",
+      "verifying": "正在驗證電子郵件...",
+      "success": "電子郵件驗證成功！",
+      "redirecting": "即將跳轉至首頁...",
+      "alreadyVerified": "此帳號已完成驗證",
+      "expired": "驗證連結已過期",
+      "expiredDesc": "連結已超過24小時失效，請重新申請驗證信件。",
+      "resend": "重新發送驗證信",
+      "resendSuccess": "驗證信已重新發送，請查看信箱。",
+      "error": "驗證失敗",
+      "noToken": "找不到驗證憑證，請重新點擊信件中的連結。",
+      "goHome": "返回首頁"
+    },
+    "password_reset": {
+      "request": {
+        "title": "忘記密碼",
+        "subtitle": "輸入您的電子郵件，我們將寄送重設連結。",
+        "email_label": "電子郵件",
+        "submit": "發送重設連結",
+        "sent_title": "請查看您的信箱",
+        "sent_body": "重設連結已發送，請在1小時內完成操作。",
+        "too_soon": "請在{{seconds}}秒後再試。",
+        "back_to_login": "返回登入",
+        "error": "發生錯誤，請重試。"
+      },
+      "token": {
+        "title": "設定新密碼",
+        "new_password_label": "新密碼",
+        "confirm_label": "確認新密碼",
+        "submit": "變更密碼",
+        "mismatch": "密碼不一致。",
+        "expired": "重設連結已過期，請重新申請。",
+        "already_used": "此連結已使用，請重新申請。",
+        "invalid": "無效的重設連結。",
+        "request_again": "重新申請重設連結"
+      },
+      "success": {
+        "title": "密碼變更完成",
+        "body": "密碼已成功變更，即將跳轉至登入頁面。"
+      }
+    }
+  },
+  "admin": {
+    "analytics": {
+      "pageTitle": "分析儀表板",
+      "period": {
+        "7d": "最近7天",
+        "30d": "最近30天",
+        "90d": "最近90天"
+      },
+      "refresh": "重新整理",
+      "cachedAt": "快取: {{time}} 基準",
+      "loading": "載入中...",
+      "error": "無法載入資料",
+      "retry": "重試",
+      "cohortRetention": {
+        "title": "同期群留存率",
+        "d7": "D7 留存率",
+        "d30": "D30 留存率",
+        "belowThreshold": "僅顯示低於閾值的記錄"
+      },
+      "newsletter": {
+        "title": "電子報開信率",
+        "openRate": "開信率",
+        "clickRate": "點擊率",
+        "issued": "發送期數"
+      },
+      "feedCtr": {
+        "title": "演算法別 Feed CTR",
+        "delta": "v2 vs v1 差異"
+      },
+      "aiFeatures": {
+        "title": "AI 功能使用率",
+        "caption": "AI 說明文字",
+        "docent": "AI 導覽",
+        "collection": "AI 精選集"
+      }
+    }
+  },
+  "settings": {
+    "hub": {
+      "title": "设置",
+      "subtitle": "在一个地方管理个人资料、通知、隐私等设置",
+      "category": {
+        "profile": {
+          "title": "个人资料",
+          "description": "编辑自我介绍和多语言艺术家简介"
+        },
+        "display": {
+          "title": "显示",
+          "description": "界面语言和货币偏好设置"
+        },
+        "accessibility": {
+          "title": "无障碍",
+          "description": "高对比度、焦点模式等无障碍选项"
+        },
+        "notifications": {
+          "title": "通知",
+          "description": "推送、电子邮件通知和新闻订阅"
+        },
+        "privacy": {
+          "title": "隐私",
+          "description": "数据分析同意和Cookie设置"
+        },
+        "account": {
+          "title": "账号",
+          "description": "账号信息、数据导出和赞助有效期"
+        }
+      }
+    }
   }
 }

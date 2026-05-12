@@ -2,9 +2,11 @@
 
 Reference: design.md §3.2, §6.2 (bid concurrency), §6.3 (finalize)
 """
+import asyncio
 import logging
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
+from functools import partial
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -13,12 +15,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
 from app.core.errors import ApiError
+from app.core.metrics import (
+    share_card_cache_hits_total,
+    share_card_cache_misses_total,
+    share_card_generation_seconds,
+)
 from app.core.rate_limit import rate_limit
 from app.db.session import get_db
 from app.services.kyc import require_kyc_verified
 from app.models.auction import Auction, Bid, Order
 from app.models.notification import Notification
-from app.models.post import Post, ProductPost
+from app.models.post import MediaAsset, Post, ProductPost
 from app.models.user import User
 from app.schemas.auction import (
     AuctionCreate,
@@ -26,10 +33,13 @@ from app.schemas.auction import (
     BidCreate,
     BidOut,
     OrderOut,
+    ShareCardResponse,
 )
+from app.services.auction_promotion_jobs import _generate_share_card
 from app.services.email import get_email_provider
 from app.services.email.templates import auction_won as auction_won_tpl
 from app.services.settings import get_setting
+from app.services.storage import get_storage_provider
 
 log = logging.getLogger(__name__)
 
@@ -54,6 +64,10 @@ def _serialize_auction(a: Auction) -> dict:
         if a.payment_deadline
         else None,
         "created_at": a.created_at.isoformat(),
+        "share_card_url": getattr(a, "share_card_url", None),
+        "share_card_generated_at": getattr(a, "share_card_generated_at", None).isoformat()
+        if getattr(a, "share_card_generated_at", None)
+        else None,
     }
 
 
@@ -83,6 +97,17 @@ async def _auto_transition(db: AsyncSession, auction: Auction) -> Auction:
         # Create order for winner if any
         if auction.current_winner is not None and auction.bid_count > 0:
             await _create_order_for_winner(db, auction)
+        else:
+            # OQ-8=B: 낙찰자 없이 종료 — 작가에게만 알림
+            db.add(
+                Notification(
+                    user_id=auction.seller_id,
+                    type="auction_ended_no_winner",
+                    title="경매 종료 (낙찰자 없음)",
+                    body="입찰자 없이 경매가 종료되었습니다. 재등록을 검토해주세요.",
+                    link=f"/auctions/{auction.id}",
+                )
+            )
 
     if changed:
         await db.commit()
@@ -401,4 +426,114 @@ async def place_bid(
             "bid": BidOut.model_validate(new_bid).model_dump(mode="json"),
             "auction": _serialize_auction(auction),
         }
+    }
+
+
+@router.post("/{auction_id}/share-card")
+async def create_share_card(
+    auction_id: UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    _rl=rate_limit("share_card"),
+):
+    """Generate (or return cached) share card for an active auction. §B-7."""
+    # Step 2: 404 — auction 조회
+    auction = await db.scalar(select(Auction).where(Auction.id == auction_id))
+    if not auction:
+        raise ApiError("AUCTION_NOT_FOUND", "Auction not found", http_status=404)
+
+    # Step 3: 403 — seller 본인 또는 admin
+    if user.id != auction.seller_id and user.role != "admin":
+        raise ApiError(
+            "FORBIDDEN",
+            "Only the auction seller can generate share card",
+            http_status=403,
+        )
+
+    # Step 4: 409 — active 만
+    if auction.status != "active":
+        raise ApiError(
+            "AUCTION_NOT_ACTIVE",
+            "Share card only for active auctions",
+            http_status=409,
+        )
+
+    # Step 5: cache hit (1h TTL OQ-5=B)
+    now = _now()
+    if (
+        auction.share_card_url
+        and auction.share_card_generated_at
+        and (now - auction.share_card_generated_at).total_seconds() < 3600
+    ):
+        share_card_cache_hits_total.inc()
+        return {
+            "data": ShareCardResponse(
+                auction_id=auction.id,
+                share_card_url=auction.share_card_url,
+                generated_at=auction.share_card_generated_at,
+                cached=True,
+            ).model_dump(mode="json")
+        }
+
+    share_card_cache_misses_total.inc()
+
+    # Step 6: generate
+    # 작가명 조회
+    artist = await db.scalar(select(User).where(User.id == auction.seller_id))
+    artist_name = artist.display_name if artist else "작가"
+
+    # 첫 미디어 thumbnail
+    first_media = await db.scalar(
+        select(MediaAsset)
+        .where(
+            MediaAsset.post_id == auction.product_post_id,
+            MediaAsset.type == "image",
+        )
+        .order_by(MediaAsset.order_index.asc())
+        .limit(1)
+    )
+    thumbnail_url = first_media.thumbnail_url if first_media else None
+
+    # Pillow synthesis via run_in_executor (OQ-D-4=A)
+    loop = asyncio.get_event_loop()
+    import time as _time
+    _gen_start = _time.perf_counter()
+    card_bytes = await loop.run_in_executor(
+        None,
+        partial(
+            _generate_share_card,
+            thumbnail_url=thumbnail_url,
+            artist_name=artist_name,
+            current_price=int(auction.current_price),
+            currency=auction.currency,
+            end_at=auction.end_at,
+        ),
+    )
+    share_card_generation_seconds.observe(_time.perf_counter() - _gen_start)
+
+    # Storage put
+    storage = get_storage_provider()
+    key = f"share-cards/{auction.id}/{now.strftime('%Y%m%dT%H%M%S')}.png"
+    try:
+        stored = await storage.put(key, card_bytes, "image/png")
+    except Exception as exc:
+        log.error("share_card storage.put failed: %s", exc)
+        raise ApiError(
+            "SHARE_CARD_GENERATION_FAILED",
+            "Failed to store share card",
+            http_status=500,
+        ) from exc
+
+    # DB 갱신
+    auction.share_card_url = stored.url
+    auction.share_card_generated_at = now
+    await db.commit()
+
+    return {
+        "data": ShareCardResponse(
+            auction_id=auction.id,
+            share_card_url=stored.url,
+            generated_at=now,
+            cached=False,
+        ).model_dump(mode="json")
     }

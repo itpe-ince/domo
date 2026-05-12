@@ -80,6 +80,20 @@ class Subscription(Base):
     cancelled_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    # D'-2: cancellation tracking (0044_subscription_cancellation)
+    cancellation_reason: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )
+    cancellation_feedback: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )
+    # A-8: expiry notification (0048_subscription_expiry_notif)
+    expiry_notified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    # B'-4: auto-renewal toggle (0065_auto_renew_enabled)
+    # True (default) → Stripe handles billing; False → manual renewal required
+    auto_renew_enabled: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

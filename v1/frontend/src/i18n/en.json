@@ -21,7 +21,8 @@
     "following": "Following",
     "followers": "Followers",
     "likes": "Likes",
-    "comments": "Comments"
+    "comments": "Comments",
+    "close": "Close"
   },
   "nav": {
     "home": "Home",
@@ -29,6 +30,7 @@
     "following": "Following",
     "explore": "Explore",
     "notifications": "Notifications",
+    "messages": "Messages",
     "profile": "Profile",
     "register": "Create",
     "subscription": "Subscriptions",
@@ -36,7 +38,16 @@
     "warnings": "My Warnings",
     "settings": "Settings",
     "admin": "Admin",
-    "communities": "Communities"
+    "communities": "Communities",
+    "draftsList": "Drafts",
+    "mySponsoring": "My Sponsorships",
+    "patronageDashboard": "Patronage Dashboard",
+    "tierBenefits": "Tier Benefits Settings",
+    "artistIndex": "Artist Index",
+    "stories": "Story Hub",
+    "accessibilitySettings": "Accessibility",
+    "displaySettings": "Display",
+    "moreMenu": "More menu"
   },
   "home": {
     "title": "Domo Lounge",
@@ -49,10 +60,24 @@
   },
   "feed": {
     "title": "Feed",
+    "titlePersonalized": "Personalized Feed",
     "subtitleAuth": "A mix of followed artists and popular works.",
+    "subtitlePersonalized": "A blend of your follows, recommendations, and trending works.",
     "subtitleGuest": "Popular works from emerging artists.",
     "noPosts": "No posts to display.",
-    "loadError": "Failed to load feed"
+    "loadError": "Failed to load feed",
+    "loadMore": "Load more",
+    "emptyTitle": "Discover artists to follow",
+    "emptySubtitle": "You have no followed artists yet. Follow some recommended artists to fill your feed.",
+    "emptyCtaFollow": "See recommended artists",
+    "emptyCtaSponsor": "Learn about Blue Bird",
+    "algoToggleLabel": "Feed sort order",
+    "algoDefault": "Latest",
+    "algoPersonalized": "For you",
+    "reasonFollowing": "Following",
+    "reasonTrending": "Trending",
+    "reasonSimilarGenre": "Similar genre",
+    "reasonLabel": "Recommended: {{reason}}"
   },
   "followingPage": {
     "title": "Following",
@@ -68,7 +93,44 @@
     "all": "All",
     "allPosts": "All Posts",
     "products": "Artworks for Sale",
-    "general": "General Posts"
+    "general": "General Posts",
+    "noPosts": "No posts to display.",
+    "tabs": {
+      "ariaLabel": "Explore tabs",
+      "trending": "Trending",
+      "new": "New",
+      "region": "Region",
+      "genre": "Genre",
+      "pricing": "For Sale"
+    },
+    "filters": {
+      "regionLabel": "Region",
+      "regionAll": "All Regions",
+      "regionSEA": "Southeast Asia",
+      "regionLATAM": "Latin America",
+      "regionEEU": "Eastern Europe",
+      "regionEAS": "East Asia",
+      "regionNAM": "North America",
+      "regionWEU": "Western Europe",
+      "genreLabel": "Genre",
+      "genreAll": "All Genres",
+      "genreWatercolor": "Watercolor",
+      "genreOil": "Oil Painting",
+      "genreDigital": "Digital Art",
+      "genreSculpture": "Sculpture",
+      "genreMixed": "Mixed Media",
+      "pricingHint": "Showing artworks available at auction or for immediate purchase."
+    },
+    "hero": {
+      "ariaLabel": "Featured Artist",
+      "badge": "Artist of the Day",
+      "viewProfile": "View Profile"
+    },
+    "rankingPreview": {
+      "ariaLabel": "Emerging Artist Index preview",
+      "title": "Emerging Artist Index",
+      "viewAll": "See more emerging artists"
+    }
   },
   "search": {
     "placeholder": "Search...",
@@ -85,14 +147,76 @@
     "sortLatest": "Latest",
     "sortPopular": "Popular",
     "sortEnding": "Ending Soon",
-    "searchHint": "Search for artists, artworks, and posts."
+    "searchHint": "Search for artists, artworks, and posts.",
+    "v2": {
+      "recentHistory": "Recent Search History",
+      "popular": "Popular Searches",
+      "clearHistory": "Clear History",
+      "priceMin": "Min price",
+      "priceMax": "Max price",
+      "regionPlaceholder": "Region (e.g. KR,US)",
+      "activeOnly": "Active only",
+      "filterPrice": "Price",
+      "filterRegion": "Region",
+      "filterActive": "Active",
+      "sortRelevance": "Relevance",
+      "typeAll": "All",
+      "typeArtists": "Artists",
+      "typeArtworks": "Artworks",
+      "typePosts": "Posts",
+      "noHistory": "No recent search history",
+      "noPopular": "No popular searches yet",
+      "historyCleared": "Search history cleared"
+    }
   },
   "notifications": {
     "title": "Notifications",
     "markAllRead": "Mark all read",
     "loginRequired": "Login to see notifications.",
     "loginHint": "Please login using the sidebar button.",
-    "empty": "No notifications."
+    "empty": "No notifications.",
+    "center": {
+      "title": "Notifications",
+      "markAllRead": "Mark all as read",
+      "empty": {
+        "all": "No notifications",
+        "unread": "No unread notifications"
+      },
+      "filter": {
+        "all": "All",
+        "unread": "Unread",
+        "auction": "Auction",
+        "sponsorship": "Sponsorship",
+        "engagement": "Likes & Comments",
+        "system": "System"
+      },
+      "markedAsRead": "{{count}} notifications marked as read"
+    },
+    "preferences": {
+      "title": "Notification Settings",
+      "subtitle": "Choose which notifications you want to receive",
+      "pushSection": "Push Notifications",
+      "emailSection": "Email Notifications",
+      "pushEnabled": "Push Notifications (master)",
+      "emailEnabled": "Email Digest (master)",
+      "digestFrequency": "Digest Frequency",
+      "frequency": {
+        "weekly": "Weekly",
+        "biweekly": "Biweekly",
+        "monthly": "Monthly",
+        "never": "Never"
+      },
+      "types": {
+        "auction": "Auction Alerts",
+        "sponsorship": "Sponsorship Alerts",
+        "engagement": "Likes & Comments",
+        "system": "System Alerts",
+        "digest": "Digest"
+      },
+      "saveSuccess": "Notification settings saved",
+      "saveError": "Failed to save notification settings",
+      "gdprNote": "You must explicitly opt in to receive notifications (GDPR compliant)"
+    }
   },
   "post": {
     "untitled": "Untitled",
@@ -115,12 +239,382 @@
     "medium": "Medium",
     "year": "Year",
     "auctionSell": "Sell via Auction",
+    "auctionBadge": "Auction",
     "buyNow": "Buy Now Available",
-    "buyNowPrice": "Buy Now Price (USD)"
+    "buyNowPrice": "Buy Now Price (USD)",
+    "locationPrompt": "Enter location name (e.g. Seoul Museum of Art)",
+    "genreLabel": "Genre: {{value}}",
+    "buyNowPriceLabel": "Buy Now: ${{price}}",
+    "type": {
+      "product": {
+        "disabledTitle": "Product posts: artists only",
+        "disabledHint": "Product posts are available after artist registration",
+        "disabledHintPending": "Your artist application for product posts is under review (usually 1-3 days)",
+        "disabledHintRejected": "Your artist application for product posts was rejected.",
+        "applyLink": "Apply as artist",
+        "applyAgainLink": "Re-apply",
+        "errorOnlyArtists": "Only artists can create product posts."
+      }
+    },
+    "draft": {
+      "saveButton": "Save Draft",
+      "savedIndicator": "Saved",
+      "savingIndicator": "Saving...",
+      "errorIndicator": "Save failed",
+      "restoreDialog": {
+        "title": "Restore Draft",
+        "body": "You have a saved draft from earlier.",
+        "continue": "Continue",
+        "continueRecommended": "Continue (recommended)",
+        "restorePrevious": "Restore previous version",
+        "discard": "Start fresh",
+        "discardAll": "Delete both"
+      },
+      "list": {
+        "title": "Drafts",
+        "empty": "No drafts yet",
+        "newPost": "Create new post"
+      },
+      "deleted": "Draft deleted",
+      "card": {
+        "untitled": "(Untitled)",
+        "openInEditor": "Continue",
+        "delete": "Delete",
+        "typeGeneral": "General",
+        "typeProduct": "Product"
+      },
+      "multiTabWarning": "Another tab is editing. The most recent save wins."
+    },
+    "editor": {
+      "preview": {
+        "title": "Preview",
+        "toggleShow": "Preview",
+        "toggleHide": "Hide preview",
+        "label": "Preview",
+        "video": "▶ Video",
+        "externalEmbed": "External embed",
+        "empty": {
+          "title": "Nothing entered yet.",
+          "hint": "Add a title, body, or media to see a live preview."
+        }
+      },
+      "media": {
+        "caption": {
+          "label": "Caption",
+          "placeholder": "Add a caption... (e.g. intent, medium)",
+          "tooLong": "Exceeds 280 characters"
+        },
+        "dragHandle": {
+          "aria": "Drag to reorder"
+        },
+        "reorder": {
+          "aria": "Media item {{index}}"
+        },
+        "edit": {
+          "aria": "Edit image"
+        },
+        "remove": {
+          "aria": "Remove media"
+        },
+        "upload": {
+          "progress": "Uploading {{done}}/{{total}}",
+          "complete": "Upload complete",
+          "failed": "{{n}} upload(s) failed"
+        },
+        "retry": {
+          "button": "Retry"
+        },
+        "cancel": {
+          "button": "Cancel"
+        },
+        "error": {
+          "tooLarge": "File too large (50 MB max)",
+          "unsupportedType": "Unsupported file type",
+          "authExpired": "Session expired. Please log in again",
+          "rateLimit": "Too many requests. Please try again later",
+          "serverError": "Server error. Please try again",
+          "networkError": "Network error",
+          "cancelled": "Cancelled",
+          "unknown": "Upload failed"
+        },
+        "uploading": "Uploading...",
+        "studio": {
+          "image": {
+            "editor": {
+              "title": "Edit Image",
+              "saving": "Saving...",
+              "noIdHint": "Image editing is available after publishing",
+              "error": {
+                "auctionActive": "Cannot edit while an auction is active",
+                "signatureMissing": "Please upload a signature first",
+                "tooLarge": "File is too large (max 20MB)",
+                "unsupportedType": "Unsupported file format",
+                "notOwner": "You can only edit your own media",
+                "rateLimit": "Too many requests. Please try again later",
+                "generic": "Save failed. Please try again",
+                "noMediaId": "Image editing is available after publishing"
+              }
+            },
+            "tool": {
+              "rotate": {
+                "label": "Rotate",
+                "90": "Rotate 90°",
+                "180": "Rotate 180°",
+                "270": "Rotate 270°",
+                "current": "Current"
+              },
+              "crop": {
+                "label": "Crop",
+                "ratio_1_1": "1:1",
+                "ratio_4_3": "4:3",
+                "ratio_16_9": "16:9",
+                "ratio_free": "Free",
+                "ratio_original": "Original"
+              },
+              "mosaic": {
+                "label": "Mosaic",
+                "strength": "Strength",
+                "clearAll": "Clear all"
+              },
+              "watermark": {
+                "label": "Watermark",
+                "text": {
+                  "label": "Watermark text",
+                  "placeholder": "Enter text"
+                },
+                "opacity": "Opacity",
+                "apply": "Apply",
+                "remove": "Remove",
+                "signature": {
+                  "label": "Signature",
+                  "upload": "Upload signature",
+                  "change": "Change",
+                  "remove": "Delete",
+                  "removeConfirm": "Delete your signature?",
+                  "current": "Current signature",
+                  "loading": "Checking signature...",
+                  "useToggle": "Use signature as watermark",
+                  "tooLarge": "File is too large (max 2MB)",
+                  "unsupportedType": "Unsupported format (PNG/WebP only)",
+                  "uploadFailed": "Upload failed. Please try again",
+                  "modal": {
+                    "title": "Upload signature",
+                    "hint": "Upload a signature image to use as a watermark",
+                    "requirements": "PNG or WebP, max 2MB. Transparent background recommended.",
+                    "upload": "Upload",
+                    "uploading": "Uploading..."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "wizard": {
+        "indicator": "Step progress",
+        "prev": "Back",
+        "next": "Next",
+        "steps": {
+          "type": "Type",
+          "content": "Content",
+          "productMeta": "Product",
+          "publishOptions": "Publish Options",
+          "publish": "Publish"
+        },
+        "stepType": {
+          "title": "What kind of post are you creating?",
+          "hint": "General posts are open to everyone; product posts require artist registration."
+        },
+        "stepProductMeta": {
+          "title": "Product details",
+          "hint": "Add the artwork's metadata and selling options."
+        },
+        "stepPublish": {
+          "title": "Confirm publish settings",
+          "hint": "Review or adjust your scheduled time and location below.",
+          "empty": "You can add a scheduled time and location from the toolbar in the previous step."
+        }
+      },
+      "oembed": {
+        "title": "Embed external media"
+      },
+      "schedulePicker": {
+        "title": "Schedule post",
+        "hint": "The post will be published automatically at the set time.",
+        "cancel": "Cancel schedule"
+      },
+      "scheduledLabel": "Scheduled",
+      "publishOptions": {
+        "title": "Publish Options",
+        "visibility": {
+          "label": "Visibility",
+          "public": "Public",
+          "followersOnly": "Followers only",
+          "unlisted": "Link only",
+          "publicHint": "Anyone can see this post",
+          "followersHint": "Only your followers can see this",
+          "unlistedHint": "Only people with the link can see this"
+        },
+        "comments": {
+          "label": "Allow comments",
+          "enabled": "Enabled",
+          "disabled": "Disabled",
+          "hint": "Existing comments are preserved even when comments are disabled"
+        },
+        "series": {
+          "label": "Series",
+          "select": "Select series",
+          "createNew": "+ Create new series",
+          "none": "You haven't created any series yet"
+        },
+        "scheduled": {
+          "label": "Schedule",
+          "placeholder": "Select publish time",
+          "timezone": "Your timezone: {tz}",
+          "clearLabel": "Publish immediately",
+          "tooSoon": "Please set a time at least 5 minutes from now",
+          "tooFar": "Please set a time within 1 year from now"
+        },
+        "tierRelease": {
+          "label": "Early Access",
+          "activeHint": "{duration} early for {tier}",
+          "tier": {
+            "label": "Audience",
+            "subscriber": "Subscribers only",
+            "sponsor": "Subscribers & sponsors",
+            "follower": "Followers & above"
+          },
+          "duration": {
+            "label": "Early Access Period",
+            "1h": "1 hour",
+            "6h": "6 hours",
+            "24h": "24 hours",
+            "3d": "3 days",
+            "7d": "7 days"
+          },
+          "expiryHint": "Opens to {visibility} after {duration}",
+          "clear": "Remove early access",
+          "errorBothRequired": "Please select both an audience and a duration"
+        }
+      },
+      "error": {
+        "postNotFound": "Post not found",
+        "postNotOwner": "You can only publish your own posts",
+        "postInvalidState": "This post has already been published",
+        "auctionActiveVisibilityLocked": "Visibility cannot be changed while an auction is active",
+        "seriesNotFound": "Selected series not found",
+        "seriesNotOwner": "You can only select your own series",
+        "scheduledAtTooSoon": "Scheduled time must be at least 5 minutes from now",
+        "scheduledAtTooFar": "Scheduled time must be within 1 year from now",
+        "commentsDisabled": "Comments are disabled",
+        "invalidTier": "Invalid tier value",
+        "invalidDuration": "Unsupported duration (1h/6h/24h/3d/7d)",
+        "tierFieldsInconsistent": "Please set both tier and duration, or leave both empty"
+      }
+    },
+    "series": {
+      "viewAll": "View series",
+      "byAuthor": "{{name}}'s series",
+      "edit": "Edit series",
+      "delete": "Delete series",
+      "deleteConfirm": "Delete this series? Posts in the series will be kept.",
+      "empty": "No posts in this series yet",
+      "notFound": "Series not found",
+      "postCount": "{{count}} posts",
+      "addPost": "Add post",
+      "removePost": "Remove from series",
+      "createModal": {
+        "title": "Create new series",
+        "titleLabel": "Series title",
+        "descriptionLabel": "Description (optional)",
+        "submit": "Create",
+        "cancel": "Cancel",
+        "coverLabel": "Cover image (optional)",
+        "coverHint": "If empty, the first post's image is used automatically",
+        "coverUploading": "Uploading cover...",
+        "coverUploadFailed": "Cover upload failed"
+      }
+    },
+    "feed": {
+      "indicator": {
+        "followersOnly": "Followers only",
+        "unlisted": "Unlisted",
+        "commentsDisabled": "Comments are disabled for this post",
+        "tier": {
+          "subscriber": "Subscriber early access",
+          "sponsor": "Sponsor early access",
+          "follower": "Follower early access"
+        }
+      }
+    },
+    "detail": {
+      "tierRestricted": "This post is only available to qualifying subscribers or sponsors",
+      "tierRestrictedTitle": "Early access post",
+      "tierRestrictedHint": "This post is being shared early with {{artistName}}'s supporters.",
+      "tierRestrictedSponsorCta": "Support this artist",
+      "tierRestrictedSubscribeCta": "Subscribe monthly",
+      "tierRestrictedHistoryCta": "My sponsorships"
+    },
+    "tierLocked": {
+      "badge": "Sponsor early",
+      "hint": "Support to unlock immediately"
+    }
+  },
+  "me": {
+    "settings": {
+      "sponsorValidity": {
+        "title": "Sponsor validity period",
+        "hint": "How long a completed one-time sponsorship counts as tier access.",
+        "lifetime": "Lifetime",
+        "days": "{{n}} days",
+        "save": "Save",
+        "saved": "Saved"
+      }
+    }
   },
   "bluebird": {
-    "unitLabel": "Bluebird",
-    "perUnit": "$1 / 1 Bluebird"
+    "button": {
+      "label": "Blue Bird Sponsor"
+    },
+    "modal": {
+      "title": "Blue Bird Sponsorship",
+      "subtitle": "Support {{artistName}}"
+    },
+    "intro": "1 Bluebird = $1. The easiest way to directly support your favorite artist.",
+    "type": {
+      "oneTime": "One-time",
+      "subscription": "Monthly Subscription"
+    },
+    "amount": {
+      "label": "Select Amount",
+      "custom": "Custom",
+      "customPlaceholder": "Enter amount (min $1)",
+      "total": "Total: ${{amount}}",
+      "totalMonthly": "${{amount}}/month"
+    },
+    "payment": {
+      "title": "Payment Method",
+      "hint": "Your card details are securely handled by Stripe.",
+      "mockHint": "Dev mode (no real payment)"
+    },
+    "confirm": {
+      "button": "Sponsor ${{amount}}",
+      "buttonMonthly": "Subscribe ${{amount}}/month",
+      "processing": "Processing payment...",
+      "summary": {
+        "artist": "Artist",
+        "amount": "Amount",
+        "type": "Type"
+      }
+    },
+    "success": {
+      "title": "Thank you!",
+      "message": "You sent Bluebirds to {{artistName}}.",
+      "messageMonthly": "You're now a monthly supporter of {{artistName}}.",
+      "tier": "{{tier}} tier activated",
+      "tierHint": "You now have early access to exclusive artist content.",
+      "close": "Close"
+    }
   },
   "artist": {
     "applyTitle": "Artist Application",
@@ -173,5 +667,1194 @@
     "minutesAgo": "m ago",
     "hoursAgo": "h ago",
     "daysAgo": "d ago"
+  },
+  "auction": {
+    "ended": "Ended",
+    "countdown": {
+      "label": "Time remaining",
+      "compact": {
+        "day": "D-{{days}}d {{hours}}h",
+        "hour": "{{hours}}h {{minutes}}m"
+      },
+      "full": {
+        "day_hour": "{{days}}d {{hours}}h",
+        "hour_minute": "{{hours}}h {{minutes}}m"
+      }
+    },
+    "shareCard": {
+      "title": "Share Card",
+      "generate": "Generate Share Card",
+      "generating": "Generating share card...",
+      "regenerate": "Regenerate Share Card",
+      "retry": "Try again",
+      "download": "Download Image",
+      "copyLink": "Copy Link",
+      "copied": "Link copied!",
+      "errorUnauthorized": "Login required",
+      "errorOwnerOnly": "Only the artist can generate this",
+      "errorActiveOnly": "Only active auctions are supported",
+      "errorRateLimit": "Please try again in a moment",
+      "errorGenerate": "Failed to generate share card",
+      "loading": "Generating share card..."
+    }
+  },
+  "notification": {
+    "type": {
+      "auction": {
+        "ending": {
+          "24h": "Auction ending in 24h",
+          "6h": "Auction ending in 6h",
+          "1h": "Auction ending in 1h"
+        },
+        "ended": "Auction ended"
+      },
+      "like": "Like",
+      "comment": "Comment",
+      "follow": "Follow",
+      "sponsor": "Sponsorship",
+      "system": "System notification"
+    }
+  },
+  "patronage": {
+    "supporter": {
+      "title": "My Sponsorships",
+      "subtitle": "Track your support history and manage subscriptions",
+      "loginRequired": "Please log in to view your sponsorship history.",
+      "summary": {
+        "artistsCount": "Artists supported",
+        "lifetimeAmount": "Lifetime amount",
+        "activeSubscriptions": "Active subscriptions"
+      },
+      "subscriptions": {
+        "title": "Active Subscriptions",
+        "cancel": "Cancel subscription",
+        "cancelAtEnd": "Ends at period end",
+        "since": "Since",
+        "benefits": "Tier benefits",
+        "changeAmount": "Change amount (coming soon)",
+        "empty": "You are not supporting any artists yet.",
+        "pastLabel": "past subscription(s)"
+      },
+      "history": {
+        "title": "One-time Sponsorships",
+        "empty": "No one-time sponsorships yet.",
+        "showMore": "Show more",
+        "status": {
+          "succeeded": "Completed",
+          "completed": "Completed",
+          "failed": "Failed",
+          "refunded": "Refunded",
+          "pending": "Pending"
+        }
+      },
+      "cancel": {
+        "modal": {
+          "title": "Cancel Subscription",
+          "reason": {
+            "too_expensive": "Too expensive",
+            "changed_mind": "Changed my mind",
+            "not_satisfied": "Not satisfied with benefits",
+            "other": "Other"
+          },
+          "confirmEnd": "Cancel at end of billing period",
+          "confirmImmediate": "Cancel immediately",
+          "cta": "Confirm cancellation"
+        }
+      },
+      "tier": {
+        "benefits": {
+          "title": "Tier Benefits",
+          "subscriber": "Early access to new posts (1–24h before public release), exclusive content feed, subscriber-only messages",
+          "sponsor": "All subscriber benefits + priority in artist Q&A, sponsor badge on your profile",
+          "follower": "Follower badge, priority in comment visibility",
+          "detailsLink": "Benefits are platform defaults. Artists may customize their own tiers."
+        }
+      },
+      "empty": {
+        "title": "No sponsorships yet",
+        "exploreCta": "Discover artists"
+      }
+    },
+    "support": {
+      "landing": {
+        "intro": "Learn about Blue Bird sponsorship",
+        "blueBirdAbout": "Blue Bird is a $1 micro-patronage unit for supporting artists you love.",
+        "tierBenefits": "Tier benefits",
+        "myHistory": "My sponsorship history",
+        "exploreArtists": "Explore artists"
+      }
+    },
+    "artist": {
+      "title": "Patronage Dashboard",
+      "summary": {
+        "supporters": "Total Supporters",
+        "monthlyRevenue": "Monthly Revenue",
+        "subscribers": "Active Subscriptions",
+        "tierDistribution": "Tier Distribution"
+      },
+      "tier": {
+        "subscriber": "Subscribers",
+        "sponsor": "Sponsors",
+        "follower": "Followers"
+      },
+      "chart": {
+        "daily": "Revenue (Last 30 Days)",
+        "monthly": "Revenue (Last 12 Months)",
+        "toggle": {
+          "daily": "Daily",
+          "monthly": "Monthly"
+        }
+      },
+      "supporters": {
+        "table": {
+          "title": "Supporters"
+        },
+        "filter": {
+          "active": "Active",
+          "churned": "Churned",
+          "all": "All"
+        },
+        "col": {
+          "username": "User",
+          "tier": "Tier",
+          "since": "Since",
+          "lifetime": "Lifetime",
+          "status": "Status"
+        },
+        "empty": "No supporters yet.",
+        "loadMore": "Load more"
+      },
+      "payout": {
+        "request": "Request Payout",
+        "balance": "Available Balance",
+        "balanceHint": "Lifetime revenue (full settlement integration in Phase 6)",
+        "modalTitle": "Request Payout",
+        "amountLabel": "Amount (USD cents)",
+        "amountPlaceholder": "e.g. 5000 (= $50)",
+        "methodLabel": "Method",
+        "methodBank": "Bank transfer",
+        "methodStripe": "Stripe",
+        "success": "Payout request submitted successfully."
+      },
+      "empty": {
+        "title": "No supporters yet",
+        "cta": "See how to activate Blue Bird sponsorship"
+      }
+    },
+    "churn": {
+      "feedback": {
+        "preview": "Feedback preview"
+      },
+      "empty": {
+        "celebrated": "No churned supporters in the last 30 days ✨"
+      }
+    },
+    "analytics": {
+      "title": "Analytics",
+      "noData": "No data available yet.",
+      "mockBadge": "sample data",
+      "cohort": {
+        "title": "Cohort Retention (D1 / D7 / D30)",
+        "d1": "Day 1",
+        "d7": "Day 7",
+        "d30": "Day 30"
+      },
+      "coupon": {
+        "title": "Winback Coupon Redemption",
+        "issued": "Issued",
+        "applied": "Applied",
+        "cancelReverted": "Cancels reverted",
+        "expired": "Expired",
+        "redemptionRate": "Redemption rate"
+      },
+      "newsletter": {
+        "title": "Newsletter Open & Click Rates",
+        "openRate": "Open rate",
+        "clickRate": "Click rate"
+      },
+      "funnel": {
+        "title": "Sponsorship Conversion Funnel",
+        "postClick": "Post click",
+        "sponsorStart": "Sponsor started",
+        "sponsorSuccess": "Sponsor success",
+        "active30d": "Active 30d",
+        "conversionRate": "Overall conversion"
+      },
+      "dm": {
+        "title": "DM Engagement",
+        "firstMessageRate": "First-message rate",
+        "firstMessageHint": "New supporters who messaged",
+        "avgResponseTime": "Avg response time",
+        "avgResponseUnit": "Median artist reply",
+        "totalThreads": "Total threads"
+      }
+    }
+  },
+  "tierBenefits": {
+    "editor": {
+      "title": "Tier Benefits Settings",
+      "subtitle": "Define custom benefits for each tier. Tiers without settings will show platform defaults."
+    },
+    "tier": {
+      "subscriber": "Subscriber",
+      "sponsor": "Sponsor",
+      "follower": "Follower"
+    },
+    "benefit": {
+      "add": "Add",
+      "remove": "Remove",
+      "placeholder": "Enter a benefit (max 200 characters)",
+      "maxLength": "Each benefit can be up to 200 characters.",
+      "maxCount": "You can add up to {max} benefits.",
+      "emptyHint": "No benefits set yet. Add one below."
+    },
+    "welcomeMessage": {
+      "label": "Welcome Message (optional)",
+      "placeholder": "A thank-you note for your supporters (max 500 characters)",
+      "maxLength": "Welcome message can be up to 500 characters."
+    },
+    "action": {
+      "save": "Save",
+      "reset": "Use Platform Default",
+      "resetConfirm": "Reset this tier's benefits to platform defaults?",
+      "saving": "Saving...",
+      "saved": "Saved"
+    },
+    "preview": {
+      "title": "Preview"
+    },
+    "profile": {
+      "title": "Sponsorship Benefits"
+    },
+    "empty": {
+      "platformDefault": "Default benefits for {tier}"
+    },
+    "error": {
+      "tooLong": "Each benefit can be up to 200 characters.",
+      "tooMany": "You can add up to 10 benefits.",
+      "saveError": "Failed to save. Please try again."
+    }
+  },
+  "common_ui": {
+    "comingSoon": "Coming soon",
+    "optional": "optional",
+    "perMonth": "/month",
+    "auctionBadge": "Auction",
+    "buyNowBadge": "Buy Now"
+  },
+  "bluebird_modal": {
+    "closeAriaLabel": "Close",
+    "typeSelectAriaLabel": "Select sponsorship type",
+    "amountSelectAriaLabel": "Select amount",
+    "cardInputAriaLabel": "Card information",
+    "mockDevBanner": "Dev mode — no real payment (Stripe not connected)",
+    "mockCardPlaceholder": "Test card: 4242 4242 4242 4242",
+    "mockCardAriaLabel": "Test card number",
+    "messageLabel": "Message (optional)",
+    "messagePlaceholder": "Leave a short message of support for the artist",
+    "messageAriaLabel": "Support message",
+    "visibilityLabel": "Visibility",
+    "visibilityAriaLabel": "Visibility",
+    "visibilityPublic": "Public",
+    "visibilityArtistOnly": "Artist only",
+    "visibilityPrivate": "Private",
+    "anonymousLabel": "Sponsor anonymously",
+    "nextStepsLabel": "Next steps",
+    "minAmountError": "Please enter at least $1.",
+    "cardInfoRequiredError": "Please complete your card information.",
+    "setupInitError": "Failed to initialize payment method.",
+    "unknownError": "An unknown error occurred",
+    "stripeError": {
+      "cardDeclined": "Your card was declined. Please try a different card.",
+      "insufficientFunds": "Insufficient funds.",
+      "authRequired": "Card authentication failed. Please try again.",
+      "unknown": "Payment failed. Please try again."
+    }
+  },
+  "cancel_modal": {
+    "discountComingSoonNote": "Stripe coupon integration is planned for Phase 6+.",
+    "pauseComingSoonNote": "Subscription pause feature is planned for Phase 6+.",
+    "feedbackPlaceholder": "Tell the artist what could be better...",
+    "feedbackAriaLabel": "Feedback input",
+    "otherFeedbackPlaceholder": "Share your thoughts freely...",
+    "otherFeedbackAriaLabel": "Other feedback",
+    "optionalSuffix": "(optional)"
+  },
+  "churn": {
+    "last30DaysSuffix": "(last 30 days)",
+    "comingSoonSuffix": "(coming soon)"
+  },
+  "post_card": {
+    "bluebirdAriaLabel": "Blue Bird support",
+    "bluebirdLabel": "Support"
+  },
+  "retention": {
+    "thankyou": {
+      "title": "Thank you!",
+      "welcomeMessageDefault": "Thank you for supporting {{artistName}}'s work.",
+      "nextSteps": {
+        "seeWorks": "See more works by {{artistName}}",
+        "exploreSimilar": "Discover similar artists",
+        "seeHistory": "View my sponsorship history"
+      }
+    },
+    "cancel": {
+      "winback": {
+        "title": "Wait — would you reconsider?",
+        "offer": {
+          "discount": "50% off for your first month back",
+          "pause": "Pause for one month option",
+          "message": "Leave direct feedback for the artist.",
+          "feedback": "Feedback (optional)"
+        },
+        "confirmCancel": "Still cancel",
+        "reconsider": "I'll reconsider"
+      }
+    },
+    "winback": {
+      "success": {
+        "title": "Coupon applied!",
+        "discountApplied": "{{discount}} discount applied",
+        "durationOnce": "Applied to your next payment",
+        "durationMonths": "Applied for {{months}} month(s)",
+        "cancelReverted": "Your subscription continues — no cancellation. Thank you for staying!",
+        "cta": "Got it"
+      },
+      "offer": {
+        "discount50": "Apply 50% off for 1 month",
+        "discount50Desc": "Save 50% on this month's payment. Reverts to standard price after 1 month.",
+        "discount30": "Apply 30% off for 1 month",
+        "discount30Desc": "Save 30% on this month's payment. Reverts to standard price after 1 month.",
+        "discount20": "Apply 20% off for 1 month",
+        "discount20Desc": "Save 20% on this month's payment. Reverts to standard price after 1 month.",
+        "discount10": "Apply 10% off (once)",
+        "discount10Desc": "10% discount applied to your next payment.",
+        "dmComingSoon": "Direct messaging to the artist is coming soon."
+      },
+      "banner": {
+        "title": "You used to support this artist",
+        "subtitle": "Would you like to support {{artistName}} again?",
+        "resubscribeCta": "Resubscribe",
+        "dismiss": "Maybe later"
+      },
+      "conditional": {
+        "tooExpensive": "{{artistName}} — A discount code is available now. Come back!",
+        "notSatisfied": "{{artistName}} has started a new series. Give it another chance!"
+      }
+    },
+    "expiry": {
+      "banner": {
+        "title": "Your subscription to {{artistName}} expires in D-{{days}} days",
+        "subtitle": "Renew now to keep supporting the artist.",
+        "renewCta": "Renew",
+        "dismiss": "Dismiss"
+      }
+    },
+    "churn": {
+      "title": "Recent churned supporters",
+      "empty": "No supporters have churned in the last 30 days.",
+      "sentCampaign": "Send win-back campaign",
+      "reason": {
+        "too_expensive": "Too expensive",
+        "changed_mind": "Changed mind",
+        "not_satisfied": "Not satisfied",
+        "other": "Other",
+        "unknown": "No reason provided"
+      }
+    },
+    "resubscribe": {
+      "cta": "Resubscribe",
+      "confirming": "Subscribing...",
+      "success": "Your subscription has been restarted!"
+    }
+  },
+  "coupon": {
+    "admin": {
+      "title": "Coupon Management",
+      "createCta": "Issue Coupon",
+      "table": {
+        "code": "Code",
+        "discount": "Discount",
+        "duration": "Duration",
+        "redemptions": "Redemptions",
+        "status": "Status",
+        "delete": "Delete"
+      },
+      "form": {
+        "label": {
+          "code": "Coupon Code",
+          "discountType": "Discount Type",
+          "discountValue": "Discount Value",
+          "duration": "Duration",
+          "durationInMonths": "Months",
+          "validUntil": "Valid Until (optional)",
+          "maxRedemptions": "Max Redemptions (optional)"
+        },
+        "duration": {
+          "once": "Once",
+          "forever": "Forever",
+          "repeating": "Repeating"
+        },
+        "discountType": {
+          "percent": "Percent",
+          "amount": "Amount"
+        }
+      }
+    },
+    "user": {
+      "title": "My Discount Codes",
+      "applyCta": "Apply Code",
+      "applyPlaceholder": "Enter coupon code",
+      "applySuccess": "Coupon applied successfully!",
+      "active": {
+        "label": "Active Discount",
+        "expiry": "Expires",
+        "remaining": "{{count}} months remaining"
+      },
+      "empty": "No discount codes applied."
+    },
+    "error": {
+      "notFound": "Coupon code not found or expired.",
+      "expired": "This coupon has expired.",
+      "alreadyApplied": "This coupon has already been applied.",
+      "saveError": "An error occurred while saving the coupon.",
+      "unauthorized": "You are not authorized to apply this coupon."
+    },
+    "subscription": {
+      "appliedBadge": "{{discount}}% discount active"
+    }
+  },
+  "subscription": {
+    "renewal": {
+      "autoOn": "Auto-renewal",
+      "autoOff": "Manual renewal",
+      "enableAutoRenew": "Enable auto-renewal",
+      "disableAutoRenew": "Disable auto-renewal",
+      "renewNow": "Renew now",
+      "renewing": "Renewing...",
+      "renewSuccess": "Renewed! Next expiry: {{date}}",
+      "renewError": "Renewal failed. Please try again.",
+      "expiryWarning": "Expires in {{days}} day(s)"
+    }
+  },
+  "admin": {
+    "featuredArtists": {
+      "pageTitle": "Featured Artist Management",
+      "pageSubtitle": "Curate the monthly featured artist selection.",
+      "createCta": "Set Featured Artist",
+      "form": {
+        "title": "Register New Featured Artist",
+        "artistLabel": "Search Artist",
+        "artistPlaceholder": "Enter artist name...",
+        "searchBtn": "Search",
+        "selectedArtist": "Selected: {{name}}",
+        "monthLabel": "Target Month (1st of month)",
+        "monthHint": "Only current or future months can be set.",
+        "noteLabel": "Curation Note (optional)",
+        "notePlaceholder": "Why was this artist selected this month?",
+        "submitBtn": "Register"
+      },
+      "list": {
+        "title": "Selection History",
+        "empty": "No featured artists registered yet.",
+        "monthCol": "Month",
+        "artistCol": "Artist ID",
+        "noteCol": "Curation Note",
+        "statusCol": "Status",
+        "actionsCol": "Actions",
+        "active": "Active",
+        "inactive": "Inactive",
+        "noNote": "No note",
+        "deactivateBtn": "Deactivate"
+      }
+    }
+  },
+  "cookie": {
+    "bannerTitle": "🍪 Cookie Notice",
+    "bannerBody": "Domo uses essential cookies to operate. You may optionally allow analytics cookies.",
+    "essentialOnly": "Essential only",
+    "acceptAll": "Accept all",
+    "policyLink": "Cookie Policy",
+    "privacyLink": "Privacy Policy"
+  },
+  "privacy": {
+    "title": "Privacy Settings",
+    "subtitle": "Manage your data collection and analytics preferences.",
+    "analytics": {
+      "title": "Analytics Data",
+      "description": "We collect anonymous usage data to improve the service. GDPR-compliant with IP anonymization.",
+      "toggleLabel": "Allow analytics data collection",
+      "statusEnabled": "Analytics data collection is currently enabled.",
+      "statusDisabled": "Analytics data collection is currently disabled."
+    },
+    "savedConfirmation": "Settings saved."
+  },
+  "onboarding": {
+    "wizard": {
+      "ariaLabel": "Domo onboarding wizard"
+    },
+    "common": {
+      "skip": "Skip",
+      "laterLink": "Maybe later",
+      "goHome": "Go to home"
+    },
+    "step1": {
+      "title": "Welcome to Domo!",
+      "subtitle": "Follow artists you love and fill your feed.",
+      "selectPrompt": "Select artists to follow",
+      "selectedCount": "{{count}} selected",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all",
+      "noArtists": "Could not load recommended artists.",
+      "worksCount": "{{count}} works",
+      "artistListAriaLabel": "Recommended artist list",
+      "followSelected": "Follow {{count}} selected artist(s)",
+      "skipAndNext": "Next"
+    },
+    "step2": {
+      "title": "Support artists with Blue Bird",
+      "subtitle": "Sponsorship directly funds an artist's creative work.",
+      "bullet1": "100% of your support goes to the artist",
+      "bullet2": "Start from just $1 per month",
+      "bullet3": "Unlock exclusive supporter content and perks",
+      "bulletsAriaLabel": "Blue Bird sponsorship benefits",
+      "ctaWithArtist": "Support @{{artistName}}",
+      "cta": "Support now",
+      "continueAfterSponsor": "Continue",
+      "sponsoredSuccess": "Sponsorship complete!"
+    },
+    "step3": {
+      "title": "Discover amazing artwork",
+      "subtitle": "Explore emerging artists from around the world.",
+      "previewAriaLabel": "Explore page preview",
+      "summaryTitle": "Onboarding summary",
+      "summaryFollowed": "Followed {{count}} artist(s)",
+      "summaryFollowedNone": "No artists followed yet",
+      "summarySponsoredDone": "First Blue Bird sponsorship done",
+      "summarySponsoredSkip": "Blue Bird sponsorship for later",
+      "cta": "Start exploring"
+    },
+    "sidebar": {
+      "indicator": "Continue onboarding",
+      "title": "Onboarding in progress",
+      "hint": "Click to continue setup"
+    }
+  },
+  "artist": {
+    "index": {
+      "pageTitle": "Global Emerging Artist Index",
+      "pageSubtitle": "Rising artists discovered by Domo",
+      "navLabel": "Artist Index",
+      "rank": "Rank",
+      "score": "Score",
+      "topHeroTitle": "Top 3 This Month",
+      "listTitle": "Full Rankings",
+      "loadMore": "Load more",
+      "loading": "Loading rankings...",
+      "empty": "No artists match your filters.",
+      "error": "Failed to load rankings.",
+      "viewProfile": "View",
+      "tierBadge": {
+        "top_10": "Top 10",
+        "top_100": "Top 100",
+        "top_1000": "Top 1000"
+      },
+      "filter": {
+        "region": "Region",
+        "regionAll": "All Regions",
+        "genre": "Genre",
+        "genreAll": "All Genres"
+      },
+      "badge": {
+        "globalRank": "Global #{{rank}}",
+        "regionRank": "Regional #{{rank}}",
+        "genreRank": "Genre #{{rank}}",
+        "whyLabel": "Why this rank?",
+        "whyTooltip": "Calculated from: recent activity (50%) + sales (30%) + supporters (20%) + tenure (10%).",
+        "notRanked": "Unranked",
+        "notYet": "Calculating...",
+        "lastUpdated": "Updated: {{date}}"
+      },
+      "seo": {
+        "description": "Domo Global Emerging Artist Index — real-time rankings of artists worldwide",
+        "ogTitle": "Domo Global Emerging Artist Index"
+      }
+    }
+  },
+  "stories": {
+    "pageTitle": "Story Hub",
+    "pageSubtitle": "Discover the journeys of emerging artists and their media coverage.",
+    "backToHub": "Story Hub",
+    "featured": {
+      "sectionTitle": "Featured Artist This Month",
+      "monthLabel": "Featured This Month",
+      "curatedBadge": "Admin Curated",
+      "viewProfile": "View Profile",
+      "viewTimeline": "Their Story",
+      "scoreLabel": "Score {{score}}",
+      "empty": "No featured artist yet."
+    },
+    "history": {
+      "sectionTitle": "Artist Histories",
+      "sectionSubtitle": "Follow the journeys of emerging artists growing on Domo.",
+      "viewTimeline": "View Story",
+      "viewFullIndex": "View Full Index",
+      "empty": "No artist histories yet."
+    },
+    "media": {
+      "sectionTitle": "Media Coverage",
+      "empty": "No media coverage yet.",
+      "placeholderNote": "These are placeholder examples. Will be updated with real coverage."
+    }
+  },
+  "timeline": {
+    "title": "Growth Timeline",
+    "notFound": "Artist not found.",
+    "postsCount": "artworks",
+    "viewProfile": "View Profile",
+    "empty": "No milestones recorded yet.",
+    "joined": "Joined Domo",
+    "firstPost": "First Artwork Published",
+    "firstBluebird": "Received First Blue Bird",
+    "rankTop1000": "Entered Global Top 1000",
+    "rankTop100": "Entered Global Top 100",
+    "rankTop10": "Entered Global Top 10",
+    "highlightPost": "Popular Artwork"
+  },
+  "webhook": {
+    "notification": {
+      "payment_failed": "Payment failed — please try again",
+      "payment_3ds_required": "3D Secure authentication is required",
+      "subscription_renewed": "Your subscription has been renewed",
+      "subscription_payment_failed": "Subscription payment failed — please update your payment method",
+      "subscription_cancelled": "Your subscription has been cancelled",
+      "dispute_created": "A dispute has been filed — please contact support",
+      "update_payment_method": "Update payment method"
+    }
+  },
+  "interview": {
+    "pageTitle": "AI Artist Interviews",
+    "pageSubtitle": "AI-generated artist interview articles",
+    "admin": {
+      "pageTitle": "Interview Management",
+      "pageSubtitle": "Review and publish LLM-generated artist interviews",
+      "generateCta": "Generate Interview",
+      "generateTitle": "Generate New Interview",
+      "artistIdLabel": "Artist ID",
+      "localeLabel": "Language",
+      "generating": "Generating...",
+      "generateSuccess": "Interview generated and pending admin review.",
+      "reviewTitle": "Review Interview",
+      "approveBtn": "Approve",
+      "rejectBtn": "Reject",
+      "publishBtn": "Publish",
+      "publishDisabled": "Artist consent is required before publishing.",
+      "reviewNoteLabel": "Review Note",
+      "statusLabel": "Status",
+      "localeTag": "Locale",
+      "consentTag": "Consent",
+      "consentPending": "Awaiting artist consent",
+      "consentDone": "Artist consent received",
+      "listTitle": "Interview List"
+    },
+    "me": {
+      "pageTitle": "My Interviews",
+      "pageSubtitle": "AI-generated interview articles about you",
+      "consentBtn": "Consent to Publish",
+      "rejectBtn": "Decline Publication",
+      "consentConfirm": "Do you consent to publishing this interview? An admin will finalize publication after your consent.",
+      "rejectConfirm": "Are you sure you want to decline publication of this interview?",
+      "noInterviews": "No interviews have been generated yet.",
+      "previewLabel": "Preview",
+      "statusApproved": "Approved (Consent Required)",
+      "statusPublished": "Published",
+      "statusRejected": "Declined",
+      "statusAdminReview": "Pending Review"
+    },
+    "public": {
+      "readMore": "Read Interview",
+      "sectionTitle": "AI Interview",
+      "noPublished": "No published interviews.",
+      "aiGenerated": "AI Generated",
+      "consentNote": "Published with artist consent."
+    },
+    "status": {
+      "draft": "Draft",
+      "admin_review": "Pending Review",
+      "approved": "Approved",
+      "published": "Published",
+      "rejected": "Rejected",
+      "archived": "Archived"
+    }
+  },
+  "bio": {
+    "pageTitle": "Multilingual Bio Editor",
+    "pageSubtitle": "Set your bio in 5 languages",
+    "translateBtn": "Auto Translate (AI)",
+    "translating": "Translating...",
+    "translateSuccess": "Translated into 5 languages",
+    "translateError": "Translation failed",
+    "saveBtn": "Save",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "machineTranslated": "AI Translated",
+    "humanEdited": "Manually Edited",
+    "bioPlaceholder": "Write your bio",
+    "emptyBioWarning": "Please set your bio first",
+    "localeTab": {
+      "ko": "한국어",
+      "en": "English",
+      "ja": "日本語",
+      "zh": "中文",
+      "es": "Español"
+    }
+  },
+  "localeSwitcher": {
+    "label": "Language",
+    "ko": "한국어",
+    "en": "English",
+    "ja": "日本語",
+    "zh": "中文",
+    "es": "Español"
+  },
+  "mediaCoverage": {
+    "pageTitle": "Media Coverage",
+    "pageSubtitle": "Manage articles, videos, and radio appearances",
+    "addBtn": "Add Item",
+    "emptyList": "No media coverage entries yet.",
+    "loadMore": "Load More",
+    "typeLabel": "Type",
+    "sourceLabel": "Source",
+    "publishedAtLabel": "Published At",
+    "localeLabel": "Locale",
+    "featuredLabel": "Featured",
+    "publishedLabel": "Published",
+    "draftLabel": "Draft",
+    "deleteConfirm": "Delete this entry?",
+    "saveSuccess": "Saved successfully.",
+    "saveError": "Failed to save.",
+    "types": {
+      "article": "Article",
+      "youtube": "YouTube",
+      "radio": "Radio",
+      "podcast": "Podcast",
+      "tv": "TV"
+    },
+    "artist": {
+      "sectionTitle": "Media Coverage About This Artist",
+      "empty": "No media coverage for this artist yet."
+    }
+  },
+  "newsletter": {
+    "admin": {
+      "title": "Newsletter Management",
+      "compose": {
+        "title": "New Issue (Auto-Compose)",
+        "button": "Compose {{locale}} Newsletter"
+      },
+      "status": {
+        "draft": "Draft",
+        "sending": "Sending",
+        "sent": "Sent",
+        "failed": "Failed"
+      },
+      "list": {
+        "title": "Issue History",
+        "empty": "No newsletter issues yet.",
+        "retry": "Retry",
+        "refresh": "Refresh",
+        "sendAction": "Start Sending",
+        "col": {
+          "date": "Date",
+          "locale": "Locale",
+          "subject": "Subject",
+          "status": "Status",
+          "sent": "Sent",
+          "actions": "Actions"
+        }
+      },
+      "editor": {
+        "title": "Edit Newsletter",
+        "subject": "Subject",
+        "body": "Body (Markdown)",
+        "showPreview": "Preview",
+        "hidePreview": "Edit",
+        "send": "Start Sending",
+        "sending": "Sending...",
+        "sendConfirm": "Send this newsletter? All subscribed users will receive an email.",
+        "sentCount": "Sent: {{sent}} / Failed: {{failed}}"
+      }
+    },
+    "preferences": {
+      "title": "Newsletter Settings",
+      "subscribe": {
+        "label": "Subscribe to Newsletter",
+        "hint": "Receive Domo artist news and highlights by email."
+      },
+      "frequency": {
+        "label": "Frequency",
+        "weekly": "Weekly",
+        "biweekly": "Biweekly",
+        "monthly": "Monthly",
+        "never": "Never"
+      },
+      "locale": {
+        "label": "Preferred Language"
+      },
+      "lastSent": "Last received: {{date}}",
+      "unsubscribeNote": "You can unsubscribe at any time using the link in the email footer."
+    },
+    "unsubscribe": {
+      "loading": "Processing...",
+      "success": {
+        "title": "Unsubscribed",
+        "message": "You have been successfully unsubscribed. You can re-subscribe any time in your settings."
+      },
+      "already": {
+        "title": "Already Unsubscribed",
+        "message": "You are not currently subscribed to our newsletter."
+      },
+      "error": {
+        "title": "Invalid Link",
+        "message": "This unsubscribe link has expired or is invalid. Please unsubscribe from your settings."
+      },
+      "missing": {
+        "title": "Missing Information",
+        "message": "The unsubscribe link is missing required information."
+      },
+      "backToHome": "Back to Home"
+    }
+  },
+  "pressKit": {
+    "pageTitle": "Press Kit",
+    "pageSubtitle": "Auto-generate PDF press kit for artist promotion",
+    "generateBtn": "Generate Press Kit",
+    "regenerateBtn": "Regenerate",
+    "downloadBtn": "Download",
+    "generating": "Generating...",
+    "locale": "Locale",
+    "localePlaceholder": "Select locale",
+    "cacheNote": "Same artist + locale cached for 30 days.",
+    "history": "Generation History",
+    "noHistory": "No press kits generated yet.",
+    "pages": "pages",
+    "fileSize": "File size",
+    "expiresAt": "Expires",
+    "createdAt": "Created",
+    "isPublic": "Public download",
+    "artistSearch": "Artist ID or search",
+    "generateError": "Failed to generate press kit.",
+    "me": {
+      "pageTitle": "My Press Kit",
+      "pageSubtitle": "Press kit PDF for external media distribution",
+      "download": "Download PDF",
+      "noKit": "No press kit generated yet. Please contact an admin.",
+      "publicToggle": "Allow public download",
+      "publicToggleNote": "When enabled, anyone can download your press kit."
+    }
+  },
+  "a11y": {
+    "skip": {
+      "toMain": "Skip to main content",
+      "toNav": "Skip to navigation"
+    }
+  },
+  "accessibility": {
+    "pageTitle": "Accessibility Settings",
+    "focusMode": {
+      "label": "Focus Mode",
+      "description": "Highlights interactive elements for keyboard navigation."
+    },
+    "announcements": {
+      "bidPlaced": "Bid placed successfully",
+      "bidFailed": "Bid failed. Please try again.",
+      "auctionEnded": "Auction has ended",
+      "auctionUrgent": "Less than 10 seconds remaining",
+      "modalOpened": "Dialog opened",
+      "modalClosed": "Dialog closed"
+    },
+    "settings": {
+      "saved": "Accessibility settings saved",
+      "saveError": "Failed to save settings"
+    },
+    "contrast": {
+      "highContrastHint": "For higher contrast, use your OS high contrast mode."
+    }
+  },
+  "currency": {
+    "label": {
+      "USD": "US Dollar",
+      "KRW": "Korean Won",
+      "EUR": "Euro",
+      "JPY": "Japanese Yen"
+    },
+    "switcher": {
+      "label": "Select currency",
+      "converted": "Converted price",
+      "native": "Original price",
+      "saved": "Currency preference saved"
+    }
+  },
+  "messaging": {
+    "loginRequired": "Please log in to access messages.",
+    "list": {
+      "title": "Messages",
+      "empty": "No conversations yet.",
+      "noMessages": "No messages",
+      "refresh": "Refresh"
+    },
+    "conversation": {
+      "title": "Conversation",
+      "empty": "No messages yet. Send the first one!",
+      "closed": "[Conversation closed by admin]",
+      "loadMore": "Load earlier messages",
+      "report": "Report",
+      "reportTitle": "Report this conversation",
+      "reportPlaceholder": "Describe the issue (max 500 chars)...",
+      "reportSubmit": "Submit report",
+      "reportSent": "Your report has been submitted. Thank you."
+    },
+    "message": {
+      "deleted": "[Message deleted]",
+      "edited": "edited",
+      "read": "Read",
+      "editAriaLabel": "Edit message",
+      "deleteAriaLabel": "Delete message"
+    },
+    "composer": {
+      "placeholder": "Type a message... (Enter to send, Shift+Enter for newline)",
+      "editPlaceholder": "Edit your message...",
+      "send": "Send",
+      "ariaLabel": "Message input"
+    }
+  },
+  "docent": {
+    "title": "Artwork Commentary",
+    "artist_label": "Artist's Statement",
+    "ai_label": "AI Docent",
+    "toggle_show": "View AI Docent Commentary",
+    "toggle_hide": "Hide AI Docent Commentary",
+    "ai_disclaimer": "This commentary was generated by AI",
+    "generating": "AI is analyzing the artwork...",
+    "generate_button": "Generate AI Docent",
+    "regenerate": "Regenerate Docent",
+    "generate_failed": "Failed to generate docent. Please try again later.",
+    "disabled_by_artist": "The artist has disabled AI docent for this artwork.",
+    "opt_out_label": "Disable AI Docent",
+    "opt_in_label": "Enable AI Docent",
+    "rate_limit_notice": "AI Docent can be generated up to 2 times per day.",
+    "locale_only_ko": "Available in Korean only",
+    "by_artist": "Written by Artist",
+    "by_ai": "AI Generated",
+    "edit_page": {
+      "section_title": "Edit Docent",
+      "artist_text_label": "Write manually",
+      "artist_text_placeholder": "Write your own story about the artwork. You can freely describe the production process, the source of inspiration, and the meaning behind the piece.",
+      "generate_button": "Generate AI Docent",
+      "opt_out_label": "Disable AI Docent",
+      "save_button": "Save",
+      "save_success": "Saved"
+    }
+  },
+  "preferences": {
+    "title": "Preferences",
+    "pageTitle": "Display",
+    "pageSubtitle": "Choose display currency and interface language.",
+    "currency": {
+      "label": "Currency"
+    },
+    "locale": {
+      "label": "Language"
+    }
+  },
+  "collections": {
+    "editors_pick": "Editor's Pick",
+    "subtitle": "AI-curated weekly collections",
+    "works_count": "{{count}} works",
+    "week_label": "Week of {{date}}",
+    "share": "Share",
+    "share_link_copied": "Link copied",
+    "no_collections": "No collections available",
+    "view_all": "View all collections",
+    "back": "Back to collections",
+    "generated_by_ai": "AI-curated collection"
+  },
+  "keyboardShortcuts": {
+    "title": "Keyboard Shortcuts",
+    "close": "Close help",
+    "category": {
+      "navigation": "Navigation",
+      "feed": "Feed",
+      "editor": "Editor",
+      "general": "General"
+    },
+    "action": {
+      "nextPost": "Next post",
+      "prevPost": "Previous post",
+      "saveDraft": "Save draft",
+      "showHelp": "Show this help",
+      "closeModal": "Close modal",
+      "gotoHome": "Home",
+      "gotoFeed": "Feed",
+      "gotoExplore": "Explore",
+      "gotoMessages": "Messages",
+      "gotoNotifications": "Notifications",
+      "gotoProfile": "My profile",
+      "newPost": "New post",
+      "searchFocus": "Focus search",
+      "bookmarkToggle": "Toggle bookmark"
+    }
+  },
+  "auth": {
+    "magic_link": {
+      "request": {
+        "tab": "Sign in with Email",
+        "description": "Sign in instantly with a link sent to your email",
+        "emailPlaceholder": "Email address",
+        "submit": "Send login link",
+        "sent": "Check your email. Click the link within 24 hours.",
+        "cooldown": "You can request again in 5 minutes."
+      },
+      "verify": {
+        "verifying": "Verifying magic link...",
+        "setupTitle": "Enter your display name",
+        "setupPlaceholder": "Display name (3–50 chars)",
+        "setupSubmit": "Complete Sign Up",
+        "success": "Signed in! Redirecting...",
+        "expired": "Link expired. Please request a new one.",
+        "used": "This link has already been used.",
+        "ipWarning": "Access from a different network detected. Continue if this is you.",
+        "requestNew": "Request new link"
+      }
+    },
+    "signup": {
+      "tab": "Sign Up",
+      "emailPlaceholder": "Email address",
+      "passwordPlaceholder": "Password (8+ characters)",
+      "displayNamePlaceholder": "Display name (3–50 chars)",
+      "passwordHint": "Must include 3 of: uppercase, lowercase, numbers, special chars",
+      "submit": "Create Account"
+    },
+    "login": {
+      "email": {
+        "tab": "Login",
+        "emailPlaceholder": "Email address",
+        "passwordPlaceholder": "Password",
+        "forgotPassword": "Forgot password?",
+        "forgotPasswordTooltip": "Password reset will be available in Phase 12",
+        "submit": "Log In"
+      }
+    },
+    "verify": {
+      "banner": "A verification link has been sent to your email. Please verify within 24 hours.",
+      "verifying": "Verifying your email...",
+      "success": "Email Verified!",
+      "redirecting": "Redirecting to home shortly...",
+      "alreadyVerified": "Your account is already verified",
+      "expired": "Verification link expired",
+      "expiredDesc": "The link has expired (24 hours). Please request a new verification email.",
+      "resend": "Resend Verification Email",
+      "resendSuccess": "Verification email resent. Please check your inbox.",
+      "error": "Verification Failed",
+      "noToken": "No verification token found. Please click the link in your email again.",
+      "goHome": "Go to Home"
+    },
+    "password_reset": {
+      "request": {
+        "title": "Forgot Password",
+        "subtitle": "Enter your email to receive a reset link.",
+        "email_label": "Email",
+        "submit": "Send Reset Link",
+        "sent_title": "Check your email",
+        "sent_body": "A reset link has been sent. Please check within 1 hour.",
+        "too_soon": "Try again after {{seconds}} seconds.",
+        "back_to_login": "Back to Login",
+        "error": "An error occurred. Please try again."
+      },
+      "token": {
+        "title": "Set New Password",
+        "new_password_label": "New Password",
+        "confirm_label": "Confirm New Password",
+        "submit": "Change Password",
+        "mismatch": "Passwords do not match.",
+        "expired": "Reset link has expired. Please request again.",
+        "already_used": "Link already used. Please request again.",
+        "invalid": "Invalid reset link.",
+        "request_again": "Request New Link"
+      },
+      "success": {
+        "title": "Password Changed",
+        "body": "Password updated. Redirecting to login..."
+      }
+    }
+  },
+  "admin": {
+    "analytics": {
+      "pageTitle": "Analytics Dashboard",
+      "period": {
+        "7d": "Last 7 days",
+        "30d": "Last 30 days",
+        "90d": "Last 90 days"
+      },
+      "refresh": "Refresh",
+      "cachedAt": "Cache: as of {{time}}",
+      "loading": "Loading...",
+      "error": "Failed to load data",
+      "retry": "Try again",
+      "cohortRetention": {
+        "title": "Cohort Retention",
+        "d7": "D7 Retention",
+        "d30": "D30 Retention",
+        "belowThreshold": "Below-threshold records only"
+      },
+      "newsletter": {
+        "title": "Newsletter Open Rate",
+        "openRate": "Open Rate",
+        "clickRate": "Click Rate",
+        "issued": "Issues sent"
+      },
+      "feedCtr": {
+        "title": "Feed CTR by Algorithm",
+        "delta": "v2 vs v1 delta"
+      },
+      "aiFeatures": {
+        "title": "AI Features Usage",
+        "caption": "AI Caption",
+        "docent": "AI Docent",
+        "collection": "AI Collection"
+      }
+    }
+  },
+  "settings": {
+    "hub": {
+      "title": "Settings",
+      "subtitle": "Manage your profile, notifications, privacy, and more in one place",
+      "category": {
+        "profile": {
+          "title": "Profile",
+          "description": "Edit your bio and multilingual artist introduction"
+        },
+        "display": {
+          "title": "Display",
+          "description": "Interface language and currency preferences"
+        },
+        "accessibility": {
+          "title": "Accessibility",
+          "description": "High contrast, focus mode, and other accessibility options"
+        },
+        "notifications": {
+          "title": "Notifications",
+          "description": "Push, email alerts, and newsletter subscription"
+        },
+        "privacy": {
+          "title": "Privacy",
+          "description": "Analytics consent and cookie settings"
+        },
+        "account": {
+          "title": "Account",
+          "description": "Account info, data export, and sponsor validity"
+        }
+      }
+    }
   }
 }

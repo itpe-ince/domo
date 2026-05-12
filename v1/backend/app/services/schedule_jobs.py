@@ -12,10 +12,15 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from app.core.metrics import cron_rows_processed_total, record_cron_run
 from app.db.session import AsyncSessionLocal
 from app.models.post import Post
+from app.services.cron_monitor import record_cron_run as _push_cron_status
+from app.services.otel_setup import get_tracer
 
 log = logging.getLogger(__name__)
+
+tracer = get_tracer(__name__)
 
 
 async def publish_scheduled_posts_once(db) -> int:
@@ -42,11 +47,18 @@ async def publish_scheduled_posts_once(db) -> int:
 async def schedule_cron_loop(interval_seconds: int = 60) -> None:
     log.info("schedule_cron_loop started (interval=%ss)", interval_seconds)
     while True:
+        await _push_cron_status("schedule", "running")
         try:
-            async with AsyncSessionLocal() as db:
-                count = await publish_scheduled_posts_once(db)
-                if count:
-                    log.info("Published %d scheduled posts", count)
+            with tracer.start_as_current_span("cron.schedule") as span:
+                with record_cron_run("schedule"):
+                    async with AsyncSessionLocal() as db:
+                        count = await publish_scheduled_posts_once(db)
+                    span.set_attribute("rows_processed", count)
+                    if count:
+                        log.info("Published %d scheduled posts", count)
+                        cron_rows_processed_total.labels(worker="schedule").inc(count)
+            await _push_cron_status("schedule", "success")
         except Exception as e:
             log.exception("schedule cron sweep failed: %s", e)
+            await _push_cron_status("schedule", "failed", error=str(e)[:500])
         await asyncio.sleep(interval_seconds)
