@@ -35,7 +35,7 @@ def upgrade() -> None:
     # ──────────────────────────────────────────────────────────────────────────
     op.execute("""
         CREATE TABLE audit_logs_new (
-            id              UUID        NOT NULL DEFAULT uuid_generate_v4(),
+            id              UUID        NOT NULL DEFAULT gen_random_uuid(),
             actor_id        UUID        REFERENCES users(id) ON DELETE SET NULL,
             actor_role      VARCHAR(20),
             action          VARCHAR(100) NOT NULL,
@@ -150,7 +150,7 @@ def downgrade() -> None:
     # 1단계: 단일 테이블 생성 (backup 역할)
     op.execute("""
         CREATE TABLE audit_logs_backup (
-            id              UUID        NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
+            id              UUID        NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
             actor_id        UUID        REFERENCES users(id) ON DELETE SET NULL,
             actor_role      VARCHAR(20),
             action          VARCHAR(100) NOT NULL,

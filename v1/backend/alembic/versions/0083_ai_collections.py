@@ -32,7 +32,7 @@ def upgrade() -> None:
     op.create_table(
         "ai_collections",
         sa.Column("id", postgresql.UUID(as_uuid=True),
-                  server_default=sa.text("uuid_generate_v4()"), primary_key=True),
+                  server_default=sa.text("gen_random_uuid()"), primary_key=True),
         sa.Column("week_start", sa.Date(), nullable=False,
                   comment="해당 주 월요일 날짜 (ISO week 기준)"),
         sa.Column("theme", sa.VARCHAR(100), nullable=False,
@@ -92,7 +92,7 @@ def upgrade() -> None:
     op.create_table(
         "ai_collection_posts",
         sa.Column("id", postgresql.UUID(as_uuid=True),
-                  server_default=sa.text("uuid_generate_v4()"), primary_key=True),
+                  server_default=sa.text("gen_random_uuid()"), primary_key=True),
         sa.Column("collection_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("post_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("position", sa.Integer(), nullable=False,

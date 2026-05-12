@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-11T19:26:54.740Z",
+  "lastUpdated": "2026-05-12T05:27:45.370Z",
   "activeFeatures": [
     "core",
     "db",
@@ -631,7 +631,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:35:13.871Z",
-        "lastUpdated": "2026-05-11T05:33:27.236Z"
+        "lastUpdated": "2026-05-12T05:27:45.370Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/alembic/versions/0088_audit_logs_partitioning.py"
     },
@@ -2875,7 +2875,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-05-11T19:26:54.740Z"
+    "lastActivity": "2026-05-12T05:27:45.370Z"
   },
   "history": [
     {
@@ -22237,6 +22237,42 @@
     {
       "timestamp": "2026-05-11T19:26:54.740Z",
       "feature": "display",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T05:27:39.505Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T05:27:40.866Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T05:27:42.073Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T05:27:43.151Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T05:27:44.300Z",
+      "feature": "versions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-12T05:27:45.370Z",
+      "feature": "versions",
       "phase": "do",
       "action": "updated"
     }
