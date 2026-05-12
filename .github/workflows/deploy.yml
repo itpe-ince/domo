@@ -97,8 +97,12 @@ jobs:
           tags: |
             ${{ env[matrix.image_var] }}:${{ steps.tag.outputs.IMAGE_TAG }}
             ${{ env[matrix.image_var] }}:latest
-          cache-from: type=gha,scope=${{ matrix.component }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.component }}
+          # frontend/admin은 Next.js standalone build 산출물이 cache layer에
+          # 동결되어 source 변경 후에도 stale image가 push되는 사례 발생
+          # (2026-05-11 운영 사고: 4/28 이미지가 그대로 latest로 재push됨).
+          # 안정성 우선 — backend만 GHA cache 사용, frontend/admin은 매번 fresh build.
+          cache-from: ${{ matrix.component == 'backend' && format('type=gha,scope={0}', matrix.component) || '' }}
+          cache-to: ${{ matrix.component == 'backend' && format('type=gha,mode=max,scope={0}', matrix.component) || '' }}
           # Note: NEXT_PUBLIC_* values come from each app's .env.production
           # (committed to git, applied automatically by Next.js at build).
           # No build-args needed — pattern B keeps GitHub vars off the path.
