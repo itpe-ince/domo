@@ -63,7 +63,8 @@ services:
     depends_on:
       - backend
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:3000"]
+      # node:20-alpine 베이스에 curl이 없음. wget은 BusyBox 기본 포함.
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -89,7 +90,8 @@ services:
     depends_on:
       - backend
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:3000"]
+      # node:20-alpine 베이스에 curl이 없음. wget은 BusyBox 기본 포함.
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
       interval: 30s
       timeout: 5s
       retries: 3
