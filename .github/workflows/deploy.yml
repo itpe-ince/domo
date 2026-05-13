@@ -101,12 +101,13 @@ jobs:
           # 11시간 전 image 그대로). 안정성을 위해 SHA 태그만 build-push-action으로
           # push하고, latest 태그는 아래 별도 step에서 imagetools create로 동기화.
           tags: ${{ env[matrix.image_var] }}:${{ steps.tag.outputs.IMAGE_TAG }}
-          # frontend/admin은 Next.js standalone build 산출물이 cache layer에
-          # 동결되어 source 변경 후에도 stale image가 push되는 사례 발생
-          # (2026-05-11 운영 사고: 4/28 이미지가 그대로 latest로 재push됨).
-          # 안정성 우선 — backend만 GHA cache 사용, frontend/admin은 매번 fresh build.
-          cache-from: ${{ matrix.component == 'backend' && format('type=gha,scope={0}', matrix.component) || '' }}
-          cache-to: ${{ matrix.component == 'backend' && format('type=gha,mode=max,scope={0}', matrix.component) || '' }}
+          # 2026-05-13 backend도 GHA cache 비활성 — cache layer가 source 변경에도
+          # 동일 image를 생성하는 패턴 발견 (4개 SHA 태그가 모두 24시간 전 동일 image ID
+          # 5c2f1105fae0 가리킴). backend의 Python 의존성 cache 이득(<2분)보다 stale
+          # image push 위험이 큼 → 매번 fresh build로 안정성 우선.
+          # cache-from/cache-to 모두 빈 값으로 설정 → docker layer cache 비활성.
+          # (참고: cache 자체는 docker daemon의 in-memory layer cache는 동작.
+          # 비활성화되는 것은 cross-run GHA registry cache.)
           # Note: NEXT_PUBLIC_* values come from each app's .env.production
           # (committed to git, applied automatically by Next.js at build).
           # No build-args needed — pattern B keeps GitHub vars off the path.
