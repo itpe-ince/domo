@@ -68,12 +68,9 @@ export function EditorTopBar({
 
   return (
     <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-2 flex flex-wrap items-center justify-between gap-2">
-      {/* 좌측: 등록 제목 + AutosaveIndicator + PostType segmented control */}
+      {/* 좌측: 등록 제목 + PostType segmented control */}
       <div className="flex items-center gap-3 min-w-0">
-        <div className="flex flex-col min-w-0">
-          <h1 className="text-base font-bold leading-tight">{t("post.createTitle")}</h1>
-          <AutosaveIndicator status={draftStatus} lastSavedAt={lastSavedAt} t={t} />
-        </div>
+        <h1 className="text-base font-bold leading-tight">{t("post.createTitle")}</h1>
 
         {me && (
           <div className="flex bg-surface rounded-full p-0.5 border border-border">
@@ -122,6 +119,9 @@ export function EditorTopBar({
 
       {/* 우측: 액션 버튼들 */}
       <div className="flex items-center gap-2 flex-shrink-0">
+        {/* AutosaveIndicator — 미리보기 토글 좌측에 위치 */}
+        <AutosaveIndicator status={draftStatus} lastSavedAt={lastSavedAt} t={t} />
+
         {/* 미리보기 토글 */}
         <PreviewToggleButton isVisible={isPreviewVisible} onToggle={onTogglePreview} />
 

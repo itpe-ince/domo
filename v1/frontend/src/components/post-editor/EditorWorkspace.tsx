@@ -214,8 +214,9 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
         <div className="p-4 space-y-4">
           {/* PostTypeSelector는 sticky header에 통합됨 (③).
               비아티스트 사용자를 위한 hint만 별도 행으로 유지.
+              applicationStatus=undefined(미신청자)도 hint 보이도록 조건 완화.
               Backend defense remains at api/posts.py:206-210 (FORBIDDEN 403). */}
-          {!(me.role === "artist" || me.role === "admin") && applicationStatus !== undefined && (
+          {!(me.role === "artist" || me.role === "admin") && (
             <PostTypeSelector
               value={type}
               onChange={setters.setType}

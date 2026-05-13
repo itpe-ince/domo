@@ -11,7 +11,6 @@ import { useUnreadCount } from "@/lib/useUnreadCount";
 import { useOnboarding } from "@/lib/hooks/useOnboarding";
 import { LoginModal } from "./LoginModal";
 import { SearchBar } from "./SearchBar";
-import { PreferencesCard } from "./PreferencesCard";
 import {
   BellIcon,
   BluebirdIcon,
@@ -296,12 +295,7 @@ export function Sidebar() {
         {meLoading && (
           <div className="flex-shrink-0 mx-3 mt-2 mb-2 h-14 rounded-full bg-surface-hover/40 animate-pulse" aria-hidden />
         )}
-        {/* 비로그인: 통화·언어도 바꿀 수 있어야 함 (로컬 + 로그인 시 서버 동기화) */}
-        {!meLoading && !me && (
-          <div className="flex-shrink-0 mt-auto pt-2 mx-3 mb-2">
-            <PreferencesCard isAuthenticated={false} />
-          </div>
-        )}
+        {/* 비로그인 PreferencesCard 제거 — 통화/언어 변경은 /me/settings/display에서 처리 */}
         {!meLoading && me && (
           <div className="relative flex-shrink-0 mt-auto pt-2">
             <details className="group">
