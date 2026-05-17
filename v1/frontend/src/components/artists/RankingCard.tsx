@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArtistIndexEntry } from "@/lib/api";
 import { TierBadge } from "./TierBadge";
+import { FollowButton } from "@/components/FollowButton";
 import { useI18n } from "@/i18n";
 
 interface RankingCardProps {
@@ -87,14 +88,17 @@ export function RankingCard({ artist }: RankingCardProps) {
         </div>
       </div>
 
-      {/* View link */}
-      <Link
-        href={`/users/${artist.user_id}`}
-        className="flex-shrink-0 text-xs text-primary hover:underline font-medium"
-        aria-label={`${artist.username} ${t("artist.index.viewProfile")}`}
-      >
-        {t("artist.index.viewProfile")}
-      </Link>
+      {/* Follow + View link */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <FollowButton userId={artist.user_id} size="sm" />
+        <Link
+          href={`/users/${artist.user_id}`}
+          className="text-xs text-primary hover:underline font-medium"
+          aria-label={`${artist.username} ${t("artist.index.viewProfile")}`}
+        >
+          {t("artist.index.viewProfile")}
+        </Link>
+      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { PostCard } from "@/components/PostCard";
+import { FollowButton } from "@/components/FollowButton";
 import {
   fetchExplore,
   PostView,
@@ -582,12 +583,9 @@ function SearchPageInner() {
                     </div>
                   </div>
                 </Link>
-                <button
-                  className="px-4 py-1.5 rounded-full text-xs font-semibold bg-primary text-background hover:bg-primary-hover transition-colors flex-shrink-0"
-                  aria-label={`${t("common.follow")} @${u.display_name}`}
-                >
-                  {t("common.follow")}
-                </button>
+                <div className="flex-shrink-0">
+                  <FollowButton userId={u.id} size="sm" />
+                </div>
               </li>
             ))}
           </ul>
@@ -691,10 +689,10 @@ function EmptyState({ q }: { q: string }) {
           </h3>
           <ul className="space-y-3">
             {artists.map((a) => (
-              <li key={a.id}>
+              <li key={a.id} className="flex items-center gap-3">
                 <Link
                   href={`/users/${a.id}`}
-                  className="flex items-center gap-3"
+                  className="flex items-center gap-3 flex-1 min-w-0"
                 >
                   <div className="w-10 h-10 rounded-full bg-surface-hover flex items-center justify-center text-primary font-bold flex-shrink-0">
                     {a.avatar_url ? (
@@ -711,6 +709,7 @@ function EmptyState({ q }: { q: string }) {
                     @{a.display_name}
                   </div>
                 </Link>
+                <FollowButton userId={a.id} size="sm" />
               </li>
             ))}
           </ul>

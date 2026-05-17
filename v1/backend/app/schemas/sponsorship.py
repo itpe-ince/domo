@@ -73,6 +73,12 @@ class SubscriptionOut(BaseModel):
     # B'-4: auto-renewal toggle
     auto_renew_enabled: bool = True
     created_at: datetime
+    # Subscriptions-UX: artist denormalization (joined in /mine to avoid the
+    # frontend rendering "428c98b4..." UUID slices). Optional everywhere so
+    # endpoints that don't join (POST create, PATCH auto-renew, DELETE) can
+    # keep returning the bare Subscription row unchanged.
+    artist_username: str | None = None
+    artist_avatar_url: str | None = None
 
     class Config:
         from_attributes = True

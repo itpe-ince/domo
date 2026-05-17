@@ -22,6 +22,8 @@ import { LocaleSwitcher, getStoredLocale, LOCALE_CHANGED_EVENT, type SupportedLo
 import { TierBadge } from "@/components/artists/TierBadge";
 import { PostCard } from "@/components/PostCard";
 import { BluebirdButton } from "@/components/BluebirdButton";
+import { FollowButton } from "@/components/FollowButton";
+import { MessageButton } from "@/components/messaging/MessageButton";
 import { WinbackBanner } from "@/components/sponsorships/WinbackBanner";
 import { ArtistTierBenefitsView } from "@/components/tier-benefits/ArtistTierBenefitsView";
 import { useWinbackBanner } from "@/lib/hooks/useWinbackBanner";
@@ -257,6 +259,10 @@ export default function UserProfilePage({
             </div>
           </div>
           <div className="flex flex-col gap-2 items-end">
+            {/* 팔로우 버튼 — 본인 프로필이 아닐 때 항상 표시 (self-guard는 FollowButton 내부에서도 처리) */}
+            <FollowButton userId={profile.id} />
+            {/* 메시지 버튼 — 본인 프로필이 아닐 때 표시 (self-guard는 MessageButton 내부) */}
+            <MessageButton userId={profile.id} size="sm" />
             {/* Blue Bird 후원 버튼 — 다른 작가 프로필에서만 표시 */}
             {profile.role === "artist" && me?.id !== profile.id && (
               <BluebirdButton

@@ -31,11 +31,15 @@ import {
   CommentView,
   DocentView,
   PostView,
+  SponsorshipView,
+  SubscriptionView,
   createComment,
   fetchAuctions,
   fetchComments,
   fetchDocent,
   fetchMe,
+  fetchMySponsorships,
+  fetchMySubscriptions,
   fetchPost,
   likePost,
   tokenStore,
@@ -145,6 +149,9 @@ export default function PostDetailPage({
   const [showReport, setShowReport] = useState(false);
   // K-5 도슨트 상태
   const [docent, setDocent] = useState<DocentView | null>(null);
+  // 현재 사용자의 이 작가에 대한 후원 이력/구독 상태 — CTA 위에 요약 노출
+  const [mySponsorships, setMySponsorships] = useState<SponsorshipView[]>([]);
+  const [mySubscriptions, setMySubscriptions] = useState<SubscriptionView[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -182,7 +189,17 @@ export default function PostDetailPage({
       }
       if (tokenStore.get()) {
         try {
-          setMe(await fetchMe());
+          const meData = await fetchMe();
+          setMe(meData);
+          // 본인 글이 아닌 경우에만 후원 이력 조회 (실패해도 본문 노출에는 영향 없음)
+          if (meData.id !== p.author.id) {
+            void Promise.all([fetchMySponsorships(), fetchMySubscriptions()])
+              .then(([sp, sub]) => {
+                setMySponsorships(sp.filter((s) => s.artist_id === p.author.id));
+                setMySubscriptions(sub.filter((s) => s.artist_id === p.author.id));
+              })
+              .catch(() => { /* 조용히 실패 — 섹션만 미노출 */ });
+          }
         } catch {
           tokenStore.clear();
         }
@@ -280,6 +297,25 @@ export default function PostDetailPage({
   const cover = post.media[activeMediaIdx];
   const isProduct = post.type === "product";
   const product = post.product;
+
+  // 내 후원 이력 요약 (CTA 위에 노출) — useMySponsorships의 status 필터 정책과 일치
+  const activeSub = mySubscriptions.find(
+    (s) => s.status === "active" || s.status === "past_due"
+  );
+  const completedSpons = mySponsorships.filter(
+    (s) => s.status === "succeeded" || s.status === "completed"
+  );
+  const sponsTotalBirds = completedSpons.reduce(
+    (acc, s) => acc + s.bluebird_count,
+    0
+  );
+  const sponsTotalCents = completedSpons.reduce(
+    (acc, s) => acc + Math.round(parseFloat(s.amount) * 100),
+    0
+  );
+  const sponsCurrency =
+    completedSpons[0]?.currency || activeSub?.currency || "KRW";
+  const hasMyHistory = !!activeSub || completedSpons.length > 0;
 
   return (
     <main id="main-content" className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8" aria-label={post.title ?? t("nav.home")}>
@@ -398,6 +434,52 @@ export default function PostDetailPage({
             >
               <span aria-hidden="true">♥</span> {post.like_count} · {liked ? t("post.feed.liked") || "좋아요 취소" : t("post.feed.like") || "좋아요"}
             </button>
+
+            {/* 내 후원 이력/구독 상태 요약 — 본인 글 제외, 이력이 있을 때만 노출 */}
+            {me && me.id !== post.author.id && hasMyHistory && (
+              <Link
+                href="/me/sponsorships"
+                aria-label={t("post.detail.mySponsorshipStatus.ariaLabel", {
+                  artistName: post.author.display_name,
+                })}
+                className="block card p-3 text-xs space-y-1.5 hover:border-primary transition-colors"
+              >
+                {activeSub && (
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-text-secondary">
+                      🔄 {t("post.detail.mySponsorshipStatus.subscribing")}
+                    </span>
+                    <span className="text-text-primary font-medium">
+                      {t("post.detail.mySponsorshipStatus.monthly", {
+                        birds: activeSub.monthly_bluebird,
+                        amount: formatPriceCents(
+                          Math.round(parseFloat(activeSub.monthly_amount) * 100),
+                          activeSub.currency
+                        ),
+                      })}
+                    </span>
+                  </div>
+                )}
+                {completedSpons.length > 0 && (
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-text-secondary">
+                      🕊 {t("post.detail.mySponsorshipStatus.oneTimeCount", {
+                        count: completedSpons.length,
+                      })}
+                    </span>
+                    <span className="text-text-primary font-medium">
+                      {t("post.detail.mySponsorshipStatus.oneTimeAmount", {
+                        birds: sponsTotalBirds,
+                        amount: formatPriceCents(sponsTotalCents, sponsCurrency),
+                      })}
+                    </span>
+                  </div>
+                )}
+                <div className="text-right text-text-muted">
+                  {t("post.detail.mySponsorshipStatus.viewDetails")} →
+                </div>
+              </Link>
+            )}
 
             <button
               className="btn-primary w-full text-sm"
@@ -585,6 +667,13 @@ export default function PostDetailPage({
           onClose={() => setShowBluebird(false)}
           onSuccess={(_kind, count) => {
             setPost({ ...post, bluebird_count: post.bluebird_count + count });
+            // 요약 카드 즉시 갱신 — 실패해도 무시 (다음 페이지 로드 시 자연 갱신)
+            void Promise.all([fetchMySponsorships(), fetchMySubscriptions()])
+              .then(([sp, sub]) => {
+                setMySponsorships(sp.filter((s) => s.artist_id === post.author.id));
+                setMySubscriptions(sub.filter((s) => s.artist_id === post.author.id));
+              })
+              .catch(() => { /* 조용히 실패 */ });
             setTimeout(() => setShowBluebird(false), 1500);
           }}
         />

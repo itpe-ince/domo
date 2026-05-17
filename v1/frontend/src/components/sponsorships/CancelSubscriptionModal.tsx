@@ -29,6 +29,7 @@ import type { CancelReason } from "@/lib/hooks/useMySponsorships";
 import { captureEvent } from "@/lib/analytics/capture";
 import { applyWinbackCoupon, type WinbackCouponResponse, type WinbackReason } from "@/lib/api";
 import { WinbackSuccessModal } from "./WinbackSuccessModal";
+import { MessageButton } from "@/components/messaging/MessageButton";
 
 type ModalStep = "reason" | "winback";
 
@@ -36,6 +37,8 @@ type Props = {
   open: boolean;
   subscriptionId: string;
   artistName: string;
+  /** Artist's user_id — required for the DM CTA on "not_satisfied" reason. */
+  artistId?: string;
   currentPeriodEnd: string | null;
   cancelling: boolean;
   onConfirm: (reason: CancelReason, immediate: boolean, feedback?: string) => void;
@@ -53,6 +56,7 @@ export function CancelSubscriptionModal({
   open,
   subscriptionId,
   artistName,
+  artistId,
   currentPeriodEnd,
   cancelling,
   onConfirm,
@@ -338,14 +342,23 @@ export function CancelSubscriptionModal({
 
           {reason === "not_satisfied" && (
             <div className="space-y-3">
-              {/* DM link placeholder — Phase 8+ messaging carry-over */}
-              <div className="rounded-xl border border-border bg-surface-hover p-4 space-y-2">
+              {/* DM CTA — Phase 8+ messaging now wired (was placeholder) */}
+              <div className="rounded-xl border border-border bg-surface-hover p-4 space-y-3">
                 <p className="text-sm text-text-secondary">
                   {t("retention.cancel.winback.offer.message")}
                 </p>
-                <span className="text-xs text-text-muted italic">
-                  {t("retention.winback.offer.dmComingSoon")}
-                </span>
+                {artistId ? (
+                  <MessageButton
+                    userId={artistId}
+                    size="sm"
+                    variant="secondary"
+                    label={t("messaging.compose.dmArtistCta", { artistName })}
+                  />
+                ) : (
+                  <span className="text-xs text-text-muted italic">
+                    {t("retention.winback.offer.dmComingSoon")}
+                  </span>
+                )}
               </div>
               {/* 20% discount fallback */}
               <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3">

@@ -191,6 +191,16 @@ function SubCard({
   onCancel?: () => void;
   acting?: boolean;
 }) {
+  // Subscriptions-UX: prefer denormalized artist_username from backend join.
+  // Fall back to the UUID slice only if the artist row was deleted (LEFT JOIN
+  // → null) — surfacing as "deleted" rather than an opaque UUID is friendlier.
+  const artistLabel = sub.artist_username
+    ? `@${sub.artist_username}`
+    : `${sub.artist_id.slice(0, 8)}… (삭제된 작가)`;
+  const artistInitial = (sub.artist_username || sub.artist_id || "?")
+    .charAt(0)
+    .toUpperCase();
+
   return (
     <li className="card p-5">
       <div className="flex items-start justify-between mb-3">
@@ -210,16 +220,28 @@ function SubCard({
         </div>
       </div>
 
-      <div className="text-xs text-text-secondary space-y-1">
-        <div>
-          작가:{" "}
-          <Link
-            href={`/users/${sub.artist_id}`}
-            className="text-primary hover:underline"
-          >
-            {sub.artist_id.slice(0, 8)}...
-          </Link>
+      {/* Artist row: avatar + username, links to artist profile */}
+      <Link
+        href={`/users/${sub.artist_id}`}
+        className="flex items-center gap-2 mb-3 group"
+      >
+        <div className="w-8 h-8 rounded-full bg-surface-hover overflow-hidden flex items-center justify-center flex-shrink-0">
+          {sub.artist_avatar_url ? (
+            <img
+              src={sub.artist_avatar_url}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-primary font-bold text-xs">{artistInitial}</span>
+          )}
         </div>
+        <span className="text-sm font-medium text-text-primary group-hover:text-primary truncate">
+          {artistLabel}
+        </span>
+      </Link>
+
+      <div className="text-xs text-text-secondary space-y-1">
         <div>시작: {new Date(sub.created_at).toLocaleString("ko-KR")}</div>
         {sub.current_period_end && (
           <div>

@@ -19,10 +19,19 @@
     "error": "An error occurred.",
     "follow": "Follow",
     "following": "Following",
+    "unfollow": "Unfollow",
     "followers": "Followers",
     "likes": "Likes",
     "comments": "Comments",
-    "close": "Close"
+    "close": "Close",
+    "retry": "Try again",
+    "reload": "Reload",
+    "newVersionTitle": "A new version is available",
+    "newVersionMessage": "Reload to get the latest version.",
+    "errorTitle": "Something went wrong",
+    "errorMessageGeneric": "Please try again in a moment.",
+    "errorMessageChunk": "A new version was deployed. Reloading the page.",
+    "errorMessageTimeout": "The request is taking too long. Check your network connection."
   },
   "nav": {
     "home": "Home",
@@ -551,6 +560,10 @@
           "sponsor": "Sponsor early access",
           "follower": "Follower early access"
         }
+      },
+      "moreMenu": {
+        "ariaLabel": "More options",
+        "message": "Send a message"
       }
     },
     "detail": {
@@ -559,7 +572,15 @@
       "tierRestrictedHint": "This post is being shared early with {{artistName}}'s supporters.",
       "tierRestrictedSponsorCta": "Support this artist",
       "tierRestrictedSubscribeCta": "Subscribe monthly",
-      "tierRestrictedHistoryCta": "My sponsorships"
+      "tierRestrictedHistoryCta": "My sponsorships",
+      "mySponsorshipStatus": {
+        "ariaLabel": "My sponsorship history with @{{artistName}}",
+        "subscribing": "Subscribing",
+        "monthly": "{{birds}}🕊 / month · {{amount}}",
+        "oneTimeCount": "{{count}} sponsorship(s)",
+        "oneTimeAmount": "Total {{birds}}🕊 · {{amount}}",
+        "viewDetails": "View details"
+      }
     },
     "tierLocked": {
       "badge": "Sponsor early",
@@ -1632,6 +1653,17 @@
       "editPlaceholder": "Edit your message...",
       "send": "Send",
       "ariaLabel": "Message input"
+    },
+    "compose": {
+      "button": "Message",
+      "newConversation": "New message",
+      "modalTitle": "Select a user",
+      "searchPlaceholder": "Search by username...",
+      "searchHint": "Enter at least 2 characters",
+      "empty": "No results found",
+      "starting": "Starting conversation...",
+      "failed": "Could not start conversation",
+      "dmArtistCta": "Send a message to {{artistName}}"
     }
   },
   "docent": {

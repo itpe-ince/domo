@@ -811,3 +811,23 @@ async def delete_signature(
     )
 
     return Response(status_code=204)
+
+
+# ─── Follow state lookup (follow-button-rollout) ─────────────────────────
+
+
+@router.get("/following/ids")
+async def list_my_following_ids(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return all user IDs the current user follows.
+
+    Used by the frontend FollowingContext to render FollowButton state across
+    profile, feed, search, and artist-index surfaces without N+1 lookups.
+    """
+    result = await db.execute(
+        select(Follow.followee_id).where(Follow.follower_id == user.id)
+    )
+    ids = [str(row[0]) for row in result.all()]
+    return {"data": ids}

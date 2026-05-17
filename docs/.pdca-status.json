@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-17T03:45:00.000Z",
+  "lastUpdated": "2026-05-17T06:27:32.363Z",
   "activeFeatures": [
     "core",
     "db",
@@ -566,9 +566,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:23.836Z",
-        "lastUpdated": "2026-05-17T03:32:39.245Z"
+        "lastUpdated": "2026-05-17T06:26:48.322Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/onboarding.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/sponsorships.py"
     },
     "schemas": {
       "phase": "do",
@@ -579,9 +579,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:30.319Z",
-        "lastUpdated": "2026-05-11T06:04:46.524Z"
+        "lastUpdated": "2026-05-17T06:26:31.618Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/auth.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/schemas/sponsorship.py"
     },
     "google_auth.py": {
       "phase": "do",
@@ -644,9 +644,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-05-17T03:31:03.067Z"
+        "lastUpdated": "2026-05-17T06:27:10.137Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/Sidebar.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/lib/api.ts"
     },
     "applications": {
       "phase": "do",
@@ -696,9 +696,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T09:25:54.640Z",
-        "lastUpdated": "2026-05-06T11:55:47.935Z"
+        "lastUpdated": "2026-05-17T05:03:07.383Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/explore/collections/[id]/CollectionDetailClient.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/users/[id]/page.tsx"
     },
     "payments": {
       "phase": "do",
@@ -826,7 +826,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T11:35:32.909Z",
-        "lastUpdated": "2026-04-14T00:04:04.566Z"
+        "lastUpdated": "2026-05-17T06:27:32.363Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/subscriptions/page.tsx"
     },
@@ -982,9 +982,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T14:06:49.350Z",
-        "lastUpdated": "2026-05-17T03:00:07.571Z"
+        "lastUpdated": "2026-05-17T04:36:35.881Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/onboarding/OnboardingStep2Sponsor.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/onboarding/OnboardingStep1Follow.tsx"
     },
     "[token]": {
       "phase": "do",
@@ -1047,7 +1047,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-12T08:29:36.203Z",
-        "lastUpdated": "2026-05-05T11:52:34.756Z"
+        "lastUpdated": "2026-05-17T04:34:33.416Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/search/page.tsx"
     },
@@ -1585,9 +1585,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-04T11:55:18.612Z",
-        "lastUpdated": "2026-05-05T13:33:17.884Z"
+        "lastUpdated": "2026-05-17T05:06:37.446Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/sponsorships/ExpiryBanner.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/sponsorships/SubscriptionCard.tsx"
     },
     "patronage": {
       "phase": "do",
@@ -1702,7 +1702,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-04T15:15:41.427Z",
-        "lastUpdated": "2026-05-05T07:58:19.557Z"
+        "lastUpdated": "2026-05-17T04:35:28.706Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/artists/RankingCard.tsx"
     },
@@ -2144,9 +2144,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-05T13:03:26.782Z",
-        "lastUpdated": "2026-05-08T04:42:24.165Z"
+        "lastUpdated": "2026-05-17T05:02:18.437Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/messaging/ConversationList.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/messaging/MessageButton.tsx"
     },
     "messages": {
       "phase": "do",
@@ -2157,7 +2157,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-05T13:05:25.450Z",
-        "lastUpdated": "2026-05-05T13:05:25.450Z"
+        "lastUpdated": "2026-05-17T05:04:14.574Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/messages/page.tsx"
     },
@@ -2883,7 +2883,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-05-17T03:32:39.245Z"
+    "lastActivity": "2026-05-17T06:27:32.363Z"
   },
   "history": [
     {
@@ -22563,6 +22563,312 @@
     {
       "timestamp": "2026-05-17T03:32:39.245Z",
       "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:12:49.218Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:12:56.501Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:13:05.424Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:13:14.910Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:13:30.679Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:13:46.822Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:25:52.401Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:26:27.241Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:27:29.361Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:28:40.486Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:28:58.834Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:31:39.382Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:32:23.206Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:32:32.682Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:33:09.180Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:33:31.367Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:33:57.832Z",
+      "feature": "search",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:34:18.355Z",
+      "feature": "search",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:34:33.416Z",
+      "feature": "search",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:35:21.218Z",
+      "feature": "artists",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:35:28.706Z",
+      "feature": "artists",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:36:19.591Z",
+      "feature": "onboarding",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:36:28.754Z",
+      "feature": "onboarding",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:36:35.881Z",
+      "feature": "onboarding",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:41:21.890Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:41:47.468Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:42:34.699Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:42:49.809Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:44:16.800Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:44:23.377Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:44:31.654Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T04:44:58.034Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:01:21.034Z",
+      "feature": "messaging",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:02:18.437Z",
+      "feature": "messaging",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:02:55.154Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:03:07.383Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:03:45.369Z",
+      "feature": "messages",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:03:55.349Z",
+      "feature": "messages",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:04:14.574Z",
+      "feature": "messages",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:05:06.274Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:05:13.532Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:05:26.585Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:06:03.463Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:06:11.344Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:06:17.611Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:06:27.356Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T05:06:37.446Z",
+      "feature": "sponsorships",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T06:26:31.618Z",
+      "feature": "schemas",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T06:26:48.322Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T06:27:10.137Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T06:27:32.363Z",
+      "feature": "subscriptions",
       "phase": "do",
       "action": "updated"
     }

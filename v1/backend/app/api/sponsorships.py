@@ -386,17 +386,24 @@ async def my_subscriptions(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # Subscriptions-UX: JOIN artist user row so the frontend can render
+    # "@kenji_osaka" instead of "428c98b4..." UUID-slice (see
+    # v1/frontend/src/app/subscriptions/page.tsx). LEFT JOIN keeps rows
+    # whose artist was deleted from showing up as opaque blank cards.
     result = await db.execute(
-        select(Subscription)
+        select(Subscription, User.display_name, User.avatar_url)
+        .join(User, User.id == Subscription.artist_id, isouter=True)
         .where(Subscription.sponsor_id == user.id)
         .order_by(Subscription.created_at.desc())
     )
-    subs = result.scalars().all()
-    return {
-        "data": [
-            SubscriptionOut.model_validate(s).model_dump(mode="json") for s in subs
-        ]
-    }
+    rows = result.all()
+    out: list[dict] = []
+    for sub, artist_name, artist_avatar in rows:
+        payload = SubscriptionOut.model_validate(sub).model_dump(mode="json")
+        payload["artist_username"] = artist_name
+        payload["artist_avatar_url"] = artist_avatar
+        out.append(payload)
+    return {"data": out}
 
 
 @subscription_router.post("/{subscription_id}/renew")

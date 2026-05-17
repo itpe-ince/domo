@@ -369,6 +369,7 @@ export function SubscriptionCard({
         open={cancelModalOpen}
         subscriptionId={subscription.id}
         artistName={artistShortId}
+        artistId={subscription.artist_id}
         currentPeriodEnd={subscription.current_period_end}
         cancelling={cancelling}
         onConfirm={(reason, immediate, feedback) => {

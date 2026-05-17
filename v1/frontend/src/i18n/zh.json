@@ -19,10 +19,19 @@
     "error": "發生錯誤。",
     "follow": "追蹤",
     "following": "追蹤中",
+    "unfollow": "取消追蹤",
     "followers": "粉絲",
     "likes": "喜歡",
     "comments": "留言",
-    "close": "關閉"
+    "close": "關閉",
+    "retry": "再試一次",
+    "reload": "重新整理",
+    "newVersionTitle": "有新版本可用",
+    "newVersionMessage": "請重新整理以取得最新版本。",
+    "errorTitle": "發生問題",
+    "errorMessageGeneric": "請稍後再試。",
+    "errorMessageChunk": "似乎已部署新版本，正在重新載入頁面。",
+    "errorMessageTimeout": "回應太慢，請檢查網路狀態。"
   },
   "nav": {
     "home": "首頁",
@@ -551,6 +560,10 @@
           "sponsor": "贊助者搶先看",
           "follower": "追蹤者搶先看"
         }
+      },
+      "moreMenu": {
+        "ariaLabel": "更多選項",
+        "message": "傳訊息"
       }
     },
     "detail": {
@@ -559,7 +572,15 @@
       "tierRestrictedHint": "此貼文正在優先與 {{artistName}} 的支持者分享。",
       "tierRestrictedSponsorCta": "贊助此藝術家",
       "tierRestrictedSubscribeCta": "開始月訂閱",
-      "tierRestrictedHistoryCta": "我的贊助記錄"
+      "tierRestrictedHistoryCta": "我的贊助記錄",
+      "mySponsorshipStatus": {
+        "ariaLabel": "對 @{{artistName}} 的贊助記錄",
+        "subscribing": "訂閱中",
+        "monthly": "每月 {{birds}}🕊 · {{amount}}",
+        "oneTimeCount": "贊助 {{count}} 次",
+        "oneTimeAmount": "共 {{birds}}🕊 · {{amount}}",
+        "viewDetails": "查看詳情"
+      }
     },
     "tierLocked": {
       "badge": "贊助者優先",
@@ -1632,6 +1653,17 @@
       "editPlaceholder": "编辑消息...",
       "send": "发送",
       "ariaLabel": "消息输入框"
+    },
+    "compose": {
+      "button": "訊息",
+      "newConversation": "新訊息",
+      "modalTitle": "選擇用戶",
+      "searchPlaceholder": "搜尋用戶名稱...",
+      "searchHint": "請輸入至少 2 個字元",
+      "empty": "沒有搜尋結果",
+      "starting": "正在開始對話...",
+      "failed": "無法開始對話",
+      "dmArtistCta": "傳訊息給 {{artistName}}"
     }
   },
   "docent": {

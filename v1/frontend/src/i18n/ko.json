@@ -19,10 +19,19 @@
     "error": "오류가 발생했습니다.",
     "follow": "팔로우",
     "following": "팔로잉",
+    "unfollow": "팔로우 취소",
     "followers": "팔로워",
     "likes": "좋아요",
     "comments": "댓글",
-    "close": "닫기"
+    "close": "닫기",
+    "retry": "다시 시도",
+    "reload": "새로고침",
+    "newVersionTitle": "새 버전이 배포되었어요",
+    "newVersionMessage": "최신 버전을 적용하려면 새로고침해주세요.",
+    "errorTitle": "문제가 발생했어요",
+    "errorMessageGeneric": "잠시 후 다시 시도해주세요.",
+    "errorMessageChunk": "새 버전이 배포된 것 같아요. 페이지를 새로고침할게요.",
+    "errorMessageTimeout": "응답이 늦어요. 네트워크 상태를 확인해주세요."
   },
   "nav": {
     "home": "홈",
@@ -551,6 +560,10 @@
           "sponsor": "후원자 우선",
           "follower": "팔로워 우선"
         }
+      },
+      "moreMenu": {
+        "ariaLabel": "더보기 메뉴",
+        "message": "메시지 보내기"
       }
     },
     "detail": {
@@ -559,7 +572,15 @@
       "tierRestrictedHint": "{{artistName}} 작가의 구독자/후원자에게 먼저 공개되고 있습니다.",
       "tierRestrictedSponsorCta": "이 작가 후원하기",
       "tierRestrictedSubscribeCta": "정기 구독하기",
-      "tierRestrictedHistoryCta": "내 후원 내역"
+      "tierRestrictedHistoryCta": "내 후원 내역",
+      "mySponsorshipStatus": {
+        "ariaLabel": "@{{artistName}}에 대한 내 후원 이력",
+        "subscribing": "구독 중",
+        "monthly": "매월 {{birds}}🕊 · {{amount}}",
+        "oneTimeCount": "후원 {{count}}회",
+        "oneTimeAmount": "총 {{birds}}🕊 · {{amount}}",
+        "viewDetails": "상세 보기"
+      }
     },
     "tierLocked": {
       "badge": "후원자 우선",
@@ -1632,6 +1653,17 @@
       "editPlaceholder": "메시지를 수정하세요...",
       "send": "전송",
       "ariaLabel": "메시지 입력창"
+    },
+    "compose": {
+      "button": "메시지",
+      "newConversation": "새 메시지",
+      "modalTitle": "사용자 선택",
+      "searchPlaceholder": "사용자 이름 검색...",
+      "searchHint": "2자 이상 입력하세요",
+      "empty": "검색 결과가 없습니다",
+      "starting": "대화 시작 중...",
+      "failed": "대화를 시작할 수 없습니다",
+      "dmArtistCta": "{{artistName}}님에게 메시지 보내기"
     }
   },
   "docent": {

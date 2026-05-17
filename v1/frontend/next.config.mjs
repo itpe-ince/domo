@@ -9,6 +9,18 @@ const nextConfig = {
   reactStrictMode: true,
   output: "standalone",
 
+  // ─── Deterministic buildId (deploy-stuck mitigation, plan C1) ──────────
+  // By default Next.js generates a random buildId per build. We instead
+  // prefer NEXT_PUBLIC_BUILD_ID (injected by CI from git short SHA + epoch),
+  // falling back to a build-time epoch when running locally. This value is:
+  //   1. exposed to the client as `process.env.NEXT_PUBLIC_BUILD_ID`
+  //   2. served by /api/build-id so an open tab can poll and detect that
+  //      a new server build has rolled out (BuildVersionWatcher).
+  generateBuildId: async () => {
+    if (process.env.NEXT_PUBLIC_BUILD_ID) return process.env.NEXT_PUBLIC_BUILD_ID;
+    return `local-${Date.now()}`;
+  },
+
   // lucide-react, date-fns 트리셰이킹 최적화 (G''-6)
   experimental: {
     optimizePackageImports: ["lucide-react", "date-fns"],

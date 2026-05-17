@@ -15,7 +15,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "@/i18n";
 import { captureEvent } from "@/lib/analytics/capture";
-import { fetchRecommendedArtists, followArtist, RecommendedArtist } from "@/lib/api";
+import { fetchRecommendedArtists, RecommendedArtist } from "@/lib/api";
+import { useFollowing } from "@/lib/FollowingContext";
 
 interface OnboardingStep1FollowProps {
   onNext: (followedCount: number) => void;
@@ -24,6 +25,8 @@ interface OnboardingStep1FollowProps {
 
 export function OnboardingStep1Follow({ onNext, onSkip }: OnboardingStep1FollowProps) {
   const { t } = useI18n();
+  // FollowingContext 경유로 따라가서 onboarding 직후 다른 화면(FollowButton)에서도 즉시 반영
+  const { follow } = useFollowing();
   const [artists, setArtists] = useState<RecommendedArtist[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -78,7 +81,7 @@ export function OnboardingStep1Follow({ onNext, onSkip }: OnboardingStep1FollowP
     let followedCount = 0;
     for (const userId of selected) {
       try {
-        await followArtist(userId);
+        await follow(userId);
         followedCount++;
         captureEvent({ type: "first_action", action: "follow" });
       } catch {
@@ -87,7 +90,7 @@ export function OnboardingStep1Follow({ onNext, onSkip }: OnboardingStep1FollowP
     }
     setSubmitting(false);
     onNext(followedCount);
-  }, [selected, onNext]);
+  }, [selected, onNext, follow]);
 
   const handleSkip = useCallback(() => {
     captureEvent({ type: "onboarding_skip", step: 1 });

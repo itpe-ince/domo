@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { BuildVersionWatcher } from "./BuildVersionWatcher";
 import { MobileTabBar } from "./MobileTabBar";
 import { Sidebar } from "./Sidebar";
 import { SkipLink } from "./SkipLink";
@@ -11,6 +12,7 @@ import { useOnboarding } from "@/lib/hooks/useOnboarding";
 import { useGlobalHotkeys } from "@/lib/hooks/useGlobalHotkeys";
 import { useSequenceHotkeys } from "@/lib/hooks/useSequenceHotkeys";
 import { useMe } from "@/lib/useMe";
+import { FollowingProvider } from "@/lib/FollowingContext";
 
 /**
  * 화면 중앙에 가장 가까운 피드 카드의 인덱스를 반환한다.
@@ -168,7 +170,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   ]);
 
   return (
-    <>
+    <FollowingProvider>
       {/* H'-1: Skip navigation link — WCAG 2.4.1 Bypass Blocks (Level A) */}
       <SkipLink />
 
@@ -188,6 +190,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Phase 11 D-1 / Phase 12 C-3: 키보드 단축키 도움말 모달 */}
       <KeyboardShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
-    </>
+
+      {/* Deployment-stuck mitigation (plan C2): polls /api/build-id and
+          surfaces a reload toast when a new server build is detected. */}
+      <BuildVersionWatcher />
+    </FollowingProvider>
   );
 }

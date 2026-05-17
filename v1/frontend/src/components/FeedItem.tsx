@@ -5,6 +5,9 @@ import { useI18n } from "@/i18n";
 import { PostView } from "@/lib/api";
 import { usePostTranslation } from "@/lib/useTranslation";
 import { AuctionCountdown } from "@/components/AuctionCountdown";
+import { FollowButton } from "@/components/FollowButton";
+import { MessageButton } from "@/components/messaging/MessageButton";
+import { useMe } from "@/lib/useMe";
 import { convertAndFormat } from "@/lib/format";
 import { useExchangeRates } from "@/lib/hooks/useExchangeRates";
 
@@ -18,6 +21,7 @@ export function FeedItem({
   source?: "feed" | "explore" | "search" | "profile";
 }) {
   const { t } = useI18n();
+  const { me } = useMe();
   const { rates, currency: preferredCurrency } = useExchangeRates();
   const heroMedia = post.media[0];
   const { title: translatedTitle, content: translatedContent, isTranslated } = usePostTranslation(
@@ -30,34 +34,36 @@ export function FeedItem({
       data-feed-item
       data-post-id={post.id}
     >
-      {/* Author header */}
-      <Link
-        href={`/users/${post.author.id}`}
-        className="flex items-center gap-3 mb-3"
-      >
-        <div className="w-10 h-10 rounded-full bg-surface-hover flex items-center justify-center text-primary font-bold flex-shrink-0 overflow-hidden">
-          {post.author.avatar_url ? (
-            <img
-              src={post.author.avatar_url}
-              alt=""
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            post.author.display_name.charAt(0).toUpperCase()
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <span className="text-sm font-semibold">
-            @{post.author.display_name}
-          </span>
-          {post.author.role === "artist" && (
-            <span className="text-xs text-primary ml-1.5">✓</span>
-          )}
-          <div className="text-xs text-text-muted">
-            {timeAgo(post.created_at)}
+      {/* Author header — FollowButton을 nested anchor 밖으로 분리 */}
+      <div className="flex items-center gap-3 mb-3">
+        <Link
+          href={`/users/${post.author.id}`}
+          className="flex items-center gap-3 flex-1 min-w-0"
+        >
+          <div className="w-10 h-10 rounded-full bg-surface-hover flex items-center justify-center text-primary font-bold flex-shrink-0 overflow-hidden">
+            {post.author.avatar_url ? (
+              <img
+                src={post.author.avatar_url}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              post.author.display_name.charAt(0).toUpperCase()
+            )}
           </div>
-        </div>
-        <div className="flex gap-1.5">
+          <div className="flex-1 min-w-0">
+            <span className="text-sm font-semibold">
+              @{post.author.display_name}
+            </span>
+            {post.author.role === "artist" && (
+              <span className="text-xs text-primary ml-1.5">✓</span>
+            )}
+            <div className="text-xs text-text-muted">
+              {timeAgo(post.created_at)}
+            </div>
+          </div>
+        </Link>
+        <div className="flex gap-1.5 items-center flex-shrink-0">
           {(post as any).recommendation_reason === "following" && (
             <span className="text-[10px] bg-surface text-text-muted px-2 py-0.5 rounded-full">
               {t("recommendation.following")}
@@ -73,8 +79,30 @@ export function FeedItem({
               {t("post.artwork")}
             </span>
           )}
+          <FollowButton userId={post.author.id} size="sm" />
+          {/* 더보기 메뉴 — 본인 글이 아니고 로그인 상태일 때만 노출 (현재 항목: 메시지 보내기) */}
+          {me && me.id !== post.author.id && (
+            <details className="relative group">
+              <summary
+                aria-label={t("post.feed.moreMenu.ariaLabel")}
+                className="list-none cursor-pointer px-1.5 py-1 rounded-full text-text-muted hover:bg-surface-hover hover:text-text-primary transition-colors [&::-webkit-details-marker]:hidden"
+                title={t("post.feed.moreMenu.ariaLabel")}
+              >
+                <span aria-hidden="true">⋯</span>
+              </summary>
+              <div className="absolute right-0 top-full mt-1 z-30 card p-1.5 w-44 shadow-xl">
+                <MessageButton
+                  userId={post.author.id}
+                  size="sm"
+                  variant="ghost"
+                  className="w-full justify-start"
+                  label={t("post.feed.moreMenu.message")}
+                />
+              </div>
+            </details>
+          )}
         </div>
-      </Link>
+      </div>
 
       {/* Title */}
       {(translatedTitle || post.title) && (

@@ -19,10 +19,19 @@
     "error": "Se produjo un error.",
     "follow": "Seguir",
     "following": "Siguiendo",
+    "unfollow": "Dejar de seguir",
     "followers": "Seguidores",
     "likes": "Me gusta",
     "comments": "Comentarios",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "retry": "Reintentar",
+    "reload": "Recargar",
+    "newVersionTitle": "Hay una nueva versión disponible",
+    "newVersionMessage": "Recarga para aplicar la última versión.",
+    "errorTitle": "Algo salió mal",
+    "errorMessageGeneric": "Por favor, inténtalo de nuevo en un momento.",
+    "errorMessageChunk": "Se ha desplegado una nueva versión. Recargando la página.",
+    "errorMessageTimeout": "La respuesta tarda demasiado. Comprueba tu conexión."
   },
   "nav": {
     "home": "Inicio",
@@ -551,6 +560,10 @@
           "sponsor": "Acceso anticipado para patrocinadores",
           "follower": "Acceso anticipado para seguidores"
         }
+      },
+      "moreMenu": {
+        "ariaLabel": "Más opciones",
+        "message": "Enviar mensaje"
       }
     },
     "detail": {
@@ -559,7 +572,15 @@
       "tierRestrictedHint": "Esta publicación se comparte primero con los patrocinadores de {{artistName}}.",
       "tierRestrictedSponsorCta": "Apoyar a este artista",
       "tierRestrictedSubscribeCta": "Suscripción mensual",
-      "tierRestrictedHistoryCta": "Mis patrocinios"
+      "tierRestrictedHistoryCta": "Mis patrocinios",
+      "mySponsorshipStatus": {
+        "ariaLabel": "Mi historial de patrocinio con @{{artistName}}",
+        "subscribing": "Suscrito",
+        "monthly": "{{birds}}🕊 / mes · {{amount}}",
+        "oneTimeCount": "{{count}} patrocinio(s)",
+        "oneTimeAmount": "Total {{birds}}🕊 · {{amount}}",
+        "viewDetails": "Ver detalles"
+      }
     },
     "tierLocked": {
       "badge": "Anticipado para patrocinadores",
@@ -1632,6 +1653,17 @@
       "editPlaceholder": "Edita tu mensaje...",
       "send": "Enviar",
       "ariaLabel": "Campo de entrada de mensaje"
+    },
+    "compose": {
+      "button": "Mensaje",
+      "newConversation": "Nuevo mensaje",
+      "modalTitle": "Selecciona un usuario",
+      "searchPlaceholder": "Buscar por nombre de usuario...",
+      "searchHint": "Ingresa al menos 2 caracteres",
+      "empty": "No se encontraron resultados",
+      "starting": "Iniciando conversación...",
+      "failed": "No se pudo iniciar la conversación",
+      "dmArtistCta": "Enviar mensaje a {{artistName}}"
     }
   },
   "docent": {

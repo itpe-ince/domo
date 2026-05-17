@@ -40,6 +40,62 @@ export const tokenStore = {
   },
 };
 
+// ─── Fetch timeout (B: deployment-stuck mitigation) ───────────────────────
+// Default timeout for all API calls. Without this, a stalled backend pod
+// (mid-deploy, dead connection on a kept-alive socket, network blip) leaves
+// the awaited promise pending forever and components stay in their initial
+// loading state — which is what produced the "infinite skeleton after deploy"
+// bug class. With AbortController we surface an explicit error so caller-side
+// catch blocks and Error Boundaries run and the loading flag is released.
+//
+// 15s = generous for slow mobile but well below the typical CDN/LB 30-60s
+// idle timeout. Long-poll-style endpoints (none exist today) would need to
+// opt out via `{ timeoutMs: 0 }`.
+const DEFAULT_TIMEOUT_MS = 15_000;
+
+/**
+ * fetch wrapper that aborts after `timeoutMs` (0 = no timeout).
+ * If the caller passes its own `signal`, both signals are honored — the
+ * fetch aborts whichever fires first.
+ */
+async function _fetchWithTimeout(
+  url: string,
+  init: RequestInit & { timeoutMs?: number } = {}
+): Promise<Response> {
+  const { timeoutMs = DEFAULT_TIMEOUT_MS, signal: userSignal, ...rest } = init;
+
+  if (timeoutMs <= 0) {
+    return fetch(url, { ...rest, signal: userSignal });
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  // Chain caller's signal so external cancellation still works.
+  const onUserAbort = () => controller.abort();
+  if (userSignal) {
+    if (userSignal.aborted) controller.abort();
+    else userSignal.addEventListener("abort", onUserAbort, { once: true });
+  }
+
+  try {
+    return await fetch(url, { ...rest, signal: controller.signal });
+  } catch (err) {
+    if (controller.signal.aborted && !userSignal?.aborted) {
+      // Distinguish our timeout from user cancellation so callers/UI can
+      // show a network-specific message ("응답이 늦어요").
+      const e = err as Error;
+      const timeoutErr = new Error(e.message || "Request timed out");
+      timeoutErr.name = "ApiTimeoutError";
+      throw timeoutErr;
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+    if (userSignal) userSignal.removeEventListener("abort", onUserAbort);
+  }
+}
+
 // Single-flight refresh mutex — prevents parallel 401s from creating multiple refresh calls
 let refreshInFlight: Promise<boolean> | null = null;
 
@@ -50,10 +106,11 @@ async function tryRefreshAccessToken(): Promise<boolean> {
 
   refreshInFlight = (async () => {
     try {
-      const res = await fetch(`${API_BASE}/auth/refresh`, {
+      const res = await _fetchWithTimeout(`${API_BASE}/auth/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh_token: rt }),
+        timeoutMs: 10_000, // refresh is critical-path; shorter ceiling
       });
       const json = await res.json();
       if (!res.ok || "error" in json) {
@@ -84,7 +141,12 @@ export type ApiResponse<T> = ApiSuccess<T> | ApiError;
 
 async function _fetchOnce(
   path: string,
-  init?: RequestInit & { token?: string; auth?: boolean; _retry?: boolean }
+  init?: RequestInit & {
+    token?: string;
+    auth?: boolean;
+    _retry?: boolean;
+    timeoutMs?: number;
+  }
 ): Promise<Response> {
   // When the body is FormData, omit Content-Type so the browser can set the
   // correct multipart boundary automatically (e.g. POST /v1/me/signature).
@@ -98,12 +160,22 @@ async function _fetchOnce(
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
-  return fetch(`${API_BASE}${path}`, { ...init, headers });
+  return _fetchWithTimeout(`${API_BASE}${path}`, { ...init, headers });
 }
 
 export async function apiFetch<T>(
   path: string,
-  init?: RequestInit & { token?: string; auth?: boolean; _retry?: boolean }
+  init?: RequestInit & {
+    token?: string;
+    auth?: boolean;
+    _retry?: boolean;
+    /**
+     * Per-call override for the 15s default abort timeout. Pass 0 to disable
+     * (long-poll / streaming). Critical-path callers (auth, payments) can
+     * tighten this; FormData uploads typically widen it.
+     */
+    timeoutMs?: number;
+  }
 ): Promise<T> {
   let res = await _fetchOnce(path, init);
 
@@ -1044,6 +1116,10 @@ export type SubscriptionView = {
   // B'-4: auto-renewal toggle
   auto_renew_enabled: boolean;
   created_at: string;
+  // Subscriptions-UX: artist denormalization (populated by GET /subscriptions/mine).
+  // Null on endpoints that don't join (POST create, PATCH auto-renew, DELETE).
+  artist_username?: string | null;
+  artist_avatar_url?: string | null;
 };
 
 export async function createSubscription(input: {
@@ -2637,6 +2713,15 @@ export async function unfollowArtist(artistUserId: string): Promise<void> {
   await apiFetch<void>(`/users/${encodeURIComponent(artistUserId)}/follow`, {
     method: "DELETE",
   });
+}
+
+/**
+ * Fetch IDs of all users the current user follows.
+ * Used by FollowingContext to render FollowButton state across surfaces
+ * without per-row lookups.
+ */
+export async function fetchMyFollowingIds(): Promise<string[]> {
+  return apiFetch<string[]>("/me/following/ids");
 }
 
 // ─── Artist Index (A-6) ─────────────────────────────────────────────────────

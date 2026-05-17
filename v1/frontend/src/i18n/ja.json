@@ -19,10 +19,19 @@
     "error": "エラーが発生しました。",
     "follow": "フォロー",
     "following": "フォロー中",
+    "unfollow": "フォロー解除",
     "followers": "フォロワー",
     "likes": "いいね",
     "comments": "コメント",
-    "close": "閉じる"
+    "close": "閉じる",
+    "retry": "再試行",
+    "reload": "再読み込み",
+    "newVersionTitle": "新しいバージョンがあります",
+    "newVersionMessage": "最新バージョンを反映するには再読み込みしてください。",
+    "errorTitle": "問題が発生しました",
+    "errorMessageGeneric": "しばらくしてからもう一度お試しください。",
+    "errorMessageChunk": "新しいバージョンが配信されたようです。ページを再読み込みします。",
+    "errorMessageTimeout": "応答が遅いです。ネットワーク状態をご確認ください。"
   },
   "nav": {
     "home": "ホーム",
@@ -551,6 +560,10 @@
           "sponsor": "スポンサー先行",
           "follower": "フォロワー先行"
         }
+      },
+      "moreMenu": {
+        "ariaLabel": "その他のオプション",
+        "message": "メッセージを送る"
       }
     },
     "detail": {
@@ -559,7 +572,15 @@
       "tierRestrictedHint": "{{artistName}}さんのサポーターに先行公開しています。",
       "tierRestrictedSponsorCta": "このアーティストを支援する",
       "tierRestrictedSubscribeCta": "月額サブスクを始める",
-      "tierRestrictedHistoryCta": "支援履歴を見る"
+      "tierRestrictedHistoryCta": "支援履歴を見る",
+      "mySponsorshipStatus": {
+        "ariaLabel": "@{{artistName}} への支援履歴",
+        "subscribing": "購読中",
+        "monthly": "毎月 {{birds}}🕊 · {{amount}}",
+        "oneTimeCount": "{{count}}回支援",
+        "oneTimeAmount": "合計 {{birds}}🕊 · {{amount}}",
+        "viewDetails": "詳細を見る"
+      }
     },
     "tierLocked": {
       "badge": "スポンサー先行",
@@ -1632,6 +1653,17 @@
       "editPlaceholder": "メッセージを編集...",
       "send": "送信",
       "ariaLabel": "メッセージ入力欄"
+    },
+    "compose": {
+      "button": "メッセージ",
+      "newConversation": "新規メッセージ",
+      "modalTitle": "ユーザーを選択",
+      "searchPlaceholder": "ユーザー名で検索...",
+      "searchHint": "2文字以上入力してください",
+      "empty": "検索結果がありません",
+      "starting": "会話を開始しています...",
+      "failed": "会話を開始できませんでした",
+      "dmArtistCta": "{{artistName}}さんにメッセージを送る"
     }
   },
   "docent": {
