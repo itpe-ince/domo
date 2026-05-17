@@ -257,33 +257,54 @@ jobs:
           docker compose -f docker-compose.prod.yml pull
 
           # ── Migrate DB before starting new containers (zero-downtime safe) ──
+          # 2026-05-13 root cause: `docker compose run --rm`이 stdout/stdin pipe를
+          # ssh session과 공유 → 컨테이너 종료 시 stdin EOF가 remote bash에 전파 →
+          # 후속 명령(up -d --force-recreate)이 silent skip되며 step은 success
+          # 표시됨. -T 옵션(TTY 비활성) + </dev/null 로 stdin 격리하여 차단.
           if [ "${SKIP_MIGRATION}" != "true" ]; then
             echo "→ Running alembic upgrade head"
-            docker compose -f docker-compose.prod.yml run --rm backend alembic upgrade head
+            docker compose -f docker-compose.prod.yml run --rm -T backend \
+              alembic upgrade head </dev/null
+            echo "✓ alembic upgrade completed (exit=$?)"
           else
             echo "⚠ Skipping migration (manual override)"
           fi
 
           # ── Restart services ──
           # --force-recreate guarantees containers are rebuilt with the
-          # newly-pulled image. Without this, when IMAGE_TAG resolves to
-          # `:latest` (or any moving tag), compose may not detect a digest
-          # change and silently keep stale containers running.
+          # newly-pulled image. compose 파일이 ${IMAGE_TAG:?...}이므로 IMAGE_TAG
+          # 누락 시 여기서도 에러로 실패 (silent stale 차단).
+          echo "→ Restart services with --force-recreate"
           docker compose -f docker-compose.prod.yml up -d \
             --remove-orphans --force-recreate
+          echo "✓ up -d completed (exit=$?)"
 
           # ── Verify what actually got deployed ──
+          # 2026-05-13 안전망: 운영 컨테이너의 image가 의도한 SHA가 아니면 step fail.
+          # silent stale이 GitHub Actions에 표면화되도록 명시적 verification.
           echo "→ Running images:"
+          verification_failed=0
           for svc in backend frontend admin; do
             container="domo_${svc}"
-            if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
-              img=$(docker inspect "$container" --format '{{.Config.Image}}')
-              created=$(docker inspect "$container" --format '{{.Created}}')
-              echo "  ${container}: image=${img}  container_created=${created}"
-            else
-              echo "::warning::${container} is not running after up -d"
+            expected="ghcr.io/itpe-ince/domo/${svc}:${IMAGE_TAG}"
+            if ! docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
+              echo "::error::${container} is NOT running after up -d"
+              verification_failed=1
+              continue
+            fi
+            actual=$(docker inspect "$container" --format '{{.Config.Image}}')
+            created=$(docker inspect "$container" --format '{{.Created}}')
+            echo "  ${container}: image=${actual}  created=${created}"
+            if [ "$expected" != "$actual" ]; then
+              echo "::error::${container} image mismatch — expected=${expected} actual=${actual}"
+              verification_failed=1
             fi
           done
+          if [ "$verification_failed" = "1" ]; then
+            echo "::error::Deployment verification failed — containers did not pick up new image"
+            exit 1
+          fi
+          echo "✓ All containers verified with image=${IMAGE_TAG}"
 
           # ── Cleanup old images ──
           docker image prune -f
