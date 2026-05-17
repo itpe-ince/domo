@@ -242,6 +242,17 @@ jobs:
           export IMAGE_TAG="${IMAGE_TAG}"
           echo "→ Deploying IMAGE_TAG=${IMAGE_TAG}"
 
+          # ── Fail fast if IMAGE_TAG is empty (root cause of 2026-05-13 stale deployments) ──
+          if [ -z "${IMAGE_TAG}" ]; then
+            echo "::error::IMAGE_TAG is empty — needs.build.outputs.image_tag was not transmitted to ssh session"
+            echo "::error::Compose would silently fall back to :latest which may point to stale digest"
+            exit 1
+          fi
+
+          # ── Verify resolved compose config (catches misconfiguration before pull) ──
+          echo "→ Resolved image tags from compose config:"
+          docker compose -f docker-compose.prod.yml config | grep "image:" || true
+
           # ── Pull new images ──
           docker compose -f docker-compose.prod.yml pull
 

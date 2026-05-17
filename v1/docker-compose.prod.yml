@@ -26,7 +26,7 @@ services:
   # Backend API (FastAPI on port 3710)
   # ───────────────────────────────────────────
   backend:
-    image: ghcr.io/${GITHUB_REPOSITORY:-itpe-ince/domo}/backend:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GITHUB_REPOSITORY:-itpe-ince/domo}/backend:${IMAGE_TAG:?IMAGE_TAG is required — silent :latest fallback masked stale deployments (2026-05-13)}
     container_name: domo_backend
     restart: unless-stopped
     env_file: .env
@@ -52,7 +52,7 @@ services:
   # Frontend Next.js (port 3700)
   # ───────────────────────────────────────────
   frontend:
-    image: ghcr.io/${GITHUB_REPOSITORY:-itpe-ince/domo}/frontend:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GITHUB_REPOSITORY:-itpe-ince/domo}/frontend:${IMAGE_TAG:?IMAGE_TAG is required — silent :latest fallback masked stale deployments (2026-05-13)}
     container_name: domo_frontend
     restart: unless-stopped
     env_file: .env
@@ -79,7 +79,7 @@ services:
   # Admin Next.js (port 3800)
   # ───────────────────────────────────────────
   admin:
-    image: ghcr.io/${GITHUB_REPOSITORY:-itpe-ince/domo}/admin:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GITHUB_REPOSITORY:-itpe-ince/domo}/admin:${IMAGE_TAG:?IMAGE_TAG is required — silent :latest fallback masked stale deployments (2026-05-13)}
     container_name: domo_admin
     restart: unless-stopped
     env_file: .env
