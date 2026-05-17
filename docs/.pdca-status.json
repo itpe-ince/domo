@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-12T23:44:22.020Z",
+  "lastUpdated": "2026-05-17T03:45:00.000Z",
   "activeFeatures": [
     "core",
     "db",
@@ -528,7 +528,7 @@
       "phaseNumber": 3,
       "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/main.py",
       "timestamps": {
-        "lastUpdated": "2026-05-08T16:36:02.667Z"
+        "lastUpdated": "2026-05-17T02:59:38.168Z"
       }
     },
     "core": {
@@ -540,9 +540,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:32:03.535Z",
-        "lastUpdated": "2026-05-11T06:04:47.125Z"
+        "lastUpdated": "2026-05-17T02:58:54.467Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/core/config.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/core/rate_limit.py"
     },
     "db": {
       "phase": "do",
@@ -566,9 +566,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:33:23.836Z",
-        "lastUpdated": "2026-05-11T06:04:50.473Z"
+        "lastUpdated": "2026-05-17T03:32:39.245Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/auth.py"
+      "lastFile": "/Users/sangincha/dev/domo/v1/backend/app/api/onboarding.py"
     },
     "schemas": {
       "phase": "do",
@@ -644,7 +644,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T06:36:02.304Z",
-        "lastUpdated": "2026-05-12T23:44:22.020Z"
+        "lastUpdated": "2026-05-17T03:31:03.067Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/Sidebar.tsx"
     },
@@ -982,9 +982,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-11T14:06:49.350Z",
-        "lastUpdated": "2026-05-04T15:06:21.891Z"
+        "lastUpdated": "2026-05-17T03:00:07.571Z"
       },
-      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/onboarding/OnboardingStep1Follow.tsx"
+      "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/components/onboarding/OnboardingStep2Sponsor.tsx"
     },
     "[token]": {
       "phase": "do",
@@ -2865,6 +2865,14 @@
         "lastUpdated": "2026-05-11T19:26:54.740Z"
       },
       "lastFile": "/Users/sangincha/dev/domo/v1/frontend/src/app/me/settings/display/page.tsx"
+    },
+    "onboarding-recommended-fix": {
+      "phase": "check",
+      "startedAt": "2026-05-17T03:00:00.000Z",
+      "matchRate": 98,
+      "iterationCount": 0,
+      "notes": "Retroactive PDCA (post-fix). Backend endpoint + frontend null-handling for Phase 6 A-2 carry-over.",
+      "analyzedAt": "2026-05-17T03:45:00.000Z"
     }
   },
   "pipeline": {
@@ -2875,7 +2883,7 @@
   "session": {
     "startedAt": "2026-04-09T08:01:50.524Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-05-12T23:44:22.020Z"
+    "lastActivity": "2026-05-17T03:32:39.245Z"
   },
   "history": [
     {
@@ -22509,6 +22517,55 @@
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T02:58:54.467Z",
+      "feature": "core",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T02:59:20.454Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T02:59:32.969Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T02:59:38.168Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T02:59:58.680Z",
+      "feature": "onboarding",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T03:00:07.571Z",
+      "feature": "onboarding",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T03:31:03.067Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-17T03:32:39.245Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
     }
-  ]
+  ],
+  "currentFeature": "onboarding-recommended-fix"
 }

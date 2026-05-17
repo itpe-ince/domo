@@ -30,6 +30,7 @@ from app.api import me as me_router
 from app.api import media as media_router
 from app.api import moderation as moderation_router
 from app.api import notifications as notifications_router
+from app.api import onboarding as onboarding_router
 from app.api import orders as orders_router
 from app.api import collections as collections_router
 from app.api import communities as communities_router
@@ -356,6 +357,8 @@ api_v1.include_router(orders_router.products_router)
 api_v1.include_router(moderation_router.reports_router)
 api_v1.include_router(moderation_router.warnings_router)
 api_v1.include_router(notifications_router.router)
+# A-2 onboarding-funnel — public recommended artists endpoint (Phase 6.5 carry-over)
+api_v1.include_router(onboarding_router.router)
 api_v1.include_router(webhooks_router.router)
 api_v1.include_router(webhooks_ses_router.router)
 api_v1.include_router(admin_router.router)

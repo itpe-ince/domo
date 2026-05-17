@@ -29,6 +29,8 @@ export function OnboardingStep2Sponsor({
 }: OnboardingStep2SponsorProps) {
   const { t } = useI18n();
   const [artist, setArtist] = useState<RecommendedArtist | null>(null);
+  const [artistLoadFailed, setArtistLoadFailed] = useState(false);
+  const [loadingArtist, setLoadingArtist] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [sponsored, setSponsored] = useState(false);
 
@@ -39,11 +41,23 @@ export function OnboardingStep2Sponsor({
   }, []);
 
   async function loadArtist() {
+    setLoadingArtist(true);
+    setArtistLoadFailed(false);
     try {
       const data = await fetchRecommendedArtists(1);
-      if (data.length > 0) setArtist(data[0]);
+      if (data.length > 0) {
+        setArtist(data[0]);
+      } else {
+        setArtistLoadFailed(true);
+      }
     } catch {
-      // Non-fatal: proceed without a pre-selected artist
+      // Non-fatal: surface as a load-failed state so the CTA button never
+      // appears in an unresponsive form (B-2 bugfix: previously the button
+      // rendered but click was silently dropped because the modal render
+      // gate required a non-null `artist`).
+      setArtistLoadFailed(true);
+    } finally {
+      setLoadingArtist(false);
     }
   }
 
@@ -110,19 +124,36 @@ export function OnboardingStep2Sponsor({
 
         {/* CTA area */}
         <div className="flex flex-col gap-2 pt-1">
-          {!sponsored && (
+          {!sponsored && artist && (
             <button
               type="button"
               onClick={() => setShowModal(true)}
               className="btn-primary w-full"
             >
-              {artist
-                ? t("onboarding.step2.ctaWithArtist").replace(
-                    "{{artistName}}",
-                    artist.username
-                  )
-                : t("onboarding.step2.cta")}
+              {t("onboarding.step2.ctaWithArtist").replace(
+                "{{artistName}}",
+                artist.username
+              )}
             </button>
+          )}
+
+          {!sponsored && !artist && loadingArtist && (
+            <button
+              type="button"
+              disabled
+              className="btn-primary w-full opacity-60 cursor-wait"
+            >
+              {t("onboarding.step2.cta")}
+            </button>
+          )}
+
+          {!sponsored && !artist && artistLoadFailed && (
+            <p
+              role="status"
+              className="text-xs text-text-muted text-center py-2"
+            >
+              {t("onboarding.step1.noArtists")}
+            </p>
           )}
 
           <button

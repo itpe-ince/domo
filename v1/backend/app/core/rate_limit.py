@@ -139,6 +139,9 @@ DEFAULT_LIMITS: dict[str, dict] = {
     # CO-1 PR-2: 'post_caption_override' 키 추가 — 10회/일/포스트 (user 기준)
     # 수동 override는 재생성보다 빈도가 높을 수 있으나, 남용 방지를 위해 10회/일 제한
     "post_caption_override": {"limit": 10, "window_sec": 86400, "by": "user"},
+    # A-2 onboarding-funnel — public recommended artists list (anonymous OK)
+    # 60/min/IP — onboarding wizard is one-time-per-session; this caps abuse.
+    "onboarding_recommended_read": {"limit": 60, "window_sec": 60, "by": "ip"},
 }
 
 

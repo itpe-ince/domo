@@ -166,7 +166,9 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="hidden md:flex sticky top-0 h-screen flex flex-col min-h-0 py-4 px-2 xl:px-4 w-[80px] xl:w-[260px] border-r border-border bg-background flex-shrink-0">
+      {/* z-50: establish a stacking context above CookieConsent(z-40)/page sticky headers(z-20)
+          so the bottom user-menu dropdown (which overflows right via left-full) is not occluded. */}
+      <aside className="hidden md:flex sticky top-0 z-50 h-screen flex flex-col min-h-0 py-4 px-2 xl:px-4 w-[80px] xl:w-[260px] border-r border-border bg-background flex-shrink-0">
         <div className="flex flex-col flex-1 min-h-0">
           {/* 스크롤은 상단 내비만 — 프로필 메뉴는 하단 고정, 드롭다운이 overflow에 잘리지 않음 */}
           <div className="flex-1 overflow-y-auto min-h-0 overscroll-contain flex flex-col gap-1">
